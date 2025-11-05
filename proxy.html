@@ -154,7 +154,7 @@
         browserArea.innerHTML = '';
         if (activeTab) {
           const iframe = document.createElement('iframe');
-          iframe.src = '/s/embed.html#' + encodeURIComponent(activeTab);
+          iframe.src = '/s/embed.html#' + activeTab;
           iframe.width = '100%';
           iframe.height = '600px';
           iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
