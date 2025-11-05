@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-H5VGHQJKD8"></script>
-  <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-H5VGHQJKD8');
-  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Search</title>
+  <title>UV Browser</title>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-H5VGHQJKD8"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-H5VGHQJKD8');
+  </script>
+
   <script src="s/uv/uv.bundle.js" defer></script>
   <script src="s/uv/uv.config.js" defer></script>
   <script src="s/register-sw.js" defer></script>
@@ -19,28 +20,93 @@
 </head>
 
 <body>
-  <div class="search-container">
-    <input type="text" 
-           class="search-form" 
-           id="addressBar" 
-           placeholder="Enter URL or search term..." 
-           onkeydown="if(event.key==='Enter'){navigateToAddress();}"
-           autofocus>
+  <div id="tabBar"></div>
+  <div>
+    <input type="text" id="addressInput" placeholder="Enter URL or search term..." onkeydown="if(event.key==='Enter'){addTab();}" autofocus>
+    <button onclick="addTab()">Open</button>
   </div>
+  <div id="browserArea"></div>
 
   <script>
-    function navigateToAddress() {
-      const input = document.getElementById('addressBar');
-      let url = input.value.trim();
-      if (!url) return;
+    let tabs = JSON.parse(localStorage.getItem('uvTabs') || '[]');
+    let activeTab = localStorage.getItem('activeTab') || null;
 
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        if (url.includes('.')) url = 'https://' + url;
-        else url = 'https://www.google.com/?q=' + encodeURIComponent(url);
+    function normalizeUrl(input) {
+      input = input.trim();
+      if (!input.startsWith('http://') && !input.startsWith('https://')) {
+        if (input.includes('.')) return 'https://' + input;
+        return 'https://www.google.com/search?q=' + encodeURIComponent(input);
       }
-
-      window.location.href = `/s/embed.html#${url}`;
+      return input;
     }
+
+    function addTab() {
+      const input = document.getElementById('addressInput').value;
+      if (!input) return;
+      const url = normalizeUrl(input);
+      tabs.push(url);
+      activeTab = url;
+      saveTabs();
+      renderTabs();
+      renderBrowser();
+    }
+
+    function switchTab(url) {
+      activeTab = url;
+      localStorage.setItem('activeTab', url);
+      renderBrowser();
+    }
+
+    function closeTab(index) {
+      if (tabs[index] === activeTab) {
+        tabs.splice(index, 1);
+        activeTab = tabs[tabs.length - 1] || null;
+      } else {
+        tabs.splice(index, 1);
+      }
+      saveTabs();
+      renderTabs();
+      renderBrowser();
+    }
+
+    function saveTabs() {
+      localStorage.setItem('uvTabs', JSON.stringify(tabs));
+      localStorage.setItem('activeTab', activeTab);
+    }
+
+    function renderTabs() {
+      const tabBar = document.getElementById('tabBar');
+      tabBar.innerHTML = '';
+      tabs.forEach((url, i) => {
+        const tab = document.createElement('button');
+        tab.textContent = new URL(url).hostname;
+        tab.onclick = () => switchTab(url);
+        const closeBtn = document.createElement('span');
+        closeBtn.textContent = ' ✕';
+        closeBtn.onclick = (e) => {
+          e.stopPropagation();
+          closeTab(i);
+        };
+        tab.appendChild(closeBtn);
+        tabBar.appendChild(tab);
+      });
+    }
+
+    function renderBrowser() {
+      const browserArea = document.getElementById('browserArea');
+      browserArea.innerHTML = '';
+      if (activeTab) {
+        const iframe = document.createElement('iframe');
+        iframe.src = `/s/embed.html#${activeTab}`;
+        iframe.width = '100%';
+        iframe.height = '600px';
+        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
+        browserArea.appendChild(iframe);
+      }
+    }
+
+    renderTabs();
+    renderBrowser();
   </script>
 </body>
 </html>
