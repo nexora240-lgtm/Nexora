@@ -3,10 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>UV Browser</title>
-
-  <link rel="stylesheet" href="css/theme-tokens.css">
-  <link rel="stylesheet" href="css/proxy.css">
+  
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+  </style>
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-H5VGHQJKD8"></script>
   <script>
@@ -23,183 +27,11 @@
 </head>
 
 <body class="proxy-view">
-  <div id="tabBar"></div>
-
-  <div class="input-container" id="inputContainer">
-    <input type="text" id="addressInput" placeholder="Enter URL or search term..." onkeydown="if(event.key==='Enter'){addTab();}" autofocus>
-    <button id="openButton" onclick="addTab()">Open</button>
-  </div>
-
-  <div id="browserArea"></div>
-
-  <script>
-    (function () {
-      // Storage keys
-      const TABS_KEY = 'uvTabs';
-      const ACTIVE_KEY = 'activeTab';
-      const FIRST_SEEN_KEY = 'uv_first_seen_v1';
-
-      // Elements
-      const inputContainer = document.getElementById('inputContainer');
-      const addressInput = document.getElementById('addressInput');
-      const openButton = document.getElementById('openButton');
-      const tabBar = document.getElementById('tabBar');
-      const browserArea = document.getElementById('browserArea');
-
-      // App state
-      let tabs = JSON.parse(localStorage.getItem(TABS_KEY) || '[]');
-      let activeTab = localStorage.getItem(ACTIVE_KEY) || null;
-
-      // Helpers
-      function normalizeUrl(input) {
-        input = input.trim();
-        if (!input.startsWith('http://') && !input.startsWith('https://')) {
-          if (input.includes('.')) return 'https://' + input;
-          return 'https://www.startpage.com/sp/search?query=' + encodeURIComponent(input);
-        }
-        return input;
-      }
-
-      function saveTabs() {
-        localStorage.setItem(TABS_KEY, JSON.stringify(tabs));
-        localStorage.setItem(ACTIVE_KEY, activeTab);
-      }
-
-      function shouldShowCentered() {
-        const seen = (() => {
-          try { return localStorage.getItem(FIRST_SEEN_KEY) === '1'; } catch (e) { return false; }
-        })();
-        return !seen && tabs.length === 0;
-      }
-
-      function setFirstSeen() {
-        try { localStorage.setItem(FIRST_SEEN_KEY, '1'); } catch (e) {}
-      }
-
-      function updateInputUI() {
-        if (shouldShowCentered()) {
-          inputContainer.classList.add('centered');
-          openButton.classList.add('hide');
-          addressInput.focus();
-        } else {
-          inputContainer.classList.remove('centered');
-          openButton.classList.remove('hide');
-        }
-      }
-
-      // Core actions
-      window.addTab = function addTab() {
-        const input = addressInput.value;
-        if (!input) return;
-        const url = normalizeUrl(input);
-        tabs.push(url);
-        activeTab = url;
-        saveTabs();
-        renderTabs();
-        renderBrowser();
-
-        setFirstSeen();
-        updateInputUI();
-
-        // clear input for next use
-        addressInput.value = '';
-      };
-
-      window.switchTab = function switchTab(url) {
-        activeTab = url;
-        localStorage.setItem(ACTIVE_KEY, url);
-        renderBrowser();
-      };
-
-      window.closeTab = function closeTab(index) {
-        if (tabs[index] === activeTab) {
-          tabs.splice(index, 1);
-          activeTab = tabs[tabs.length - 1] || null;
-        } else {
-          tabs.splice(index, 1);
-        }
-        saveTabs();
-        renderTabs();
-        renderBrowser();
-        updateInputUI();
-      };
-
-      // Rendering
-      function renderTabs() {
-        tabBar.innerHTML = '';
-        tabs.forEach((url, i) => {
-          const tab = document.createElement('button');
-          try {
-            tab.textContent = new URL(url).hostname;
-          } catch (e) {
-            tab.textContent = url;
-          }
-          tab.onclick = () => switchTab(url);
-
-          const closeBtn = document.createElement('span');
-          closeBtn.textContent = ' ✕';
-          closeBtn.style.marginLeft = '8px';
-          closeBtn.style.opacity = '0.8';
-          closeBtn.onclick = (e) => {
-            e.stopPropagation();
-            closeTab(i);
-          };
-
-          tab.appendChild(closeBtn);
-          tabBar.appendChild(tab);
-        });
-      }
-
-      function renderBrowser() {
-        browserArea.innerHTML = '';
-        if (activeTab) {
-          const iframe = document.createElement('iframe');
-          iframe.src = '/s/embed.html#' + activeTab;
-          iframe.width = '100%';
-          iframe.height = '600px';
-          iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
-          browserArea.appendChild(iframe);
-        }
-      }
-
-      // First-visit interaction handlers — remove centered UI when user interacts
-      function handleInteraction() {
-        setFirstSeen();
-        updateInputUI();
-        addressInput.removeEventListener('focus', handleInteraction);
-        addressInput.removeEventListener('input', handleInteraction);
-        addressInput.removeEventListener('keydown', handleKeydown);
-      }
-
-      function handleKeydown(e) {
-        if (e.key === 'Enter') {
-          handleInteraction();
-        }
-      }
-
-      function handleDocClick(e) {
-        if (!inputContainer.contains(e.target)) {
-          setFirstSeen();
-          updateInputUI();
-          document.removeEventListener('click', handleDocClick, true);
-        }
-      }
-
-      // Init
-      (function init() {
-        addressInput.addEventListener('focus', handleInteraction, { once: true });
-        addressInput.addEventListener('input', handleInteraction, { once: true });
-        addressInput.addEventListener('keydown', handleKeydown, { once: true });
-        document.addEventListener('click', handleDocClick, { capture: true });
-
-        renderTabs();
-        renderBrowser();
-        updateInputUI();
-      })();
-
-      // Small debug API
-      window.__uv = { tabs, getActive: () => activeTab };
-    })();
+  <iframe 
+    src="/s/embed.html#https://www.startpage.com" 
+    style="width: 100%; height: 100vh; border: none;" 
+    sandbox="allow-scripts allow-same-origin allow-forms">
+  </iframe>
   </script>
 </body>
 </html>
