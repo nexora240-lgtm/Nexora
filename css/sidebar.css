@@ -1,4 +1,3 @@
-/* --- existing layout tokens and base styles --- */
 .sidebar,
 .page-frame,
 body {
@@ -13,7 +12,6 @@ body {
   --sb-surface-2: var(--surface-2, #1f1410);
   --sb-radius: 12px;
 
-  /* cookie popup tokens - removed visible border and shadow */
   --cookie-bg: linear-gradient(180deg, color-mix(in srgb, var(--sb-surface) 85%, transparent), var(--sb-surface-2));
   --cookie-border: transparent;
   --cookie-text: var(--sb-text);
@@ -23,7 +21,6 @@ body {
   --cookie-shadow: none;
 }
 
-/* --- page shell --- */
 body {
   margin: 0;
   font-family: Poppins, Arial, sans-serif;
@@ -40,7 +37,6 @@ body {
     inset 0 0 20px var(--sb-shadow);
 }
 
-/* --- sidebar --- */
 .sidebar {
   position: fixed;
   top: 0;
@@ -60,16 +56,13 @@ body {
   font-family: 'Poppins', Arial, sans-serif !important;
 }
 
-/* Make the nav a column flex container that fills the sidebar height.
-   This allows margin-top: auto on the .settings link to push it to the bottom. */
 .sidebar nav {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
-  padding-bottom: 16px; /* optional spacing from bottom */
+  padding-bottom: 16px; 
 }
 
-/* push .settings to the bottom of the nav */
 .sidebar a.settings {
   margin-top: auto;
 }
@@ -191,14 +184,10 @@ body {
   .sidebar:hover ~ .main-content { margin-left: 220px; }
 }
 
-/* Respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   .sidebar, .main-content, .sidebar a { transition: none !important; animation: none !important; }
 }
 
-/* --- cookie popup (desktop, mobile responsive, accessible) --- */
-
-/* container: visible block positioned bottom-right by default */
 #cookie-popup {
   position: fixed;
   right: 24px;
@@ -221,19 +210,16 @@ body {
   backdrop-filter: blur(6px);
 }
 
-/* explicit override to ensure no visible border or shadow from other rules */
 #cookie-popup {
   border: 1px solid transparent !important;
   box-shadow: none !important;
   backdrop-filter: none;
 }
 
-/* compact layout when sidebar expanded might overlap; ensure enough margin */
 .sidebar:hover ~ #cookie-popup {
-  right: 274px; /* main content shifts; keep popup visible */
+  right: 274px;
 }
 
-/* message area */
 #cookie-message {
   margin: 0;
   color: var(--cookie-text);
@@ -241,7 +227,6 @@ body {
   font-size: 13.5px;
 }
 
-/* actions wrapper */
 #cookie-actions {
   display: flex;
   gap: 8px;
@@ -250,7 +235,6 @@ body {
   margin-left: 8px;
 }
 
-/* primary CTA (Accept) */
 #cookie-actions button {
   border: 1px solid transparent;
   padding: 8px 12px;
@@ -263,7 +247,6 @@ body {
   transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
 }
 
-/* Accept */
 #cookie-accept {
   background: linear-gradient(90deg, color-mix(in srgb, var(--cookie-cta-bg) 14%, transparent), var(--cookie-cta-bg));
   color: var(--cookie-cta-color);
@@ -271,14 +254,12 @@ body {
   border: none;
 }
 
-/* Decline */
 #cookie-decline {
   background: transparent;
   color: var(--cookie-muted);
   border: 1px solid rgba(255,255,255,0.04);
 }
 
-/* Manage (tertiary) */
 #cookie-manage {
   background: transparent;
   color: var(--cookie-text);
@@ -286,20 +267,17 @@ body {
   font-weight: 500;
 }
 
-/* hover / focus states */
 #cookie-actions button:hover,
 #cookie-actions button:focus {
   transform: translateY(-1px);
   outline: none;
 }
 
-/* focus visible for keyboard users */
 #cookie-actions button:focus-visible {
   box-shadow: 0 0 0 3px rgba(255,200,150,0.12);
   border-color: color-mix(in srgb, var(--cookie-cta-bg) 24%, transparent);
 }
 
-/* small-screen adjustments */
 @media (max-width: 520px) {
   #cookie-popup {
     left: 12px;
@@ -322,13 +300,11 @@ body {
   #cookie-accept { order: 1; width: 100%; }
 }
 
-/* hidden state utility (JS toggles) */
 #cookie-popup[aria-hidden="true"],
 #cookie-popup.hidden {
   display: none !important;
 }
 
-/* visually reduced style if user prefers minimal UI */
 @media (prefers-reduced-motion: reduce) {
   #cookie-popup, #cookie-actions button { transition: none !important; }
 }

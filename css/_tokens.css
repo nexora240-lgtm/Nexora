@@ -1,10 +1,3 @@
-/* -----------------------------------------------------------
-   _tokens.css
-   Central design tokens and theme blocks for Nexora
-   - Include this file first in every page so components pick up tokens
-   ----------------------------------------------------------- */
-
-/* Base semantic tokens (light fallback) */
 :root {
   --page-bg: #ffffff;
   --surface: #f7f7f8;
@@ -28,12 +21,9 @@
   --contrast-high: rgba(0,0,0,0.85);
   --contrast-low: rgba(0,0,0,0.5);
 
-  /* gradients / accents can be derived from primary */
   --accent-gradient: linear-gradient(90deg, var(--primary-deep), var(--primary));
 }
 
-/* DARK THEMES - apply one theme class to the documentElement */
-/* Midnight Amber */
 .theme-midnight-amber {
   --page-bg: #0a0605;
   --surface: #1a100d;
@@ -56,7 +46,6 @@
   --accent-gradient: linear-gradient(90deg, rgba(255,77,0,1), rgba(255,106,0,1));
 }
 
-/* Midnight Blueberry */
 .theme-midnight-blueberry {
   --page-bg: #071026;
   --surface: #0d1b2a;
@@ -79,7 +68,6 @@
   --accent-gradient: linear-gradient(90deg, #3f78d1, #6ea8fe);
 }
 
-/* Midnight Grape */
 .theme-midnight-grape {
   --page-bg: #0a0812;
   --surface: #171024;
@@ -102,7 +90,6 @@
   --accent-gradient: linear-gradient(90deg, #7a4ed1, #b388ff);
 }
 
-/* LIGHT SCHEME helper: when .light-scheme is on documentElement, components should fall back to light tokens */
 .light-scheme {
   --page-bg: #ffffff;
   --surface: #f7f7f8;
@@ -125,7 +112,6 @@
   --accent-gradient: linear-gradient(90deg, #ff8a33, #ffc38a);
 }
 
-/* Utility aliases used throughout component CSS */
 .bg-page { background: var(--page-bg); color: var(--text); }
 .surface { background: var(--surface); color: var(--text); }
 .surface-2 { background: var(--surface-2); color: var(--text); }
@@ -157,5 +143,3 @@
 
 .u-gap { gap: var(--control-gap); }
 .round { border-radius: var(--radius); }
-
-/* End of token file */

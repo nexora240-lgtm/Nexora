@@ -1,5 +1,4 @@
 (function () {
-  // CONFIG
   const CODE_LEVEL_TITLES = {
     "Clever": "Clever | Portal",
     "Google Classroom": "Home",
@@ -29,10 +28,8 @@
   const COOKIE_FAV = 'nexora_favicon';
   const COOKIE_MAX_DAYS = 365;
 
-  // fallback
   const FALLBACK_NONE_FAVICON = '/assets/nexora-logo.png';
 
-  // DOM refs
   const root = document.getElementById('settingsRoot');
   if (!root) return;
   const tabs = Array.from(root.querySelectorAll('.nav-btn'));
@@ -55,12 +52,10 @@
   const downloadBtn = root.querySelector('#downloadCookie');
   const uploadBtn = root.querySelector('#uploadCookie');
 
-  // Remove the badge element entirely so no grey box appears
   if (disguiseBadge && disguiseBadge.parentNode) {
     disguiseBadge.parentNode.removeChild(disguiseBadge);
   }
 
-  // Defensive: create preview element if missing
   if (!faviconPreview) {
     const preview = document.createElement('div');
     preview.id = 'disguise-favicon-preview';
@@ -72,20 +67,16 @@
     preview.style.overflow = 'hidden';
     preview.style.display = 'inline-block';
     preview.style.verticalAlign = 'middle';
-    // Insert into disguise-preview container if present
     const container = document.getElementById('disguise-preview') || root;
-    // place at start of container (after removal of badge this keeps layout tidy)
     container.insertBefore(preview, container.firstChild);
     faviconPreview = preview;
   }
 
-  // original title + favicon
   const original = {
     title: document.title,
     faviconHref: (document.getElementById('page-favicon') || document.querySelector('link[rel~="icon"]'))?.href || ''
   };
 
-  // FAVICON_MAP (explicit preferred sources)
   const FAVICON_MAP = {
     "Clever": "/assets/favicon/clever.ico",
     "Google Classroom": "/assets/favicon/classroom.ico",
@@ -110,7 +101,6 @@
     "Khan Academy": { title: "Khan Academy", subtitle: "Free, world-class education in many subjects with practice exercises and videos." }
   };
 
-  // helpers
   function slugify(name) {
     return String(name || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-');
   }
@@ -128,7 +118,6 @@
     Array.from(document.querySelectorAll('link[rel~="icon"]')).forEach(el => el.remove());
   }
 
-  // set cookie with optional domain (pass '' or null to omit)
   function setCookie(name, value, days = COOKIE_MAX_DAYS, domain = '') {
     try {
       const expires = new Date(Date.now() + days * 864e5).toUTCString();
@@ -146,7 +135,6 @@
     } catch (e) { return ''; }
   }
 
-  // resolve source: explicit map -> local asset -> fallback
   function resolveFaviconSource(name) {
     const explicit = FAVICON_MAP && FAVICON_MAP[name];
     if (explicit) return explicit;
@@ -155,7 +143,6 @@
     return FALLBACK_NONE_FAVICON;
   }
 
-  // favicon pipeline (persist durable values only)
   let _favToken = 0;
   let _lastBlobUrl = null;
   function revokeLastBlob() { try { if (_lastBlobUrl) { URL.revokeObjectURL(_lastBlobUrl); _lastBlobUrl = null; } } catch (e) {} }
@@ -163,7 +150,6 @@
   async function setFaviconFlexible(source) {
     const token = ++_favToken;
 
-    // clear -> fallback
     if (!source) {
       try { localStorage.setItem(FAVICON_KEY, FALLBACK_NONE_FAVICON); setCookie(COOKIE_FAV, FALLBACK_NONE_FAVICON); } catch (e) {}
       revokeLastBlob(); removeAllFavicons();
@@ -172,7 +158,6 @@
       return true;
     }
 
-    // inline SVG
     if (typeof source === 'string' && source.trim().startsWith('<svg')) {
       const dataUrl = encodeSvgToDataUrl(source);
       try { localStorage.setItem(FAVICON_KEY, dataUrl); setCookie(COOKIE_FAV, dataUrl); } catch (e) {}
@@ -183,7 +168,6 @@
       return true;
     }
 
-    // data:image or local path
     if (typeof source === 'string' && (/^data:image\//i.test(source) || source.startsWith('/'))) {
       try { localStorage.setItem(FAVICON_KEY, source); setCookie(COOKIE_FAV, source); } catch (e) {}
       if (token !== _favToken) return false;
@@ -197,7 +181,6 @@
       return true;
     }
 
-    // http(s) remote -> fetch for immediate display, persist cache-busted durable URL (never store blob:)
     if (typeof source === 'string' && /^https?:\/\//i.test(source)) {
       const sep = source.includes('?') ? '&' : '?';
       const persistedHref = source + sep + '_n=' + Date.now();
@@ -225,7 +208,6 @@
       }
     }
 
-    // unknown -> fallback
     try { localStorage.setItem(FAVICON_KEY, FALLBACK_NONE_FAVICON); setCookie(COOKIE_FAV, FALLBACK_NONE_FAVICON); } catch (e) {}
     revokeLastBlob(); removeAllFavicons();
     const link = document.createElement('link'); link.rel = 'icon'; link.href = FALLBACK_NONE_FAVICON; document.head.appendChild(link);
@@ -233,7 +215,6 @@
     return true;
   }
 
-  // preview helper
   function updateFaviconPreview(src) {
     if (!faviconPreview) return;
     while (faviconPreview.firstChild) faviconPreview.removeChild(faviconPreview.firstChild);
@@ -263,7 +244,6 @@
     faviconPreview.appendChild(img);
   }
 
-  // restore appearance: prefer cookie -> localStorage -> original
   async function restoreOriginalAppearance() {
     const cookieDisguise = getCookie(COOKIE_NAME);
     const savedUserCustom = localStorage.getItem(CUSTOM_TITLE_KEY);
@@ -274,7 +254,6 @@
       else document.title = original.title || '';
     }
 
-    // prefer cookie-stored favicon then localStorage then original favicon
     const cookieFav = getCookie(COOKIE_FAV);
     const savedFavicon = cookieFav || localStorage.getItem(FAVICON_KEY) || '';
     if (savedFavicon) {
@@ -282,12 +261,10 @@
     } else if (original.faviconHref) {
       try { await setFaviconFlexible(original.faviconHref); } catch (e) { updateFaviconPreview(original.faviconHref); }
     } else {
-      // ensure preview shows fallback if no original found
       updateFaviconPreview(FALLBACK_NONE_FAVICON);
     }
   }
 
-  // apply disguise and persist both localStorage and cookie for disguise & favicon
   async function applyDisguiseToTab(disguiseName, arg2, arg3) {
     let overrideTitle, cb;
     if (typeof arg2 === 'function') { cb = arg2; overrideTitle = undefined; }
@@ -309,22 +286,18 @@
                        : (brand && brand.title ? brand.title : name)));
     if (chosenTitle) document.title = chosenTitle;
 
-    // resolve source and set
     const explicit = FAVICON_MAP && FAVICON_MAP[name];
     const source = explicit || assetFor(name) || FALLBACK_NONE_FAVICON;
 
-    // persist disguise selection (cookie + localStorage)
     try { localStorage.setItem(DISGUISE_KEY, name); } catch (e) {}
     setCookie(COOKIE_NAME, name);
 
-    // optimistic preview then set and persist favicon via setFaviconFlexible (which also sets cookie + localStorage)
     updateFaviconPreview(source);
     await setFaviconFlexible(source);
 
     if (typeof cb === 'function') cb(true);
   }
 
-  // preview only (persist disguise choice to cookie + localStorage)
   function applyDisguisePreview(disguiseName, emit = true) {
     const choice = (disguiseName || '').trim();
     try { localStorage.setItem(DISGUISE_KEY, choice); } catch (e) {}
@@ -340,7 +313,6 @@
 
     const brand = BRAND_LOGOS[choice] || {};
     if (brand.svg && typeof brand.svg === 'string' && brand.svg.trim().startsWith('<svg')) {
-      // badge removed, skip inserting SVG into badge
     }
 
     if (disguiseTitle) disguiseTitle.textContent = brand.title || choice;
@@ -357,7 +329,6 @@
     if (emit) document.dispatchEvent(new CustomEvent('settings:disguiseChanged', { detail: { disguise: choice } }));
   }
 
-  // UI wiring and small helpers (themes, toggles, export/import)
   function activate(section) {
     tabs.forEach(t => {
       const active = t.dataset.target === section;
@@ -435,7 +406,6 @@
     try { localStorage.setItem(ABOUT_KEY, JSON.stringify(!!enabled)); } catch (e) {}
     if (emitEvent) document.dispatchEvent(new CustomEvent('settings:aboutBlankToggled', { detail: { enabled: !!enabled } }));
 
-    // show/hide locked UI hint (existing behavior kept)
     if (!!enabled) {
       if (disguiseSelect) disguiseSelect.classList.add('locked');
       if (disguiseLockedNote) { disguiseLockedNote.style.display = 'block'; disguiseLockedNote.setAttribute('aria-hidden', 'false'); }
@@ -444,14 +414,11 @@
       if (disguiseLockedNote) { disguiseLockedNote.style.display = 'none'; disguiseLockedNote.setAttribute('aria-hidden', 'true'); }
     }
 
-    // NEW: open or close the about:blank iframe window
     try {
       if (enabled) {
-        // open popup and keep reference
         if (!_aboutWin || _aboutWin.closed) {
-          _aboutWin = openGameSimple(); // default URL used; override if needed
+          _aboutWin = openGameSimple();
         } else {
-          // already open - try to focus
           try { _aboutWin.focus(); } catch (e) {}
         }
       } else {
@@ -461,7 +428,6 @@
         _aboutWin = null;
       }
     } catch (e) {
-      // silent failure
     }
   }
   if (aboutToggle) {
@@ -553,7 +519,6 @@
       const inputEl = document.getElementById('customTitleInput');
       if (inputEl) inputEl.value = savedCustomTitle;
 
-      // prefer cookie-stored favicon then localStorage
       const cookieFav = getCookie(COOKIE_FAV);
       const savedFavicon = cookieFav || localStorage.getItem(FAVICON_KEY) || '';
       if (savedFavicon) { try { await setFaviconFlexible(savedFavicon); } catch (e) { updateFaviconPreview(savedFavicon); } }
@@ -564,11 +529,9 @@
     } catch (e) { /* silent */ }
   }
 
-  // init
   activate('appearance');
   try { restoreSettingsUI(); } catch (e) {}
 
-  // public API
   window.NexoraSettings = {
     applyTheme,
     applyScheme,

@@ -37,7 +37,6 @@ window.onpopstate = () => {
 const initialPath = location.pathname;
 (routes[initialPath] || renderHome)();
 
-// Render functions
 function renderHome()        { loadView('home.html'); }
 function renderMovies()      { loadView('movies.html'); }
 function renderProxy()       { loadView('proxy.html'); }
