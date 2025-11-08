@@ -28,7 +28,7 @@
   const COOKIE_FAV = 'nexora_favicon';
   const COOKIE_MAX_DAYS = 365;
 
-  const FALLBACK_NONE_FAVICON = '/assets/nexora-logo.png';
+  const FALLBACK_NONE_FAVICON = 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/nexora-logo.png';
 
   const root = document.getElementById('settingsRoot');
   if (!root) return;
@@ -78,15 +78,15 @@
   };
 
   const FAVICON_MAP = {
-    "Clever": "/assets/favicon/clever.ico",
-    "Google Classroom": "/assets/favicon/classroom.ico",
-    "Canvas": "/assets/favicon/canvas.png",
-    "Google Drive": "/assets/favicon/drive.png",
-    "Seesaw": "/assets/favicon/seesaw.jpg",
-    "Edpuzzle": "/assets/favicon/edpuzzle.png",
-    "Kahoot!": "/assets/favicon/kahoot.ico",
-    "Quizlet": "/assets/favicon/quizlet.png",
-    "Khan Academy": "/assets/favicon/khanacademy.ico"
+    "Clever": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/clever.ico",
+    "Google Classroom": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/classroom.ico",
+    "Canvas": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/canvas.png",
+    "Google Drive": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/drive.png",
+    "Seesaw": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/seesaw.jpg",
+    "Edpuzzle": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/edpuzzle.png",
+    "Kahoot!": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/kahoot.ico",
+    "Quizlet": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/quizlet.png",
+    "Khan Academy": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/khanacademy.ico"
   };
 
   const BRAND_LOGOS = {
@@ -106,7 +106,7 @@
   }
   function assetFor(name) {
     const s = slugify(name);
-    return s ? `/assets/favicon/${s}.png` : '';
+    return s ? `https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/${s}.png` : '';
   }
   function encodeSvgToDataUrl(svg) {
     if (!svg) return '';
@@ -627,9 +627,9 @@
 
 (function () {
   const LOGO_MAP = {
-    'midnight-amber': '/assets/logos/nexora-amber.png',
-    'midnight-blueberry': '/assets/logos/nexora-blueberry.png',
-    'midnight-grape': '/assets/logos/nexora-grape.png'
+    'midnight-amber': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/nexora-amber.png',
+    'midnight-blueberry': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/nexora-blueberry.png',
+    'midnight-grape': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/nexora-grape.png'
   };
 
   const FAVICON_MAP = {
@@ -638,7 +638,7 @@
     'midnight-grape': 'assets/favicon-grape.png'
   };
 
-  const DEFAULT_LOGO = '/assets/logos/nexora-bright.png';
+  const DEFAULT_LOGO = 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/nexora-bright.png';
   const DEFAULT_FAVICON = 'assets/favicon-light.png';
 
   function setLogoAndFaviconForTheme(themeId) {
