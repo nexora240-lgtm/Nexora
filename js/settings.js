@@ -460,7 +460,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = `nexora-cookies-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.json`; document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
-    } catch (e) { console.error('Export failed', e); }
+    } catch (e) {}
   }
   function importSettingsFile(file) {
     if (!file) return;
@@ -476,9 +476,9 @@
         Object.keys(parsed.settings).forEach(k => { if (typeof k !== 'string' || !k.startsWith('settings.')) return; const v = parsed.settings[k]; try { localStorage.setItem(k, String(v)); } catch (e) {} });
         restoreSettingsUI();
         document.dispatchEvent(new CustomEvent('settings:imported', { detail: { sourceFile: file.name } }));
-      } catch (err) { console.error('Import failed', err); try { alert('Failed to import settings: invalid file.'); } catch (e) {} }
+      } catch (err) { try { alert('Failed to import settings: invalid file.'); } catch (e) {} }
     };
-    reader.onerror = function () { console.error('File read error'); };
+    reader.onerror = function () {};
     reader.readAsText(file);
   }
   function openFilePickerAndImport() {
@@ -526,7 +526,7 @@
       else updateFaviconPreview(FALLBACK_NONE_FAVICON);
 
       applyDisguisePreview(savedDisguise || '', false);
-    } catch (e) { /* silent */ }
+    } catch (e) {}
   }
 
   activate('appearance');
@@ -546,7 +546,6 @@
 
 })();
 
-// --- Begin: Moved from settings.html ---
 (function () {
   if (!window._aboutWin) window._aboutWin = null;
 
@@ -702,7 +701,6 @@
   }, false);
 
   function init() {
-    // Check if a theme class is already applied to the document
     const classList = document.documentElement.classList;
     let currentTheme = null;
     
@@ -714,7 +712,6 @@
       currentTheme = 'midnight-grape';
     }
     
-    // If no theme class found, check localStorage
     if (!currentTheme) {
       currentTheme = getSavedTheme();
     }
@@ -728,4 +725,3 @@
     init();
   }
 })();
-// --- End: Moved from settings.html ---
