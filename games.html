@@ -18,6 +18,14 @@
       overflow-y: auto;
       overflow-x: hidden;
     }
+
+    /* optional minimal no-results style */
+    .no-results {
+      color: #999;
+      font-size: 1rem;
+      padding: 2rem;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -30,6 +38,7 @@
           id="searchInput"
           type="text"
           placeholder="Search Games Here..."
+          autocomplete="off"
         />
       </div>
     </div>
@@ -39,23 +48,21 @@
 
   <script>
   (async function(){
-    const resp  = await fetch('games/game-info.json');
+    // load games
+    const resp  = await fetch('game-info.json');
     const games = await resp.json();
     sessionStorage.setItem("gamesList", JSON.stringify(games));
 
+    // cursor-tracked highlight binding
     function bindCardHighlight(card) {
-      // Initialize to center so the glow doesn't jump in
       card.style.setProperty('--x', '50%');
       card.style.setProperty('--y', '50%');
 
       let rafId = null;
-
       function updateFromEvent(e) {
         const rect = card.getBoundingClientRect();
         const x = ((e.clientX - rect.left) / rect.width) * 100;
         const y = ((e.clientY - rect.top) / rect.height) * 100;
-
-        // Throttle via rAF to avoid layout thrash on fast mousemove
         if (rafId) return;
         rafId = requestAnimationFrame(() => {
           card.style.setProperty('--x', x + '%');
@@ -71,41 +78,118 @@
       }, { passive: true });
     }
 
+    // Lightweight fuzzy scoring function
+    function fuzzyScore(query, text) {
+      if (!query) return 1; // empty query matches everything
+      query = query.toLowerCase();
+      text = text.toLowerCase();
+
+      // Exact match highest
+      if (text === query) return 1000;
+
+      // Prefix / word-start boosts
+      if (text.startsWith(query)) return 500;
+      const words = text.split(/\s+/);
+      for (const w of words) {
+        if (w.startsWith(query)) return 400;
+      }
+
+      // Substring match (non-prefix) with position penalty
+      const idx = text.indexOf(query);
+      if (idx !== -1) {
+        return 300 - idx;
+      }
+
+      // Sequential character match: all query chars appear in order
+      let qIdx = 0;
+      let score = 0;
+      for (let i = 0; i < text.length && qIdx < query.length; i++) {
+        if (text[i] === query[qIdx]) {
+          // reward contiguous runs
+          let contLen = 1;
+          qIdx++;
+          while (qIdx < query.length && i + 1 < text.length && text[i + 1] === query[qIdx]) {
+            contLen++;
+            i++;
+            qIdx++;
+          }
+          score += contLen * 10;
+        }
+      }
+      if (qIdx !== query.length) return -Infinity; // not a match
+
+      // boost earlier first-char occurrence
+      const firstCharPos = text.indexOf(query[0]);
+      score += Math.max(0, 50 - firstCharPos);
+
+      return score;
+    }
+
+    // render grid with fuzzy-ranked results
     function initGames(filter = "") {
       const grid = document.getElementById("gameGrid");
       grid.innerHTML = "";
-      games
-        .filter(g => g.title.toLowerCase().includes(filter.toLowerCase()))
-        .forEach((game, index) => {
-          const card = document.createElement("div");
-          card.className = "game-card";
-          card.style.setProperty("--card-index", index); // sets stagger delay
-          card.onclick = () => {
-            sessionStorage.setItem("currentGame", JSON.stringify(game));
+
+      const candidates = games.map(g => {
+        const titleScore = fuzzyScore(filter.trim(), g.title || "");
+        // If you have tags or descriptions, compute additional scores here and take max
+        return { game: g, score: titleScore };
+      })
+      .filter(item => item.score !== -Infinity)
+      .sort((a, b) => b.score - a.score);
+
+      candidates.forEach((cand, index) => {
+        const game = cand.game;
+        const card = document.createElement("div");
+        card.className = "game-card";
+        card.style.setProperty("--card-index", index);
+        card.onclick = () => {
+          sessionStorage.setItem("currentGame", JSON.stringify(game));
+          // keep your existing navigation behavior
+          if (typeof navigate === 'function') {
             navigate('/loader');
-          };
+          } else {
+            // fallback: try location change if navigate not defined
+            try { location.href = '/loader'; } catch (e) {}
+          }
+        };
 
-          const img   = document.createElement("img");
-          img.src     = game.thumbnail;
-          img.alt     = game.title;
+        const img   = document.createElement("img");
+        img.src     = game.thumbnail;
+        img.alt     = game.title;
 
-          const title = document.createElement("div");
-          title.className   = "game-title";
-          title.textContent = game.title;
+        const title = document.createElement("div");
+        title.className   = "game-title";
+        title.textContent = game.title;
 
-          card.appendChild(img);
-          card.appendChild(title);
-          grid.appendChild(card);
+        card.appendChild(img);
+        card.appendChild(title);
+        grid.appendChild(card);
 
-          // Bind the cursor-tracked highlight to this card
-          bindCardHighlight(card);
-        });
+        bindCardHighlight(card);
+      });
+
+      if (filter && candidates.length === 0) {
+        const noCard = document.createElement("div");
+        noCard.className = "no-results";
+        noCard.textContent = `No results for "${filter}"`;
+        grid.appendChild(noCard);
+      }
     }
 
-    document
-      .getElementById("searchInput")
-      .addEventListener("input", e => initGames(e.target.value));
+    // wire input (trimmed)
+    const inputEl = document.getElementById("searchInput");
+    inputEl.addEventListener("input", e => initGames(e.target.value));
+    // optional: support pressing Escape to clear input
+    inputEl.addEventListener("keydown", e => {
+      if (e.key === 'Escape') {
+        inputEl.value = '';
+        initGames('');
+        inputEl.blur();
+      }
+    });
 
+    // initial render
     initGames();
   })();
   </script>

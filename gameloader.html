@@ -17,14 +17,18 @@
   <div class="loader-page">
     <div class="loader-wrapper">
       <div id="gameContainer"></div>
+
       <footer class="loader-footer">
         <div class="branding">
           <img src="assets/nexora-logo.png" alt="Nexora Logo" />
           <span>Nexora</span>
         </div>
-        <button id="fullscreenBtn" class="fullscreen-btn">
-          <img src="assets/full-screen-icon.svg" alt="Full Screen" />
-        </button>
+
+        <div class="controls">
+          <button id="fullscreenBtn" class="fullscreen-btn" aria-label="Toggle full screen">
+            <img src="assets/full-screen-icon.svg" alt="Full Screen" />
+          </button>
+        </div>
       </footer>
     </div>
   </div>
@@ -73,10 +77,31 @@
       const container = document.getElementById("gameContainer");
       const fsBtn     = document.getElementById("fullscreenBtn");
 
+      // Primary background (sharp)
+      const primaryBg = currentGame.thumbnail ? `url("${currentGame.thumbnail}")` : 'none';
+
+      // Secondary background (blurred). Try common property names, fallback to thumbnail if missing
+      const secondaryCandidate =
+        currentGame.thumbnail2 ||
+        currentGame.background2 ||
+        currentGame.background ||
+        currentGame.thumbnail;
+      const secondaryBg = secondaryCandidate ? `url("${secondaryCandidate}")` : 'none';
+
+      // Set CSS variables on the container for the two backgrounds
+      container.style.setProperty('--game-bg', primaryBg);
+      container.style.setProperty('--game-bg-2', secondaryBg);
+
+      // Set blur strength (visual ~70% as requested)
+      container.style.setProperty('--game-bg-blur', '12px');
+
+      // Opacity for the blurred overlay (0..1). Default 0.7 per request.
+      container.style.setProperty('--game-bg-opacity', '0.7');
+
+      // Populate the in-container UI (no title anywhere)
       container.innerHTML = `
         <div class="loader-start">
           <img src="${currentGame.thumbnail}" alt="${currentGame.title}" />
-          <h2 class="game-title">${currentGame.title}</h2>
           <button id="playBtn" class="play-btn">Play Now</button>
         </div>
       `;
@@ -89,6 +114,9 @@
         iframe.className = "game-iframe";
         container.innerHTML = "";
         container.appendChild(iframe);
+
+        // Add class so styles can adjust while playing (optional)
+        container.classList.add('is-playing');
       };
 
       fsBtn.onclick = () => {
