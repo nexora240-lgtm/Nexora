@@ -545,3 +545,177 @@
   };
 
 })();
+
+// --- Begin: Moved from settings.html ---
+(function () {
+  if (!window._aboutWin) window._aboutWin = null;
+
+  function getCurrentOrigin() {
+    const o = window.location.origin || (window.location.protocol + '//' + window.location.host);
+    return o.replace(/\/$/, '');
+  }
+
+  function openGameSimpleLocal(url) {
+    const target = (url && url.length) ? String(url).replace(/\/$/, '') : getCurrentOrigin();
+    try {
+      const win = window.open();
+      if (!win) return null;
+      try {
+        if (!win.document.body) win.document.documentElement.appendChild(win.document.createElement('body'));
+        const iframe = win.document.createElement('iframe');
+        iframe.style.width = "100%";
+        iframe.style.height = "100%";
+        iframe.style.border = "none";
+        iframe.src = target;
+        iframe.setAttribute('loading', 'eager');
+        iframe.setAttribute('referrerpolicy', 'no-referrer');
+        win.document.body.appendChild(iframe);
+      } catch (innerErr) {
+        try { win.location.href = target; } catch (navErr) {}
+      }
+      return win;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  if (!window.openGameSimple) window.openGameSimple = openGameSimpleLocal;
+
+  document.addEventListener('settings:aboutBlankToggled', function (e) {
+    try {
+      const enabled = !!(e && e.detail && e.detail.enabled);
+
+      if (enabled) {
+        if (window._aboutWin && !window._aboutWin.closed) {
+          try { window._aboutWin.focus(); } catch (err) {}
+          return;
+        }
+
+        const openedBySettings = window._aboutWin && !window._aboutWin.closed;
+        if (!openedBySettings) {
+          const w = (typeof window.openGameSimple === 'function') ? window.openGameSimple() : openGameSimpleLocal();
+          if (w) window._aboutWin = w;
+        }
+      } else {
+        if (window._aboutWin && !window._aboutWin.closed) {
+          try { window._aboutWin.close(); } catch (err) {}
+        }
+        window._aboutWin = null;
+      }
+    } catch (err) {}
+  }, false);
+
+  function openGame() {
+    var win = window.open();
+    var url = getCurrentOrigin();
+    try {
+      var iframe = win.document.createElement('iframe');
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      iframe.style.border = "none";
+      iframe.src = url;
+      win.document.body.appendChild(iframe);
+    } catch (e) {
+      try { win.location.href = url; } catch (e) {}
+    }
+    return win;
+  }
+
+  window.openGame = openGame;
+
+})();
+
+(function () {
+  const LOGO_MAP = {
+    'midnight-amber': '/assets/logos/nexora-amber.png',
+    'midnight-blueberry': '/assets/logos/nexora-blueberry.png',
+    'midnight-grape': '/assets/logos/nexora-grape.png'
+  };
+
+  const FAVICON_MAP = {
+    'midnight-amber': 'assets/favicon-amber.png',
+    'midnight-blueberry': 'assets/favicon-blueberry.png',
+    'midnight-grape': 'assets/favicon-grape.png'
+  };
+
+  const DEFAULT_LOGO = '/assets/logos/nexora-bright.png';
+  const DEFAULT_FAVICON = 'assets/favicon-light.png';
+
+  function setLogoAndFaviconForTheme(themeId) {
+    const isLight = document.documentElement.classList.contains('light-scheme');
+    
+    let logo, favicon;
+    
+    if (isLight) {
+      logo = DEFAULT_LOGO;
+      favicon = DEFAULT_FAVICON;
+    } else {
+      logo = (themeId && LOGO_MAP[themeId]) ? LOGO_MAP[themeId] : DEFAULT_LOGO;
+      favicon = (themeId && FAVICON_MAP[themeId]) ? FAVICON_MAP[themeId] : DEFAULT_FAVICON;
+    }
+
+    try {
+      const localSidebarImg = document.querySelector('.sidebar-title img') || document.querySelector('img[alt="Nexora Logo"]');
+      if (localSidebarImg && localSidebarImg.src.indexOf(logo) === -1) {
+        localSidebarImg.src = logo;
+      }
+
+      const localFavicon = document.getElementById('favicon');
+      if (localFavicon && localFavicon.href.indexOf(favicon) === -1) {
+        localFavicon.href = favicon;
+      }
+
+      try {
+        if (window.opener && !window.opener.closed && window.opener.document) {
+          const opImg = window.opener.document.querySelector('.sidebar-title img') || window.opener.document.querySelector('img[alt="Nexora Logo"]');
+          if (opImg && opImg.src.indexOf(logo) === -1) {
+            opImg.src = logo;
+          }
+
+          const opFavicon = window.opener.document.getElementById('favicon');
+          if (opFavicon && opFavicon.href.indexOf(favicon) === -1) {
+            opFavicon.href = favicon;
+          }
+        }
+      } catch (e) {
+      }
+    } catch (err) {
+    }
+  }
+
+  function getSavedTheme() {
+    try { return localStorage.getItem('settings.theme'); } catch (e) { return null; }
+  }
+
+  document.addEventListener('settings:themeChanged', function (e) {
+    try {
+      const theme = e && e.detail && e.detail.theme;
+      setLogoAndFaviconForTheme(theme);
+    } catch (err) {}
+  }, false);
+
+  document.addEventListener('settings:colorSchemeChanged', function (e) {
+    try {
+      const saved = getSavedTheme();
+      setLogoAndFaviconForTheme(saved);
+    } catch (err) {}
+  }, false);
+
+  function init() {
+    const restored = document.documentElement.getAttribute('data-restored-theme');
+    if (restored && restored !== 'default' && restored !== 'light') {
+      setLogoAndFaviconForTheme(restored);
+      return;
+    }
+
+    const saved = getSavedTheme();
+    setLogoAndFaviconForTheme(saved || null);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+// --- End: Moved from settings.html ---

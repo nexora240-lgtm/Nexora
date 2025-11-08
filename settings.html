@@ -14,12 +14,57 @@
   <title>Settings</title>
   <link rel="stylesheet" href="/css/_tokens.css" />
   <link rel="stylesheet" href="/css/settings.css" />
-  <link id="page-favicon" rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><rect width='100%' height='100%' fill='%23888' rx='6'/></svg>">
+  <link rel="icon" type="image/png" id="favicon" href="assets/favicon-light.png">
   <style>
-    #disguise-badge svg { width:48px; height:48px; height:48px; display:block; }
+    #disguise-badge svg { width:48px; height:48px; display:block; }
     .favicon-thumb { width:40px; height:40px; border-radius:6px; object-fit:cover; display:block; }
     .hidden-note { font-size:13px; color:var(--muted,#6b6b6b); margin-top:8px; }
     .locked { opacity:0.6; pointer-events:none; }
+
+    .panel {
+      transition: none !important;
+      -webkit-transition: none !important;
+      -moz-transition: none !important;
+      -o-transition: none !important;
+    }
+
+    .partner-list { display:flex; flex-direction:column; gap:12px; margin-top:10px; }
+    .partner-item {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px;
+      border-radius:8px;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--settings-panel) 3%, #000 0%), transparent);
+      border:1px dashed color-mix(in srgb, var(--settings-panel) 4%, #000 0%);
+      gap:12px;
+    }
+    .partner-item .partner-info { display:flex; gap:12px; align-items:center; max-width:78%; }
+    .partner-item .partner-name { font-weight:700; color:var(--settings-accent); margin:0; }
+    .partner-item .partner-desc { margin-top:4px; font-size:13px; color:var(--settings-muted); }
+
+    .partner-btn {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:8px;
+      background: linear-gradient(90deg, var(--settings-accent-deep), var(--settings-accent));
+      color:var(--settings-on-accent);
+      font-weight:700;
+      text-decoration:none;
+      border:0;
+      cursor:pointer;
+      transition: transform .12s, box-shadow .12s, opacity .12s;
+      will-change: transform, box-shadow;
+    }
+    .partner-btn svg { width:14px; height:14px; fill:currentColor; }
+
+    @media (max-width:920px) {
+      .partner-item { flex-direction:column; align-items:flex-start; }
+      .partner-item .partner-info { max-width:100%; }
+      .partner-item > div:last-child { width:100%; display:flex; justify-content:flex-end; margin-top:8px; }
+    }
   </style>
 </head>
 <body>
@@ -152,11 +197,11 @@
             <p class="description">Utility links and tools related to this project.</p>
 
             <div class="subsection" style="padding:10px;">
-              <h3 style="margin:0;font-size:15px;color:var(--primary-accent);font-weight:600;">Cookies</h3>
-              <p class="description" style="margin-top:6px;">Export and import data to preserve progress across links.</p>
+              <h3 style="margin:0;font-size:15px;color:var(--primary-accent);font-weight:600;">Data</h3>
+              <p class="description" style="margin-top:6px;">Export and import data to preserve progress in-case website gets blocked</p>
               <div class="row" style="margin-top:8px;">
-                <a class="blank-link" id="downloadCookie" role="button" href="#" aria-label="Download settings">Download Cookie</a>
-                <a class="blank-link" id="uploadCookie" role="button" style="background:transparent;border:1px solid var(--surface);color:var(--muted);" href="#" aria-label="Upload settings">Upload Cookie</a>
+                <a class="blank-link" id="downloadCookie" role="button" href="#" aria-label="Download settings">Download Data</a>
+                <a class="blank-link" id="uploadCookie" role="button" style="background:transparent;border:1px solid var(--surface);color:var(--muted);" href="#" aria-label="Upload settings">Upload Data</a>
               </div>
             </div>
 
@@ -194,6 +239,34 @@
               </div>
             </div>
 
+            <div style="height:12px;"></div>
+
+            <div class="subsection" style="padding:10px;">
+              <div class="partners-block" role="region" aria-labelledby="partners-title">
+                <div class="partners-info">
+                  <p id="partners-title" class="policy-title">Partners</p>
+                  <p class="description" style="margin-top:6px;">Projects that collaborate with or support this project.</p>
+                </div>
+
+                <div class="partner-list">
+                  <div class="partner-item" role="group" aria-label="Partner Demon">
+                    <div class="partner-info">
+                      <div class="partner-logo" aria-hidden="true">
+                        <img src="/assets/partners/demon.png" alt="" class="favicon-thumb" style="width:36px;height:36px;border-radius:6px;">
+                      </div>
+                      <div>
+                        <div class="partner-name">Demon</div>
+                        <div class="partner-desc">Totally Educational Games and much more at Demon.</div>
+                      </div>
+                    </div>
+                    <div>
+                      <a class="policy-btn" role="button" href="https://demonzero.lat/" target="_blank" rel="noopener noreferrer" aria-label="Open Demon">Visit</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </section>
       </div>
@@ -201,85 +274,5 @@
   </div>
 
   <script src="/js/settings.js"></script>
-
-<script>
-(function () {
-  if (!window._aboutWin) window._aboutWin = null;
-
-  function getCurrentOrigin() {
-    const o = window.location.origin || (window.location.protocol + '//' + window.location.host);
-    return o.replace(/\/$/, '');
-  }
-
-  function openGameSimpleLocal(url) {
-    const target = (url && url.length) ? String(url).replace(/\/$/, '') : getCurrentOrigin();
-    try {
-      const win = window.open();
-      if (!win) return null;
-      try {
-        if (!win.document.body) win.document.documentElement.appendChild(win.document.createElement('body'));
-        const iframe = win.document.createElement('iframe');
-        iframe.style.width = "100%";
-        iframe.style.height = "100%";
-        iframe.style.border = "none";
-        iframe.src = target;
-        iframe.setAttribute('loading', 'eager');
-        iframe.setAttribute('referrerpolicy', 'no-referrer');
-        win.document.body.appendChild(iframe);
-      } catch (innerErr) {
-        try { win.location.href = target; } catch (navErr) {}
-      }
-      return win;
-    } catch (err) {
-      return null;
-    }
-  }
-
-  if (!window.openGameSimple) window.openGameSimple = openGameSimpleLocal;
-
-  document.addEventListener('settings:aboutBlankToggled', function (e) {
-    try {
-      const enabled = !!(e && e.detail && e.detail.enabled);
-
-      if (enabled) {
-        if (window._aboutWin && !window._aboutWin.closed) {
-          try { window._aboutWin.focus(); } catch (err) {}
-          return;
-        }
-
-        const openedBySettings = window._aboutWin && !window._aboutWin.closed;
-        if (!openedBySettings) {
-          const w = (typeof window.openGameSimple === 'function') ? window.openGameSimple() : openGameSimpleLocal();
-          if (w) window._aboutWin = w;
-        }
-      } else {
-        if (window._aboutWin && !window._aboutWin.closed) {
-          try { window._aboutWin.close(); } catch (err) {}
-        }
-        window._aboutWin = null;
-      }
-    } catch (err) {}
-  }, false);
-
-  function openGame() {
-    var win = window.open();
-    var url = getCurrentOrigin();
-    try {
-      var iframe = win.document.createElement('iframe');
-      iframe.style.width = "100%";
-      iframe.style.height = "100%";
-      iframe.style.border = "none";
-      iframe.src = url;
-      win.document.body.appendChild(iframe);
-    } catch (e) {
-      try { win.location.href = url; } catch (e) {}
-    }
-    return win;
-  }
-
-  window.openGame = openGame;
-
-})();
-</script>
 </body>
 </html>

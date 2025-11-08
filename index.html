@@ -14,7 +14,7 @@
   <title>Nexora</title>
   <meta name="description" content="Nexora Learning Hub — interactive educational tools and tutorials for middle and high school students." />
   <link rel="canonical" href="https://thenexoraproject.xyz/" />
-  <link rel="icon" href="assets/nexora-logo.png" type="image/x-icon" />
+  <link rel="icon" type="image/png" id="favicon" href="assets/favicon-light.png">
 
   <script src="/js/nexora-boot.js"></script>
 
@@ -79,7 +79,7 @@
     "@type": "EducationalOrganization",
     "name": "Nexora Learning Hub",
     "url": "https://thenexoraproject.xyz",
-    "logo": "https://thenexoraproject.xyz/assets/nexora-logo.png",
+    "logo": "https://thenexoraproject.xyz//assets/logos/nexora-bright.png",
     "description": "An online platform offering interactive educational tools and tutorials for students.",
     "foundingDate": "2025",
     "address": {
@@ -108,8 +108,8 @@
   <div class="page-frame">
     <aside class="sidebar" aria-label="Main navigation">
       <div class="sidebar-title">
-        <img src="assets/nexora-logo.png" alt="Nexora Logo" />
-        <span>Nexora 4.0</span>
+        <img src="/assets/logos/nexora-bright.png" alt="Nexora Logo" />
+        <span>Nexora 4.6</span>
       </div>
       <nav aria-label="Primary">
         <a href="#" data-route="/home"><i class="fas fa-home" aria-hidden="true"></i><span>Home</span></a>
@@ -166,15 +166,17 @@
 
   <script>
   (function () {
-    var KEY = 'nexora.cookie_consent'; // 'accepted' | 'declined' | null
+    var KEY = 'nexora.cookie_consent';
 
     function safeGet() {
       try { return localStorage.getItem(KEY); } catch (e) { return null; }
     }
 
     function safeSet(v) {
-      try { localStorage.setItem(KEY, v); } catch (e) {}
-      document.dispatchEvent(new CustomEvent('cookie:consentChanged', { detail: { consent: v } }));
+      try { 
+        localStorage.setItem(KEY, v); 
+        document.dispatchEvent(new CustomEvent('cookie:consentChanged', { detail: { consent: v } }));
+      } catch (e) {}
     }
 
     function show() {
@@ -182,7 +184,6 @@
       if (!el) return;
       el.style.display = 'block';
       el.removeAttribute('aria-hidden');
-      // simple focus hint
       var accept = document.getElementById('cookie-accept');
       if (accept) accept.focus();
     }
@@ -205,18 +206,15 @@
       safeSet('accepted');
       hide();
       document.dispatchEvent(new CustomEvent('cookie:accepted'));
-      // place enablement code for analytics or non-essential features here
     });
 
     document.getElementById('cookie-decline').addEventListener('click', function () {
       safeSet('declined');
       hide();
       document.dispatchEvent(new CustomEvent('cookie:declined'));
-      // place disablement code for analytics or non-essential features here
     });
 
     document.getElementById('cookie-manage').addEventListener('click', function () {
-      // Minimal manage UI using prompt/confirm to avoid introducing CSS or new markup
       var allow = window.confirm('Allow non-essential cookies? Press OK to accept, Cancel to decline.');
       if (allow) {
         safeSet('accepted');
@@ -228,7 +226,6 @@
       hide();
     });
 
-    // Programmatic API
     window.NexoraCookies = {
       getConsent: function () { return safeGet(); },
       setConsent: function (v) { if (v === 'accepted' || v === 'declined') { safeSet(v); } },
@@ -237,10 +234,8 @@
   })();
   </script>
 
-  <!-- Particles.js integration -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Create background container if missing
       if (!document.getElementById('particles-js')) {
         var div = document.createElement('div');
         div.id = 'particles-js';
@@ -249,16 +244,14 @@
         div.style.left = '0';
         div.style.width = '100%';
         div.style.height = '100%';
-        div.style.zIndex = '-1';          // behind all content
-        div.style.pointerEvents = 'none'; // do not block interactions
+        div.style.zIndex = '-1';
+        div.style.pointerEvents = 'none';
         document.body.appendChild(div);
       }
 
-      // Load particles.js from CDN
       var script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js';
       script.onload = function() {
-        // JSON configuration (inline)
         var cfg = {
           "particles": {
             "number": {
@@ -287,11 +280,11 @@
               }
             },
             "opacity": {
-              "value": 0.30719304325908214,
-              "random": true,
+              "value": 0.1,
+              "random": false,
               "anim": {
                 "enable": false,
-                "speed": 1,
+                "speed": 0.1,
                 "opacity_min": 0.1,
                 "sync": false
               }
@@ -310,7 +303,7 @@
               "enable": false,
               "distance": 150,
               "color": "#ffffff",
-              "opacity": 0.4,
+              "opacity": 0.1,
               "width": 1
             },
             "move": {
@@ -370,10 +363,61 @@
           "retina_detect": true
         };
 
-        // Initialize particles
         particlesJS('particles-js', cfg);
       };
       document.head.appendChild(script);
+    });
+  </script>
+
+  <script>
+    const LOGO_MAP = {
+      'midnight-amber': '/assets/logos/nexora-amber.png',
+      'midnight-blueberry': '/assets/logos/nexora-blueberry.png',
+      'midnight-grape': '/assets/logos/nexora-grape.png'
+    };
+
+    const FAVICON_MAP = {
+      'midnight-amber': 'assets/favicon-amber.png',
+      'midnight-blueberry': 'assets/favicon-blueberry.png',
+      'midnight-grape': 'assets/favicon-grape.png'
+    };
+
+    const DEFAULT_LOGO = '/assets/logos/nexora-amber.png';
+    const DEFAULT_FAVICON = 'assets/favicon-amber.png';
+
+    function updateLogoAndFavicon() {
+      const logo = document.querySelector('.sidebar-title img');
+      const favicon = document.getElementById('favicon');
+      
+      const isLight = document.documentElement.classList.contains('light-scheme');
+      
+      if (isLight) {
+        if (logo) logo.src = DEFAULT_LOGO;
+        if (favicon) favicon.href = DEFAULT_FAVICON;
+      } else {
+        let savedTheme = null;
+        try {
+          savedTheme = localStorage.getItem('settings.theme');
+        } catch (e) {}
+
+        const logoSrc = (savedTheme && LOGO_MAP[savedTheme]) ? LOGO_MAP[savedTheme] : DEFAULT_LOGO;
+        const faviconHref = (savedTheme && FAVICON_MAP[savedTheme]) ? FAVICON_MAP[savedTheme] : DEFAULT_FAVICON;
+
+        if (logo) logo.src = logoSrc;
+        if (favicon) favicon.href = faviconHref;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      updateLogoAndFavicon();
+    });
+
+    document.addEventListener('settings:colorSchemeChanged', function(e) {
+      updateLogoAndFavicon();
+    });
+
+    document.addEventListener('settings:themeChanged', function(e) {
+      updateLogoAndFavicon();
     });
   </script>
 </body>
