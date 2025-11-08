@@ -58,8 +58,6 @@ body {
   top: 0;
   z-index: 10;
   padding: 12px;
-  background: linear-gradient(to bottom, color-mix(in srgb, var(--g-panel) 85%, transparent), transparent);
-  backdrop-filter: saturate(120%) blur(2px);
   animation: fadeSlideUp 0.3s ease-out;
 }
 
@@ -126,6 +124,10 @@ body {
   will-change: transform, box-shadow;
   transform-origin: center;
 
+  /* enable 3D transforms */
+  perspective: 1000px;
+  transform-style: preserve-3d;
+
   /* don't reserve visible border space when idle — keeps card layout stable
      but lets the ring sit outside when displayed (via absolute ::after) */
   padding: 2px;
@@ -155,24 +157,20 @@ body {
 .game-card::before {
   content: "";
   position: absolute;
-  inset: 6px;
+  inset: 0;
   pointer-events: none;
-  border-radius: calc(var(--g-radius) - 6px);
+  border-radius: var(--g-radius);
   background-image:
-    linear-gradient(115deg,
-      color-mix(in srgb, var(--g-accent) 30%, transparent) 0%,
-      color-mix(in srgb, var(--g-accent-deep) 18%, transparent) 40%,
-      transparent 100%),
     radial-gradient(
       var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
-      color-mix(in srgb, var(--g-accent) 48%, transparent) 0%,
-      color-mix(in srgb, var(--g-accent) 18%, transparent) 30%,
+      color-mix(in srgb, var(--g-accent) 20%, transparent) 0%,
+      color-mix(in srgb, var(--g-accent) 10%, transparent) 30%,
       transparent 68%
     );
-  background-blend-mode: screen, normal;
   opacity: 0;
   transition: opacity 140ms ease-out, background-position 160ms ease-out, transform 200ms ease-out;
   will-change: background-position, opacity, transform;
+  z-index: 1;
 }
 
 /* animated gradient ring border using conic-gradient + mask
@@ -208,7 +206,11 @@ body {
 
 /* Hover states: card grows, border appears and thickens, glow intensifies */
 .game-card:hover {
-  transform: translateY(-10px) scale(var(--card-scale-hover));
+  transform: 
+    translateY(-10px) 
+    scale(var(--card-scale-hover))
+    rotateX(calc((var(--y, 50) - 50) * -0.15deg))
+    rotateY(calc((var(--x, 50) - 50) * 0.15deg));
   box-shadow:
     0 28px 72px color-mix(in srgb, var(--g-accent) 36%, transparent),
     0 10px 40px rgba(0,0,0,0.5);
@@ -217,22 +219,22 @@ body {
 
 /* active press behaviour */
 .game-card:active {
-  transform: translateY(-6px) scale(var(--card-scale-hover-lift));
+  transform: 
+    translateY(-6px) 
+    scale(var(--card-scale-hover-lift))
+    rotateX(calc((var(--y, 50) - 50) * -0.1deg))
+    rotateY(calc((var(--x, 50) - 50) * 0.1deg));
 }
 
 /* reveal and intensify inner highlight */
 .game-card:hover::before {
   opacity: 1;
-  transform: scale(1.02);
+  transform: scale(1.0);
   background-image:
-    linear-gradient(115deg,
-      color-mix(in srgb, var(--g-accent) 42%, transparent) 0%,
-      color-mix(in srgb, var(--g-accent-deep) 26%, transparent) 40%,
-      transparent 100%),
     radial-gradient(
       var(--glow-size-hover) circle at var(--x, 50%) var(--y, 50%),
-      color-mix(in srgb, var(--g-accent) 62%, transparent) 0%,
-      color-mix(in srgb, var(--g-accent) 28%, transparent) 28%,
+      color-mix(in srgb, var(--g-accent) 45%, transparent) 0%,
+      color-mix(in srgb, var(--g-accent) 22%, transparent) 28%,
       transparent 70%
     );
   transition: opacity 120ms ease-out, transform 180ms cubic-bezier(.2,.9,.2,1), background-position 160ms ease-out;
@@ -273,8 +275,10 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: calc(var(--g-radius) - 6px);
+  border-radius: var(--g-radius);
   transition: border-radius 180ms ease-out;
+  position: relative;
+  z-index: 0;
 }
 
 /* Title overlay */
@@ -291,6 +295,8 @@ body {
   text-shadow: 0 1px 2px color-mix(in srgb, black 60%, transparent);
   font-size: 1.05rem;
   animation: fadeIn 0.4s ease-out 0.3s backwards;
+  z-index: 2;
+  border-radius: 0 0 var(--g-radius) var(--g-radius);
 }
 
 /* Respect reduced motion */

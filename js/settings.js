@@ -702,14 +702,24 @@
   }, false);
 
   function init() {
-    const restored = document.documentElement.getAttribute('data-restored-theme');
-    if (restored && restored !== 'default' && restored !== 'light') {
-      setLogoAndFaviconForTheme(restored);
-      return;
+    // Check if a theme class is already applied to the document
+    const classList = document.documentElement.classList;
+    let currentTheme = null;
+    
+    if (classList.contains('theme-midnight-amber')) {
+      currentTheme = 'midnight-amber';
+    } else if (classList.contains('theme-midnight-blueberry')) {
+      currentTheme = 'midnight-blueberry';
+    } else if (classList.contains('theme-midnight-grape')) {
+      currentTheme = 'midnight-grape';
     }
-
-    const saved = getSavedTheme();
-    setLogoAndFaviconForTheme(saved || null);
+    
+    // If no theme class found, check localStorage
+    if (!currentTheme) {
+      currentTheme = getSavedTheme();
+    }
+    
+    setLogoAndFaviconForTheme(currentTheme || 'midnight-amber');
   }
 
   if (document.readyState === 'loading') {

@@ -2,7 +2,10 @@
 .page-frame,
 body {
   --sb-page-bg: var(--page-bg, #0a0605);
-  --sb-sidebar-bg: var(--sidebar-bg, linear-gradient(to bottom, color-mix(in srgb, var(--primary-accent, #992f05) 12%, var(--surface, #1a100d)), var(--surface)));
+  --sb-sidebar-bg: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--primary-accent, #992f05) 8%, transparent),
+    color-mix(in srgb, var(--surface, #1a100d) 35%, transparent) 50%,
+    color-mix(in srgb, var(--primary-deep, #661f03) 12%, transparent));
   --sb-accent: var(--primary-accent, #992f05);
   --sb-accent-deep: var(--primary-deep, #992f05);
   --sb-shadow: var(--primary-shadow, rgba(212,85,10,0.45));
@@ -29,31 +32,178 @@ body {
 }
 
 .page-frame {
-  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
   box-sizing: border-box;
-  display: flex;
   box-shadow:
     0 0 20px var(--sb-shadow),
     inset 0 0 20px var(--sb-shadow);
+  background: linear-gradient(180deg, var(--sb-page-bg), color-mix(in srgb, var(--sb-page-bg) 24%, #000 0%));
+  z-index: 0;
+  pointer-events: none;
+}
+
+.page-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
 }
 
 .sidebar {
   position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
+  top: 12px;
+  left: 12px;
+  height: calc(100vh - 24px);
   width: 60px;
   display: flex;
   flex-direction: column;
   background: var(--sb-sidebar-bg);
-  background-color: var(--sb-surface);
-  overflow-x: hidden;
+  background-color: color-mix(in srgb, var(--sb-surface) 25%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  overflow: hidden;
   transition: width 0.3s ease;
   padding-top: 20px;
-  box-shadow: 0 0 20px var(--sb-shadow);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
   z-index: 1000;
   color: var(--sb-text);
   font-family: 'Poppins', Arial, sans-serif !important;
+  pointer-events: auto;
+  
+  /* cursor tracking variables */
+  --x: 50%;
+  --y: 50%;
+  --glow-size: 300px;
+  --glow-size-hover: 400px;
+  --glow-strength: 0.35;
+}
+
+/* deep back glow layer for sidebar */
+.sidebar .sidebar-glow {
+  position: absolute;
+  inset: -24px;
+  border-radius: calc(20px + 24px);
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(24px);
+  opacity: 0;
+  transition: opacity 220ms ease-out, transform 220ms cubic-bezier(.2,.9,.2,1);
+  background: radial-gradient(
+    circle at var(--x, 50%) var(--y, 50%),
+    color-mix(in srgb, var(--sb-accent) var(--glow-strength), transparent) 0%,
+    color-mix(in srgb, var(--sb-accent-deep) 20%, transparent) 35%,
+    transparent 70%
+  );
+  transform: scale(0.98);
+  will-change: opacity, transform, background-position;
+}
+
+/* cursor-tracked inner highlight for sidebar */
+.sidebar::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  pointer-events: none;
+  border-radius: 16px;
+  background-image:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--sb-accent) 8%, transparent) 0%,
+      color-mix(in srgb, var(--sb-accent-deep) 5%, transparent) 40%,
+      transparent 100%),
+    radial-gradient(
+      var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--sb-accent) 18%, transparent) 0%,
+      color-mix(in srgb, var(--sb-accent) 8%, transparent) 30%,
+      transparent 68%
+    );
+  background-blend-mode: screen, normal;
+  opacity: 0;
+  transition: opacity 140ms ease-out, background-position 160ms ease-out;
+  will-change: background-position, opacity;
+  z-index: 0;
+}
+
+/* animated gradient ring border for sidebar */
+.sidebar::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  pointer-events: none;
+  border-radius: calc(20px + 4px);
+  background: conic-gradient(
+    from 180deg at var(--x, 50%) var(--y, 50%),
+    var(--sb-accent),
+    color-mix(in srgb, var(--sb-accent) 70%, var(--sb-accent-deep) 30%),
+    var(--sb-accent-deep),
+    color-mix(in srgb, var(--sb-accent) 70%, var(--sb-accent-deep) 30%),
+    var(--sb-accent)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  padding: 0;
+  opacity: 0 !important;
+  transform: scale(0.995);
+  transition: opacity 160ms ease-out, transform 220ms cubic-bezier(.2,.9,.2,1), padding 200ms ease-out, background-position 200ms ease-out;
+  will-change: opacity, transform, padding, background-position;
+  z-index: -1;
+}
+
+/* reveal effects on sidebar hover */
+.sidebar:hover::before {
+  opacity: 0.6;
+  background-image:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--sb-accent) 12%, transparent) 0%,
+      color-mix(in srgb, var(--sb-accent-deep) 8%, transparent) 40%,
+      transparent 100%),
+    radial-gradient(
+      var(--glow-size-hover) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--sb-accent) 24%, transparent) 0%,
+      color-mix(in srgb, var(--sb-accent) 12%, transparent) 28%,
+      transparent 70%
+    );
+  transition: opacity 120ms ease-out, background-position 160ms ease-out;
+}
+
+.sidebar:hover::after {
+  opacity: 0 !important;
+  transform: scale(1.005);
+  padding: 4px;
+  inset: calc(-4px - 4px);
+  background: conic-gradient(
+    from 180deg at var(--x, 50%) var(--y, 50%),
+    var(--sb-accent),
+    color-mix(in srgb, var(--sb-accent) 60%, var(--sb-accent-deep) 40%),
+    var(--sb-accent-deep),
+    color-mix(in srgb, var(--sb-accent) 60%, var(--sb-accent-deep) 40%),
+    var(--sb-accent)
+  );
+  transition: opacity 160ms ease-out, transform 200ms cubic-bezier(.2,.9,.2,1), padding 180ms ease-out, background-position 180ms ease-out, inset 180ms ease-out;
+}
+
+.sidebar:hover .sidebar-glow {
+  opacity: 1;
+  transform: scale(1.01);
+  background: radial-gradient(
+    circle at var(--x, 50%) var(--y, 50%),
+    color-mix(in srgb, var(--sb-accent) calc(var(--glow-strength) + 0.10), transparent) 0%,
+    color-mix(in srgb, var(--sb-accent-deep) 28%, transparent) 28%,
+    transparent 76%
+  );
 }
 
 .sidebar nav {
@@ -61,6 +211,10 @@ body {
   flex-direction: column;
   flex: 1 1 auto;
   padding-bottom: 16px; 
+  position: relative;
+  z-index: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .sidebar a.settings {
@@ -72,13 +226,21 @@ body {
 }
 
 .main-content {
-  margin-left: 60px;
   flex: 1;
   padding: 20px;
-  transition: margin-left 0.3s ease;
+  transition: left 0.3s ease;
+  overflow-y: auto;
+  height: 100vh;
+  box-sizing: border-box;
+  pointer-events: auto;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 84px;
+  z-index: 1;
 }
 .sidebar:hover ~ .main-content {
-  margin-left: 250px;
+  left: 274px;
 }
 
 .sidebar-title {
@@ -97,7 +259,7 @@ body {
   height: 40px;
   border-radius: 8px;
   margin-bottom: 8px;
-  box-shadow: 0 0 10px var(--sb-shadow);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .sidebar-title span {
@@ -122,8 +284,11 @@ body {
   color: var(--sb-text);
   border-radius: var(--sb-radius);
   margin: 8px 10px;
-  background: color-mix(in srgb, var(--sb-surface) 70%, transparent);
-  box-shadow: -5px -5px 10px rgba(255,255,255,0.02);
+  background: color-mix(in srgb, var(--sb-surface) 40%, transparent);
+  box-shadow: 
+    -3px -3px 8px rgba(255, 255, 255, 0.03),
+    3px 3px 8px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
   white-space: nowrap;
   overflow: hidden;
   line-height: 1;
@@ -134,14 +299,20 @@ body {
   justify-content: center;
   padding: 10px 0;
   gap: 0;
-  box-shadow: none;
+  box-shadow: 
+    -2px -2px 6px rgba(255, 255, 255, 0.03),
+    2px 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .sidebar a:hover,
 .sidebar a:focus {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--sb-accent) 18%, transparent), var(--sb-accent));
-  transform: scale(1.05);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--sb-shadow) 80%, transparent);
+  background: color-mix(in srgb, var(--sb-accent) 25%, color-mix(in srgb, var(--sb-surface) 50%, transparent));
+  transform: scale(1.02);
+  box-shadow: 
+    -1px -1px 4px rgba(255, 255, 255, 0.04),
+    1px 1px 4px rgba(0, 0, 0, 0.5),
+    inset -2px -2px 6px rgba(0, 0, 0, 0.3),
+    inset 2px 2px 6px rgba(255, 255, 255, 0.02);
   color: var(--on-primary, #fff0e8);
   outline: none;
 }
@@ -178,14 +349,25 @@ body {
 }
 
 @media (max-width: 720px) {
-  .sidebar { width: 56px; }
+  .sidebar { 
+    width: 56px;
+    top: 8px;
+    left: 8px;
+    height: calc(100vh - 16px);
+  }
   .sidebar:hover { width: 220px; }
-  .main-content { margin-left: 56px; }
-  .sidebar:hover ~ .main-content { margin-left: 220px; }
+  .main-content { left: 76px; }
+  .sidebar:hover ~ .main-content { left: 240px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .sidebar, .main-content, .sidebar a { transition: none !important; animation: none !important; }
+  .sidebar::before,
+  .sidebar::after,
+  .sidebar .sidebar-glow {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 #cookie-popup {
@@ -217,7 +399,7 @@ body {
 }
 
 .sidebar:hover ~ #cookie-popup {
-  right: 274px;
+  right: 298px;
 }
 
 #cookie-message {

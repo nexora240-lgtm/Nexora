@@ -107,9 +107,10 @@
 <body>
   <div class="page-frame">
     <aside class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-glow"></div>
       <div class="sidebar-title">
         <img src="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/nexora-bright.png" alt="Nexora Logo" />
-        <span>Nexora 4.6</span>
+        <span>Nexora</span>
       </div>
       <nav aria-label="Primary">
         <a href="#" data-route="/home"><i class="fas fa-home" aria-hidden="true"></i><span>Home</span></a>
@@ -419,6 +420,35 @@
     document.addEventListener('settings:themeChanged', function(e) {
       updateLogoAndFavicon();
     });
+  </script>
+
+  <script>
+    // Sidebar cursor tracking
+    (function() {
+      const sidebar = document.querySelector('.sidebar');
+      if (!sidebar) return;
+
+      let rafId = null;
+
+      function updateFromEvent(e) {
+        const rect = sidebar.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        
+        if (rafId) return;
+        rafId = requestAnimationFrame(() => {
+          sidebar.style.setProperty('--x', x + '%');
+          sidebar.style.setProperty('--y', y + '%');
+          rafId = null;
+        });
+      }
+
+      sidebar.addEventListener('mousemove', updateFromEvent);
+      sidebar.addEventListener('mouseleave', () => {
+        sidebar.style.setProperty('--x', '50%');
+        sidebar.style.setProperty('--y', '50%');
+      }, { passive: true });
+    })();
   </script>
 </body>
 </html>

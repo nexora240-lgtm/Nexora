@@ -15,57 +15,6 @@
   <link rel="stylesheet" href="/css/_tokens.css" />
   <link rel="stylesheet" href="/css/settings.css" />
   <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/favicon-light.png">
-  <style>
-    #disguise-badge svg { width:48px; height:48px; display:block; }
-    .favicon-thumb { width:40px; height:40px; border-radius:6px; object-fit:cover; display:block; }
-    .hidden-note { font-size:13px; color:var(--muted,#6b6b6b); margin-top:8px; }
-    .locked { opacity:0.6; pointer-events:none; }
-
-    .panel {
-      transition: none !important;
-      -webkit-transition: none !important;
-      -moz-transition: none !important;
-      -o-transition: none !important;
-    }
-
-    .partner-list { display:flex; flex-direction:column; gap:12px; margin-top:10px; }
-    .partner-item {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:10px;
-      border-radius:8px;
-      background: linear-gradient(180deg, color-mix(in srgb, var(--settings-panel) 3%, #000 0%), transparent);
-      border:1px dashed color-mix(in srgb, var(--settings-panel) 4%, #000 0%);
-      gap:12px;
-    }
-    .partner-item .partner-info { display:flex; gap:12px; align-items:center; max-width:78%; }
-    .partner-item .partner-name { font-weight:700; color:var(--settings-accent); margin:0; }
-    .partner-item .partner-desc { margin-top:4px; font-size:13px; color:var(--settings-muted); }
-
-    .partner-btn {
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 12px;
-      border-radius:8px;
-      background: linear-gradient(90deg, var(--settings-accent-deep), var(--settings-accent));
-      color:var(--settings-on-accent);
-      font-weight:700;
-      text-decoration:none;
-      border:0;
-      cursor:pointer;
-      transition: transform .12s, box-shadow .12s, opacity .12s;
-      will-change: transform, box-shadow;
-    }
-    .partner-btn svg { width:14px; height:14px; fill:currentColor; }
-
-    @media (max-width:920px) {
-      .partner-item { flex-direction:column; align-items:flex-start; }
-      .partner-item .partner-info { max-width:100%; }
-      .partner-item > div:last-child { width:100%; display:flex; justify-content:flex-end; margin-top:8px; }
-    }
-  </style>
 </head>
 <body>
   <div class="settings-root" id="settingsRoot" aria-live="polite">
