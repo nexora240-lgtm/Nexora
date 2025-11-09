@@ -29,7 +29,6 @@
   flex-direction: column;
   gap: 22px;
   align-items: flex-start;
-  background: linear-gradient(180deg, var(--settings-page-bg), color-mix(in srgb, var(--settings-page-bg) 24%, #000 0%));
   /* scrolling safety */
   max-height: 100vh;
   overflow: auto;

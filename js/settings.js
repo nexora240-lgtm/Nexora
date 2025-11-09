@@ -201,7 +201,7 @@
       } catch (err) {
         if (token !== _favToken) return false;
         revokeLastBlob(); removeAllFavicons();
-        const link = document.createElement('link'); link.rel = 'icon'; href = persistedHref; document.head.appendChild(link);
+        const link = document.createElement('link'); link.rel = 'icon'; link.href = persistedHref; document.head.appendChild(link);
         try { localStorage.setItem(FAVICON_KEY, persistedHref); setCookie(COOKIE_FAV, persistedHref); } catch (e) {}
         updateFaviconPreview(persistedHref);
         return true;

@@ -66,6 +66,7 @@ body {
   align-items: center;
   padding: 80px 20px 20px;
   background: var(--g-page-bg);
+  min-height: 100vh;
 }
 
 .loader-wrapper {
@@ -81,6 +82,7 @@ body {
   width: 100%;
   max-width: 1200px;
   aspect-ratio: 16 / 9;
+  min-height: 400px; /* Add minimum height */
   background: var(--glass-bg);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
