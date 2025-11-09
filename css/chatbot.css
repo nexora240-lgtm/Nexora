@@ -111,60 +111,190 @@ html, body { height: 100%; }
 
 .nexora .code {
   margin: 10px 0;
-  border-radius: 10px;
+  border-radius: var(--radius);
   overflow: hidden;
-  background: var(--panel);
-  border: 1px solid color-mix(in srgb, var(--panel) 8%, #000 0%);
+  background: color-mix(in srgb, var(--panel) 40%, transparent);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid color-mix(in srgb, var(--orange) 20%, transparent);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 0 0 1px color-mix(in srgb, var(--orange) 10%, transparent) inset;
+  transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+}
+
+.nexora .code:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--orange) 35%, transparent);
+  box-shadow: 
+    0 12px 48px var(--orange-shadow),
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 0 0 1px color-mix(in srgb, var(--orange) 15%, transparent) inset;
 }
 
 .nexora .code-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--panel-2);
-  padding: 8px 10px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--panel-2) 60%, transparent),
+    color-mix(in srgb, var(--panel) 40%, transparent)
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 12px 16px;
   gap: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--orange) 15%, transparent);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .nexora .code-lang {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--orange);
-  letter-spacing: .2px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  text-shadow: 
+    0 0 10px var(--orange-shadow),
+    0 2px 4px rgba(0, 0, 0, 0.5);
+  filter: drop-shadow(0 0 8px var(--orange-shadow));
 }
 
 .nexora .copy-btn {
   appearance: none;
   border: 0;
-  background: transparent;
-  padding: 4px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--orange) 15%, transparent),
+    color-mix(in srgb, var(--orange-deep) 12%, transparent)
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 7px 12px;
   margin: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  transition: background .15s ease, transform .05s ease;
+  transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--orange);
+  gap: 6px;
+  border: 1px solid color-mix(in srgb, var(--orange) 25%, transparent);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
-.nexora .copy-btn:hover { background: color-mix(in srgb, var(--panel) 12%, transparent); }
-.nexora .copy-btn:active { transform: scale(0.96); }
+
+.nexora .copy-btn:hover {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--orange) 25%, transparent),
+    color-mix(in srgb, var(--orange-deep) 20%, transparent)
+  );
+  border-color: color-mix(in srgb, var(--orange) 40%, transparent);
+  box-shadow: 
+    0 4px 16px var(--orange-shadow),
+    0 0 20px var(--orange-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.nexora .copy-btn:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 
+    0 1px 4px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
 
 .nexora .copy-btn img {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   display: block;
-  filter: none; 
+  opacity: 0.9;
+  transition: opacity .3s ease;
+}
+
+.nexora .copy-btn:hover img {
+  opacity: 1;
 }
 
 .nexora pre {
   margin: 0;
-  padding: 12px;
-  background: transparent;
+  padding: 18px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--page-bg) 60%, transparent),
+    color-mix(in srgb, var(--panel) 50%, transparent)
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--orange) 60%, transparent) color-mix(in srgb, var(--panel) 30%, transparent);
+  box-shadow: 
+    inset 0 2px 8px rgba(0, 0, 0, 0.4),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.02);
 }
-.nexora code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+.nexora pre::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+
+.nexora pre::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--panel) 30%, transparent);
+  backdrop-filter: blur(5px);
+  border-radius: 5px;
+}
+
+.nexora pre::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--orange) 70%, transparent),
+    color-mix(in srgb, var(--orange-deep) 60%, transparent)
+  );
+  border-radius: 5px;
+  border: 1px solid color-mix(in srgb, var(--orange) 30%, transparent);
+  box-shadow: 0 0 8px var(--orange-shadow);
+}
+
+.nexora pre::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--orange) 90%, transparent),
+    color-mix(in srgb, var(--orange-deep) 80%, transparent)
+  );
+  box-shadow: 0 0 12px var(--orange-shadow);
+}
+
+/* Inline code styling */
+.nexora .bot-chunk code {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--orange) 15%, transparent),
+    color-mix(in srgb, var(--orange-deep) 10%, transparent)
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--orange);
+  padding: 3px 8px;
+  border-radius: 6px;
   font-size: 13px;
+  border: 1px solid color-mix(in srgb, var(--orange) 25%, transparent);
+  box-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  text-shadow: 0 0 8px var(--orange-shadow);
 }
 
 .nexora .footer {
