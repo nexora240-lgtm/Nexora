@@ -59,7 +59,7 @@
       let m;
       while((m = re.exec(text)) !== null){
         const preText = text.slice(last, m.index).trim();
-        if(preText) html += `<div class="bot-chunk">${escapeHtml(preText)}</div>`;
+        if(preText) html += `<div class="bot-chunk">${formatMarkdown(preText)}</div>`;
 
         const langRaw = m[1] || "";
         const langLabel = formatLang(langRaw);
@@ -70,7 +70,10 @@
             <div class="code-header">
               <span class="code-lang">${escapeHtml(langLabel)}</span>
               <button class="copy-btn" title="Copy">
-                <img src="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/icons/share-icon.svg" alt="Copy">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
               </button>
             </div>
             <pre><code class="language-${escapeHtml(langRaw)}">${escapeHtml(code)}</code></pre>
@@ -80,8 +83,36 @@
       }
 
       const postText = text.slice(last).trim();
-      if(postText) html += `<div class="bot-chunk">${escapeHtml(postText)}</div>`;
+      if(postText) html += `<div class="bot-chunk">${formatMarkdown(postText)}</div>`;
 
+      return html;
+    }
+
+    function formatMarkdown(text){
+      let html = escapeHtml(text);
+      
+      // Headings: ### text
+      html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+      html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+      html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+      
+      // Bold: **text** or __text__
+      html = html.replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+      
+      // Italic: *text* or _text_
+      html = html.replace(/\*([^\*]+)\*/g, '<em>$1</em>');
+      html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
+      
+      // Inline code: `code`
+      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+      
+      // Links: [text](url)
+      html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+      
+      // Line breaks
+      html = html.replace(/\n/g, '<br>');
+      
       return html;
     }
 
@@ -115,7 +146,7 @@
 
       const name = document.createElement("div");
       name.className = "bot-name";
-      name.textContent = "Llama 3.3 70B";
+      name.textContent = "Gemini 2.5 Pro";
 
       const body = document.createElement("div");
       body.innerHTML = markup;
@@ -213,7 +244,7 @@
 
       const name = document.createElement('div');
       name.className = 'bot-name';
-      name.textContent = 'Llama 3.3 70B';
+      name.textContent = 'Gemini 2.5 Pro';
 
       const body = document.createElement('div');
       body.innerHTML = `<div class="typing-indicator"><div class="loader" aria-hidden="true"></div><div>Typing...</div></div>`;
@@ -262,21 +293,39 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: "meta-llama/llama-3.3-70b-instruct:free",
-            messages: [{ role: "user", content: prompt }]
+            model: "google/gemini-2.5-pro:byok",
+            messages: [
+              { role: "system", content: "You are a AI assistant dont over do it. Use emojis in your responses, dont over do it. Use markdown formatting and struture your responses VERY CLEAR"},
+              { role: "user", content: prompt }
+            ]
           })
         });
 
+        if (!res.ok) {
+          let errorDetail = `HTTP ${res.status}`;
+          try {
+            const errorData = await res.json();
+            errorDetail = errorData.error || errorData.message || errorDetail;
+          } catch {
+            const errorText = await res.text();
+            if (errorText) errorDetail = errorText;
+          }
+          throw new Error(errorDetail);
+        }
+
         const data = await res.json();
-        const reply = data.choices?.[0]?.message?.content || "API Error";
-        const markup = renderReplyWithCode(reply);
+        const reply = data.choices?.[0]?.message?.content || data.error || "API Error";
+        const replyStr = String(reply || "");
+        const markup = renderReplyWithCode(replyStr);
 
         hideTypingIndicator(root);
         addBotMessage(markup, root);
 
       } catch (err) {
         hideTypingIndicator(root);
-        addBotMessage(`<div class="bot-chunk">Error: ${escapeHtml(err?.message || String(err))}</div>`, root);
+        const errorMsg = err?.message || String(err);
+        console.error("Fetch error:", err);
+        addBotMessage(`<div class="bot-chunk"><strong>Error:</strong> ${escapeHtml(errorMsg)}</div>`, root);
       } finally {
         sendEl.classList.remove("typing");
         sendEl.textContent = oldLabel;
