@@ -229,14 +229,16 @@ body {
   flex: 1;
   padding: 20px;
   transition: left 0.3s ease;
-  overflow-y: visible;
-  height: 100vh;
+  overflow-y: auto; /* changed from visible */
+  overflow-x: hidden;
+  min-height: 100vh;
   box-sizing: border-box;
   pointer-events: auto;
-  position: fixed;
+  position: absolute; /* changed from fixed */
   top: 0;
   right: 0;
   left: 84px;
+  bottom: 0; /* add bottom: 0 */
   z-index: 1;
 }
 .sidebar:hover ~ .main-content {

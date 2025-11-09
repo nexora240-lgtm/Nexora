@@ -15,52 +15,180 @@
       location.href = "/";
       </script>
   <link rel="stylesheet" href="css/movies.css">
+  <style>
+    .movies-page-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 20px;
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .movies-ad-container {
+      width: 160px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 20px;
+      align-self: flex-start;
+    }
+
+    .movies-content {
+      flex: 1;
+      max-width: 980px;
+      min-width: 0;
+    }
+
+    .movies-banner-ad {
+      width: 100%;
+      max-width: 980px;
+      margin: 20px auto 40px;
+      padding: 0 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    @media (max-width: 1400px) {
+      .movies-ad-container {
+        display: none;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="vidplus-movies app mode-movie" data-view="movies" role="application" aria-label="VidPlus embed preview">
-    <div class="top">
-      <div class="tabs" role="tablist" aria-label="Content type">
-        <div class="tab active" data-type="movie" role="tab" tabindex="0">Movie</div>
-        <div class="tab" data-type="tv" role="tab" tabindex="0">Series</div>
-        <div class="tab" data-type="anime" role="tab" tabindex="0">Anime</div>
-      </div>
+  <div class="movies-page-wrapper">
+    <!-- Left Ad -->
+    <div class="movies-ad-container">
+      <div id="leftMovieAdContainer"></div>
+    </div>
 
-      <div class="controls">
-        <div class="controls-inner" style="width:100%">
-          <div class="field searchWrap">
-            <label for="search">Search title</label>
-            <input id="search" type="search" placeholder="Type movie or series name, e.g. Superman" aria-label="Search title" autocomplete="off">
-            <div id="results" class="results" style="display:none"></div>
+    <!-- Movies Content -->
+    <div class="movies-content">
+      <div class="vidplus-movies app mode-movie" data-view="movies" role="application" aria-label="VidPlus embed preview">
+        <div class="top">
+          <div class="tabs" role="tablist" aria-label="Content type">
+            <div class="tab active" data-type="movie" role="tab" tabindex="0">Movie</div>
+            <div class="tab" data-type="tv" role="tab" tabindex="0">Series</div>
+            <div class="tab" data-type="anime" role="tab" tabindex="0">Anime</div>
           </div>
 
-          <div class="field seasonField" id="seasonField" style="display:none">
-            <label for="seasonEp">Season / Episode</label>
-            <input id="seasonEp" type="text" placeholder="e.g. 1/1" aria-label="Season and Episode">
-          </div>
+          <div class="controls">
+            <div class="controls-inner" style="width:100%">
+              <div class="field searchWrap">
+                <label for="search">Search title</label>
+                <input id="search" type="search" placeholder="Type movie or series name, e.g. Superman" aria-label="Search title" autocomplete="off">
+                <div id="results" class="results" style="display:none"></div>
+              </div>
 
-          <div class="playHolder">
-            <button id="previewBtn" class="btn-unified">Play</button>
+              <div class="field seasonField" id="seasonField" style="display:none">
+                <label for="seasonEp">Season / Episode</label>
+                <input id="seasonEp" type="text" placeholder="e.g. 1/1" aria-label="Season and Episode">
+              </div>
+
+              <div class="playHolder">
+                <button id="previewBtn" class="btn-unified">Play</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="previewWrap" id="previewWrap" aria-live="polite">
+          <div id="msg" class="msg">Search for a title, click a result, then Play</div>
+
+          <iframe
+            id="playerFrame"
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+            referrerpolicy="no-referrer"
+            title="VidPlus player preview"
+            style="display:none"></iframe>
+
+          <div id="fallback" class="fallback" style="display:none">
+            <div style="color:var(--muted)">Player could not load in iframe. Open in a new tab to view or check embedding restrictions.</div>
+            <button id="openBtn" class="btn-unified">Open player in new tab</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="previewWrap" id="previewWrap" aria-live="polite">
-      <div id="msg" class="msg">Search for a title, click a result, then Play</div>
-
-      <iframe
-        id="playerFrame"
-        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-        referrerpolicy="no-referrer"
-        title="VidPlus player preview"
-        style="display:none"></iframe>
-
-      <div id="fallback" class="fallback" style="display:none">
-        <div style="color:var(--muted)">Player could not load in iframe. Open in a new tab to view or check embedding restrictions.</div>
-        <button id="openBtn" class="btn-unified">Open player in new tab</button>
-      </div>
+    <!-- Right Ad -->
+    <div class="movies-ad-container">
+      <div id="rightMovieAdContainer"></div>
     </div>
   </div>
+
+  <!-- Banner Ad Below Movies -->
+  <div class="movies-banner-ad">
+    <div id="moviesBannerAdContainer"></div>
+  </div>
+
+  <script type="text/javascript">
+    // Load left ad immediately
+    (function() {
+      var container = document.getElementById('leftMovieAdContainer');
+      var script1 = document.createElement('script');
+      script1.type = 'text/javascript';
+      script1.innerHTML = `
+        atOptions = {
+          'key' : 'c1f3208965def858cc7daea4d7e8de4b',
+          'format' : 'iframe',
+          'height' : 600,
+          'width' : 160,
+          'params' : {}
+        };
+      `;
+      container.appendChild(script1);
+      
+      var script2 = document.createElement('script');
+      script2.type = 'text/javascript';
+      script2.src = '//www.highperformanceformat.com/c1f3208965def858cc7daea4d7e8de4b/invoke.js';
+      container.appendChild(script2);
+    })();
+
+    // Load right ad with slight delay
+    setTimeout(function() {
+      var container = document.getElementById('rightMovieAdContainer');
+      var script1 = document.createElement('script');
+      script1.type = 'text/javascript';
+      script1.innerHTML = `
+        atOptions = {
+          'key' : 'c1f3208965def858cc7daea4d7e8de4b',
+          'format' : 'iframe',
+          'height' : 600,
+          'width' : 160,
+          'params' : {}
+        };
+      `;
+      container.appendChild(script1);
+      
+      var script2 = document.createElement('script');
+      script2.type = 'text/javascript';
+      script2.src = '//www.highperformanceformat.com/c1f3208965def858cc7daea4d7e8de4b/invoke.js';
+      container.appendChild(script2);
+    }, 500);
+
+    // Load banner ad below movies
+    setTimeout(function() {
+      var container = document.getElementById('moviesBannerAdContainer');
+      var script1 = document.createElement('script');
+      script1.type = 'text/javascript';
+      script1.innerHTML = `
+        atOptions = {
+          'key' : '88ed04e42f466cc97ec5c8c7cc0735d5',
+          'format' : 'iframe',
+          'height' : 90,
+          'width' : 728,
+          'params' : {}
+        };
+      `;
+      container.appendChild(script1);
+      
+      var script2 = document.createElement('script');
+      script2.type = 'text/javascript';
+      script2.src = '//www.highperformanceformat.com/88ed04e42f466cc97ec5c8c7cc0735d5/invoke.js';
+      container.appendChild(script2);
+    }, 1000);
+  </script>
 
   <script>
 (function safeInit(){
