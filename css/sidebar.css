@@ -229,7 +229,7 @@ body {
   flex: 1;
   padding: 20px;
   transition: left 0.3s ease;
-  overflow-y: auto;
+  overflow-y: visible;
   height: 100vh;
   box-sizing: border-box;
   pointer-events: auto;

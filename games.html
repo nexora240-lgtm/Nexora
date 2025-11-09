@@ -26,6 +26,35 @@
       padding: 2rem;
       text-align: center;
     }
+
+    /* Ad layout container */
+    .content-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 20px;
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .ad-container {
+      width: 160px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 80px;
+    }
+
+    .grid {
+      flex: 1;
+      max-width: 1200px;
+    }
+
+    @media (max-width: 1400px) {
+      .ad-container {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -44,7 +73,38 @@
     </div>
   </div>
 
-  <div class="grid" id="gameGrid"></div>
+  <div class="content-wrapper">
+    <!-- Left Ad -->
+    <div class="ad-container">
+      <script type="text/javascript">
+        atOptions = {
+          'key' : 'c1f3208965def858cc7daea4d7e8de4b',
+          'format' : 'iframe',
+          'height' : 600,
+          'width' : 160,
+          'params' : {}
+        };
+      </script>
+      <script type="text/javascript" src="//www.highperformanceformat.com/c1f3208965def858cc7daea4d7e8de4b/invoke.js"></script>
+    </div>
+
+    <!-- Game Grid -->
+    <div class="grid" id="gameGrid"></div>
+
+    <!-- Right Ad -->
+    <div class="ad-container">
+      <script type="text/javascript">
+        atOptions = {
+          'key' : 'c1f3208965def858cc7daea4d7e8de4b',
+          'format' : 'iframe',
+          'height' : 600,
+          'width' : 160,
+          'params' : {}
+        };
+      </script>
+      <script type="text/javascript" src="//www.highperformanceformat.com/c1f3208965def858cc7daea4d7e8de4b/invoke.js"></script>
+    </div>
+  </div>
 
   <script>
   (async function(){
