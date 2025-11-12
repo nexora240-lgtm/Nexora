@@ -43,6 +43,7 @@
   const schemeInput = root.querySelector('#schemeToggleInput');
   const aboutToggle = root.querySelector('#aboutToggle');
   const aboutInput = root.querySelector('#aboutToggleInput');
+  const autoCloakStatus = root.querySelector('#auto-cloak-status');
   const disguiseSelect = root.querySelector('#disguiseSelect');
   const disguiseBadge = document.getElementById('disguise-badge');
   const disguiseTitle = document.getElementById('disguise-title');
@@ -409,19 +410,18 @@
     if (!!enabled) {
       if (disguiseSelect) disguiseSelect.classList.add('locked');
       if (disguiseLockedNote) { disguiseLockedNote.style.display = 'block'; disguiseLockedNote.setAttribute('aria-hidden', 'false'); }
+      if (autoCloakStatus) { autoCloakStatus.style.display = 'block'; }
     } else {
       if (disguiseSelect) disguiseSelect.classList.remove('locked');
       if (disguiseLockedNote) { disguiseLockedNote.style.display = 'none'; disguiseLockedNote.setAttribute('aria-hidden', 'true'); }
+      if (autoCloakStatus) { autoCloakStatus.style.display = 'none'; }
     }
 
+    // Don't automatically open window when toggling in settings
+    // The auto-cloaking will happen on next page load via nexora-boot.js
     try {
-      if (enabled) {
-        if (!_aboutWin || _aboutWin.closed) {
-          _aboutWin = openGameSimple();
-        } else {
-          try { _aboutWin.focus(); } catch (e) {}
-        }
-      } else {
+      if (!enabled) {
+        // If disabling, close any existing about:blank window
         if (_aboutWin && !_aboutWin.closed) {
           try { _aboutWin.close(); } catch (e) {}
         }
@@ -565,9 +565,17 @@
         iframe.style.width = "100%";
         iframe.style.height = "100%";
         iframe.style.border = "none";
+        iframe.style.margin = "0";
+        iframe.style.padding = "0";
+        iframe.style.position = "absolute";
+        iframe.style.top = "0";
+        iframe.style.left = "0";
         iframe.src = target;
         iframe.setAttribute('loading', 'eager');
         iframe.setAttribute('referrerpolicy', 'no-referrer');
+        win.document.body.style.margin = "0";
+        win.document.body.style.padding = "0";
+        win.document.body.style.overflow = "hidden";
         win.document.body.appendChild(iframe);
       } catch (innerErr) {
         try { win.location.href = target; } catch (navErr) {}

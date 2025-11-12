@@ -148,6 +148,9 @@
 
   <script>
   (async function(){
+    // Detect if animations are disabled or not working
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
     // load games
     const resp  = await fetch('game-info.json');
     const games = await resp.json();
@@ -267,6 +270,17 @@
         grid.appendChild(card);
 
         bindCardHighlight(card);
+        
+        // Force visibility if animations are disabled or not supported
+        if (prefersReducedMotion) {
+          card.style.opacity = '1';
+          card.style.transform = 'none';
+        } else {
+          // Fallback: ensure card is visible after animation should complete
+          setTimeout(() => {
+            card.classList.add('loaded');
+          }, 600 + (index * 80)); // match animation duration + stagger
+        }
       });
 
       if (filter && candidates.length === 0) {

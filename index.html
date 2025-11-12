@@ -20,6 +20,7 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/_tokens.css" />
+  <link rel="stylesheet" href="css/first-time-modal.css" />
   <script>
     (function () {
       try {
@@ -127,6 +128,7 @@
 
   <script src="js/views.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/first-time-visitor.js"></script>
 
   <script>
     window._nexoraTheme = {
@@ -154,85 +156,6 @@
         document.dispatchEvent(new CustomEvent('settings:colorSchemeChanged', { detail: { scheme: scheme } }));
       }
     };
-  </script>
-
-  <div id="cookie-popup" role="dialog" aria-live="polite" aria-label="Cookie consent" aria-modal="false" style="display:none;">
-    <p id="cookie-message">We use cookies to save your progress. Do you accept essential cookies?</p>
-    <div id="cookie-actions">
-      <button id="cookie-accept" type="button">Accept</button>
-      <button id="cookie-decline" type="button">Decline</button>
-      <button id="cookie-manage" type="button">Manage</button>
-    </div>
-  </div>
-
-  <script>
-  (function () {
-    var KEY = 'nexora.cookie_consent';
-
-    function safeGet() {
-      try { return localStorage.getItem(KEY); } catch (e) { return null; }
-    }
-
-    function safeSet(v) {
-      try { 
-        localStorage.setItem(KEY, v); 
-        document.dispatchEvent(new CustomEvent('cookie:consentChanged', { detail: { consent: v } }));
-      } catch (e) {}
-    }
-
-    function show() {
-      var el = document.getElementById('cookie-popup');
-      if (!el) return;
-      el.style.display = 'block';
-      el.removeAttribute('aria-hidden');
-      var accept = document.getElementById('cookie-accept');
-      if (accept) accept.focus();
-    }
-
-    function hide() {
-      var el = document.getElementById('cookie-popup');
-      if (!el) return;
-      el.style.display = 'none';
-      el.setAttribute('aria-hidden', 'true');
-    }
-
-    var current = safeGet();
-    if (current === 'accepted' || current === 'declined') {
-      hide();
-    } else {
-      show();
-    }
-
-    document.getElementById('cookie-accept').addEventListener('click', function () {
-      safeSet('accepted');
-      hide();
-      document.dispatchEvent(new CustomEvent('cookie:accepted'));
-    });
-
-    document.getElementById('cookie-decline').addEventListener('click', function () {
-      safeSet('declined');
-      hide();
-      document.dispatchEvent(new CustomEvent('cookie:declined'));
-    });
-
-    document.getElementById('cookie-manage').addEventListener('click', function () {
-      var allow = window.confirm('Allow non-essential cookies? Press OK to accept, Cancel to decline.');
-      if (allow) {
-        safeSet('accepted');
-        document.dispatchEvent(new CustomEvent('cookie:accepted'));
-      } else {
-        safeSet('declined');
-        document.dispatchEvent(new CustomEvent('cookie:declined'));
-      }
-      hide();
-    });
-
-    window.NexoraCookies = {
-      getConsent: function () { return safeGet(); },
-      setConsent: function (v) { if (v === 'accepted' || v === 'declined') { safeSet(v); } },
-      resetConsent: function () { try { localStorage.removeItem(KEY); } catch (e) {} document.dispatchEvent(new CustomEvent('cookie:reset')); show(); }
-    };
-  })();
   </script>
 
   <script>
