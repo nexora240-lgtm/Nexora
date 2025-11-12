@@ -1,0 +1,542 @@
+/* First-Time Visitor Modal Styles */
+
+#first-time-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+#first-time-modal {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 32px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  border: 1px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+#first-time-modal h2 {
+  margin: 0 0 0.5rem 0;
+  color: transparent;
+  background: var(--accent-gradient, linear-gradient(90deg, var(--primary-deep), var(--primary)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-fill-color: transparent;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+#first-time-modal .subtitle {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.disguise-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.disguise-option {
+  background: var(--surface-2);
+  border: 2px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  text-align: center;
+  position: relative;
+}
+
+.disguise-option:hover {
+  border-color: var(--primary);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 30px var(--primary-shadow);
+}
+
+.disguise-option.selected {
+  background: var(--surface);
+  border: 2px solid var(--primary-deep);
+  box-shadow: 0 8px 22px var(--primary-shadow);
+}
+
+.disguise-option .icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 0.75rem;
+  border-radius: 8px;
+  background: var(--page-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--surface) 20%, #000 0%);
+}
+
+.disguise-option .icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.disguise-option .name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.disguise-option .checkmark {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  background: var(--primary);
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-primary);
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.disguise-option.selected .checkmark {
+  display: flex;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 1.5rem;
+  border-top: 1px dashed color-mix(in srgb, var(--surface) 6%, #000 0%);
+}
+
+.modal-actions button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  will-change: transform, box-shadow;
+}
+
+.modal-actions .btn-skip {
+  background: var(--surface-2);
+  color: var(--muted);
+  border: 1px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
+}
+
+.modal-actions .btn-skip:hover {
+  background: var(--surface);
+  color: var(--text);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--primary-shadow) 60%, transparent);
+}
+
+.modal-actions .btn-continue {
+  background: linear-gradient(90deg, var(--primary-deep), var(--primary));
+  color: var(--on-primary);
+}
+
+.modal-actions .btn-continue:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 30px var(--primary-shadow);
+}
+
+.modal-actions .btn-continue:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.modal-actions .btn-continue:active,
+.modal-actions .btn-skip:active {
+  transform: translateY(1px);
+}
+
+/* Scrollbar styling for modal */
+#first-time-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+#first-time-modal::-webkit-scrollbar-track {
+  background: var(--surface-2);
+  border-radius: 4px;
+}
+
+#first-time-modal::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+#first-time-modal::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-deep);
+}
+
+/* Light theme adjustments */
+.light-scheme #first-time-modal {
+  background: var(--surface);
+  border-color: color-mix(in srgb, var(--surface) 40%, #000 0%);
+}
+
+.light-scheme .disguise-option {
+  background: var(--surface-2);
+  border-color: color-mix(in srgb, var(--surface) 40%, #000 0%);
+}
+
+.light-scheme .disguise-option .icon {
+  background: var(--page-bg);
+  border: 1px solid color-mix(in srgb, var(--surface) 20%, #000 0%);
+}
+
+.light-scheme #first-time-modal .subtitle {
+  color: var(--muted);
+}
+
+.light-scheme .disguise-option .name {
+  color: var(--text);
+}
+
+.light-scheme .modal-actions {
+  border-top-color: color-mix(in srgb, var(--surface) 6%, #000 0%);
+}
+
+/* About:blank Cloaking Modal */
+#cloaking-modal {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 32px;
+  max-width: 550px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  border: 1px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
+}
+
+#cloaking-modal h2 {
+  margin: 0 0 0.5rem 0;
+  color: transparent;
+  background: var(--accent-gradient, linear-gradient(90deg, var(--primary-deep), var(--primary)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+#cloaking-modal .subtitle {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.cloaking-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.cloaking-option {
+  background: var(--surface-2);
+  border: 2px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
+  border-radius: 12px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  position: relative;
+}
+
+.cloaking-option:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--primary-shadow) 60%, transparent);
+}
+
+.cloaking-option.selected {
+  background: var(--surface);
+  border: 2px solid var(--primary-deep);
+  box-shadow: 0 8px 22px var(--primary-shadow);
+}
+
+.cloaking-option .option-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.cloaking-option .icon-wrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--primary-deep), var(--primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--on-primary);
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px var(--primary-shadow);
+}
+
+.cloaking-option .option-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.cloaking-option .option-description {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+  padding-left: 48px;
+}
+
+.cloaking-option .checkmark-radio {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 24px;
+  height: 24px;
+  border: 2px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+}
+
+.cloaking-option.selected .checkmark-radio {
+  background: linear-gradient(90deg, var(--primary-deep), var(--primary));
+  border-color: var(--primary-deep);
+  box-shadow: 0 4px 12px var(--primary-shadow);
+}
+
+.cloaking-option .checkmark-radio::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--on-primary);
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.2s ease;
+}
+
+.cloaking-option.selected .checkmark-radio::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Cookie Consent Modal */
+#cookie-consent-modal {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 24px;
+  max-width: 550px;
+  max-height: 85vh;
+  width: 90%;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  border: 1px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
+}
+
+#cookie-consent-modal h2 {
+  margin: 0 0 0.5rem 0;
+  color: transparent;
+  background: var(--accent-gradient, linear-gradient(90deg, var(--primary-deep), var(--primary)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+#cookie-consent-modal .subtitle {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.cookie-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.cookie-option {
+  background: var(--surface-2);
+  border: 2px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
+  border-radius: 12px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  position: relative;
+}
+
+.cookie-option:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--primary-shadow) 60%, transparent);
+}
+
+.cookie-option.selected {
+  background: var(--surface);
+  border: 2px solid var(--primary-deep);
+  box-shadow: 0 8px 22px var(--primary-shadow);
+}
+
+.cookie-option .option-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.cookie-option .icon-wrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--primary-deep), var(--primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--on-primary);
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px var(--primary-shadow);
+}
+
+.cookie-option .option-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.cookie-option .option-description {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+  padding-left: 48px;
+}
+
+.cookie-option .consequences-list {
+  margin: 8px 0 0 48px;
+  padding: 0;
+  list-style: none;
+}
+
+.cookie-option .consequences-list li {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 4px;
+}
+
+.cookie-option .consequences-list li::before {
+  content: '•';
+  position: absolute;
+  left: 6px;
+  color: var(--primary);
+  font-weight: bold;
+}
+
+.cookie-option .warning-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--primary) 20%, transparent);
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 48px;
+  margin-top: 6px;
+}
+
+.cookie-option .checkmark-radio {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 24px;
+  height: 24px;
+  border: 2px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+}
+
+.cookie-option.selected .checkmark-radio {
+  background: linear-gradient(90deg, var(--primary-deep), var(--primary));
+  border-color: var(--primary-deep);
+  box-shadow: 0 4px 12px var(--primary-shadow);
+}
+
+.cookie-option .checkmark-radio::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--on-primary);
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.12s ease;
+}
+
+.cookie-option.selected .checkmark-radio::after {
+  opacity: 1;
+  transform: scale(1);
+}
