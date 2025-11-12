@@ -91,10 +91,36 @@
     function formatMarkdown(text){
       let html = escapeHtml(text);
       
-      // Headings: ### text
+      // Horizontal rules: --- or *** or ___
+      html = html.replace(/^(\-{3,}|\*{3,}|_{3,})$/gm, '<hr>');
+      
+      // Headings: # to ######
+      html = html.replace(/^###### (.+)$/gm, '<h6>$1</h6>');
+      html = html.replace(/^##### (.+)$/gm, '<h5>$1</h5>');
+      html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
       html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
       html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
       html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+      
+      // Blockquotes: > text
+      html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+      
+      // Tables (basic support)
+      html = html.replace(/^\|(.+)\|$/gm, (match, content) => {
+        const cells = content.split('|').map(c => c.trim()).filter(c => c);
+        const isHeaderSeparator = cells.every(c => /^[\-:]+$/.test(c));
+        if (isHeaderSeparator) return '';
+        const tag = cells.every(c => /^[\-:]+$/.test(c)) ? 'th' : 'td';
+        return '<tr>' + cells.map(c => `<${tag}>${c}</${tag}>`).join('') + '</tr>';
+      });
+      html = html.replace(/(<tr>.*?<\/tr>\s*)+/g, match => `<table>${match}</table>`);
+      
+      // Strikethrough: ~~text~~
+      html = html.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+      
+      // Bold + Italic: ***text*** or ___text___
+      html = html.replace(/\*\*\*([^\*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
+      html = html.replace(/___([^_]+)___/g, '<strong><em>$1</em></strong>');
       
       // Bold: **text** or __text__
       html = html.replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
@@ -107,8 +133,30 @@
       // Inline code: `code`
       html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
       
+      // Images: ![alt](url)
+      html = html.replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%; height:auto;">');
+      
       // Links: [text](url)
       html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+      
+      // Unordered lists: - or * or +
+      html = html.replace(/^[\-\*\+] (.+)$/gm, '<li>$1</li>');
+      
+      // Ordered lists: 1. 2. etc
+      html = html.replace(/^\d+\. (.+)$/gm, '<li class="ol-item">$1</li>');
+      
+      // Wrap unordered list items
+      html = html.replace(/(<li>.*?<\/li>\s*)+/g, match => `<ul>${match}</ul>`);
+      
+      // Wrap ordered list items
+      html = html.replace(/(<li class="ol-item">.*?<\/li>\s*)+/g, match => {
+        const cleaned = match.replace(/ class="ol-item"/g, '');
+        return `<ol>${cleaned}</ol>`;
+      });
+      
+      // Task lists: - [ ] or - [x]
+      html = html.replace(/<li>\[ \] (.+)<\/li>/g, '<li><input type="checkbox" disabled> $1</li>');
+      html = html.replace(/<li>\[x\] (.+)<\/li>/gi, '<li><input type="checkbox" disabled checked> $1</li>');
       
       // Line breaks
       html = html.replace(/\n/g, '<br>');
@@ -289,13 +337,13 @@
       showTypingIndicator(root);
 
       try {
-        const res = await fetch("https://p2wwr4tnl7p2yuhe7klua3iguu0hsssr.lambda-url.us-east-2.on.aws/", {
+        const res = await fetch("https://demon-chatbot-server.fly.dev/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             model: "google/gemini-2.5-pro:byok",
             messages: [
-              { role: "system", content: "You are a AI assistant dont over do it. Use emojis in your responses, dont over do it. Use markdown formatting and struture your responses VERY CLEAR"},
+              { role: "system", content: "You are a AI assistant. Use emojis only on headers and titles, Use markdown formatting and struture your responses with headings, subheadings, bullet points, and numbered lists where appropriate. When providing code snippets, ensure they are enclosed in triple backticks with the correct language specified for syntax highlighting. Always aim to be clear and concise in your explanations." },
               { role: "user", content: prompt }
             ]
           })
@@ -304,11 +352,15 @@
         if (!res.ok) {
           let errorDetail = `HTTP ${res.status}`;
           try {
-            const errorData = await res.json();
-            errorDetail = errorData.error || errorData.message || errorDetail;
-          } catch {
             const errorText = await res.text();
-            if (errorText) errorDetail = errorText;
+            try {
+              const errorData = JSON.parse(errorText);
+              errorDetail = errorData.error || errorData.message || errorText || errorDetail;
+            } catch {
+              errorDetail = errorText || errorDetail;
+            }
+          } catch {
+            // If reading response fails, use default error
           }
           throw new Error(errorDetail);
         }
