@@ -14,13 +14,13 @@
   <title>Nexora</title>
   <meta name="description" content="Nexora Learning Hub — interactive educational tools and tutorials for middle and high school students." />
   <link rel="canonical" href="https://thenexoraproject.xyz/" />
-  <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/favicon-light.png">
+  <link rel="icon" type="image/png" id="favicon" href="/assets/logos/nexora-bright.png">
 
-  <script src="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/nexora-boot.js"></script>
+  <script src="/js/nexora-boot.js"></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/_tokens.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/first-time-modal.css" />
+  <link rel="stylesheet" href="/css/_tokens.css" />
+  <link rel="stylesheet" href="/css/first-time-modal.css" />
   <script>
     (function () {
       try {
@@ -71,7 +71,7 @@
     })();
   </script>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/sidebar.css" />
+  <link rel="stylesheet" href="/css/sidebar.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <script type="application/ld+json">
@@ -80,7 +80,7 @@
     "@type": "EducationalOrganization",
     "name": "Nexora Learning Hub",
     "url": "https://thenexoraproject.xyz",
-    "logo": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/nexora-bright.png",
+    "logo": "/assets/logos/nexora-bright.png",
     "description": "An online platform offering interactive educational tools and tutorials for students.",
     "foundingDate": "2025",
     "address": {
@@ -110,7 +110,7 @@
     <aside class="sidebar" aria-label="Main navigation">
       <div class="sidebar-glow"></div>
       <div class="sidebar-title">
-        <img src="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/nexora-bright.png" alt="Nexora Logo" />
+        <img src="/assets/logos/nexora-bright.png" alt="Nexora Logo" />
         <span>Nexora</span>
       </div>
       <nav aria-label="Primary">
@@ -119,6 +119,7 @@
         <a href="#" data-route="/proxy"><i class="fas fa-globe" aria-hidden="true"></i><span>Proxy</span></a>
         <a href="#" data-route="/movies"><i class="fas fa-film" aria-hidden="true"></i><span>Movies</span></a>
         <a href="#" data-route="/chatbot"><i class="fas fa-robot" aria-hidden="true"></i><span>AI</span></a>
+        <a href="#" data-route="/chatroom"><i class="fas fa-comments" aria-hidden="true"></i><span>Chatroom</span></a>
         <a href="#" data-route="/settings" class="settings"><i class="fas fa-cog" aria-hidden="true"></i><span>Settings</span></a>
       </nav>
     </aside>
@@ -126,9 +127,9 @@
     <main class="main-content" id="app" tabindex="-1" role="main"></main>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/views.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/app.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/first-time-visitor.js"></script>
+  <script src="/js/views.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/first-time-visitor.js"></script>
 
   <script>
     window._nexoraTheme = {
@@ -198,7 +199,7 @@
                 "nb_sides": 10
               },
               "image": {
-                "src": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/github.svg",
+                "src": "/assets/icons/share-icon.svg",
                 "width": 100,
                 "height": 100
               }
@@ -294,19 +295,19 @@
 
   <script>
     const LOGO_MAP = {
-      'midnight-amber': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/nexora-amber.png',
-      'midnight-blueberry': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/nexora-blueberry.png',
-      'midnight-grape': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/nexora-grape.png'
+      'midnight-amber': '/assets/logos/nexora-amber.png',
+      'midnight-blueberry': '/assets/logos/nexora-blueberry.png',
+      'midnight-grape': '/assets/logos/nexora-grape.png'
     };
 
     const FAVICON_MAP = {
-      'midnight-amber': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/nexora-amber.png',
-      'midnight-blueberry': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/nexora-blueberry.png',
-      'midnight-grape': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/nexora-grape.png'
+      'midnight-amber': '/assets/logos/nexora-amber.png',
+      'midnight-blueberry': '/assets/logos/nexora-blueberry.png',
+      'midnight-grape': '/assets/logos/nexora-grape.png'
     };
 
-    const DEFAULT_LOGO = 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/nexora-amber.png';
-    const DEFAULT_FAVICON = 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/nexora-amber.png';
+    const DEFAULT_LOGO = '/assets/logos/nexora-amber.png';
+    const DEFAULT_FAVICON = '/assets/logos/nexora-amber.png';
 
     function updateLogoAndFavicon() {
       const logo = document.querySelector('.sidebar-title img');

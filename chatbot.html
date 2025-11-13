@@ -6,23 +6,20 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-H5VGHQJKD8');
   </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script>
-      location.href = "/";
-    </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/chatbot.css" />
+  <link rel="stylesheet" href="/css/chatbot.css" />
+  <title>AI Chatbot</title>
 </head>
 
 <body>
   <div class="nexora">
     <div class="app">
       <div class="chat">
+        <button id="reset-chat" class="reset-btn" title="Reset chat" aria-label="Reset chat">🗑️ Reset</button>
         <div class="intro" id="intro"><h1>What can I help you with?</h1></div>
         <div class="scroll" id="scroll" aria-live="polite"></div>
       </div>
@@ -41,6 +38,12 @@
   <script>
   (function(){
     if(window.NexoraChat) return;
+
+    // ⚠️ REPLACE THIS WITH YOUR AWS LAMBDA API GATEWAY URL
+    const LAMBDA_ENDPOINT = 'https://t53kvu1sn6.execute-api.us-east-2.amazonaws.com/default/Chatbot';
+
+    const CHAT_STORAGE_KEY = 'nexora_chat_session';
+    let chatHistory = [];
 
     function escapeHtml(s){
       return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -91,21 +94,14 @@
     function formatMarkdown(text){
       let html = escapeHtml(text);
       
-      // Horizontal rules: --- or *** or ___
       html = html.replace(/^(\-{3,}|\*{3,}|_{3,})$/gm, '<hr>');
-      
-      // Headings: # to ######
       html = html.replace(/^###### (.+)$/gm, '<h6>$1</h6>');
       html = html.replace(/^##### (.+)$/gm, '<h5>$1</h5>');
       html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
       html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
       html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
       html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
-      
-      // Blockquotes: > text
       html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
-      
-      // Tables (basic support)
       html = html.replace(/^\|(.+)\|$/gm, (match, content) => {
         const cells = content.split('|').map(c => c.trim()).filter(c => c);
         const isHeaderSeparator = cells.every(c => /^[\-:]+$/.test(c));
@@ -114,51 +110,25 @@
         return '<tr>' + cells.map(c => `<${tag}>${c}</${tag}>`).join('') + '</tr>';
       });
       html = html.replace(/(<tr>.*?<\/tr>\s*)+/g, match => `<table>${match}</table>`);
-      
-      // Strikethrough: ~~text~~
       html = html.replace(/~~([^~]+)~~/g, '<del>$1</del>');
-      
-      // Bold + Italic: ***text*** or ___text___
       html = html.replace(/\*\*\*([^\*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
       html = html.replace(/___([^_]+)___/g, '<strong><em>$1</em></strong>');
-      
-      // Bold: **text** or __text__
       html = html.replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
       html = html.replace(/__([^_]+)__/g, '<strong>$1</strong>');
-      
-      // Italic: *text* or _text_
       html = html.replace(/\*([^\*]+)\*/g, '<em>$1</em>');
       html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
-      
-      // Inline code: `code`
       html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-      
-      // Images: ![alt](url)
       html = html.replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%; height:auto;">');
-      
-      // Links: [text](url)
       html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-      
-      // Unordered lists: - or * or +
       html = html.replace(/^[\-\*\+] (.+)$/gm, '<li>$1</li>');
-      
-      // Ordered lists: 1. 2. etc
       html = html.replace(/^\d+\. (.+)$/gm, '<li class="ol-item">$1</li>');
-      
-      // Wrap unordered list items
       html = html.replace(/(<li>.*?<\/li>\s*)+/g, match => `<ul>${match}</ul>`);
-      
-      // Wrap ordered list items
       html = html.replace(/(<li class="ol-item">.*?<\/li>\s*)+/g, match => {
         const cleaned = match.replace(/ class="ol-item"/g, '');
         return `<ol>${cleaned}</ol>`;
       });
-      
-      // Task lists: - [ ] or - [x]
       html = html.replace(/<li>\[ \] (.+)<\/li>/g, '<li><input type="checkbox" disabled> $1</li>');
       html = html.replace(/<li>\[x\] (.+)<\/li>/gi, '<li><input type="checkbox" disabled checked> $1</li>');
-      
-      // Line breaks
       html = html.replace(/\n/g, '<br>');
       
       return html;
@@ -183,6 +153,9 @@
       div.textContent = text;
       scrollEl.appendChild(div);
       scrollEl.scrollTop = scrollEl.scrollHeight;
+      
+      chatHistory.push({ role: 'user', content: text });
+      saveChatHistory();
     }
 
     function addBotMessage(markup, root){
@@ -218,6 +191,97 @@
       });
 
       requestAnimationFrame(()=>{ if(window.hljs) hljs.highlightAll(); });
+      
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = markup;
+      const textContent = tempDiv.textContent || tempDiv.innerText || '';
+      chatHistory.push({ role: 'bot', content: markup, text: textContent });
+      saveChatHistory();
+    }
+
+    function saveChatHistory(){
+      try {
+        sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chatHistory));
+      } catch(e) {
+        console.error('Failed to save chat history:', e);
+      }
+    }
+
+    function resetChat(root){
+      try {
+        chatHistory = [];
+        sessionStorage.removeItem(CHAT_STORAGE_KEY);
+        
+        const { scrollEl, introEl } = getEls(root);
+        
+        if(scrollEl){
+          scrollEl.innerHTML = '';
+        }
+        
+        if(introEl){
+          introEl.classList.remove('hidden');
+          startIntroLoop(root);
+        }
+      } catch(e) {
+        console.error('Failed to reset chat:', e);
+      }
+    }
+
+    function loadChatHistory(root){
+      try {
+        const saved = sessionStorage.getItem(CHAT_STORAGE_KEY);
+        if(!saved) return;
+        
+        chatHistory = JSON.parse(saved);
+        const { scrollEl, introEl } = getEls(root);
+        if(!scrollEl) return;
+        
+        if(chatHistory.length > 0 && introEl){
+          stopIntroLoop(root);
+          introEl.classList.add('hidden');
+        }
+        
+        chatHistory.forEach(msg => {
+          if(msg.role === 'user'){
+            const div = document.createElement("div");
+            div.className = "msg user";
+            div.textContent = msg.content;
+            scrollEl.appendChild(div);
+          } else if(msg.role === 'bot'){
+            const wrap = document.createElement("div");
+            wrap.className = "msg bot";
+
+            const name = document.createElement("div");
+            name.className = "bot-name";
+            name.textContent = "Gemini 2.5 Pro";
+
+            const body = document.createElement("div");
+            body.innerHTML = msg.content;
+
+            wrap.appendChild(name);
+            wrap.appendChild(body);
+            scrollEl.appendChild(wrap);
+            
+            wrap.querySelectorAll(".copy-btn").forEach(btn=>{
+              if(btn.dataset.nexoraCopy) return;
+              btn.dataset.nexoraCopy = "1";
+              btn.onclick = () => {
+                const codeEl = btn.closest(".code")?.querySelector("pre");
+                const code = codeEl ? codeEl.innerText : "";
+                if(code) navigator.clipboard.writeText(code).catch(()=>{});
+                const old = btn.innerHTML;
+                btn.textContent = "✅";
+                setTimeout(()=>{ btn.innerHTML = old; }, 1500);
+              };
+            });
+          }
+        });
+        
+        scrollEl.scrollTop = scrollEl.scrollHeight;
+        requestAnimationFrame(()=>{ if(window.hljs) hljs.highlightAll(); });
+      } catch(e) {
+        console.error('Failed to load chat history:', e);
+      }
     }
 
     const introState = new WeakMap();
@@ -337,22 +401,46 @@
       showTypingIndicator(root);
 
       try {
-        const res = await fetch("https://demon-chatbot-server.fly.dev/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-pro:byok",
-            messages: [
-              { role: "system", content: "You are a AI assistant. Use emojis only on headers and titles, Use markdown formatting and struture your responses with headings, subheadings, bullet points, and numbered lists where appropriate. When providing code snippets, ensure they are enclosed in triple backticks with the correct language specified for syntax highlighting. Always aim to be clear and concise in your explanations." },
-              { role: "user", content: prompt }
-            ]
-          })
-        });
-
+        console.log('Sending to:', LAMBDA_ENDPOINT);
+        console.log('Current origin:', window.location.origin);
+        
+        // Build the messages array correctly
+        const messages = [
+          { role: "system", content: "You are a AI assistant. Use emojis only on headers and titles, Use markdown formatting and struture your responses with headings, subheadings, bullet points, and numbered lists where appropriate. When providing code snippets, ensure they are enclosed in triple backticks with the correct language specified for syntax highlighting. Always aim to be clear and concise in your explanations." },
+          { role: "user", content: prompt }
+        ];
+        
+        const requestBody = {
+          messages: messages
+        };
+        
+        console.log('Request body:', JSON.stringify(requestBody));
+        
+        // Call your AWS Lambda endpoint with more detailed error handling
+        let res;
+        try {
+          res = await fetch(LAMBDA_ENDPOINT, {
+            method: "POST",
+            headers: { 
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestBody),
+            mode: 'cors'
+          });
+          console.log('Response status:', res.status);
+          console.log('Response headers:', Object.fromEntries([...res.headers.entries()]));
+        } catch (fetchError) {
+          console.error('Fetch failed:', fetchError);
+          console.error('Error name:', fetchError.name);
+          console.error('Error message:', fetchError.message);
+          throw new Error(`Network request failed: ${fetchError.message}. This may be due to CORS policy, network connectivity, or the Lambda endpoint being unavailable.`);
+        }
+        
         if (!res.ok) {
           let errorDetail = `HTTP ${res.status}`;
           try {
             const errorText = await res.text();
+            console.log('Error response:', errorText);
             try {
               const errorData = JSON.parse(errorText);
               errorDetail = errorData.error || errorData.message || errorText || errorDetail;
@@ -366,6 +454,8 @@
         }
 
         const data = await res.json();
+        console.log('Success response:', data);
+        
         const reply = data.choices?.[0]?.message?.content || data.error || "API Error";
         const replyStr = String(reply || "");
         const markup = renderReplyWithCode(replyStr);
@@ -393,6 +483,12 @@
       if(sendEl.dataset.nexoraAttached) return true;
 
       const boundSend = ()=> sendMessage(root);
+      
+      const resetBtn = root.querySelector ? root.querySelector('#reset-chat') : document.querySelector('#reset-chat');
+      if(resetBtn && !resetBtn.dataset.nexoraReset){
+        resetBtn.dataset.nexoraReset = '1';
+        resetBtn.addEventListener('click', () => resetChat(root));
+      }
 
       sendEl.addEventListener("click", boundSend);
 
@@ -418,7 +514,10 @@
 
       sendEl.dataset.nexoraAttached = "1";
 
-      startIntroLoop(root);
+      loadChatHistory(root);
+      if(chatHistory.length === 0){
+        startIntroLoop(root);
+      }
 
       return true;
     }

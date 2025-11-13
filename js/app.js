@@ -7,6 +7,7 @@ const routes = {
   '/proxy':    renderProxy,
   '/hacks':    renderHacks,
   '/chatbot':  renderChatbot,
+  '/chatroom': renderChatroom,
   '/loader':   renderLoader,
   '/settings': renderSettings 
 };
@@ -42,6 +43,7 @@ function renderMovies()      { loadView('movies.html'); }
 function renderProxy()       { loadView('proxy.html'); }
 function renderHacks()       { loadView('hacks.html'); }
 function renderChatbot()     { loadView('chatbot.html'); }
+function renderChatroom()    { loadView('chatroom.html'); }
 function renderLoader()      { loadView('gameloader.html'); }
 function renderGamesRoute()  { loadView('games.html'); }
 function renderSettings()    { loadView('settings.html'); } // ✅ New
