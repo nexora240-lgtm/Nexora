@@ -6,14 +6,20 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.85);
+  background: linear-gradient(180deg, 
+    color-mix(in srgb, var(--page-bg, #0a0605) 95%, transparent),
+    color-mix(in srgb, var(--page-bg, #0a0605) 85%, #000));
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   animation: fadeIn 0.3s ease-out forwards;
+  box-shadow:
+    0 0 20px var(--primary-shadow, rgba(212,85,10,0.25)),
+    inset 0 0 20px var(--primary-shadow, rgba(212,85,10,0.15));
 }
 
 @keyframes fadeIn {
@@ -23,16 +29,86 @@
 }
 
 #first-time-modal {
-  background: var(--surface);
-  border-radius: 14px;
-  padding: 32px;
-  max-width: 600px;
+  position: relative;
+  background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--primary-accent, #992f05) 8%, transparent),
+    color-mix(in srgb, var(--surface, #1a100d) 35%, transparent) 50%,
+    color-mix(in srgb, var(--primary-deep, #661f03) 12%, transparent));
+  background-color: color-mix(in srgb, var(--surface, #1a100d) 25%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 540px;
   width: 90%;
-  max-height: 85vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
   animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  border: 1px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  
+  /* cursor tracking variables */
+  --x: 50%;
+  --y: 50%;
+  --glow-size: 300px;
+  --glow-strength: 0.35;
+}
+
+/* Mouse-tracked glow effect */
+#first-time-modal::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  pointer-events: none;
+  border-radius: 16px;
+  background: radial-gradient(
+    var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
+    color-mix(in srgb, var(--primary-accent, #992f05) 15%, transparent) 0%,
+    color-mix(in srgb, var(--primary-accent, #992f05) 6%, transparent) 30%,
+    transparent 65%
+  );
+  opacity: 0.5;
+  transition: opacity 180ms ease-out;
+  z-index: 0;
+}
+
+/* Animated gradient ring border */
+#first-time-modal::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  pointer-events: none;
+  border-radius: calc(20px + 2px);
+  background: conic-gradient(
+    from 180deg at var(--x, 50%) var(--y, 50%),
+    var(--primary-accent, #992f05),
+    color-mix(in srgb, var(--primary-accent, #992f05) 70%, var(--primary-deep, #661f03) 30%),
+    var(--primary-deep, #661f03),
+    color-mix(in srgb, var(--primary-accent, #992f05) 70%, var(--primary-deep, #661f03) 30%),
+    var(--primary-accent, #992f05)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  padding: 1px;
+  opacity: 0;
+  transition: opacity 220ms ease-out;
+  will-change: opacity;
+}
+
+#first-time-modal .modal-content:hover::before {
+  opacity: 0.4;
+}
+
+/* Ensure content is above pseudo-elements */
+#first-time-modal > * {
+  position: relative;
+  z-index: 1;
 }
 
 @keyframes slideUp {
@@ -47,65 +123,78 @@
 }
 
 #first-time-modal h2 {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.3rem 0;
   color: transparent;
   background: var(--accent-gradient, linear-gradient(90deg, var(--primary-deep), var(--primary)));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-fill-color: transparent;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 600;
 }
 
 #first-time-modal .subtitle {
   color: var(--muted);
-  font-size: 14px;
-  margin-bottom: 1.5rem;
-  line-height: 1.5;
+  font-size: 13px;
+  margin-bottom: 1rem;
+  line-height: 1.4;
 }
 
 .disguise-options {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .disguise-option {
-  background: var(--surface-2);
-  border: 2px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
-  border-radius: 12px;
-  padding: 1rem;
+  background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--primary-accent, #992f05) 5%, transparent),
+    color-mix(in srgb, var(--surface-2, #1f1410) 30%, transparent));
+  background-color: color-mix(in srgb, var(--surface-2, #1f1410) 25%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 0.75rem;
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: all 0.3s ease;
   text-align: center;
   position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .disguise-option:hover {
-  border-color: var(--primary);
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 12px 30px var(--primary-shadow);
+  border-color: var(--primary-accent, #992f05);
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px var(--primary-shadow, rgba(212,85,10,0.45));
+  background-color: color-mix(in srgb, var(--surface, #1a100d) 35%, transparent);
 }
 
 .disguise-option.selected {
-  background: var(--surface);
-  border: 2px solid var(--primary-deep);
-  box-shadow: 0 8px 22px var(--primary-shadow);
+  background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--primary-accent, #992f05) 12%, transparent),
+    color-mix(in srgb, var(--surface, #1a100d) 40%, transparent));
+  background-color: color-mix(in srgb, var(--surface, #1a100d) 35%, transparent);
+  border: 2px solid var(--primary-accent, #992f05);
+  box-shadow: 0 8px 28px var(--primary-shadow, rgba(212,85,10,0.55)),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .disguise-option .icon {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 0.75rem;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 0.5rem;
   border-radius: 8px;
-  background: var(--page-bg);
+  background: color-mix(in srgb, var(--page-bg, #0a0605) 60%, transparent);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--surface) 20%, #000 0%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .disguise-option .icon img {
@@ -115,7 +204,7 @@
 }
 
 .disguise-option .name {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text);
   margin: 0;
@@ -127,14 +216,15 @@
   right: 8px;
   width: 20px;
   height: 20px;
-  background: var(--primary);
+  background: var(--accent-gradient, linear-gradient(90deg, rgba(255,77,0,1), rgba(255,106,0,1)));
   border-radius: 50%;
   display: none;
   align-items: center;
   justify-content: center;
-  color: var(--on-primary);
+  color: var(--on-primary, #fff0e8);
   font-size: 12px;
   font-weight: bold;
+  box-shadow: 0 2px 8px var(--primary-shadow, rgba(212,85,10,0.45));
 }
 
 .disguise-option.selected .checkmark {
@@ -143,45 +233,48 @@
 
 .modal-actions {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   justify-content: flex-end;
-  padding-top: 1.5rem;
-  border-top: 1px dashed color-mix(in srgb, var(--surface) 6%, #000 0%);
+  padding-top: 1rem;
+  border-top: 1px dashed color-mix(in srgb, var(--primary-accent, #992f05) 15%, transparent);
 }
 
 .modal-actions button {
   padding: 12px 24px;
   border: none;
   border-radius: 12px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   font-family: 'Poppins', system-ui, -apple-system, sans-serif;
   will-change: transform, box-shadow;
 }
 
 .modal-actions .btn-skip {
-  background: var(--surface-2);
-  color: var(--muted);
-  border: 1px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
+  background: color-mix(in srgb, var(--surface-2, #1f1410) 80%, transparent);
+  color: var(--muted, #c9a08a);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .modal-actions .btn-skip:hover {
-  background: var(--surface);
-  color: var(--text);
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 12px 30px color-mix(in srgb, var(--primary-shadow) 60%, transparent);
+  background: color-mix(in srgb, var(--surface, #1a100d) 90%, transparent);
+  color: var(--text, #f8e7e0);
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .modal-actions .btn-continue {
-  background: linear-gradient(90deg, var(--primary-deep), var(--primary));
-  color: var(--on-primary);
+  background: var(--accent-gradient, linear-gradient(90deg, rgba(255,77,0,1), rgba(255,106,0,1)));
+  color: var(--on-primary, #fff0e8);
+  box-shadow: 2px 3px 24px -4px var(--primary-shadow, rgba(196,78,27,0.75));
 }
 
 .modal-actions .btn-continue:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 12px 30px var(--primary-shadow);
+  transform: scale(1.08);
+  box-shadow: 2px 3px 30px -2px var(--primary-shadow, rgba(196,78,27,0.85));
 }
 
 .modal-actions .btn-continue:disabled {
@@ -192,7 +285,7 @@
 
 .modal-actions .btn-continue:active,
 .modal-actions .btn-skip:active {
-  transform: translateY(1px);
+  transform: scale(1.05);
 }
 
 /* Scrollbar styling for modal */
@@ -244,86 +337,164 @@
 
 /* About:blank Cloaking Modal */
 #cloaking-modal {
-  background: var(--surface);
-  border-radius: 14px;
-  padding: 32px;
-  max-width: 550px;
+  position: relative;
+  background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--primary-accent, #992f05) 8%, transparent),
+    color-mix(in srgb, var(--surface, #1a100d) 35%, transparent) 50%,
+    color-mix(in srgb, var(--primary-deep, #661f03) 12%, transparent));
+  background-color: color-mix(in srgb, var(--surface, #1a100d) 25%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 480px;
   width: 90%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
   animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  border: 1px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  
+  /* cursor tracking variables */
+  --x: 50%;
+  --y: 50%;
+  --glow-size: 300px;
+  --glow-strength: 0.35;
+}
+
+/* Mouse-tracked glow effect for cloaking modal */
+#cloaking-modal::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  pointer-events: none;
+  border-radius: 16px;
+  background: radial-gradient(
+    var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
+    color-mix(in srgb, var(--primary-accent, #992f05) 15%, transparent) 0%,
+    color-mix(in srgb, var(--primary-accent, #992f05) 6%, transparent) 30%,
+    transparent 65%
+  );
+  opacity: 0.5;
+  transition: opacity 180ms ease-out;
+  z-index: 0;
+}
+
+#cloaking-modal::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  pointer-events: none;
+  border-radius: calc(20px + 2px);
+  background: conic-gradient(
+    from 180deg at var(--x, 50%) var(--y, 50%),
+    var(--primary-accent, #992f05),
+    color-mix(in srgb, var(--primary-accent, #992f05) 70%, var(--primary-deep, #661f03) 30%),
+    var(--primary-deep, #661f03),
+    color-mix(in srgb, var(--primary-accent, #992f05) 70%, var(--primary-deep, #661f03) 30%),
+    var(--primary-accent, #992f05)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1px;
+  opacity: 0;
+  transition: opacity 220ms ease-out;
+  will-change: opacity;
+}
+
+#cloaking-modal:hover::after {
+  opacity: 0.4;
+}
+
+#cloaking-modal > * {
+  position: relative;
+  z-index: 1;
 }
 
 #cloaking-modal h2 {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.3rem 0;
   color: transparent;
   background: var(--accent-gradient, linear-gradient(90deg, var(--primary-deep), var(--primary)));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 600;
 }
 
 #cloaking-modal .subtitle {
   color: var(--muted);
-  font-size: 14px;
-  margin-bottom: 1.5rem;
-  line-height: 1.5;
+  font-size: 13px;
+  margin-bottom: 1rem;
+  line-height: 1.4;
 }
 
 .cloaking-options {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .cloaking-option {
-  background: var(--surface-2);
-  border: 2px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
+  background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--primary-accent, #992f05) 5%, transparent),
+    color-mix(in srgb, var(--surface-2, #1f1410) 30%, transparent));
+  background-color: color-mix(in srgb, var(--surface-2, #1f1410) 25%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
-  padding: 1.25rem;
+  padding: 1rem;
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: all 0.3s ease;
   position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .cloaking-option:hover {
-  border-color: var(--primary);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 22px color-mix(in srgb, var(--primary-shadow) 60%, transparent);
+  border-color: var(--primary-accent, #992f05);
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px var(--primary-shadow, rgba(212,85,10,0.45));
+  background-color: color-mix(in srgb, var(--surface, #1a100d) 35%, transparent);
 }
 
 .cloaking-option.selected {
-  background: var(--surface);
-  border: 2px solid var(--primary-deep);
-  box-shadow: 0 8px 22px var(--primary-shadow);
+  background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--primary-accent, #992f05) 12%, transparent),
+    color-mix(in srgb, var(--surface, #1a100d) 40%, transparent));
+  background-color: color-mix(in srgb, var(--surface, #1a100d) 35%, transparent);
+  border: 2px solid var(--primary-accent, #992f05);
+  box-shadow: 0 8px 28px var(--primary-shadow, rgba(212,85,10,0.55)),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
-.cloaking-option .option-header {
+.cookie-option .option-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
 }
 
 .cloaking-option .icon-wrapper {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
-  background: linear-gradient(90deg, var(--primary-deep), var(--primary));
+  background: var(--accent-gradient, linear-gradient(90deg, rgba(255,77,0,1), rgba(255,106,0,1)));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
-  color: var(--on-primary);
+  font-size: 1.1rem;
+  color: var(--on-primary, #fff0e8);
   flex-shrink: 0;
-  box-shadow: 0 4px 12px var(--primary-shadow);
+  box-shadow: 0 4px 12px var(--primary-shadow, rgba(212,85,10,0.55));
 }
 
 .cloaking-option .option-title {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text);
   margin: 0;
@@ -331,18 +502,18 @@
 
 .cloaking-option .option-description {
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 12px;
+  line-height: 1.4;
   margin: 0;
-  padding-left: 48px;
+  padding-left: 40px;
 }
 
 .cloaking-option .checkmark-radio {
   position: absolute;
-  top: 1.25rem;
-  right: 1.25rem;
-  width: 24px;
-  height: 24px;
+  top: 1rem;
+  right: 1rem;
+  width: 22px;
+  height: 22px;
   border: 2px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
   border-radius: 50%;
   display: flex;
@@ -352,9 +523,9 @@
 }
 
 .cloaking-option.selected .checkmark-radio {
-  background: linear-gradient(90deg, var(--primary-deep), var(--primary));
-  border-color: var(--primary-deep);
-  box-shadow: 0 4px 12px var(--primary-shadow);
+  background: var(--accent-gradient, linear-gradient(90deg, rgba(255,77,0,1), rgba(255,106,0,1)));
+  border-color: var(--primary-accent, #992f05);
+  box-shadow: 0 4px 12px var(--primary-shadow, rgba(212,85,10,0.55));
 }
 
 .cloaking-option .checkmark-radio::after {
@@ -362,7 +533,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--on-primary);
+  background: var(--on-primary, #fff0e8);
   opacity: 0;
   transform: scale(0);
   transition: all 0.2s ease;
@@ -375,88 +546,167 @@
 
 /* Cookie Consent Modal */
 #cookie-consent-modal {
-  background: var(--surface);
-  border-radius: 14px;
+  position: relative;
+  background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--primary-accent, #992f05) 8%, transparent),
+    color-mix(in srgb, var(--surface, #1a100d) 35%, transparent) 50%,
+    color-mix(in srgb, var(--primary-deep, #661f03) 12%, transparent));
+  background-color: color-mix(in srgb, var(--surface, #1a100d) 25%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 20px;
   padding: 24px;
-  max-width: 550px;
-  max-height: 85vh;
+  max-width: 480px;
   width: 90%;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
   animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  border: 1px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  
+  /* cursor tracking variables */
+  --x: 50%;
+  --y: 50%;
+  --glow-size: 300px;
+  --glow-strength: 0.35;
+}
+
+/* Mouse-tracked glow effect for cookie modal */
+#cookie-consent-modal::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  pointer-events: none;
+  border-radius: 16px;
+  background: radial-gradient(
+    var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
+    color-mix(in srgb, var(--primary-accent, #992f05) 15%, transparent) 0%,
+    color-mix(in srgb, var(--primary-accent, #992f05) 6%, transparent) 30%,
+    transparent 65%
+  );
+  opacity: 0.5;
+  transition: opacity 180ms ease-out;
+  z-index: 0;
+}
+
+#cookie-consent-modal::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  pointer-events: none;
+  border-radius: calc(20px + 2px);
+  background: conic-gradient(
+    from 180deg at var(--x, 50%) var(--y, 50%),
+    var(--primary-accent, #992f05),
+    color-mix(in srgb, var(--primary-accent, #992f05) 70%, var(--primary-deep, #661f03) 30%),
+    var(--primary-deep, #661f03),
+    color-mix(in srgb, var(--primary-accent, #992f05) 70%, var(--primary-deep, #661f03) 30%),
+    var(--primary-accent, #992f05)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  padding: 1px;
+  opacity: 0;
+  transition: opacity 220ms ease-out;
+  will-change: opacity;
+}
+
+#cookie-consent-modal:hover::after {
+  opacity: 0.4;
+}
+
+#cookie-consent-modal > * {
+  position: relative;
+  z-index: 1;
 }
 
 #cookie-consent-modal h2 {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.4rem 0;
   color: transparent;
   background: var(--accent-gradient, linear-gradient(90deg, var(--primary-deep), var(--primary)));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 600;
 }
 
 #cookie-consent-modal .subtitle {
   color: var(--muted);
   font-size: 14px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   line-height: 1.5;
 }
 
 .cookie-options {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 0.7rem;
+  margin-bottom: 1rem;
 }
 
 .cookie-option {
-  background: var(--surface-2);
-  border: 2px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
+  background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--primary-accent, #992f05) 5%, transparent),
+    color-mix(in srgb, var(--surface-2, #1f1410) 30%, transparent));
+  background-color: color-mix(in srgb, var(--surface-2, #1f1410) 25%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
-  padding: 1.25rem;
+  padding: 0.75rem;
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: all 0.3s ease;
   position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .cookie-option:hover {
-  border-color: var(--primary);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 22px color-mix(in srgb, var(--primary-shadow) 60%, transparent);
+  border-color: var(--primary-accent, #992f05);
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px var(--primary-shadow, rgba(212,85,10,0.45));
+  background-color: color-mix(in srgb, var(--surface, #1a100d) 35%, transparent);
 }
 
 .cookie-option.selected {
-  background: var(--surface);
-  border: 2px solid var(--primary-deep);
-  box-shadow: 0 8px 22px var(--primary-shadow);
+  background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--primary-accent, #992f05) 12%, transparent),
+    color-mix(in srgb, var(--surface, #1a100d) 40%, transparent));
+  background-color: color-mix(in srgb, var(--surface, #1a100d) 35%, transparent);
+  border: 2px solid var(--primary-accent, #992f05);
+  box-shadow: 0 8px 28px var(--primary-shadow, rgba(212,85,10,0.55)),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .cookie-option .option-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
+  gap: 0.6rem;
+  margin-bottom: 0.35rem;
 }
 
 .cookie-option .icon-wrapper {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
-  background: linear-gradient(90deg, var(--primary-deep), var(--primary));
+  background: var(--accent-gradient, linear-gradient(90deg, rgba(255,77,0,1), rgba(255,106,0,1)));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
-  color: var(--on-primary);
+  font-size: 1.1rem;
+  color: var(--on-primary, #fff0e8);
   flex-shrink: 0;
-  box-shadow: 0 4px 12px var(--primary-shadow);
+  box-shadow: 0 4px 12px var(--primary-shadow, rgba(212,85,10,0.55));
 }
 
 .cookie-option .option-title {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text);
   margin: 0;
@@ -467,11 +717,11 @@
   font-size: 13px;
   line-height: 1.5;
   margin: 0;
-  padding-left: 48px;
+  padding-left: 40px;
 }
 
 .cookie-option .consequences-list {
-  margin: 8px 0 0 48px;
+  margin: 6px 0 0 40px;
   padding: 0;
   list-style: none;
 }
@@ -479,17 +729,17 @@
 .cookie-option .consequences-list li {
   color: var(--muted);
   font-size: 12px;
-  line-height: 1.6;
+  line-height: 1.5;
   position: relative;
-  padding-left: 20px;
-  margin-bottom: 4px;
+  padding-left: 18px;
+  margin-bottom: 3px;
 }
 
 .cookie-option .consequences-list li::before {
   content: '•';
   position: absolute;
   left: 6px;
-  color: var(--primary);
+  color: var(--primary-accent, #992f05);
   font-weight: bold;
 }
 
@@ -497,18 +747,19 @@
   display: inline-block;
   padding: 4px 8px;
   border-radius: 6px;
-  background: color-mix(in srgb, var(--primary) 20%, transparent);
-  color: var(--primary);
+  background: color-mix(in srgb, var(--primary-accent, #992f05) 20%, transparent);
+  color: var(--primary-accent, #992f05);
   font-size: 11px;
   font-weight: 600;
-  margin-left: 48px;
+  margin-left: 40px;
   margin-top: 6px;
+  border: 1px solid color-mix(in srgb, var(--primary-accent, #992f05) 30%, transparent);
 }
 
 .cookie-option .checkmark-radio {
   position: absolute;
-  top: 1.25rem;
-  right: 1.25rem;
+  top: 1rem;
+  right: 1rem;
   width: 24px;
   height: 24px;
   border: 2px solid color-mix(in srgb, var(--surface) 40%, #000 0%);
@@ -520,9 +771,9 @@
 }
 
 .cookie-option.selected .checkmark-radio {
-  background: linear-gradient(90deg, var(--primary-deep), var(--primary));
-  border-color: var(--primary-deep);
-  box-shadow: 0 4px 12px var(--primary-shadow);
+  background: var(--accent-gradient, linear-gradient(90deg, rgba(255,77,0,1), rgba(255,106,0,1)));
+  border-color: var(--primary-accent, #992f05);
+  box-shadow: 0 4px 12px var(--primary-shadow, rgba(212,85,10,0.55));
 }
 
 .cookie-option .checkmark-radio::after {
@@ -530,7 +781,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--on-primary);
+  background: var(--on-primary, #fff0e8);
   opacity: 0;
   transform: scale(0);
   transition: all 0.12s ease;

@@ -12,9 +12,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Settings</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/_tokens.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/settings.css" />
-  <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/logos/favicon-light.png">
+  <link rel="stylesheet" href="/css/_tokens.css" />
+  <link rel="stylesheet" href="/css/settings.css" />
+  <link rel="icon" type="image/png" id="favicon" href="/assets/logos/nexora-bright.png">
 </head>
 <body>
   <div class="settings-root" id="settingsRoot" aria-live="polite">
@@ -58,8 +58,8 @@
 
         <section id="cloaking" class="panel" role="tabpanel" hidden>
           <div class="section">
-            <h2>About:Blank Cloaking</h2>
-            <p class="description">Automatically opens the site in an about:blank window and redirects the original tab to hide this site from your browser history. Your browsing will appear as visits to educational sites instead.</p>
+            <h2>About:Blank</h2>
+            <p class="description">Prevents others from seeing your screen and hides this site from browser history.</p>
             
             <div class="subsection" style="display:flex;flex-direction:column;gap:12px;">
               <div class="row" style="align-items:center; margin:0;">
@@ -67,25 +67,10 @@
                   <input id="aboutToggleInput" type="checkbox" aria-hidden="true" />
                   <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb" aria-hidden="true"></span></span>
                 </div>
-                <label for="aboutToggleInput" style="margin-left:12px;cursor:pointer;">Enable Auto-Cloaking</label>
               </div>
-              <p class="description" style="margin-top:6px;">When enabled, visiting the site URL will automatically open it in about:blank and redirect your browser to the disguise site below.</p>
               <div id="auto-cloak-status" style="margin-top:12px;padding:12px;border-radius:8px;background:var(--settings-panel-2);display:none;">
                 <p style="margin:0;color:var(--settings-accent);font-weight:600;">✓ Auto-Cloaking Active</p>
                 <p class="description" style="margin:6px 0 0 0;">The next time you visit this site's URL, it will automatically open in about:blank.</p>
-              </div>
-            </div>
-
-            <div style="height:16px;"></div>
-
-            <h2>Manual About:Blank Window</h2>
-            <p class="description">Manually open the site in an about:blank window without auto-redirect. Useful for one-time usage.</p>
-            <div class="subsection" style="display:flex;align-items:center;justify-content:flex-start;">
-              <div class="row" style="margin:0;">
-                <button id="openAboutBtn" class="uptime-btn" type="button" aria-label="Open About Blank" onclick="openGame()">
-                  <span>Open Manually</span>
-                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"/></svg>
-                </button>
               </div>
             </div>
 
@@ -223,7 +208,7 @@
                   <div class="partner-item" role="group" aria-label="Partner Demon">
                     <div class="partner-info">
                       <div class="partner-logo" aria-hidden="true">
-                        <img src="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/partners/demon.png" alt="" class="favicon-thumb" style="width:36px;height:36px;border-radius:6px;">
+                        <img src="/assets/partners/demon.png" alt="" class="favicon-thumb" style="width:36px;height:36px;border-radius:6px;">
                       </div>
                       <div>
                         <div class="partner-name">Demon</div>
@@ -259,6 +244,6 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/settings.js"></script>
+  <script src="/js/settings.js"></script>
 </body>
 </html>

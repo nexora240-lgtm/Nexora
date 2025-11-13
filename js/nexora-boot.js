@@ -7,7 +7,7 @@
   const FAVICON_KEY = 'settings.faviconData';
   const CUSTOM_TITLE_KEY = 'settings.customTitle';
   const ABOUT_KEY = 'settings.aboutBlank';
-  const DEFAULT_FALLBACK = 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/nexora-logo.png';
+  const DEFAULT_FALLBACK = '/assets/logos/nexora-bright.png';
   const CODE_LEVEL_TITLES = {
     "Clever": "Clever | Portal",
     "Google Classroom": "Home",

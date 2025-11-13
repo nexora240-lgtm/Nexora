@@ -54,4 +54,5 @@ function renderMovies()   { loadView('movies.html'); }
 function renderProxy()    { loadView('proxy.html'); }
 function renderHacks()    { loadView('hacks.html'); }
 function renderChatbot()  { loadView('chatbot.html'); }
+function renderChatroom() { loadView('chatroom.html'); }
 function renderSettings() { loadView('settings.html'); }

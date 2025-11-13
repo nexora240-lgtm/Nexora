@@ -15,47 +15,47 @@
     { 
       name: "Clever", 
       title: "Clever | Portal",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/clever.ico"
+      icon: "/assets/favicon/clever.ico"
     },
     { 
       name: "Google Classroom", 
       title: "Home",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/classroom.ico"
+      icon: "/assets/favicon/classroom.ico"
     },
     { 
       name: "Canvas", 
       title: "Dashboard",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/canvas.png"
+      icon: "/assets/favicon/canvas.png"
     },
     { 
       name: "Google Drive", 
       title: "Home - Google Drive",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/drive.png"
+      icon: "/assets/favicon/drive.png"
     },
     { 
       name: "Seesaw", 
       title: "Seesaw",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/seesaw.jpg"
+      icon: "/assets/favicon/seesaw.jpg"
     },
     { 
       name: "Edpuzzle", 
       title: "Edpuzzle",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/edpuzzle.png"
+      icon: "/assets/favicon/edpuzzle.png"
     },
     { 
       name: "Kahoot!", 
       title: "Enter Game PIN - Kahoot!",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/kahoot.ico"
+      icon: "/assets/favicon/kahoot.ico"
     },
     { 
       name: "Quizlet", 
       title: "Your Sets | Quizlet",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/quizlet.png"
+      icon: "/assets/favicon/quizlet.png"
     },
     { 
       name: "Khan Academy", 
       title: "Dashboard | Khan Academy",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/assets@main/assets/favicon/khanacademy.ico"
+      icon: "/assets/favicon/khanacademy.ico"
     }
   ];
 
@@ -90,19 +90,7 @@
         return false; // User completed the first-time modal
       }
 
-      // Check if user is an existing user (has any settings or cookies)
-      // This prevents showing the modal to users who were using the site before this feature
-      const hasDisguiseSetting = localStorage.getItem(DISGUISE_KEY) || getCookie(COOKIE_NAME);
-      const hasThemeSetting = localStorage.getItem('settings.theme');
-      const hasCookieConsent = localStorage.getItem(COOKIE_CONSENT_KEY) || getCookie('nexora.cookie_consent');
-      
-      if (hasDisguiseSetting || hasThemeSetting || hasCookieConsent) {
-        // Existing user detected - mark as visited so they don't see the modal
-        localStorage.setItem(FIRST_VISIT_KEY, 'true');
-        return false;
-      }
-
-      // Brand new user - show the modal
+      // Show modal for all users (including existing ones) since this is a new feature
       return true;
     } catch (e) {
       return false;
@@ -125,6 +113,20 @@
     // Create modal container
     const modal = document.createElement('div');
     modal.id = 'first-time-modal';
+
+    // Add mouse tracking for glow effect
+    modal.addEventListener('mousemove', (e) => {
+      const rect = modal.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      modal.style.setProperty('--x', x + '%');
+      modal.style.setProperty('--y', y + '%');
+    });
+
+    modal.addEventListener('mouseleave', () => {
+      modal.style.setProperty('--x', '50%');
+      modal.style.setProperty('--y', '50%');
+    });
 
     // Modal header
     const header = document.createElement('div');
@@ -270,13 +272,31 @@
     const modal = document.createElement('div');
     modal.id = 'cloaking-modal';
 
+    // Add mouse tracking for glow effect
+    let rafId = null;
+    modal.addEventListener('mousemove', (e) => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        const rect = modal.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        modal.style.setProperty('--x', x + '%');
+        modal.style.setProperty('--y', y + '%');
+        rafId = null;
+      });
+    });
+
+    modal.addEventListener('mouseleave', () => {
+      modal.style.setProperty('--x', '50%');
+      modal.style.setProperty('--y', '50%');
+    });
+
     // Modal header
     const header = document.createElement('div');
     header.innerHTML = `
-      <h2>Privacy Enhancement 🔒</h2>
+      <h2>About:Blank 🔒</h2>
       <p class="subtitle">
-        Would you like to enable about:blank cloaking? This opens the site in a blank tab and 
-        redirects the original tab to hide this site from your browser history.
+        Prevents others from seeing your screen and hides this site from browser history.
       </p>
     `;
 
@@ -293,7 +313,7 @@
         <h3 class="option-title">Enable Cloaking</h3>
       </div>
       <p class="option-description">
-        Automatically opens in about:blank, people wont be able to see your screen and search history.
+        Opens in about:blank window. People won't see your screen and it hides from search history.
       </p>
       <div class="checkmark-radio"></div>
     `;
@@ -435,6 +455,25 @@
     // Create modal container
     const modal = document.createElement('div');
     modal.id = 'cookie-consent-modal';
+
+    // Add mouse tracking for glow effect
+    let rafId = null;
+    modal.addEventListener('mousemove', (e) => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        const rect = modal.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        modal.style.setProperty('--x', x + '%');
+        modal.style.setProperty('--y', y + '%');
+        rafId = null;
+      });
+    });
+
+    modal.addEventListener('mouseleave', () => {
+      modal.style.setProperty('--x', '50%');
+      modal.style.setProperty('--y', '50%');
+    });
 
     // Modal header
     const header = document.createElement('div');
