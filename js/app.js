@@ -26,11 +26,19 @@ document.addEventListener('click', e => {
   const link = e.target.closest('[data-route]');
   if (link) {
     e.preventDefault();
+    // Save chatroom state BEFORE navigation if currently on chatroom
+    if (location.pathname === '/chatroom' && typeof window.saveChatroomState === 'function') {
+      window.saveChatroomState();
+    }
     navigate(link.dataset.route);
   }
 });
 
 window.onpopstate = () => {
+  // Save chatroom state before back/forward navigation
+  if (location.pathname === '/chatroom' && typeof window.saveChatroomState === 'function') {
+    window.saveChatroomState();
+  }
   const path = location.pathname;
   (routes[path] || renderHome)();
 };

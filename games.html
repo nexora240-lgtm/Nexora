@@ -11,6 +11,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="/css/games.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     * {
       box-sizing: border-box;
@@ -67,6 +68,84 @@
         display: none;
       }
     }
+
+    /* Game Suggestion Button */
+    .suggestion-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px 60px 20px;
+      animation: fadeSlideUp 0.5s ease-out;
+    }
+
+    .suggestion-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 32px;
+      background: linear-gradient(135deg, var(--g-accent), var(--g-accent-deep));
+      color: var(--g-on-accent);
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: var(--g-radius);
+      border: 2px solid transparent;
+      box-shadow: 0 4px 16px var(--g-shadow), 0 2px 8px rgba(0,0,0,0.2);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .suggestion-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: var(--glow-size);
+      height: var(--glow-size);
+      background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.2) 0%,
+        transparent 70%
+      );
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .suggestion-btn:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 8px 24px var(--g-shadow), 0 4px 12px rgba(0,0,0,0.3);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .suggestion-btn:hover::before {
+      opacity: 1;
+    }
+
+    .suggestion-btn:active {
+      transform: translateY(0) scale(1.02);
+      box-shadow: 0 2px 8px var(--g-shadow);
+    }
+
+    .suggestion-btn i {
+      font-size: 1.3rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.1); }
+    }
+
+    @media (max-width: 600px) {
+      .suggestion-btn {
+        font-size: 1rem;
+        padding: 14px 28px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -98,6 +177,14 @@
     <div class="ad-container">
       <div id="rightAdContainer"></div>
     </div>
+  </div>
+
+  <!-- Game Suggestion Button -->
+  <div class="suggestion-section">
+    <a href="https://forms.gle/f8r6tPEMnobGoH5g8" target="_blank" rel="noopener noreferrer" class="suggestion-btn">
+      <i class="fas fa-lightbulb"></i>
+      <span>Suggest a Game</span>
+    </a>
   </div>
 
   <script type="text/javascript">

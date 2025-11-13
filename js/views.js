@@ -39,6 +39,13 @@ function loadView(file) {
       if (window.NexoraChat && typeof window.NexoraChat.init === 'function') {
         try { window.NexoraChat.init(app); } catch (e) { /* ignore init errors */ }
       }
+
+      // Restore chatroom state if returning to chatroom
+      if (file === 'chatroom.html' && typeof restoreChatroomState === 'function') {
+        setTimeout(() => {
+          restoreChatroomState();
+        }, 150);
+      }
     })
     .catch(() => {
       app.innerHTML = `
