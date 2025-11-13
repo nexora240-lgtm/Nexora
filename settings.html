@@ -14,7 +14,7 @@
   <title>Settings</title>
   <link rel="stylesheet" href="/css/_tokens.css" />
   <link rel="stylesheet" href="/css/settings.css" />
-  <link rel="icon" type="image/png" id="favicon" href="/assets/logos/nexora-bright.png">
+  <link rel="icon" type="image/png" id="favicon" href="/assets/logos/nexora-amber.png">
 </head>
 <body>
   <div class="settings-root" id="settingsRoot" aria-live="polite">
@@ -46,11 +46,21 @@
             <p class="description">Toggle the global color scheme between dark and light. When enabled, the interface will use the selected dark theme; disable for the light scheme. This preference is saved locally.</p>
 
             <div class="subsection" style="display:flex;flex-direction:column;gap:12px;">
-              <div class="row" style="align-items:center; margin:0;">
+              <div class="row" style="align-items:center; margin:0; gap:16px;">
                 <div class="toggle" tabindex="0" role="switch" aria-checked="false" id="schemeToggle" aria-label="Toggle dark light mode">
                   <input id="schemeToggleInput" type="checkbox" aria-hidden="true" />
-                  <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb" aria-hidden="true"></span></span>
+                  <span class="toggle-track" aria-hidden="true">
+                    <span class="toggle-thumb" aria-hidden="true">
+                      <svg class="toggle-icon moon-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                      </svg>
+                      <svg class="toggle-icon sun-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <circle cx="12" cy="12" r="5"/><path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m17.66-5.66l-4.24 4.24m-6 6l-4.24 4.24m12.48 0l-4.24-4.24m-6-6L6.34 4.34"/>
+                      </svg>
+                    </span>
+                  </span>
                 </div>
+                <span class="toggle-label" id="schemeLabel" style="font-weight: 600; color: var(--settings-accent); font-size: 15px;">Light Mode</span>
               </div>
             </div>
           </div>
@@ -105,6 +115,42 @@
                   <div style="margin-top:8px; display:flex; gap:12px; align-items:center;">
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div style="height:16px;"></div>
+
+            <div class="subsection">
+              <h2 class="tab-appearance-heading">Panic Button</h2>
+              <p class="description" style="margin-top:6px;">Set a keybind to instantly redirect to a safe URL. Useful for quickly switching tabs when someone approaches.</p>
+
+              <div style="margin-top:12px;">
+                <label for="panicKeyInput" class="description" style="display:block;margin-bottom:8px;">Keybind (e.g., Escape, Space, or key combination)</label>
+                <input 
+                  id="panicKeyInput" 
+                  type="text" 
+                  placeholder="Click and press your key combination" 
+                  readonly
+                  class="theme-option" 
+                  style="min-width:240px;cursor:pointer;user-select:none;"
+                />
+                <button id="clearPanicKey" class="blank-link" style="margin-top:8px;display:inline-block;background:transparent;border:1px solid var(--settings-accent);color:var(--settings-accent);">Clear Keybind</button>
+              </div>
+
+              <div style="margin-top:12px;">
+                <label for="panicUrlInput" class="description" style="display:block;margin-bottom:8px;">Redirect URL</label>
+                <input 
+                  id="panicUrlInput" 
+                  type="url" 
+                  placeholder="https://classroom.google.com" 
+                  class="theme-option" 
+                  style="min-width:360px;"
+                />
+              </div>
+
+              <div id="panic-status" style="margin-top:12px;padding:12px;border-radius:8px;background:var(--settings-panel-2);display:none;">
+                <p style="margin:0;color:var(--settings-accent);font-weight:600;">✓ Panic Button Active</p>
+                <p class="description" style="margin:6px 0 0 0;">Press <span id="panic-key-display" style="font-weight:600;color:var(--settings-accent);"></span> to instantly redirect.</p>
               </div>
             </div>
           </div>

@@ -7,7 +7,7 @@
   const FAVICON_KEY = 'settings.faviconData';
   const CUSTOM_TITLE_KEY = 'settings.customTitle';
   const ABOUT_KEY = 'settings.aboutBlank';
-  const DEFAULT_FALLBACK = '/assets/logos/nexora-bright.png';
+  const DEFAULT_FALLBACK = '/assets/logos/nexora-amber.png';
   const CODE_LEVEL_TITLES = {
     "Clever": "Clever | Portal",
     "Google Classroom": "Home",
@@ -185,6 +185,8 @@
   function applySavedTheme() {
     try {
       const theme = localStorage.getItem(THEME_KEY);
+      const scheme = localStorage.getItem(SCHEME_KEY);
+      
       if (theme) {
         const map = {
           'midnight-amber': 'theme-midnight-amber',
@@ -193,13 +195,17 @@
         };
         const cls = map[theme];
         if (cls) {
-          document.documentElement.classList.remove(...Object.values(map), 'light-scheme');
+          document.documentElement.classList.remove(...Object.values(map));
           document.documentElement.classList.add(cls);
         }
       }
-      const scheme = localStorage.getItem(SCHEME_KEY);
-      if (scheme === 'light') document.documentElement.classList.add('light-scheme');
-      else if (scheme === 'dark') document.documentElement.classList.remove('light-scheme');
+      
+      // Apply scheme after theme so light-scheme is preserved
+      if (scheme === 'light') {
+        document.documentElement.classList.add('light-scheme');
+      } else if (scheme === 'dark') {
+        document.documentElement.classList.remove('light-scheme');
+      }
     } catch (e) {}
   }
 
@@ -237,3 +243,74 @@
   }
 
 })();
+
+// Global Panic Button Listener
+(function () {
+  const PANIC_KEY_KEY = 'settings.panicKey';
+  const PANIC_URL_KEY = 'settings.panicUrl';
+  
+  // Flag to prevent panic button from triggering while setting keybind
+  let isSettingPanicKey = false;
+
+  function checkPanicKey(event) {
+    // Don't trigger if user is currently setting the panic key
+    if (isSettingPanicKey) return;
+    
+    // Don't trigger if user is typing in an input field (except readonly panic key inputs)
+    const target = event.target;
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') && !target.readOnly) {
+      return;
+    }
+    
+    try {
+      const savedKey = localStorage.getItem(PANIC_KEY_KEY);
+      const savedUrl = localStorage.getItem(PANIC_URL_KEY);
+      
+      if (!savedKey || !savedUrl) return;
+      
+      // Build current key combination
+      const parts = [];
+      if (event.ctrlKey) parts.push('Ctrl');
+      if (event.altKey) parts.push('Alt');
+      if (event.shiftKey) parts.push('Shift');
+      if (event.metaKey) parts.push('Meta');
+      
+      const mainKey = event.key;
+      if (!['Control', 'Alt', 'Shift', 'Meta'].includes(mainKey)) {
+        parts.push(mainKey === ' ' ? 'Space' : mainKey);
+      }
+      
+      const currentCombo = parts.join(' + ');
+      
+      // Check if it matches the saved panic key
+      if (currentCombo === savedKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Open URL in new tab
+        window.open(savedUrl, '_blank');
+        
+        // Close current tab (this will only work if the tab was opened by script)
+        // For regular tabs, just redirect to a blank page
+        try {
+          window.close();
+        } catch (e) {
+          // If we can't close the tab, redirect to about:blank
+          window.location.href = 'about:blank';
+        }
+      }
+    } catch (e) {
+      console.error('Panic button error:', e);
+    }
+  }
+
+  document.addEventListener('keydown', checkPanicKey);
+  
+  // Expose method to disable panic button while setting keybind
+  window.NexoraPanicButton = {
+    setIsSettingKey: function(value) {
+      isSettingPanicKey = !!value;
+    }
+  };
+})();
+

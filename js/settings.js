@@ -18,6 +18,8 @@
   const DISGUISE_KEY = 'settings.disguise';
   const FAVICON_KEY = 'settings.faviconData';
   const CUSTOM_TITLE_KEY = 'settings.customTitle';
+  const PANIC_KEY_KEY = 'settings.panicKey';
+  const PANIC_URL_KEY = 'settings.panicUrl';
   const THEME_CLASS_MAP = {
     'midnight-amber': 'theme-midnight-amber',
     'midnight-blueberry': 'theme-midnight-blueberry',
@@ -28,7 +30,7 @@
   const COOKIE_FAV = 'nexora_favicon';
   const COOKIE_MAX_DAYS = 365;
 
-  const FALLBACK_NONE_FAVICON = '/assets/logos/nexora-bright.png';
+  const FALLBACK_NONE_FAVICON = '/assets/logos/nexora-amber.png';
 
   const root = document.getElementById('settingsRoot');
   if (!root) return;
@@ -41,6 +43,7 @@
   };
   const schemeToggle = root.querySelector('#schemeToggle');
   const schemeInput = root.querySelector('#schemeToggleInput');
+  const schemeLabel = root.querySelector('#schemeLabel');
   const aboutToggle = root.querySelector('#aboutToggle');
   const aboutInput = root.querySelector('#aboutToggleInput');
   const autoCloakStatus = root.querySelector('#auto-cloak-status');
@@ -52,6 +55,11 @@
   const disguiseLockedNote = document.getElementById('disguise-locked-note');
   const downloadBtn = root.querySelector('#downloadCookie');
   const uploadBtn = root.querySelector('#uploadCookie');
+  const panicKeyInput = root.querySelector('#panicKeyInput');
+  const panicUrlInput = root.querySelector('#panicUrlInput');
+  const clearPanicKeyBtn = root.querySelector('#clearPanicKey');
+  const panicStatus = root.querySelector('#panic-status');
+  const panicKeyDisplay = root.querySelector('#panic-key-display');
 
   if (disguiseBadge && disguiseBadge.parentNode) {
     disguiseBadge.parentNode.removeChild(disguiseBadge);
@@ -360,12 +368,21 @@
       if (schemeInput) schemeInput.checked = true;
       schemeToggle?.classList.add('active');
       schemeToggle?.setAttribute('aria-checked', 'true');
+      if (schemeLabel) schemeLabel.textContent = 'Dark Mode';
     } else {
+      // Get current theme before adding light-scheme
+      const savedTheme = localStorage.getItem(THEME_KEY) || DEFAULT_THEME_ID;
+      const themeClass = THEME_CLASS_MAP[savedTheme] || THEME_CLASS_MAP[DEFAULT_THEME_ID];
+      
       document.documentElement.classList.add('light-scheme');
+      // Keep the theme class for color variation in light mode
       document.documentElement.classList.remove(...Object.values(THEME_CLASS_MAP));
+      document.documentElement.classList.add(themeClass);
+      
       if (schemeInput) schemeInput.checked = false;
       schemeToggle?.classList.remove('active');
       schemeToggle?.setAttribute('aria-checked', 'false');
+      if (schemeLabel) schemeLabel.textContent = 'Light Mode';
     }
     try { localStorage.setItem(SCHEME_KEY, scheme); } catch (e) {}
     if (emit) document.dispatchEvent(new CustomEvent('settings:colorSchemeChanged', { detail: { scheme } }));
@@ -390,7 +407,9 @@
   function applyTheme(themeId, emit = true) {
     if (!themeId) return;
     const cls = THEME_CLASS_MAP[themeId] || THEME_CLASS_MAP[DEFAULT_THEME_ID];
-    document.documentElement.classList.remove(...Object.values(THEME_CLASS_MAP), 'light-scheme');
+    const isLight = document.documentElement.classList.contains('light-scheme');
+    document.documentElement.classList.remove(...Object.values(THEME_CLASS_MAP));
+    // Always add the theme class for color variation (works in both light and dark)
     document.documentElement.classList.add(cls);
     try { localStorage.setItem(THEME_KEY, themeId); } catch (e) {}
     if (emit) document.dispatchEvent(new CustomEvent('settings:themeChanged', { detail: { theme: themeId } }));
@@ -535,8 +554,146 @@
     } catch (e) {}
   }
 
+  // === Panic Button Functionality ===
+  
+  let currentPanicKey = null;
+
+  function formatKeyCombo(event) {
+    const parts = [];
+    if (event.ctrlKey) parts.push('Ctrl');
+    if (event.altKey) parts.push('Alt');
+    if (event.shiftKey) parts.push('Shift');
+    if (event.metaKey) parts.push('Meta');
+    
+    // Add the main key
+    const mainKey = event.key;
+    if (!['Control', 'Alt', 'Shift', 'Meta'].includes(mainKey)) {
+      parts.push(mainKey === ' ' ? 'Space' : mainKey);
+    }
+    
+    return parts.join(' + ');
+  }
+
+  function savePanicSettings(keyCombo, url) {
+    try {
+      if (keyCombo) localStorage.setItem(PANIC_KEY_KEY, keyCombo);
+      else localStorage.removeItem(PANIC_KEY_KEY);
+      
+      if (url) localStorage.setItem(PANIC_URL_KEY, url);
+      else localStorage.removeItem(PANIC_URL_KEY);
+    } catch (e) {
+      console.error('Failed to save panic settings:', e);
+    }
+  }
+
+  function updatePanicStatus() {
+    const keyCombo = currentPanicKey;
+    const url = panicUrlInput ? panicUrlInput.value.trim() : '';
+    
+    if (keyCombo && url && panicStatus && panicKeyDisplay) {
+      panicKeyDisplay.textContent = keyCombo;
+      panicStatus.style.display = 'block';
+    } else if (panicStatus) {
+      panicStatus.style.display = 'none';
+    }
+  }
+
+  function handlePanicKeyInput(event) {
+    event.preventDefault();
+    
+    // Ignore modifier-only keys
+    if (['Control', 'Alt', 'Shift', 'Meta'].includes(event.key)) {
+      return;
+    }
+    
+    const keyCombo = formatKeyCombo(event);
+    currentPanicKey = keyCombo;
+    
+    if (panicKeyInput) {
+      panicKeyInput.value = keyCombo;
+    }
+    
+    const url = panicUrlInput ? panicUrlInput.value.trim() : '';
+    savePanicSettings(keyCombo, url);
+    updatePanicStatus();
+    
+    // Re-enable panic button after setting key
+    if (window.NexoraPanicButton) {
+      window.NexoraPanicButton.setIsSettingKey(false);
+    }
+  }
+
+  function clearPanicKey() {
+    currentPanicKey = null;
+    if (panicKeyInput) {
+      panicKeyInput.value = '';
+    }
+    savePanicSettings(null, panicUrlInput ? panicUrlInput.value.trim() : '');
+    updatePanicStatus();
+  }
+
+  function handlePanicUrlChange() {
+    const url = panicUrlInput ? panicUrlInput.value.trim() : '';
+    savePanicSettings(currentPanicKey, url);
+    updatePanicStatus();
+  }
+
+  function initPanicButton() {
+    try {
+      // Restore saved settings
+      const savedKey = localStorage.getItem(PANIC_KEY_KEY);
+      const savedUrl = localStorage.getItem(PANIC_URL_KEY);
+      
+      if (savedKey) {
+        currentPanicKey = savedKey;
+        if (panicKeyInput) panicKeyInput.value = savedKey;
+      }
+      
+      if (savedUrl && panicUrlInput) {
+        panicUrlInput.value = savedUrl;
+      }
+      
+      updatePanicStatus();
+      
+      // Set up event listeners
+      if (panicKeyInput) {
+        panicKeyInput.addEventListener('keydown', handlePanicKeyInput);
+        panicKeyInput.addEventListener('click', () => {
+          // Disable panic button while setting key
+          if (window.NexoraPanicButton) {
+            window.NexoraPanicButton.setIsSettingKey(true);
+          }
+          panicKeyInput.value = 'Press a key...';
+        });
+        panicKeyInput.addEventListener('blur', () => {
+          // Re-enable panic button when input loses focus
+          if (window.NexoraPanicButton) {
+            window.NexoraPanicButton.setIsSettingKey(false);
+          }
+          if (panicKeyInput.value === 'Press a key...') {
+            panicKeyInput.value = currentPanicKey || '';
+          }
+        });
+      }
+      
+      if (clearPanicKeyBtn) {
+        clearPanicKeyBtn.addEventListener('click', clearPanicKey);
+      }
+      
+      if (panicUrlInput) {
+        panicUrlInput.addEventListener('input', handlePanicUrlChange);
+        panicUrlInput.addEventListener('change', handlePanicUrlChange);
+      }
+    } catch (e) {
+      console.error('Failed to initialize panic button:', e);
+    }
+  }
+
+  // === End Panic Button ===
+
   activate('appearance');
   try { restoreSettingsUI(); } catch (e) {}
+  initPanicButton();
 
   window.NexoraSettings = {
     applyTheme,
@@ -651,8 +808,8 @@
     'midnight-grape': 'assets/favicon-grape.png'
   };
 
-  const DEFAULT_LOGO = '/assets/logos/nexora-bright.png';
-  const DEFAULT_FAVICON = 'assets/favicon-light.png';
+  const DEFAULT_LOGO = '/assets/logos/nexora-amber.png';
+  const DEFAULT_FAVICON = 'assets/favicon-amber.png';
 
   function setLogoAndFaviconForTheme(themeId) {
     const isLight = document.documentElement.classList.contains('light-scheme');

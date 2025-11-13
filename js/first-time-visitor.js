@@ -9,6 +9,8 @@
   const COOKIE_NAME = 'nexora_disguise';
   const COOKIE_FAV = 'nexora_favicon';
   const COOKIE_MAX_DAYS = 365;
+  const PANIC_KEY_KEY = 'settings.panicKey';
+  const PANIC_URL_KEY = 'settings.panicUrl';
 
   // Disguise options with their details
   const DISGUISE_OPTIONS = [
@@ -412,8 +414,8 @@
 
   function handleCloakingSkip() {
     closeCloakingModal();
-    // Show cookie consent modal after skipping cloaking
-    setTimeout(() => showCookieConsentModal(), 300);
+    // Show panic button modal after skipping cloaking
+    setTimeout(() => showPanicButtonModal(), 300);
   }
 
   function handleCloakingContinue() {
@@ -421,8 +423,8 @@
       const enabled = selectedCloakingOption === 'enabled';
       applyCloakingSetting(enabled);
       closeCloakingModal();
-      // Show cookie consent modal after cloaking selection
-      setTimeout(() => showCookieConsentModal(), 300);
+      // Show panic button modal after cloaking selection
+      setTimeout(() => showPanicButtonModal(), 300);
     }
   }
 
@@ -442,6 +444,225 @@
   }
 
   // === End Cloaking Modal ===
+
+  // === Panic Button Modal ===
+  
+  let selectedPanicKey = null;
+  let panicUrlValue = '';
+
+  function createPanicButtonModal() {
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'first-time-overlay';
+
+    // Create modal container
+    const modal = document.createElement('div');
+    modal.id = 'panic-button-modal';
+
+    // Add mouse tracking for glow effect
+    let rafId = null;
+    modal.addEventListener('mousemove', (e) => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        const rect = modal.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        modal.style.setProperty('--x', x + '%');
+        modal.style.setProperty('--y', y + '%');
+        rafId = null;
+      });
+    });
+
+    modal.addEventListener('mouseleave', () => {
+      modal.style.setProperty('--x', '50%');
+      modal.style.setProperty('--y', '50%');
+    });
+
+    // Modal header
+    const header = document.createElement('div');
+    header.innerHTML = `
+      <h2>Panic Button ⚡</h2>
+      <p class="subtitle">
+        Set a keybind to instantly redirect to a safe URL when someone approaches. Optional but recommended.
+      </p>
+    `;
+
+    // Create input container
+    const inputsContainer = document.createElement('div');
+    inputsContainer.className = 'panic-inputs';
+    inputsContainer.style.cssText = 'display: flex; flex-direction: column; gap: 16px; margin: 20px 0;';
+
+    // Keybind input
+    const keyInputWrapper = document.createElement('div');
+    keyInputWrapper.innerHTML = `
+      <label style="display: block; margin-bottom: 8px; font-size: 14px; color: var(--muted, #9e8c80); font-weight: 500;">
+        Keybind
+      </label>
+      <input 
+        id="panic-key-input-modal" 
+        type="text" 
+        placeholder="Click and press a key combination" 
+        readonly
+        style="width: 100%; padding: 12px 16px; border-radius: 10px; background: var(--surface-2, #261813); border: 1px solid rgba(255,255,255,0.08); color: var(--text, #f5f0ed); font-size: 15px; cursor: pointer; transition: border-color 0.2s ease;"
+      />
+    `;
+
+    // URL input
+    const urlInputWrapper = document.createElement('div');
+    urlInputWrapper.innerHTML = `
+      <label style="display: block; margin-bottom: 8px; font-size: 14px; color: var(--muted, #9e8c80); font-weight: 500;">
+        Redirect URL
+      </label>
+      <input 
+        id="panic-url-input-modal" 
+        type="url" 
+        placeholder="https://classroom.google.com" 
+        style="width: 100%; padding: 12px 16px; border-radius: 10px; background: var(--surface-2, #261813); border: 1px solid rgba(255,255,255,0.08); color: var(--text, #f5f0ed); font-size: 15px; transition: border-color 0.2s ease;"
+      />
+    `;
+
+    inputsContainer.appendChild(keyInputWrapper);
+    inputsContainer.appendChild(urlInputWrapper);
+
+    // Get input elements
+    setTimeout(() => {
+      const keyInput = document.getElementById('panic-key-input-modal');
+      const urlInput = document.getElementById('panic-url-input-modal');
+      
+      if (keyInput) {
+        keyInput.addEventListener('keydown', (event) => {
+          event.preventDefault();
+          
+          // Ignore modifier-only keys
+          if (['Control', 'Alt', 'Shift', 'Meta'].includes(event.key)) {
+            return;
+          }
+          
+          const parts = [];
+          if (event.ctrlKey) parts.push('Ctrl');
+          if (event.altKey) parts.push('Alt');
+          if (event.shiftKey) parts.push('Shift');
+          if (event.metaKey) parts.push('Meta');
+          
+          const mainKey = event.key;
+          if (!['Control', 'Alt', 'Shift', 'Meta'].includes(mainKey)) {
+            parts.push(mainKey === ' ' ? 'Space' : mainKey);
+          }
+          
+          const keyCombo = parts.join(' + ');
+          selectedPanicKey = keyCombo;
+          keyInput.value = keyCombo;
+          
+          // Re-enable panic button after setting key
+          if (window.NexoraPanicButton) {
+            window.NexoraPanicButton.setIsSettingKey(false);
+          }
+          
+          // Enable continue button if URL is also set
+          if (panicUrlValue || urlInput.value.trim()) {
+            continueBtn.disabled = false;
+          }
+        });
+
+        keyInput.addEventListener('click', () => {
+          // Disable panic button while setting key
+          if (window.NexoraPanicButton) {
+            window.NexoraPanicButton.setIsSettingKey(true);
+          }
+          keyInput.value = 'Press a key...';
+        });
+
+        keyInput.addEventListener('blur', () => {
+          // Re-enable panic button when input loses focus
+          if (window.NexoraPanicButton) {
+            window.NexoraPanicButton.setIsSettingKey(false);
+          }
+          if (keyInput.value === 'Press a key...') {
+            keyInput.value = selectedPanicKey || '';
+          }
+        });
+      }
+      
+      if (urlInput) {
+        urlInput.addEventListener('input', () => {
+          panicUrlValue = urlInput.value.trim();
+          // Enable continue button if both are set
+          if (selectedPanicKey && panicUrlValue) {
+            continueBtn.disabled = false;
+          }
+        });
+      }
+    }, 0);
+
+    // Create action buttons
+    const actions = document.createElement('div');
+    actions.className = 'modal-actions';
+
+    const skipBtn = document.createElement('button');
+    skipBtn.className = 'btn-skip';
+    skipBtn.textContent = 'Skip for Now';
+    skipBtn.addEventListener('click', handlePanicSkip);
+
+    const continueBtn = document.createElement('button');
+    continueBtn.className = 'btn-continue';
+    continueBtn.textContent = 'Continue';
+    continueBtn.disabled = true;
+    continueBtn.addEventListener('click', handlePanicContinue);
+
+    actions.appendChild(skipBtn);
+    actions.appendChild(continueBtn);
+
+    // Assemble modal
+    modal.appendChild(header);
+    modal.appendChild(inputsContainer);
+    modal.appendChild(actions);
+    overlay.appendChild(modal);
+
+    return overlay;
+  }
+
+  function applyPanicSettings(keyCombo, url) {
+    try {
+      if (keyCombo && url) {
+        localStorage.setItem(PANIC_KEY_KEY, keyCombo);
+        localStorage.setItem(PANIC_URL_KEY, url);
+      }
+    } catch (e) {
+      console.error('Failed to apply panic settings:', e);
+    }
+  }
+
+  function handlePanicSkip() {
+    closePanicModal();
+    // Show cookie consent modal after skipping panic button
+    setTimeout(() => showCookieConsentModal(), 300);
+  }
+
+  function handlePanicContinue() {
+    if (selectedPanicKey && panicUrlValue) {
+      applyPanicSettings(selectedPanicKey, panicUrlValue);
+    }
+    closePanicModal();
+    // Show cookie consent modal after panic button setup
+    setTimeout(() => showCookieConsentModal(), 300);
+  }
+
+  function closePanicModal() {
+    const overlay = document.getElementById('first-time-overlay');
+    if (overlay) {
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.remove();
+      }, 300);
+    }
+  }
+
+  function showPanicButtonModal() {
+    const modal = createPanicButtonModal();
+    document.body.appendChild(modal);
+  }
+
+  // === End Panic Button Modal ===
 
   // === Cookie Consent Modal ===
   

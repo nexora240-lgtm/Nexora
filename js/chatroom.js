@@ -53,7 +53,7 @@ function createRoom() {
     currentUsername = username;
     currentRoomCode = generateRoomCode();
     
-    connectWebSocket();
+    connectWebSocket(true); // Pass true to indicate room creation
 }
 
 function joinRoom() {
@@ -71,7 +71,7 @@ function joinRoom() {
     connectWebSocket();
 }
 
-function connectWebSocket() {
+function connectWebSocket(isCreatingRoom = false) {
     ws = new WebSocket(WS_URL);
     
     ws.onopen = () => {
@@ -82,6 +82,13 @@ function connectWebSocket() {
         }));
         
         showChatScreen();
+        
+        // Automatically show enlarged room code when creating a new room
+        if (isCreatingRoom) {
+            setTimeout(() => {
+                toggleRoomCodeOverlay();
+            }, 300); // Small delay to ensure chat screen is visible first
+        }
     };
     
     ws.onmessage = (event) => {

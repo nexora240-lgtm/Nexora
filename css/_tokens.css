@@ -24,6 +24,17 @@
   --accent-gradient: linear-gradient(90deg, var(--primary-deep), var(--primary));
 }
 
+/* Smooth transitions for theme changes */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  background: var(--page-bg);
+  color: var(--text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 .theme-midnight-amber {
   --page-bg: #0a0605;
   --surface: #1a100d;
@@ -91,25 +102,55 @@
 }
 
 .light-scheme {
-  --page-bg: #ffffff;
-  --surface: #f7f7f8;
-  --surface-2: #efefef;
+  --page-bg: #fafafa;
+  --surface: #ffffff;
+  --surface-2: #f5f5f5;
 
   --primary: #d4550a;
-  --primary-deep: #992f05;
-  --primary-shadow: rgba(212,85,10,0.12);
+  --primary-deep: #a03e07;
+  --primary-shadow: rgba(212,85,10,0.18);
 
   --primary-accent: var(--primary);
-  --on-primary: #fff0e8;
+  --on-primary: #ffffff;
 
-  --text: #111111;
-  --muted: #666666;
+  --text: #1a1a1a;
+  --muted: #5a5a5a;
 
-  --contrast-high: rgba(0,0,0,0.85);
-  --contrast-low: rgba(0,0,0,0.6);
+  --contrast-high: rgba(0,0,0,0.92);
+  --contrast-low: rgba(0,0,0,0.65);
 
-  --focus-color: rgba(212,85,10,0.08);
-  --accent-gradient: linear-gradient(90deg, #ff8a33, #ffc38a);
+  --focus-color: rgba(212,85,10,0.15);
+  --accent-gradient: linear-gradient(135deg, #ff6b35, #ff9d6f);
+}
+
+/* Light scheme with blueberry theme colors */
+.light-scheme.theme-midnight-blueberry {
+  --primary: #2f6bd4;
+  --primary-deep: #1f4a9a;
+  --primary-shadow: rgba(47,107,212,0.18);
+  --primary-accent: var(--primary);
+  --focus-color: rgba(47,107,212,0.15);
+  --accent-gradient: linear-gradient(135deg, #4a7fd9, #6ea8fe);
+}
+
+/* Light scheme with grape theme colors */
+.light-scheme.theme-midnight-grape {
+  --primary: #8f3fb1;
+  --primary-deep: #6b2d85;
+  --primary-shadow: rgba(143,63,177,0.18);
+  --primary-accent: var(--primary);
+  --focus-color: rgba(143,63,177,0.15);
+  --accent-gradient: linear-gradient(135deg, #a855d9, #c084fc);
+}
+
+/* Light scheme with amber theme colors (default) */
+.light-scheme.theme-midnight-amber {
+  --primary: #d4550a;
+  --primary-deep: #a03e07;
+  --primary-shadow: rgba(212,85,10,0.18);
+  --primary-accent: var(--primary);
+  --focus-color: rgba(212,85,10,0.15);
+  --accent-gradient: linear-gradient(135deg, #ff6b35, #ff9d6f);
 }
 
 .bg-page { background: var(--page-bg); color: var(--text); }

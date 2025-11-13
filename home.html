@@ -85,10 +85,19 @@
       setScheme: function (scheme) {
         if (scheme === 'light') {
           document.documentElement.classList.add('light-scheme');
+          // Keep theme class for light mode color variations
+          const savedTheme = localStorage.getItem('settings.theme') || 'midnight-amber';
+          const themeClass = 'theme-' + savedTheme;
           document.documentElement.classList.remove('theme-midnight-amber','theme-midnight-blueberry','theme-midnight-grape');
+          document.documentElement.classList.add(themeClass);
           try { localStorage.setItem('settings.colorScheme', 'light'); } catch(e){}
         } else {
           document.documentElement.classList.remove('light-scheme');
+          // Re-apply theme class for dark mode
+          const savedTheme = localStorage.getItem('settings.theme') || 'midnight-amber';
+          const themeClass = 'theme-' + savedTheme;
+          document.documentElement.classList.remove('theme-midnight-amber','theme-midnight-blueberry','theme-midnight-grape');
+          document.documentElement.classList.add(themeClass);
           try { localStorage.setItem('settings.colorScheme', 'dark'); } catch(e){}
         }
         document.dispatchEvent(new CustomEvent('settings:colorSchemeChanged', { detail: { scheme: scheme } }));

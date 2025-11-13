@@ -53,3 +53,36 @@
   --muted: #c9a0cc;
   --radius: 14px;
 }
+
+/* Light scheme overrides */
+.light-scheme {
+  --page-bg: #fafafa;
+  --panel: #ffffff;
+  --panel-2: #f8f8f8;
+  --text: #1a1a1a;
+  --muted: #5a5a5a;
+}
+
+/* Light scheme with amber theme */
+.light-scheme.theme-midnight-amber {
+  --orange: #d4550a;
+  --orange-deep: #a03e07;
+  --orange-shadow: rgba(212,85,10,0.18);
+  --accent: var(--orange);
+}
+
+/* Light scheme with blueberry theme */
+.light-scheme.theme-midnight-blueberry {
+  --orange: #2f6bd4;
+  --orange-deep: #1f4a9a;
+  --orange-shadow: rgba(47,107,212,0.18);
+  --accent: var(--orange);
+}
+
+/* Light scheme with grape theme */
+.light-scheme.theme-midnight-grape {
+  --orange: #8f3fb1;
+  --orange-deep: #6b2d85;
+  --orange-shadow: rgba(143,63,177,0.18);
+  --accent: var(--orange);
+}

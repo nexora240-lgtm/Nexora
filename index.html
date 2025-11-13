@@ -14,7 +14,7 @@
   <title>Nexora</title>
   <meta name="description" content="Nexora Learning Hub — interactive educational tools and tutorials for middle and high school students." />
   <link rel="canonical" href="https://thenexoraproject.xyz/" />
-  <link rel="icon" type="image/png" id="favicon" href="/assets/logos/nexora-bright.png">
+  <link rel="icon" type="image/png" id="favicon" href="/assets/logos/nexora-amber.png">
 
   <script src="/js/nexora-boot.js"></script>
 
@@ -80,7 +80,7 @@
     "@type": "EducationalOrganization",
     "name": "Nexora Learning Hub",
     "url": "https://thenexoraproject.xyz",
-    "logo": "/assets/logos/nexora-bright.png",
+    "logo": "/assets/logos/nexora-amber.png",
     "description": "An online platform offering interactive educational tools and tutorials for students.",
     "foundingDate": "2025",
     "address": {
@@ -110,7 +110,7 @@
     <aside class="sidebar" aria-label="Main navigation">
       <div class="sidebar-glow"></div>
       <div class="sidebar-title">
-        <img src="/assets/logos/nexora-bright.png" alt="Nexora Logo" />
+        <img src="/assets/logos/nexora-amber.png" alt="Nexora Logo" />
         <span>Nexora</span>
       </div>
       <nav aria-label="Primary">
@@ -148,10 +148,19 @@
       setScheme: function (scheme) {
         if (scheme === 'light') {
           document.documentElement.classList.add('light-scheme');
+          // Keep theme class for light mode color variations
+          const savedTheme = localStorage.getItem('settings.theme') || 'midnight-amber';
+          const themeClass = 'theme-' + savedTheme;
           document.documentElement.classList.remove('theme-midnight-amber','theme-midnight-blueberry','theme-midnight-grape');
+          document.documentElement.classList.add(themeClass);
           try { localStorage.setItem('settings.colorScheme', 'light'); } catch (e) {}
         } else {
           document.documentElement.classList.remove('light-scheme');
+          // Re-apply theme class for dark mode
+          const savedTheme = localStorage.getItem('settings.theme') || 'midnight-amber';
+          const themeClass = 'theme-' + savedTheme;
+          document.documentElement.classList.remove('theme-midnight-amber','theme-midnight-blueberry','theme-midnight-grape');
+          document.documentElement.classList.add(themeClass);
           try { localStorage.setItem('settings.colorScheme', 'dark'); } catch (e) {}
         }
         document.dispatchEvent(new CustomEvent('settings:colorSchemeChanged', { detail: { scheme: scheme } }));
