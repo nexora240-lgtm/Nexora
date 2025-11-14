@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatroom App</title>
-    <script>
-      location.href = "/";
-    </script>
+    <title>Circle</title>
     <link rel="stylesheet" href="css/_tokens.css">
     <link rel="stylesheet" href="css/theme-tokens.css">
     <link rel="stylesheet" href="css/chatroom.css">
@@ -16,23 +13,30 @@
         <div class="app">
             <div class="container">
                 <div class="header">
-                    <h1>Chatroom</h1>
-                    <div class="room-code" id="headerRoomCode" onclick="toggleRoomCodeOverlay()" title="Click to enlarge"></div>
+                    <button class="header-back-button" id="headerBackButton" onclick="leaveChat()" title="Leave Chat">← Back</button>
+                    <div class="header-content">
+                        <h1>Circle</h1>
+                        <div class="room-code" id="headerRoomCode" onclick="toggleRoomCodeOverlay()" title="Click to enlarge"></div>
+                    </div>
                 </div>
 
                 <!-- Login Screen -->
                 <div class="login-screen" id="loginScreen">
-                    <h2>Chat with your friends!</h2>
+                    <h2>Welcome to Circle!</h2>
                     
                     <!-- Initial choice buttons -->
                     <div class="choice-screen" id="choiceScreen">
                         <button class="choice-button" onclick="showJoinForm()">
-                            <span class="choice-button-title">Join a Room</span>
-                            <span class="choice-button-desc">Enter an existing room code to join a conversation</span>
+                            <span class="choice-button-title">Join a Circle</span>
+                            <span class="choice-button-desc">Enter an existing circle code to join a conversation</span>
                         </button>
                         <button class="choice-button" onclick="showCreateForm()">
-                            <span class="choice-button-title">Create New Room</span>
-                            <span class="choice-button-desc">Start a new room and invite others with a room code</span>
+                            <span class="choice-button-title">Create New Circle</span>
+                            <span class="choice-button-desc">Start a new circle and invite others with a circle code</span>
+                        </button>
+                        <button class="choice-button" onclick="joinPublicChat()">
+                            <span class="choice-button-title">Public Circle</span>
+                            <span class="choice-button-desc">Join the global public circle to meet new people</span>
                         </button>
                     </div>
 
@@ -45,9 +49,9 @@
                             <input type="text" id="joinUsernameInput" placeholder="Enter your username" maxlength="20">
                         </div>
                         <div class="input-group">
-                            <input type="text" id="roomCodeInput" placeholder="Enter room code" maxlength="6">
+                            <input type="text" id="roomCodeInput" placeholder="Enter circle code" maxlength="6">
                         </div>
-                        <button onclick="joinRoom()">Join Room</button>
+                        <button onclick="joinRoom()">Join Circle</button>
                     </div>
 
                     <!-- Create room form -->
@@ -58,25 +62,47 @@
                         <div class="input-group">
                             <input type="text" id="createUsernameInput" placeholder="Enter your username" maxlength="20">
                         </div>
-                        <button onclick="createRoom()">Create Room</button>
+                        <button onclick="createRoom()">Create Circle</button>
+                    </div>
+
+                    <!-- Public chat form -->
+                    <div class="form-screen" id="publicForm">
+                        <button class="back-button" onclick="showChoiceScreen()">
+                            ← Back
+                        </button>
+                        <div class="input-group">
+                            <input type="text" id="publicUsernameInput" placeholder="Enter your username" maxlength="20">
+                        </div>
+                        <button onclick="joinPublicChatWithUsername()">Join Public Circle</button>
                     </div>
                 </div>
 
                 <!-- Chat Screen -->
                 <div class="chat-screen" id="chatScreen">
-                    <div class="messages" id="messages"></div>
+                    <div class="chat-content">
+                        <div class="messages" id="messages"></div>
+                    </div>
                     <div class="input-area">
                         <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
                         <button onclick="sendMessage()">Send</button>
                     </div>
                 </div>
             </div>
+
+            <!-- Users Sidebar (Inside .app container) -->
+            <div class="users-sidebar-external" id="usersSidebar">
+                <div class="users-sidebar-header">
+                    <h3>Users Online</h3>
+                    <span class="user-count" id="userCount">0</span>
+                </div>
+                <div class="users-list" id="usersList"></div>
+            </div>
         </div>
 
         <!-- Fullscreen Room Code Overlay -->
         <div class="room-code-overlay" id="roomCodeOverlay" onclick="toggleRoomCodeOverlay()">
             <div class="room-code-large">
-                <div class="room-code-large-title">ROOM CODE</div>
+                <div class="room-code-large-title">CIRCLE CODE</div>
                 <div class="room-code-large-code" id="largeRoomCode"></div>
                 <div class="room-code-large-hint">👆 Click anywhere to close</div>
             </div>
