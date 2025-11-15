@@ -162,7 +162,11 @@
   const textFiles = [
     'robots.txt',
     'ads.txt',
-    'CNAME',
+    'CNAME'
+  ];
+  
+  // Optional text files (skip if they fail)
+  const optionalTextFiles = [
     'sitemap.xml'
   ];
   
@@ -501,6 +505,31 @@
   }
   
   /**
+   * Load optional text files (silently skip failures)
+   */
+  async function loadOptionalText() {
+    if (optionalTextFiles.length === 0) return [];
+    
+    console.log('📝 Loading optional text files...');
+    const results = await Promise.allSettled(
+      optionalTextFiles.map(async file => {
+        try {
+          const response = await universalFetch(`${getCDNBase()}/${file}`);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const content = await response.text();
+          console.log(`✅ Loaded optional: ${file}`);
+          return { path: file, content, success: true };
+        } catch (error) {
+          console.log(`⏭️ Skipped optional: ${file}`);
+          return { path: file, content: null, success: false };
+        }
+      })
+    );
+    
+    return results.map(r => r.status === 'fulfilled' ? r.value : { path: '', success: false });
+  }
+  
+  /**
    * Main loader function with comprehensive error handling
    */
   async function initNexoraLoader() {
@@ -515,7 +544,7 @@
     }
     
     const startTime = performance.now();
-    let cssStats, jsStats, optionalJsStats, swStats, htmlResults, jsonResults, textResults;
+    let cssStats, jsStats, optionalJsStats, swStats, htmlResults, jsonResults, textResults, optionalTextResults;
     
     try {
       // Load everything with proper error handling
@@ -526,6 +555,7 @@
       htmlResults = await loadAllHTML();
       jsonResults = await loadAllJSON();
       textResults = await loadAllText();
+      optionalTextResults = await loadOptionalText();
       
       const endTime = performance.now();
       const loadTime = ((endTime - startTime) / 1000).toFixed(2);
@@ -534,17 +564,22 @@
                          optionalJsStats.successful + swStats.successful +
                          htmlResults.filter(r => r.success).length + 
                          jsonResults.filter(r => r.success).length + 
-                         textResults.filter(r => r.success).length;
+                         textResults.filter(r => r.success).length +
+                         optionalTextResults.filter(r => r.success).length;
       
       const totalFiles = cssStats.total + jsStats.total + 
                         optionalJsStats.total + swStats.total +
-                        htmlResults.length + jsonResults.length + textResults.length;
+                        htmlResults.length + jsonResults.length + textResults.length + optionalTextResults.length;
       
       console.log(`🎉 Nexora Loader Complete! (${loadTime}s)`);
       console.log(`📊 Total: ${totalLoaded}/${totalFiles} files loaded successfully`);
       
       // Store loaded content in window object with safe access
       window.NexoraContent = window.NexoraContent || {};
+      
+      // Merge all text results (required + optional)
+      const allTextResults = [...textResults, ...optionalTextResults];
+      
       Object.assign(window.NexoraContent, {
         html: htmlResults.reduce((acc, r) => {
           if (r.success) acc[r.path] = r.content;
@@ -554,7 +589,7 @@
           if (r.success) acc[r.path] = r.content;
           return acc;
         }, {}),
-        text: textResults.reduce((acc, r) => {
+        text: allTextResults.reduce((acc, r) => {
           if (r.success) acc[r.path] = r.content;
           return acc;
         }, {}),
@@ -565,7 +600,8 @@
           serviceWorkers: swStats,
           html: { successful: htmlResults.filter(r => r.success).length, total: htmlResults.length },
           json: { successful: jsonResults.filter(r => r.success).length, total: jsonResults.length },
-          text: { successful: textResults.filter(r => r.success).length, total: textResults.length }
+          text: { successful: textResults.filter(r => r.success).length, total: textResults.length },
+          optionalText: { successful: optionalTextResults.filter(r => r.success).length, total: optionalTextResults.length }
         }
       });
       
@@ -682,6 +718,7 @@
       htmlFiles: htmlFiles,
       jsonFiles: jsonFiles,
       textFiles: textFiles,
+      optionalTextFiles: optionalTextFiles,
       reload: function() {
         console.log('🔄 Reloading Nexora...');
         currentCDNIndex = 0; // Reset CDN
@@ -690,7 +727,8 @@
       switchCDN: switchCDN,
       getTotalFileCount: function() {
         return cssFiles.length + jsFiles.length + optionalJsFiles.length + 
-               serviceWorkerFiles.length + htmlFiles.length + jsonFiles.length + textFiles.length;
+               serviceWorkerFiles.length + htmlFiles.length + jsonFiles.length + 
+               textFiles.length + optionalTextFiles.length;
       },
       getContent: function(type, path) {
         if (!window.NexoraContent) return null;
