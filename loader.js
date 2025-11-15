@@ -1,17 +1,11 @@
 // Nexora Dynamic Loader
-// Loads all site resources from CDN (jsdelivr) or local server
+// Loads all site resources from CDN (jsdelivr)
 // Use this in a separate HTML file to load the entire Nexora site
 
-// Configuration: Set to true for local testing, false for CDN
-const USE_LOCAL = true;
-const LOCAL_BASE = window.location.origin; // Uses current server (e.g., http://localhost:5500)
 const CDN_BASE = "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@main";
 
-// Choose base URL based on configuration
-const BASE_URL = USE_LOCAL ? LOCAL_BASE : CDN_BASE;
-
 async function loadNexora() {
-  console.log(`Starting Nexora loader... (${USE_LOCAL ? 'LOCAL' : 'CDN'} mode)`);
+  console.log("Starting Nexora loader from CDN...");
 
   // Set up meta tags
   document.title = "Nexora";
@@ -25,7 +19,7 @@ async function loadNexora() {
   favicon.rel = "icon";
   favicon.type = "image/png";
   favicon.id = "favicon";
-  favicon.href = `${BASE_URL}/assets/logos/nexora-amber.png`;
+  favicon.href = `${CDN_BASE}/assets/logos/nexora-amber.png`;
   document.head.appendChild(favicon);
 
   // Create a loading indicator
@@ -50,7 +44,7 @@ async function loadNexora() {
   cssFiles.forEach(file => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = `${BASE_URL}/${file}`;
+    link.href = `${CDN_BASE}/${file}`;
     document.head.appendChild(link);
   });
 
@@ -113,7 +107,7 @@ async function loadNexora() {
   document.head.appendChild(themeInitScript);
 
   // Fetch and inject ONLY the body content from home.html
-  const homeHtml = await fetch(`${BASE_URL}/home.html`)
+  const homeHtml = await fetch(`${CDN_BASE}/home.html`)
     .then(r => r.text())
     .catch(err => {
       console.error("Failed to load home HTML:", err);
@@ -142,7 +136,7 @@ async function loadNexora() {
   window.nexoraPages = {};
   const pagePromises = htmlPages.map(async (page) => {
     try {
-      const content = await fetch(`${BASE_URL}/${page}`).then(r => r.text());
+      const content = await fetch(`${CDN_BASE}/${page}`).then(r => r.text());
       // Extract body content only
       const bodyMatch = content.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
       window.nexoraPages[page] = bodyMatch ? bodyMatch[1] : content;
@@ -167,7 +161,7 @@ async function loadNexora() {
   // Load JS files sequentially to maintain execution order
   for (const file of jsFiles) {
     const script = document.createElement("script");
-    script.src = `${BASE_URL}/${file}`;
+    script.src = `${CDN_BASE}/${file}`;
     document.body.appendChild(script);
     
     // Wait for script to load before loading next one
@@ -188,13 +182,33 @@ async function loadNexora() {
     "s/register-sw.js",
     "s/index.js",
     "s/search.js",
-    "s/embed.js"
+    "s/embed.js",
+    "s/uv-sw.js"
   ];
 
   for (const file of swFiles) {
     try {
       const script = document.createElement("script");
-      script.src = `${BASE_URL}/${file}`;
+      script.src = `${CDN_BASE}/${file}`;
+      document.body.appendChild(script);
+      console.log(`✓ Queued: ${file}`);
+    } catch (err) {
+      console.warn(`✗ Failed to load ${file}:`, err);
+    }
+  }
+
+  // Load UV (Ultraviolet) proxy files
+  const uvFiles = [
+    "s/uv/uv.bundle.js",
+    "s/uv/uv.config.js",
+    "s/uv/uv.handler.js",
+    "s/uv/uv.sw.js"
+  ];
+
+  for (const file of uvFiles) {
+    try {
+      const script = document.createElement("script");
+      script.src = `${CDN_BASE}/${file}`;
       document.body.appendChild(script);
       console.log(`✓ Queued: ${file}`);
     } catch (err) {
@@ -204,7 +218,7 @@ async function loadNexora() {
 
   // Load game info JSON
   try {
-    const gameInfo = await fetch(`${BASE_URL}/game-info.json`).then(r => r.json());
+    const gameInfo = await fetch(`${CDN_BASE}/game-info.json`).then(r => r.json());
     window.nexoraGameInfo = gameInfo;
     console.log("✓ Loaded game-info.json");
   } catch (err) {
@@ -214,9 +228,9 @@ async function loadNexora() {
   // Load static files metadata
   try {
     const [adsTxt, robotsTxt, sitemap] = await Promise.all([
-      fetch(`${BASE_URL}/ads.txt`).then(r => r.text()).catch(() => null),
-      fetch(`${BASE_URL}/robots.txt`).then(r => r.text()).catch(() => null),
-      fetch(`${BASE_URL}/sitemap.xml`).then(r => r.text()).catch(() => null)
+      fetch(`${CDN_BASE}/ads.txt`).then(r => r.text()).catch(() => null),
+      fetch(`${CDN_BASE}/robots.txt`).then(r => r.text()).catch(() => null),
+      fetch(`${CDN_BASE}/sitemap.xml`).then(r => r.text()).catch(() => null)
     ]);
     
     window.nexoraStaticFiles = { adsTxt, robotsTxt, sitemap };
@@ -225,7 +239,7 @@ async function loadNexora() {
     console.warn("✗ Failed to load static files:", err);
   }
 
-  console.log(`🚀 Nexora fully loaded from ${USE_LOCAL ? 'LOCAL SERVER' : 'CDN'}!`);
+  console.log("🚀 Nexora fully loaded from CDN!");
 }
 
 // Auto-load on page ready
