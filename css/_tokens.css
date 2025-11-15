@@ -204,3 +204,17 @@ textarea:focus,
   box-shadow: none;
   outline: none;
 }
+
+/* Game State Preservation - Hidden container for keeping game alive */
+#preserved-game-loader {
+  position: fixed;
+  top: -9999px;
+  left: -9999px;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+  opacity: 0;
+}
+
