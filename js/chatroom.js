@@ -1000,15 +1000,13 @@ function handleKeyPress(event) {
 // Approval system functions
 let currentPendingUser = null;
 let waitingTimerInterval = null;
+let approvalQueue = []; // Queue for multiple simultaneous join requests
 
 function showApprovalModal(username) {
-    currentPendingUser = username;
-    const modal = document.getElementById('approvalModal');
-    const usernameDisplay = document.getElementById('approvalUsername');
-    
-    if (modal && usernameDisplay) {
-        usernameDisplay.textContent = username;
-        modal.style.display = 'flex';
+    // Add user to queue if not already there
+    if (!approvalQueue.includes(username) && username !== currentPendingUser) {
+        approvalQueue.push(username);
+        console.log('📋 Added to approval queue:', username, 'Queue:', approvalQueue);
     }
     
     // Add user to pending list and start timer
@@ -1021,6 +1019,34 @@ function showApprovalModal(username) {
         console.log('⏰ Auto-denying user due to timeout:', username);
         autoDenyUser(username);
     }, APPROVAL_TIMEOUT);
+    
+    // Show modal if not currently showing one
+    if (!currentPendingUser) {
+        showNextApprovalRequest();
+    }
+}
+
+function showNextApprovalRequest() {
+    // If there's someone in the queue, show them
+    if (approvalQueue.length > 0) {
+        currentPendingUser = approvalQueue.shift();
+        console.log('👀 Showing approval for:', currentPendingUser, 'Remaining in queue:', approvalQueue.length);
+        
+        const modal = document.getElementById('approvalModal');
+        const usernameDisplay = document.getElementById('approvalUsername');
+        
+        if (modal && usernameDisplay) {
+            // Update count display if there are more waiting
+            let displayText = currentPendingUser;
+            if (approvalQueue.length > 0) {
+                displayText += ` (+${approvalQueue.length} more waiting)`;
+            }
+            usernameDisplay.textContent = displayText;
+            modal.style.display = 'flex';
+        }
+    } else {
+        currentPendingUser = null;
+    }
 }
 
 function approveUser() {
@@ -1057,12 +1083,16 @@ function approveUser() {
         addSystemMessage(`${username} joined the chat`);
     }
     
-    // Close modal
-    if (modal) {
-        modal.style.display = 'none';
+// Show next request in queue or close modal
+    if (approvalQueue.length > 0) {
+        showNextApprovalRequest();
+    } else {
+        if (modal) {
+            modal.style.display = 'none';
+        }
+        currentPendingUser = null;
     }
-    currentPendingUser = null;
-}
+    }
 
 function denyUser() {
     if (!currentPendingUser) return;
@@ -1097,11 +1127,20 @@ function denyUser() {
 }
 
 function autoDenyUser(username) {
-    // Close modal if still open
-    const modal = document.getElementById('approvalModal');
-    if (modal && currentPendingUser === username) {
-        modal.style.display = 'none';
-        currentPendingUser = null;
+    // Remove from queue if present
+    approvalQueue = approvalQueue.filter(u => u !== username);
+    
+    // If this is the currently displayed user, show next or close
+    if (currentPendingUser === username) {
+        if (approvalQueue.length > 0) {
+            showNextApprovalRequest();
+        } else {
+            const modal = document.getElementById('approvalModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            currentPendingUser = null;
+        }
     }
     
     // Remove from pending list

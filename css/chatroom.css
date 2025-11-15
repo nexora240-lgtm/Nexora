@@ -1299,7 +1299,7 @@
 .nexora-chatroom .waiting-spinner {
     width: 64px;
     height: 64px;
-    border: 4px solid rgba(212, 85, 10, 0.2);
+    border: 4px solid color-mix(in srgb, var(--orange) 20%, transparent);
     border-top-color: var(--orange);
     border-radius: 50%;
     margin: 0 auto 24px;
