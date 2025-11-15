@@ -110,23 +110,31 @@
     'css/settings.css'
   ];
   
-  // Define all JS files to load in order
+  // Define all JS files to load in order (excluding service workers)
   const jsFiles = [
     'js/nexora-boot.js',
+    'js/views.js',
     'js/app.js',
     'js/chatroom.js',
     'js/first-time-visitor.js',
     'js/settings.js',
-    'js/views.js',
-    's/embed.js',
-    's/index.js',
     's/register-sw.js',
-    's/search.js',
-    's/uv-sw.js',
     's/uv/uv.bundle.js',
-    's/uv/uv.config.js',
-    's/uv/uv.handler.js',
+    's/uv/uv.config.js'
+  ];
+  
+  // Service worker files (loaded differently, not as regular scripts)
+  const serviceWorkerFiles = [
+    's/uv-sw.js',
     's/uv/uv.sw.js'
+  ];
+  
+  // Optional JS files (only load if certain conditions/elements exist)
+  const optionalJsFiles = [
+    { path: 's/embed.js', condition: () => window.location.pathname.includes('embed') },
+    { path: 's/index.js', condition: () => document.querySelector('[data-index]') },
+    { path: 's/search.js', condition: () => document.querySelector('[data-search]') },
+    { path: 's/uv/uv.handler.js', condition: () => typeof __uv !== 'undefined' }
   ];
   
   // Define all HTML files to load
@@ -147,15 +155,15 @@
   
   // Define all JSON files to load
   const jsonFiles = [
-    'game-info.json',
-    'sitemap.xml'
+    'game-info.json'
   ];
   
-  // Define all text/config files to load
+  // Define all text/config files to load (including XML)
   const textFiles = [
     'robots.txt',
     'ads.txt',
-    'CNAME'
+    'CNAME',
+    'sitemap.xml'
   ];
   
   /**
@@ -329,6 +337,56 @@
   }
   
   /**
+   * Load optional JS files based on conditions
+   */
+  async function loadOptionalJS() {
+    console.log('📦 Loading optional JS files...');
+    let successful = 0;
+    
+    for (const item of optionalJsFiles) {
+      try {
+        if (!item.condition || item.condition()) {
+          await loadJS(item.path);
+          console.log(`✅ Loaded optional: ${item.path}`);
+          successful++;
+        } else {
+          console.log(`⏭️ Skipped (condition not met): ${item.path}`);
+        }
+      } catch (error) {
+        console.warn(`⚠️ Failed optional: ${item.path}`, error.message);
+      }
+    }
+    
+    return { successful, total: optionalJsFiles.length };
+  }
+  
+  /**
+   * Register service workers properly
+   */
+  async function registerServiceWorkers() {
+    if (!('serviceWorker' in navigator)) {
+      console.warn('⚠️ Service Workers not supported in this browser');
+      return { successful: 0, total: serviceWorkerFiles.length };
+    }
+    
+    console.log('🔧 Registering Service Workers...');
+    let successful = 0;
+    
+    for (const file of serviceWorkerFiles) {
+      try {
+        const url = `${getCDNBase()}/${file}`;
+        await navigator.serviceWorker.register(url);
+        console.log(`✅ Registered SW: ${file}`);
+        successful++;
+      } catch (error) {
+        console.warn(`⚠️ Failed to register SW: ${file}`, error.message);
+      }
+    }
+    
+    return { successful, total: serviceWorkerFiles.length };
+  }
+  
+  /**
    * Fetch and cache HTML content with retry
    */
   async function loadHTML(path, retryCount = 0) {
@@ -457,12 +515,14 @@
     }
     
     const startTime = performance.now();
-    let cssStats, jsStats, htmlResults, jsonResults, textResults;
+    let cssStats, jsStats, optionalJsStats, swStats, htmlResults, jsonResults, textResults;
     
     try {
       // Load everything with proper error handling
       cssStats = await loadAllCSS();
       jsStats = await loadAllJS();
+      optionalJsStats = await loadOptionalJS();
+      swStats = await registerServiceWorkers();
       htmlResults = await loadAllHTML();
       jsonResults = await loadAllJSON();
       textResults = await loadAllText();
@@ -471,11 +531,13 @@
       const loadTime = ((endTime - startTime) / 1000).toFixed(2);
       
       const totalLoaded = cssStats.successful + jsStats.successful + 
+                         optionalJsStats.successful + swStats.successful +
                          htmlResults.filter(r => r.success).length + 
                          jsonResults.filter(r => r.success).length + 
                          textResults.filter(r => r.success).length;
       
       const totalFiles = cssStats.total + jsStats.total + 
+                        optionalJsStats.total + swStats.total +
                         htmlResults.length + jsonResults.length + textResults.length;
       
       console.log(`🎉 Nexora Loader Complete! (${loadTime}s)`);
@@ -499,6 +561,8 @@
         stats: {
           css: cssStats,
           js: jsStats,
+          optionalJs: optionalJsStats,
+          serviceWorkers: swStats,
           html: { successful: htmlResults.filter(r => r.success).length, total: htmlResults.length },
           json: { successful: jsonResults.filter(r => r.success).length, total: jsonResults.length },
           text: { successful: textResults.filter(r => r.success).length, total: textResults.length }
@@ -613,6 +677,8 @@
       currentCDN: getCDNBase,
       cssFiles: cssFiles,
       jsFiles: jsFiles,
+      optionalJsFiles: optionalJsFiles,
+      serviceWorkerFiles: serviceWorkerFiles,
       htmlFiles: htmlFiles,
       jsonFiles: jsonFiles,
       textFiles: textFiles,
@@ -623,7 +689,8 @@
       },
       switchCDN: switchCDN,
       getTotalFileCount: function() {
-        return cssFiles.length + jsFiles.length + htmlFiles.length + jsonFiles.length + textFiles.length;
+        return cssFiles.length + jsFiles.length + optionalJsFiles.length + 
+               serviceWorkerFiles.length + htmlFiles.length + jsonFiles.length + textFiles.length;
       },
       getContent: function(type, path) {
         if (!window.NexoraContent) return null;
