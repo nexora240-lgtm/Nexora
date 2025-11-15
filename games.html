@@ -334,7 +334,16 @@
         card.className = "game-card";
         card.style.setProperty("--card-index", index);
         card.onclick = () => {
-          sessionStorage.setItem("currentGame", JSON.stringify(game));
+          const newGameData = JSON.stringify(game);
+          const currentGameData = sessionStorage.getItem("currentGame");
+          
+          // Check if this is a different game than what's currently loaded
+          if (currentGameData !== newGameData && window.GameStateManager) {
+            // Clear the old game state when selecting a new game
+            window.GameStateManager.clearState();
+          }
+          
+          sessionStorage.setItem("currentGame", newGameData);
           // keep your existing navigation behavior
           if (typeof navigate === 'function') {
             navigate('/loader');

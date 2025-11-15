@@ -1,4 +1,18 @@
 function loadView(file) {
+  // Save game state before loading new view if currently on game loader
+  if (window.GameStateManager && app.querySelector('#gameContainer')) {
+    window.GameStateManager.saveState(app);
+  }
+
+  // Special handling for game loader - check if we can restore preserved state
+  if (file === 'gameloader.html' && window.GameStateManager && window.GameStateManager.hasActiveGame()) {
+    const restored = window.GameStateManager.restoreState(app);
+    if (restored) {
+      console.log('[Views] Restored preserved game loader');
+      return;
+    }
+  }
+
   fetch('/' + file)
     .then(res => res.text())
     .then(html => {
