@@ -83,6 +83,34 @@ html, body {
   animation: slideInUp 0.8s ease-out forwards;
   animation-delay: 0.6s;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  
+  /* Cursor tracking variables */
+  --x: 50%;
+  --y: 50%;
+  --glow-size: 200px;
+}
+
+/* Moving highlight effect */
+.home .play-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 12px;
+  background: radial-gradient(
+    var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0.1) 30%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.home .play-button:hover::before {
+  opacity: 1;
 }
 
 .home h1:hover { transform: translateX(0) scale(1.05); }

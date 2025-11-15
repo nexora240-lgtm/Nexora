@@ -103,6 +103,45 @@
         document.dispatchEvent(new CustomEvent('settings:colorSchemeChanged', { detail: { scheme: scheme } }));
       }
     };
+
+    // Add cursor tracking for Play button
+    (function() {
+      function setupButtonTracking() {
+        const playButton = document.querySelector('.play-button');
+        if (!playButton) return;
+
+        playButton.style.setProperty('--x', '50%');
+        playButton.style.setProperty('--y', '50%');
+
+        let rafId = null;
+
+        function updateFromEvent(e) {
+          const rect = playButton.getBoundingClientRect();
+          const x = ((e.clientX - rect.left) / rect.width) * 100;
+          const y = ((e.clientY - rect.top) / rect.height) * 100;
+          
+          if (rafId) return;
+          rafId = requestAnimationFrame(() => {
+            playButton.style.setProperty('--x', x + '%');
+            playButton.style.setProperty('--y', y + '%');
+            rafId = null;
+          });
+        }
+
+        playButton.addEventListener('mousemove', updateFromEvent);
+        playButton.addEventListener('mouseleave', () => {
+          playButton.style.setProperty('--x', '50%');
+          playButton.style.setProperty('--y', '50%');
+        }, { passive: true });
+      }
+
+      // Setup tracking when page loads
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupButtonTracking);
+      } else {
+        setupButtonTracking();
+      }
+    })();
   </script>
 </body>
 </html>

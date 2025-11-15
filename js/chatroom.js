@@ -15,6 +15,7 @@
     let userJoinTimes = {}; // Track when each user joined
     let isPendingApproval = false; // Track if current user is waiting for approval
     let myConnectionId = null; // Store our WebSocket connection ID
+    let presenceAnnouncedTo = new Set(); // Track users we've already announced presence to
     const PUBLIC_ROOM_CODE = 'PUBLIC'; // Special room code for public chat
     const APPROVAL_TIMEOUT = 60000; // 60 seconds for host to respond
 
@@ -421,6 +422,72 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
         console.log('Message type:', data.type);
         console.log('Current roomUsers:', roomUsers);
         
+        // Handle error responses from Lambda
+        if (data.type === 'error') {
+            if (data.error === 'USERNAME_CONFLICT') {
+                console.error('Username conflict:', data.message);
+                
+                // Store the conflicting username before resetting
+                const conflictingUsername = currentUsername;
+                const conflictingRoomCode = currentRoomCode;
+                
+                alert(data.message);
+                
+                // Close connection
+                if (ws) {
+                    ws.close();
+                    ws = null;
+                }
+                
+                // Show the appropriate form based on what they were doing
+                if (conflictingRoomCode === PUBLIC_ROOM_CODE) {
+                    // Was joining public chat
+                    document.getElementById('chatScreen').classList.remove('active');
+                    document.getElementById('loginScreen').classList.remove('hidden');
+                    hideWaitingScreen(); // Hide waiting screen if shown
+                    joinPublicChat();
+                    // Focus on username input and suggest new username
+                    setTimeout(() => {
+                        const input = document.getElementById('publicUsernameInput');
+                        if (input) {
+                            input.value = conflictingUsername + Math.floor(Math.random() * 100);
+                            input.select();
+                            input.focus();
+                        }
+                    }, 100);
+                } else if (conflictingRoomCode) {
+                    // Was joining a private room
+                    document.getElementById('chatScreen').classList.remove('active');
+                    document.getElementById('loginScreen').classList.remove('hidden');
+                    hideWaitingScreen(); // Hide waiting screen if shown
+                    showJoinForm();
+                    // Pre-fill room code and suggest new username
+                    setTimeout(() => {
+                        const roomInput = document.getElementById('roomCodeInput');
+                        const usernameInput = document.getElementById('joinUsernameInput');
+                        if (roomInput) roomInput.value = conflictingRoomCode;
+                        if (usernameInput) {
+                            usernameInput.value = conflictingUsername + Math.floor(Math.random() * 100);
+                            usernameInput.select();
+                            usernameInput.focus();
+                        }
+                    }, 100);
+                }
+                
+                // Reset state
+                roomUsers = [];
+                currentUsername = '';
+                currentRoomCode = '';
+                roomOwner = '';
+                userJoinTimes = {};
+                presenceAnnouncedTo.clear();
+                
+                return;
+            }
+            console.error('Error from server:', data.error, data.message);
+            return;
+        }
+        
         // Handle regular messages
         if (data.message) {
             const username = data.username;
@@ -511,6 +578,7 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                 const joinTime = parseInt(parts[3]) || Date.now();
                 
                 console.log('👤 Received presence from:', username, 'owner info:', ownerInfo, 'join time:', joinTime);
+                console.log('👤 Current roomOwner:', roomOwner, 'Current roomUsers:', roomUsers);
                 
                 // Clear room validation timeout - room exists!
                 if (roomValidationTimeout) {
@@ -519,37 +587,58 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                     console.log('✅ Room validated - other users found');
                 }
                 
-                // Store owner if provided
-                if (ownerInfo && !roomOwner) {
-                    roomOwner = ownerInfo;
-                    console.log('📌 Set room owner to:', roomOwner);
+                // Store owner if provided (and it's not empty)
+                // Update owner even if already set, in case it changed
+                if (ownerInfo) {
+                    if (!roomOwner || roomOwner !== ownerInfo) {
+                        roomOwner = ownerInfo;
+                        console.log('📌 Set/updated room owner to:', roomOwner);
+                    }
                 }
                 
-                if (!roomUsers.includes(username)) {
+                // Track if this is a new user we're discovering
+                const isNewUser = !roomUsers.includes(username);
+                
+                // Always add the user sending the presence if not already in list
+                if (isNewUser) {
                     roomUsers.push(username);
                     userJoinTimes[username] = joinTime;
                     console.log('✅ Added user. New roomUsers:', roomUsers);
                     console.log('✅ Join times:', userJoinTimes);
                     updateUsersList();
                     
-                    // If it's not me, show join message and send my presence back
+                    // If it's not me, show join message
                     if (username !== currentUsername) {
-                        addSystemMessage(`${username} joined the chat`);
-                        
-                        // Send my presence back
-                        setTimeout(() => {
-                            if (ws && ws.readyState === WebSocket.OPEN) {
-                                ws.send(JSON.stringify({
-                                    action: 'sendMessage',
-                                    roomCode: currentRoomCode,
-                                    username: currentUsername,
-                                    message: `::PRESENCE::${roomOwner || ''}::${userJoinTimes[currentUsername]}`
-                                }));
-                                console.log('✅ Sent presence back to', username);
-                            }
-                        }, 200);
+                        // Only show "joined" message if they're not the existing owner
+                        // (owner was already there, we're just discovering them)
+                        const isExistingOwner = (username === ownerInfo && ownerInfo);
+                        if (!isExistingOwner) {
+                            addSystemMessage(`${username} joined the chat`);
+                        }
                     }
+                } else {
+                    // User already in list, just update UI in case owner status changed
+                    console.log('👤 User already in list, updating display');
+                    updateUsersList();
                 }
+                
+                // Send presence back if we haven't announced to this user yet
+                // This prevents infinite loops while ensuring both sides sync
+                if (username !== currentUsername && !presenceAnnouncedTo.has(username)) {
+                    presenceAnnouncedTo.add(username);
+                    setTimeout(() => {
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            ws.send(JSON.stringify({
+                                action: 'sendMessage',
+                                roomCode: currentRoomCode,
+                                username: currentUsername,
+                                message: `::PRESENCE::${roomOwner || ''}::${userJoinTimes[currentUsername]}`
+                            }));
+                            console.log('✅ Sent presence back to:', username, '(first time)');
+                        }
+                    }, 200);
+                }
+                
                 return; // Don't display this message
             }
             
@@ -692,6 +781,7 @@ function leaveChat() {
     currentRoomCode = '';
     roomOwner = '';
     userJoinTimes = {};
+    presenceAnnouncedTo.clear(); // Clear presence tracking
     
     // Clear saved state from sessionStorage
     sessionStorage.removeItem(CHATROOM_STATE_KEY);
@@ -886,7 +976,7 @@ function updateUsersList() {
     console.log('About to loop through', roomUsers.length, 'users');
     
     roomUsers.forEach((user, index) => {
-        console.log(`Creating user item ${index + 1}:`, user);
+        console.log(`Creating user item ${index + 1}:`, user, 'roomOwner:', roomOwner, 'match:', user === roomOwner);
         const userDiv = document.createElement('div');
         userDiv.className = 'user-item';
         
@@ -900,7 +990,9 @@ function updateUsersList() {
         if (user === roomOwner && roomOwner) {
             usernameSpan.classList.add('owner');
             userDiv.classList.add('owner');
-            console.log('Added owner class');
+            console.log('✅ Added owner class to user:', user);
+        } else {
+            console.log('❌ NOT owner - user:', user, 'roomOwner:', roomOwner);
         }
         
         // Add "You" indicator for current user

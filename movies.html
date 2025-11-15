@@ -196,6 +196,15 @@
     (function initMoviesView(container, viewName){
       const TMDB_API_KEY = '633c105ec8c18892716bb62105074490';
       const DEFAULT_QUERY = 'autoplay=true&poster=true&title=true&watchparty=false&chromecast=false&servericon=true&setting=true&pip=true&primarycolor=D4550A&secondarycolor=992F05&iconcolor=FFFFFF&font=Roboto&fontcolor=FFFFFF&fontsize=20&opacity=0.5';
+      
+      // AWS Lambda Proxy Configuration
+      // TMDB API Proxy - for search results
+      const TMDB_LAMBDA_PROXY = 'https://wb1i0oj6b1.execute-api.us-east-2.amazonaws.com/prod';
+      const USE_TMDB_PROXY = true;
+      
+      // VidPlus Player Proxy - for movie streaming
+      const VIDPLUS_LAMBDA_PROXY = 'https://mzkqbzt146.execute-api.us-east-2.amazonaws.com/prod';
+      const USE_VIDPLUS_PROXY = false; // Temporarily disabled - fix API Gateway config
 
       const root = container.querySelector('.vidplus-movies') || container;
       const tabs = Array.from(root.querySelectorAll('.tab'));
@@ -254,15 +263,26 @@
         const id = chosenTmdbId;
         const seasonEp = (seasonEl && seasonEl.value || '').trim();
         if(!id) return '';
-        const base = 'https://player.vidplus.to/embed';
-        if(selected === 'movie') return `${base}/movie/${encodeURIComponent(id)}?${DEFAULT_QUERY}`;
-        if(selected === 'tv'){
+        
+        // Use VidPlus Lambda proxy if configured, otherwise direct connection
+        const base = USE_VIDPLUS_PROXY 
+          ? `${VIDPLUS_LAMBDA_PROXY}/embed`
+          : 'https://player.vidplus.to/embed';
+        
+        let url = '';
+        if(selected === 'movie') {
+          url = `${base}/movie/${encodeURIComponent(id)}?${DEFAULT_QUERY}`;
+        } else if(selected === 'tv'){
           const parts = seasonEp ? seasonEp.split('/').map(s => s.trim()) : [];
           const season = parts[0] || '1', episode = parts[1] || '1';
-          return `${base}/tv/${encodeURIComponent(id)}/${encodeURIComponent(season)}/${encodeURIComponent(episode)}?${DEFAULT_QUERY}`;
+          url = `${base}/tv/${encodeURIComponent(id)}/${encodeURIComponent(season)}/${encodeURIComponent(episode)}?${DEFAULT_QUERY}`;
+        } else {
+          const ep = seasonEp || '1';
+          url = `${base}/anime/${encodeURIComponent(id)}/${encodeURIComponent(ep)}?dub=false&${DEFAULT_QUERY}`;
         }
-        const ep = seasonEp || '1';
-        return `${base}/anime/${encodeURIComponent(id)}/${encodeURIComponent(ep)}?dub=false&${DEFAULT_QUERY}`;
+        
+        console.log('Built VidPlus URL:', url);
+        return url;
       }
 
       function showMessage(text){
@@ -278,25 +298,64 @@
       }
 
       function showFallback(url){
+        console.log('Showing fallback for URL:', url);
         try { if(playerFrame) playerFrame.style.display = 'none'; } catch(e){}
         if(msg) msg.style.display = 'none';
         try { if(fallback) fallback.style.display = 'flex'; } catch(e){}
-        if(openBtn) openBtn.onclick = () => window.open(url, '_blank', 'noopener');
+        
+        // If using proxy, offer direct link as alternative
+        const directUrl = url.replace(VIDPLUS_LAMBDA_PROXY, 'https://player.vidplus.to');
+        console.log('Direct VidPlus URL:', directUrl);
+        
+        if(openBtn) openBtn.onclick = () => {
+          console.log('Opening in new tab:', directUrl);
+          window.open(directUrl, '_blank', 'noopener');
+        };
       }
 
       function onPreviewClick(){
         const url = buildUrl();
         if(!url){ showMessage('Select a search result first, then click Play'); return; }
-        showIframe(url);
+        
+        console.log('Loading player with URL:', url);
+        showMessage('Loading player...');
+        
+        // Test the URL first before loading iframe
+        fetch(url, { method: 'HEAD', mode: 'no-cors' })
+          .then(() => {
+            console.log('URL appears reachable, loading iframe');
+            showIframe(url);
+          })
+          .catch(err => {
+            console.error('URL preflight failed:', err);
+            // Try loading anyway, might still work
+            showIframe(url);
+          });
+        
         let loaded = false;
-        function onLoad(){ loaded = true; cleanupFrameHandlers(); }
-        function onError(){ loaded = false; cleanupFrameHandlers(); showFallback(url); }
+        function onLoad(){ 
+          console.log('Iframe loaded successfully');
+          loaded = true; 
+          cleanupFrameHandlers(); 
+        }
+        function onError(e){ 
+          console.error('Iframe load error:', e);
+          loaded = false; 
+          cleanupFrameHandlers(); 
+          showFallback(url); 
+        }
         function cleanupFrameHandlers(){ try{ if(playerFrame) { playerFrame.removeEventListener('load', onLoad); playerFrame.removeEventListener('error', onError); } } catch(e){} }
         if(playerFrame){
           playerFrame.addEventListener('load', onLoad);
           playerFrame.addEventListener('error', onError);
         }
-        const t = setTimeout(() => { cleanupFrameHandlers(); if(!loaded) showFallback(url); }, 2200);
+        const t = setTimeout(() => { 
+          cleanupFrameHandlers(); 
+          if(!loaded) {
+            console.warn('Iframe load timeout, showing fallback');
+            showFallback(url); 
+          }
+        }, 5000);
         pushDisposable(() => clearTimeout(t));
       }
 
@@ -310,12 +369,11 @@
       }
 
       async function doSearch(query){
-        if(!TMDB_API_KEY || TMDB_API_KEY === 'YOUR_TMDB_API_KEY'){
-          if(resultsEl){ resultsEl.innerHTML = `<div class="no-key">No TMDB API key present. Paste your TMDB API key into TMDB_API_KEY in the script to fetch results.</div>`; resultsEl.style.display = 'block'; }
-          return;
-        }
         const type = (selected === 'tv') ? 'tv' : 'movie';
-        const url = `https://api.themoviedb.org/3/search/${type}?api_key=${encodeURIComponent(TMDB_API_KEY)}&language=en-US&query=${encodeURIComponent(query)}&page=1&include_adult=false`;
+        const url = `${TMDB_LAMBDA_PROXY}/search/${type}?language=en-US&query=${encodeURIComponent(query)}&page=1&include_adult=false`;
+        
+        console.log('TMDB Lambda proxy request:', url);
+        
         try {
           const res = await fetchWithTimeout(url, {}, 4500);
           if(!res.ok) throw new Error('search failed ' + res.status);
@@ -323,7 +381,10 @@
           renderResults(data.results || [], type);
         } catch (err) {
           console.error('TMDB search error', err);
-          if(resultsEl){ resultsEl.innerHTML = `<div class="no-key">Search failed. Check API key, network, or CORS. ${safeText(err.message)}</div>`; resultsEl.style.display = 'block'; }
+          if(resultsEl){ 
+            resultsEl.innerHTML = `<div class="no-key">Search failed: ${safeText(err.message)}<br><small>Check console for details</small></div>`; 
+            resultsEl.style.display = 'block'; 
+          }
         }
       }
 
