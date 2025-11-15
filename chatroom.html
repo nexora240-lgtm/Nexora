@@ -87,6 +87,17 @@
                         <button onclick="sendMessage()">Send</button>
                     </div>
                 </div>
+                
+                <!-- Waiting for Approval Screen -->
+                <div class="waiting-screen" id="waitingScreen" style="display: none;">
+                    <div class="waiting-content">
+                        <div class="waiting-spinner"></div>
+                        <h2>Waiting for Approval</h2>
+                        <p>The circle host is reviewing your request to join...</p>
+                        <p class="waiting-timer">Time remaining: <span id="waitingTimer">60</span>s</p>
+                        <button class="cancel-button" onclick="cancelJoinRequest()">Cancel Request</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Users Sidebar (Inside .app container) -->
@@ -96,6 +107,18 @@
                     <span class="user-count" id="userCount">0</span>
                 </div>
                 <div class="users-list" id="usersList"></div>
+            </div>
+        </div>
+
+        <!-- Join Request Approval Modal -->
+        <div class="approval-modal" id="approvalModal" style="display: none;">
+            <div class="approval-content">
+                <h3>Join Request</h3>
+                <p><strong id="approvalUsername"></strong> wants to join your circle</p>
+                <div class="approval-buttons">
+                    <button class="approve-button" onclick="approveUser()">Accept</button>
+                    <button class="deny-button" onclick="denyUser()">Decline</button>
+                </div>
             </div>
         </div>
 

@@ -1176,3 +1176,178 @@
         display: none !important; /* Hide sidebar on smaller screens */
     }
 }
+
+/* Approval Modal */
+.nexora-chatroom .approval-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 6, 5, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.nexora-chatroom .approval-content {
+    background: var(--panel);
+    border: 1px solid rgba(212, 85, 10, 0.3);
+    border-radius: var(--radius);
+    padding: 32px;
+    min-width: 320px;
+    max-width: 440px;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6),
+                0 0 0 1px rgba(212, 85, 10, 0.15) inset,
+                0 0 24px rgba(212, 85, 10, 0.2);
+    animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.nexora-chatroom .approval-content h3 {
+    font-size: 24px;
+    margin-bottom: 16px;
+    color: var(--text);
+    font-weight: 600;
+}
+
+.nexora-chatroom .approval-content p {
+    font-size: 16px;
+    margin-bottom: 24px;
+    color: var(--muted);
+}
+
+.nexora-chatroom .approval-content p strong {
+    color: var(--orange);
+    font-weight: 600;
+}
+
+.nexora-chatroom .approval-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.nexora-chatroom .approve-button,
+.nexora-chatroom .deny-button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.nexora-chatroom .approve-button {
+    background: var(--orange);
+    color: var(--send-icon);
+    box-shadow: 0 4px 12px var(--orange-shadow);
+}
+
+.nexora-chatroom .approve-button:hover {
+    background: var(--orange-deep);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--orange-shadow);
+}
+
+.nexora-chatroom .deny-button {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nexora-chatroom .deny-button:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Waiting Screen */
+.nexora-chatroom .waiting-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--panel);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.nexora-chatroom .waiting-content {
+    text-align: center;
+    padding: 40px;
+    max-width: 400px;
+}
+
+.nexora-chatroom .waiting-spinner {
+    width: 64px;
+    height: 64px;
+    border: 4px solid rgba(212, 85, 10, 0.2);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    margin: 0 auto 24px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.nexora-chatroom .waiting-content h2 {
+    font-size: 24px;
+    margin-bottom: 12px;
+    color: var(--text);
+}
+
+.nexora-chatroom .waiting-content p {
+    font-size: 16px;
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+
+.nexora-chatroom .waiting-timer {
+    font-size: 14px;
+    color: var(--orange);
+    font-weight: 600;
+    margin-top: 16px;
+    margin-bottom: 24px;
+}
+
+.nexora-chatroom .cancel-button {
+    padding: 12px 28px;
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.nexora-chatroom .cancel-button:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
