@@ -1,250 +1,646 @@
-// Nexora Dynamic Loader
-// Loads all site resources from CDN (jsdelivr)
-// Use this in a separate HTML file to load the entire Nexora site
-
-const CDN_BASE = "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@main";
-
-async function loadNexora() {
-  console.log("Starting Nexora loader from CDN...");
-
-  // Set up meta tags
-  document.title = "Nexora";
-  const viewport = document.querySelector('meta[name="viewport"]');
-  if (viewport) {
-    viewport.setAttribute('content', 'width=device-width, initial-scale=1, viewport-fit=cover');
-  }
-
-  // Add favicon
-  const favicon = document.createElement("link");
-  favicon.rel = "icon";
-  favicon.type = "image/png";
-  favicon.id = "favicon";
-  favicon.href = `${CDN_BASE}/assets/logos/nexora-amber.png`;
-  document.head.appendChild(favicon);
-
-  // Create a loading indicator
-  document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;"><h2>Loading Nexora...</h2></div>';
-
-  // Load all CSS files first
-  const cssFiles = [
-    "css/_tokens.css",
-    "css/theme-tokens.css",
-    "css/sidebar.css",
-    "css/home.css",
-    "css/games.css",
-    "css/gameloader.css",
-    "css/movies.css",
-    "css/chatbot.css",
-    "css/chatroom.css",
-    "css/settings.css",
-    "css/coming-soon.css",
-    "css/first-time-modal.css"
-  ];
-
-  cssFiles.forEach(file => {
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = `${CDN_BASE}/${file}`;
-    document.head.appendChild(link);
-  });
-
-  // Load Google Fonts
-  const fontsLink = document.createElement("link");
-  fontsLink.href = "https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap";
-  fontsLink.rel = "stylesheet";
-  document.head.appendChild(fontsLink);
-
-  // Load Google Analytics
-  const gaScript = document.createElement("script");
-  gaScript.async = true;
-  gaScript.src = "https://www.googletagmanager.com/gtag/js?id=G-H5VGHQJKD8";
-  document.head.appendChild(gaScript);
-
-  // Initialize gtag
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-H5VGHQJKD8');
-
-  // Add theme initialization script to head (before content loads)
-  const themeInitScript = document.createElement("script");
-  themeInitScript.textContent = `
-    (function () {
-      try {
-        var THEME_KEY = 'settings.theme';
-        var SCHEME_KEY = 'settings.colorScheme';
-        var MAP = {
-          'midnight-amber': 'theme-midnight-amber',
-          'midnight-blueberry': 'theme-midnight-blueberry',
-          'midnight-grape': 'theme-midnight-grape'
-        };
-        var savedTheme = null;
-        var savedScheme = null;
-        try {
-          savedTheme = localStorage.getItem(THEME_KEY);
-          savedScheme = localStorage.getItem(SCHEME_KEY);
-        } catch (e) {
-          savedTheme = null;
-          savedScheme = null;
-        }
-        var doc = document.documentElement;
-        if (savedScheme === 'light') {
-          doc.classList.add('light-scheme');
-          doc.classList.remove('theme-midnight-amber','theme-midnight-blueberry','theme-midnight-grape');
-          doc.setAttribute('data-restored-theme', 'light');
-        } else {
-          if (savedTheme && MAP[savedTheme]) {
-            doc.classList.add(MAP[savedTheme]);
-            doc.setAttribute('data-restored-theme', savedTheme);
-          } else {
-            doc.classList.add('theme-midnight-amber');
-            doc.setAttribute('data-restored-theme', 'midnight-amber');
-          }
-        }
-      } catch (err) {}
-    })();
-  `;
-  document.head.appendChild(themeInitScript);
-
-  // Fetch and inject ONLY the body content from home.html
-  const homeHtml = await fetch(`${CDN_BASE}/home.html`)
-    .then(r => r.text())
-    .catch(err => {
-      console.error("Failed to load home HTML:", err);
-      return "<section class='home'><div class='content'><h1>Loading failed</h1></div></section>";
-    });
+(function() {
+  'use strict';
   
-  // Extract only the body content (between <body> and </body>)
-  const bodyMatch = homeHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-  const bodyContent = bodyMatch ? bodyMatch[1] : homeHtml;
-  document.body.innerHTML = bodyContent;
-
-  // Load all HTML page files as preloaded content
-  const htmlPages = [
-    "chatbot.html",
-    "chatroom.html",
-    "cookies.html",
-    "gameloader.html",
-    "games.html",
-    "movies.html",
-    "privacy-policy.html",
-    "proxy.html",
-    "settings.html"
+  // Multiple CDN fallbacks in case jsdelivr fails
+  const CDN_SOURCES = [
+    'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@main',
+    'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@latest',
+    'https://raw.githubusercontent.com/nexora240-lgtm/Nexora/main',
+    'https://cdn.statically.io/gh/nexora240-lgtm/Nexora/main'
   ];
-
-  // Preload HTML pages into memory for faster navigation
-  window.nexoraPages = {};
-  const pagePromises = htmlPages.map(async (page) => {
-    try {
-      const content = await fetch(`${CDN_BASE}/${page}`).then(r => r.text());
-      // Extract body content only
-      const bodyMatch = content.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-      window.nexoraPages[page] = bodyMatch ? bodyMatch[1] : content;
-      console.log(`✓ Preloaded: ${page}`);
-    } catch (err) {
-      console.warn(`✗ Failed to preload ${page}:`, err);
-    }
-  });
-
-  await Promise.all(pagePromises);
-
-  // Load JavaScript files in order
-  const jsFiles = [
-    "js/nexora-boot.js",
-    "js/first-time-visitor.js",
-    "js/settings.js",
-    "js/views.js",
-    "js/chatroom.js",
-    "js/app.js"
-  ];
-
-  // Load JS files sequentially to maintain execution order
-  for (const file of jsFiles) {
-    const script = document.createElement("script");
-    script.src = `${CDN_BASE}/${file}`;
-    document.body.appendChild(script);
-    
-    // Wait for script to load before loading next one
-    await new Promise((resolve) => {
-      script.onload = () => {
-        console.log(`✓ Loaded: ${file}`);
-        resolve();
+  
+  let currentCDNIndex = 0;
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY = 1000; // ms
+  const TIMEOUT_MS = 30000; // 30 seconds
+  
+  // Polyfill for older browsers
+  if (!window.Promise) {
+    console.error('❌ Browser does not support Promises. Please upgrade your browser.');
+  }
+  
+  if (!window.fetch) {
+    console.warn('⚠️ Fetch API not supported, using XMLHttpRequest fallback');
+  }
+  
+  /**
+   * Get current CDN base URL with fallback support
+   */
+  function getCDNBase() {
+    return CDN_SOURCES[currentCDNIndex] || CDN_SOURCES[0];
+  }
+  
+  /**
+   * Switch to next CDN source
+   */
+  function switchCDN() {
+    currentCDNIndex = (currentCDNIndex + 1) % CDN_SOURCES.length;
+    console.log(`🔄 Switching to CDN: ${getCDNBase()}`);
+  }
+  
+  /**
+   * Sleep utility for retries
+   */
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+  
+  /**
+   * Fetch with timeout
+   */
+  function fetchWithTimeout(url, options = {}, timeout = TIMEOUT_MS) {
+    return Promise.race([
+      fetch(url, options),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timeout')), timeout)
+      )
+    ]);
+  }
+  
+  /**
+   * XMLHttpRequest fallback for older browsers
+   */
+  function xhrFetch(url) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.timeout = TIMEOUT_MS;
+      xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve({
+            ok: true,
+            status: xhr.status,
+            text: () => Promise.resolve(xhr.responseText),
+            json: () => Promise.resolve(JSON.parse(xhr.responseText))
+          });
+        } else {
+          reject(new Error(`HTTP ${xhr.status}`));
+        }
       };
-      script.onerror = () => {
-        console.warn(`✗ Failed to load ${file}`);
-        resolve(); // Continue even if one fails
-      };
+      xhr.onerror = () => reject(new Error('Network error'));
+      xhr.ontimeout = () => reject(new Error('Request timeout'));
+      xhr.send();
     });
   }
-
-  // Load service worker scripts (not UV-related files that need special handling)
-  const swFiles = [
-    "s/register-sw.js",
-    "s/index.js",
-    "s/search.js",
-    "s/embed.js",
-    "s/uv-sw.js"
-  ];
-
-  for (const file of swFiles) {
-    try {
-      const script = document.createElement("script");
-      script.src = `${CDN_BASE}/${file}`;
-      document.body.appendChild(script);
-      console.log(`✓ Queued: ${file}`);
-    } catch (err) {
-      console.warn(`✗ Failed to load ${file}:`, err);
+  
+  /**
+   * Universal fetch with fallback
+   */
+  function universalFetch(url, options = {}) {
+    if (window.fetch) {
+      return fetchWithTimeout(url, options);
+    } else {
+      return xhrFetch(url);
     }
   }
-
-  // Load UV (Ultraviolet) proxy files
-  const uvFiles = [
-    "s/uv/uv.bundle.js",
-    "s/uv/uv.config.js",
-    "s/uv/uv.handler.js",
-    "s/uv/uv.sw.js"
+  
+  // Define all CSS files to load
+  const cssFiles = [
+    'css/_tokens.css',
+    'css/theme-tokens.css',
+    'css/sidebar.css',
+    'css/chatbot.css',
+    'css/chatroom.css',
+    'css/coming-soon.css',
+    'css/first-time-modal.css',
+    'css/gameloader.css',
+    'css/games.css',
+    'css/home.css',
+    'css/movies.css',
+    'css/settings.css'
   ];
-
-  for (const file of uvFiles) {
-    try {
-      const script = document.createElement("script");
-      script.src = `${CDN_BASE}/${file}`;
-      document.body.appendChild(script);
-      console.log(`✓ Queued: ${file}`);
-    } catch (err) {
-      console.warn(`✗ Failed to load ${file}:`, err);
-    }
+  
+  // Define all JS files to load in order
+  const jsFiles = [
+    'js/nexora-boot.js',
+    'js/app.js',
+    'js/chatroom.js',
+    'js/first-time-visitor.js',
+    'js/settings.js',
+    'js/views.js',
+    's/embed.js',
+    's/index.js',
+    's/register-sw.js',
+    's/search.js',
+    's/uv-sw.js',
+    's/uv/uv.bundle.js',
+    's/uv/uv.config.js',
+    's/uv/uv.handler.js',
+    's/uv/uv.sw.js'
+  ];
+  
+  // Define all HTML files to load
+  const htmlFiles = [
+    'index.html',
+    'home.html',
+    'games.html',
+    'movies.html',
+    'chatbot.html',
+    'chatroom.html',
+    'gameloader.html',
+    'settings.html',
+    'proxy.html',
+    'cookies.html',
+    'privacy-policy.html',
+    's/embed.html'
+  ];
+  
+  // Define all JSON files to load
+  const jsonFiles = [
+    'game-info.json',
+    'sitemap.xml'
+  ];
+  
+  // Define all text/config files to load
+  const textFiles = [
+    'robots.txt',
+    'ads.txt',
+    'CNAME'
+  ];
+  
+  /**
+   * Load a CSS file dynamically with retry logic
+   */
+  function loadCSS(href, retryCount = 0) {
+    return new Promise((resolve, reject) => {
+      // Check if already loaded
+      const existing = document.querySelector(`link[href*="${href}"]`);
+      if (existing) {
+        console.log(`♻️ CSS already loaded: ${href}`);
+        return resolve(href);
+      }
+      
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = `${getCDNBase()}/${href}`;
+      link.crossOrigin = 'anonymous';
+      
+      const timeout = setTimeout(() => {
+        link.onerror = null;
+        link.onload = null;
+        reject(new Error(`CSS load timeout: ${href}`));
+      }, TIMEOUT_MS);
+      
+      link.onload = () => {
+        clearTimeout(timeout);
+        resolve(href);
+      };
+      
+      link.onerror = async () => {
+        clearTimeout(timeout);
+        link.remove();
+        
+        if (retryCount < MAX_RETRIES) {
+          console.warn(`⚠️ Retry ${retryCount + 1}/${MAX_RETRIES} for CSS: ${href}`);
+          await sleep(RETRY_DELAY);
+          
+          // Try different CDN
+          if (retryCount > 0 && CDN_SOURCES.length > 1) {
+            switchCDN();
+          }
+          
+          try {
+            const result = await loadCSS(href, retryCount + 1);
+            resolve(result);
+          } catch (err) {
+            reject(err);
+          }
+        } else {
+          reject(new Error(`Failed to load CSS after ${MAX_RETRIES} retries: ${href}`));
+        }
+      };
+      
+      // Append to head with error handling
+      try {
+        (document.head || document.getElementsByTagName('head')[0]).appendChild(link);
+      } catch (err) {
+        clearTimeout(timeout);
+        reject(new Error(`Failed to append CSS to head: ${err.message}`));
+      }
+    });
   }
-
-  // Load game info JSON
-  try {
-    const gameInfo = await fetch(`${CDN_BASE}/game-info.json`).then(r => r.json());
-    window.nexoraGameInfo = gameInfo;
-    console.log("✓ Loaded game-info.json");
-  } catch (err) {
-    console.warn("✗ Failed to load game-info.json:", err);
+  
+  /**
+   * Load a JS file dynamically with retry logic
+   */
+  function loadJS(src, retryCount = 0) {
+    return new Promise((resolve, reject) => {
+      // Check if already loaded
+      const existing = document.querySelector(`script[src*="${src}"]`);
+      if (existing) {
+        console.log(`♻️ JS already loaded: ${src}`);
+        return resolve(src);
+      }
+      
+      const script = document.createElement('script');
+      script.src = `${getCDNBase()}/${src}`;
+      script.async = false; // Maintain execution order
+      script.crossOrigin = 'anonymous';
+      script.type = 'text/javascript';
+      
+      const timeout = setTimeout(() => {
+        script.onerror = null;
+        script.onload = null;
+        reject(new Error(`JS load timeout: ${src}`));
+      }, TIMEOUT_MS);
+      
+      script.onload = () => {
+        clearTimeout(timeout);
+        resolve(src);
+      };
+      
+      script.onerror = async () => {
+        clearTimeout(timeout);
+        script.remove();
+        
+        if (retryCount < MAX_RETRIES) {
+          console.warn(`⚠️ Retry ${retryCount + 1}/${MAX_RETRIES} for JS: ${src}`);
+          await sleep(RETRY_DELAY);
+          
+          // Try different CDN
+          if (retryCount > 0 && CDN_SOURCES.length > 1) {
+            switchCDN();
+          }
+          
+          try {
+            const result = await loadJS(src, retryCount + 1);
+            resolve(result);
+          } catch (err) {
+            reject(err);
+          }
+        } else {
+          reject(new Error(`Failed to load JS after ${MAX_RETRIES} retries: ${src}`));
+        }
+      };
+      
+      // Append to body with error handling
+      try {
+        (document.body || document.getElementsByTagName('body')[0] || document.documentElement).appendChild(script);
+      } catch (err) {
+        clearTimeout(timeout);
+        reject(new Error(`Failed to append JS to DOM: ${err.message}`));
+      }
+    });
   }
-
-  // Load static files metadata
-  try {
-    const [adsTxt, robotsTxt, sitemap] = await Promise.all([
-      fetch(`${CDN_BASE}/ads.txt`).then(r => r.text()).catch(() => null),
-      fetch(`${CDN_BASE}/robots.txt`).then(r => r.text()).catch(() => null),
-      fetch(`${CDN_BASE}/sitemap.xml`).then(r => r.text()).catch(() => null)
-    ]);
+  
+  /**
+   * Load all CSS files in parallel with error handling
+   */
+  async function loadAllCSS() {
+    console.log('🎨 Loading CSS files...');
+    const results = await Promise.allSettled(cssFiles.map(file => loadCSS(file)));
     
-    window.nexoraStaticFiles = { adsTxt, robotsTxt, sitemap };
-    console.log("✓ Loaded static files");
-  } catch (err) {
-    console.warn("✗ Failed to load static files:", err);
+    const successful = results.filter(r => r.status === 'fulfilled');
+    const failed = results.filter(r => r.status === 'rejected');
+    
+    console.log(`✅ CSS: ${successful.length}/${cssFiles.length} loaded successfully`);
+    
+    if (failed.length > 0) {
+      console.warn(`⚠️ Failed CSS files (${failed.length}):`, failed.map((r, i) => cssFiles[i]));
+    }
+    
+    return { successful: successful.length, failed: failed.length, total: cssFiles.length };
   }
-
-  console.log("🚀 Nexora fully loaded from CDN!");
-}
-
-// Auto-load on page ready
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", loadNexora);
-} else {
-  loadNexora();
-}
+  
+  /**
+   * Load all JS files sequentially with error handling
+   */
+  async function loadAllJS() {
+    console.log('📦 Loading JS files...');
+    let successful = 0;
+    let failed = 0;
+    
+    for (const file of jsFiles) {
+      try {
+        await loadJS(file);
+        console.log(`✅ Loaded: ${file}`);
+        successful++;
+      } catch (error) {
+        console.error(`❌ Failed: ${file}`, error.message);
+        failed++;
+        // Continue loading other files even if one fails
+      }
+    }
+    
+    console.log(`✅ JS: ${successful}/${jsFiles.length} loaded successfully`);
+    
+    return { successful, failed, total: jsFiles.length };
+  }
+  
+  /**
+   * Fetch and cache HTML content with retry
+   */
+  async function loadHTML(path, retryCount = 0) {
+    try {
+      const response = await universalFetch(`${getCDNBase()}/${path}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const content = await response.text();
+      return { path, content, success: true };
+    } catch (error) {
+      if (retryCount < MAX_RETRIES) {
+        console.warn(`⚠️ Retry ${retryCount + 1}/${MAX_RETRIES} for HTML: ${path}`);
+        await sleep(RETRY_DELAY);
+        
+        if (retryCount > 0 && CDN_SOURCES.length > 1) {
+          switchCDN();
+        }
+        
+        return loadHTML(path, retryCount + 1);
+      }
+      
+      console.error(`❌ Failed to load HTML: ${path}`, error.message);
+      return { path, content: null, success: false, error: error.message };
+    }
+  }
+  
+  /**
+   * Fetch and cache JSON content with retry
+   */
+  async function loadJSON(path, retryCount = 0) {
+    try {
+      const response = await universalFetch(`${getCDNBase()}/${path}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const content = await response.json();
+      return { path, content, success: true };
+    } catch (error) {
+      if (retryCount < MAX_RETRIES) {
+        console.warn(`⚠️ Retry ${retryCount + 1}/${MAX_RETRIES} for JSON: ${path}`);
+        await sleep(RETRY_DELAY);
+        
+        if (retryCount > 0 && CDN_SOURCES.length > 1) {
+          switchCDN();
+        }
+        
+        return loadJSON(path, retryCount + 1);
+      }
+      
+      console.error(`❌ Failed to load JSON: ${path}`, error.message);
+      return { path, content: null, success: false, error: error.message };
+    }
+  }
+  
+  /**
+   * Fetch and cache text files with retry
+   */
+  async function loadText(path, retryCount = 0) {
+    try {
+      const response = await universalFetch(`${getCDNBase()}/${path}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const content = await response.text();
+      return { path, content, success: true };
+    } catch (error) {
+      if (retryCount < MAX_RETRIES) {
+        console.warn(`⚠️ Retry ${retryCount + 1}/${MAX_RETRIES} for text: ${path}`);
+        await sleep(RETRY_DELAY);
+        
+        if (retryCount > 0 && CDN_SOURCES.length > 1) {
+          switchCDN();
+        }
+        
+        return loadText(path, retryCount + 1);
+      }
+      
+      console.error(`❌ Failed to load text file: ${path}`, error.message);
+      return { path, content: null, success: false, error: error.message };
+    }
+  }
+  
+  /**
+   * Load all HTML files with parallel loading
+   */
+  async function loadAllHTML() {
+    console.log('📄 Loading HTML files...');
+    const results = await Promise.allSettled(htmlFiles.map(file => loadHTML(file)));
+    const successful = results.filter(r => r.status === 'fulfilled' && r.value.success);
+    const loaded = successful.length;
+    console.log(`✅ HTML: ${loaded}/${htmlFiles.length} loaded successfully`);
+    return results.map(r => r.status === 'fulfilled' ? r.value : { path: '', success: false });
+  }
+  
+  /**
+   * Load all JSON files with parallel loading
+   */
+  async function loadAllJSON() {
+    console.log('📋 Loading JSON files...');
+    const results = await Promise.allSettled(jsonFiles.map(file => loadJSON(file)));
+    const successful = results.filter(r => r.status === 'fulfilled' && r.value.success);
+    const loaded = successful.length;
+    console.log(`✅ JSON: ${loaded}/${jsonFiles.length} loaded successfully`);
+    return results.map(r => r.status === 'fulfilled' ? r.value : { path: '', success: false });
+  }
+  
+  /**
+   * Load all text/config files with parallel loading
+   */
+  async function loadAllText() {
+    console.log('📝 Loading text/config files...');
+    const results = await Promise.allSettled(textFiles.map(file => loadText(file)));
+    const successful = results.filter(r => r.status === 'fulfilled' && r.value.success);
+    const loaded = successful.length;
+    console.log(`✅ Text: ${loaded}/${textFiles.length} loaded successfully`);
+    return results.map(r => r.status === 'fulfilled' ? r.value : { path: '', success: false });
+  }
+  
+  /**
+   * Main loader function with comprehensive error handling
+   */
+  async function initNexoraLoader() {
+    console.log('🚀 Nexora Loader Initializing...');
+    console.log(`📍 CDN Base: ${getCDNBase()}`);
+    
+    // Check browser compatibility
+    const isCompatible = checkBrowserCompatibility();
+    if (!isCompatible.compatible) {
+      console.error('❌ Browser compatibility issues:', isCompatible.issues);
+      // Continue anyway but warn user
+    }
+    
+    const startTime = performance.now();
+    let cssStats, jsStats, htmlResults, jsonResults, textResults;
+    
+    try {
+      // Load everything with proper error handling
+      cssStats = await loadAllCSS();
+      jsStats = await loadAllJS();
+      htmlResults = await loadAllHTML();
+      jsonResults = await loadAllJSON();
+      textResults = await loadAllText();
+      
+      const endTime = performance.now();
+      const loadTime = ((endTime - startTime) / 1000).toFixed(2);
+      
+      const totalLoaded = cssStats.successful + jsStats.successful + 
+                         htmlResults.filter(r => r.success).length + 
+                         jsonResults.filter(r => r.success).length + 
+                         textResults.filter(r => r.success).length;
+      
+      const totalFiles = cssStats.total + jsStats.total + 
+                        htmlResults.length + jsonResults.length + textResults.length;
+      
+      console.log(`🎉 Nexora Loader Complete! (${loadTime}s)`);
+      console.log(`📊 Total: ${totalLoaded}/${totalFiles} files loaded successfully`);
+      
+      // Store loaded content in window object with safe access
+      window.NexoraContent = window.NexoraContent || {};
+      Object.assign(window.NexoraContent, {
+        html: htmlResults.reduce((acc, r) => {
+          if (r.success) acc[r.path] = r.content;
+          return acc;
+        }, {}),
+        json: jsonResults.reduce((acc, r) => {
+          if (r.success) acc[r.path] = r.content;
+          return acc;
+        }, {}),
+        text: textResults.reduce((acc, r) => {
+          if (r.success) acc[r.path] = r.content;
+          return acc;
+        }, {}),
+        stats: {
+          css: cssStats,
+          js: jsStats,
+          html: { successful: htmlResults.filter(r => r.success).length, total: htmlResults.length },
+          json: { successful: jsonResults.filter(r => r.success).length, total: jsonResults.length },
+          text: { successful: textResults.filter(r => r.success).length, total: textResults.length }
+        }
+      });
+      
+      // Dispatch custom event when everything is loaded
+      const event = new CustomEvent('nexora:loaded', {
+        detail: {
+          loadTime: loadTime,
+          totalLoaded: totalLoaded,
+          totalFiles: totalFiles,
+          stats: window.NexoraContent.stats,
+          content: window.NexoraContent
+        }
+      });
+      
+      window.dispatchEvent(event);
+      
+      // Also dispatch to document for broader compatibility
+      if (document.dispatchEvent) {
+        document.dispatchEvent(event);
+      }
+      
+      return { success: true, stats: window.NexoraContent.stats };
+      
+    } catch (error) {
+      console.error('❌ Critical error in Nexora Loader:', error);
+      
+      // Dispatch error event
+      const errorEvent = new CustomEvent('nexora:error', {
+        detail: { error: error.message, stack: error.stack }
+      });
+      
+      window.dispatchEvent(errorEvent);
+      
+      if (document.dispatchEvent) {
+        document.dispatchEvent(errorEvent);
+      }
+      
+      return { success: false, error: error.message };
+    }
+  }
+  
+  /**
+   * Check browser compatibility
+   */
+  function checkBrowserCompatibility() {
+    const issues = [];
+    
+    if (!window.Promise) issues.push('Promise not supported');
+    if (!window.fetch && !window.XMLHttpRequest) issues.push('No fetch or XHR support');
+    if (!document.createElement) issues.push('Cannot create DOM elements');
+    if (!window.CustomEvent) issues.push('CustomEvent not supported');
+    if (!Array.prototype.map) issues.push('Array.map not supported');
+    if (!Array.prototype.filter) issues.push('Array.filter not supported');
+    if (!Object.assign) issues.push('Object.assign not supported');
+    
+    return {
+      compatible: issues.length === 0,
+      issues: issues
+    };
+  }
+  
+  /**
+   * Safe initialization wrapper
+   */
+  function safeInit() {
+    try {
+      initNexoraLoader().catch(error => {
+        console.error('❌ Unhandled error in loader:', error);
+      });
+    } catch (error) {
+      console.error('❌ Failed to initialize loader:', error);
+    }
+  }
+  
+  // Start loading when DOM is ready with multiple fallbacks
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      if (document.addEventListener) {
+        document.addEventListener('DOMContentLoaded', safeInit);
+      } else if (document.attachEvent) {
+        // IE8 fallback
+        document.attachEvent('onreadystatechange', function() {
+          if (document.readyState === 'complete') safeInit();
+        });
+      }
+    } else {
+      // DOM already loaded
+      safeInit();
+    }
+    
+    // Fallback: if DOMContentLoaded never fires
+    setTimeout(function() {
+      if (!window.NexoraLoader || !window.NexoraLoader.initialized) {
+        console.warn('⚠️ DOMContentLoaded timeout, forcing initialization');
+        safeInit();
+      }
+    }, 5000);
+  } else {
+    console.error('❌ Document object not available');
+  }
+  
+  // Expose loader info globally with safe property access
+  try {
+    window.NexoraLoader = window.NexoraLoader || {};
+    Object.assign(window.NexoraLoader, {
+      version: '3.0.0',
+      initialized: false,
+      cdnSources: CDN_SOURCES,
+      currentCDN: getCDNBase,
+      cssFiles: cssFiles,
+      jsFiles: jsFiles,
+      htmlFiles: htmlFiles,
+      jsonFiles: jsonFiles,
+      textFiles: textFiles,
+      reload: function() {
+        console.log('🔄 Reloading Nexora...');
+        currentCDNIndex = 0; // Reset CDN
+        return initNexoraLoader();
+      },
+      switchCDN: switchCDN,
+      getTotalFileCount: function() {
+        return cssFiles.length + jsFiles.length + htmlFiles.length + jsonFiles.length + textFiles.length;
+      },
+      getContent: function(type, path) {
+        if (!window.NexoraContent) return null;
+        return window.NexoraContent[type] ? window.NexoraContent[type][path] : null;
+      },
+      getStats: function() {
+        return window.NexoraContent ? window.NexoraContent.stats : null;
+      }
+    });
+    
+    // Mark as initialized after first load
+    window.addEventListener('nexora:loaded', function() {
+      window.NexoraLoader.initialized = true;
+    });
+    
+  } catch (error) {
+    console.error('❌ Failed to expose NexoraLoader:', error);
+  }
+  
+})();
