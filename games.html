@@ -21,16 +21,16 @@
       margin: 0;
       padding: 0;
       width: 100%;
-      min-height: 100vh; /* changed from height: 100% to min-height: 100vh */
+      min-height: 100vh; 
     }
 
     body {
       overflow-y: auto !important;
       overflow-x: hidden !important;
-      height: auto; /* add this to override any height constraints */
+      height: auto; 
     }
 
-    /* optional minimal no-results style */
+    
     .no-results {
       color: #999;
       font-size: 1rem;
@@ -38,7 +38,7 @@
       text-align: center;
     }
 
-    /* Ad layout container */
+    
     .content-wrapper {
       display: flex;
       justify-content: center;
@@ -47,7 +47,7 @@
       max-width: 1600px;
       margin: 0 auto;
       padding: 0 20px 40px 20px;
-      min-height: 100vh; /* ensure content takes up space */
+      min-height: 100vh; 
     }
 
     .ad-container {
@@ -69,7 +69,7 @@
       }
     }
 
-    /* Game Suggestion Button */
+    
     .suggestion-section {
       display: flex;
       justify-content: center;
@@ -165,21 +165,21 @@
   </div>
 
   <div class="content-wrapper">
-    <!-- Left Ad -->
+    
     <div class="ad-container">
       <div id="leftAdContainer"></div>
     </div>
 
-    <!-- Game Grid -->
+    
     <div class="grid" id="gameGrid"></div>
 
-    <!-- Right Ad -->
+    
     <div class="ad-container">
       <div id="rightAdContainer"></div>
     </div>
   </div>
 
-  <!-- Game Suggestion Button -->
+  
   <div class="suggestion-section">
     <a href="https://forms.gle/f8r6tPEMnobGoH5g8" target="_blank" rel="noopener noreferrer" class="suggestion-btn">
       <i class="fas fa-lightbulb"></i>
@@ -188,7 +188,7 @@
   </div>
 
   <script type="text/javascript">
-    // Load left ad immediately
+
     (function() {
       var container = document.getElementById('leftAdContainer');
       var script1 = document.createElement('script');
@@ -210,7 +210,6 @@
       container.appendChild(script2);
     })();
 
-    // Load right ad with slight delay
     setTimeout(function() {
       var container = document.getElementById('rightAdContainer');
       var script1 = document.createElement('script');
@@ -235,15 +234,13 @@
 
   <script>
   (async function(){
-    // Detect if animations are disabled or not working
+
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    
-    // load games
+
     const resp  = await fetch('game-info.json');
     const games = await resp.json();
     sessionStorage.setItem("gamesList", JSON.stringify(games));
 
-    // cursor-tracked highlight binding
     function bindCardHighlight(card) {
       card.style.setProperty('--x', '50%');
       card.style.setProperty('--y', '50%');
@@ -268,34 +265,29 @@
       }, { passive: true });
     }
 
-    // Lightweight fuzzy scoring function
     function fuzzyScore(query, text) {
       if (!query) return 1; // empty query matches everything
       query = query.toLowerCase();
       text = text.toLowerCase();
 
-      // Exact match highest
       if (text === query) return 1000;
 
-      // Prefix / word-start boosts
       if (text.startsWith(query)) return 500;
       const words = text.split(/\s+/);
       for (const w of words) {
         if (w.startsWith(query)) return 400;
       }
 
-      // Substring match (non-prefix) with position penalty
       const idx = text.indexOf(query);
       if (idx !== -1) {
         return 300 - idx;
       }
 
-      // Sequential character match: all query chars appear in order
       let qIdx = 0;
       let score = 0;
       for (let i = 0; i < text.length && qIdx < query.length; i++) {
         if (text[i] === query[qIdx]) {
-          // reward contiguous runs
+
           let contLen = 1;
           qIdx++;
           while (qIdx < query.length && i + 1 < text.length && text[i + 1] === query[qIdx]) {
@@ -308,21 +300,19 @@
       }
       if (qIdx !== query.length) return -Infinity; // not a match
 
-      // boost earlier first-char occurrence
       const firstCharPos = text.indexOf(query[0]);
       score += Math.max(0, 50 - firstCharPos);
 
       return score;
     }
 
-    // render grid with fuzzy-ranked results
     function initGames(filter = "") {
       const grid = document.getElementById("gameGrid");
       grid.innerHTML = "";
 
       const candidates = games.map(g => {
         const titleScore = fuzzyScore(filter.trim(), g.title || "");
-        // If you have tags or descriptions, compute additional scores here and take max
+
         return { game: g, score: titleScore };
       })
       .filter(item => item.score !== -Infinity)
@@ -336,19 +326,18 @@
         card.onclick = () => {
           const newGameData = JSON.stringify(game);
           const currentGameData = sessionStorage.getItem("currentGame");
-          
-          // Check if this is a different game than what's currently loaded
+
           if (currentGameData !== newGameData && window.GameStateManager) {
-            // Clear the old game state when selecting a new game
+
             window.GameStateManager.clearState();
           }
           
           sessionStorage.setItem("currentGame", newGameData);
-          // keep your existing navigation behavior
+
           if (typeof navigate === 'function') {
             navigate('/loader');
           } else {
-            // fallback: try location change if navigate not defined
+
             try { location.href = '/loader'; } catch (e) {}
           }
         };
@@ -366,13 +355,12 @@
         grid.appendChild(card);
 
         bindCardHighlight(card);
-        
-        // Force visibility if animations are disabled or not supported
+
         if (prefersReducedMotion) {
           card.style.opacity = '1';
           card.style.transform = 'none';
         } else {
-          // Fallback: ensure card is visible after animation should complete
+
           setTimeout(() => {
             card.classList.add('loaded');
           }, 600 + (index * 80)); // match animation duration + stagger
@@ -387,10 +375,9 @@
       }
     }
 
-    // wire input (trimmed)
     const inputEl = document.getElementById("searchInput");
     inputEl.addEventListener("input", e => initGames(e.target.value));
-    // optional: support pressing Escape to clear input
+
     inputEl.addEventListener("keydown", e => {
       if (e.key === 'Escape') {
         inputEl.value = '';
@@ -399,7 +386,6 @@
       }
     });
 
-    // initial render
     initGames();
   })();
   </script>

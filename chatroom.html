@@ -20,11 +20,11 @@
                     </div>
                 </div>
 
-                <!-- Login Screen -->
+                
                 <div class="login-screen" id="loginScreen">
                     <h2>Welcome to Circle!</h2>
                     
-                    <!-- Initial choice buttons -->
+                    
                     <div class="choice-screen" id="choiceScreen">
                         <button class="choice-button" onclick="showJoinForm()">
                             <span class="choice-button-title">Join a Circle</span>
@@ -40,7 +40,7 @@
                         </button>
                     </div>
 
-                    <!-- Join room form -->
+                    
                     <div class="form-screen" id="joinForm">
                         <button class="back-button" onclick="showChoiceScreen()">
                             ← Back
@@ -54,7 +54,7 @@
                         <button onclick="joinRoom()">Join Circle</button>
                     </div>
 
-                    <!-- Create room form -->
+                    
                     <div class="form-screen" id="createForm">
                         <button class="back-button" onclick="showChoiceScreen()">
                             ← Back
@@ -65,7 +65,7 @@
                         <button onclick="createRoom()">Create Circle</button>
                     </div>
 
-                    <!-- Public chat form -->
+                    
                     <div class="form-screen" id="publicForm">
                         <button class="back-button" onclick="showChoiceScreen()">
                             ← Back
@@ -77,7 +77,7 @@
                     </div>
                 </div>
 
-                <!-- Chat Screen -->
+                
                 <div class="chat-screen" id="chatScreen">
                     <div class="chat-content">
                         <div class="messages" id="messages"></div>
@@ -88,7 +88,7 @@
                     </div>
                 </div>
                 
-                <!-- Waiting for Approval Screen -->
+                
                 <div class="waiting-screen" id="waitingScreen" style="display: none;">
                     <div class="waiting-content">
                         <div class="waiting-spinner"></div>
@@ -100,7 +100,7 @@
                 </div>
             </div>
 
-            <!-- Users Sidebar (Inside .app container) -->
+            
             <div class="users-sidebar-external" id="usersSidebar">
                 <div class="users-sidebar-header">
                     <h3>Users Online</h3>
@@ -110,7 +110,7 @@
             </div>
         </div>
 
-        <!-- Join Request Approval Modal -->
+        
         <div class="approval-modal" id="approvalModal" style="display: none;">
             <div class="approval-content">
                 <h3>Join Request</h3>
@@ -122,7 +122,7 @@
             </div>
         </div>
 
-        <!-- Fullscreen Room Code Overlay -->
+        
         <div class="room-code-overlay" id="roomCodeOverlay" onclick="toggleRoomCodeOverlay()">
             <div class="room-code-large">
                 <div class="room-code-large-title">CIRCLE CODE</div>

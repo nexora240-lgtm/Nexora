@@ -84,7 +84,6 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 		__uv.dispatchEvent = window.EventTarget.prototype.dispatchEvent;
 	}
 
-	// Storage wrappers
 	client.nativeMethods.defineProperty(
 		client.storage.storeProto,
 		"__uv$storageObj",
@@ -212,7 +211,6 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 		event.data.value = __uv.sourceUrl(event.data.value);
 	});
 
-	// XMLHttpRequest
 	client.xhr.on("open", (event) => {
 		event.data.input = __uv.rewriteUrl(event.data.input);
 	});
@@ -221,7 +219,6 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 		event.data.value = __uv.sourceUrl(event.data.value);
 	});
 
-	// Workers
 	client.workers.on("worker", (event) => {
 		event.data.url = __uv.rewriteUrl(event.data.url);
 	});
@@ -247,12 +244,10 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 		};
 	});
 
-	// Navigator
 	client.navigator.on("sendBeacon", (event) => {
 		event.data.url = __uv.rewriteUrl(event.data.url);
 	});
 
-	// Cookies
 	client.document.on("getCookie", (event) => {
 		event.data.value = __uv.cookieStr;
 	});
@@ -280,7 +275,6 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 		event.respondWith(event.data.value);
 	});
 
-	// HTML
 	client.element.on("setInnerHTML", (event) => {
 		switch (event.that.tagName) {
 			case "SCRIPT":
@@ -339,7 +333,6 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 				break;
 		}
 
-		//event.data.value = __uv.sourceHtml(event.data.value, { document: event.that.tagName === 'HTML' });
 	});
 
 	client.document.on("write", (event) => {
@@ -356,7 +349,6 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 		event.data.html = __uv.rewriteHtml(event.data.html);
 	});
 
-	// EventSource
 
 	client.eventSource.on("construct", (event) => {
 		event.data.url = __uv.rewriteUrl(event.data.url);
@@ -366,7 +358,6 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 		event.data.url = __uv.rewriteUrl(event.data.url);
 	});
 
-	// History
 	client.history.on("replaceState", (event) => {
 		if (event.data.url)
 			event.data.url = __uv.rewriteUrl(
@@ -382,7 +373,6 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 			);
 	});
 
-	// Element get set attribute methods
 	client.element.on("getAttribute", (event) => {
 		if (
 			client.element.hasAttribute.call(
@@ -399,7 +389,6 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 		}
 	});
 
-	// Message
 	client.message.on("postMessage", (event) => {
 		const to = event.data.origin;
 		let call = __uv.call;
@@ -527,7 +516,6 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 		event.data.url = __uv.rewriteUrl(event.data.url);
 	});
 
-	// Element Property Attributes
 	client.element.hookProperty(
 		[HTMLAnchorElement, HTMLAreaElement, HTMLLinkElement, HTMLBaseElement],
 		"href",
@@ -717,13 +705,11 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 		}
 	});
 
-	// Until proper rewriting is implemented for service workers.
-	// Not sure atm how to implement it with the already built in service worker
+
 	if ("serviceWorker" in window.navigator) {
 		delete window.Navigator.prototype.serviceWorker;
 	}
 
-	// Document
 	client.document.on("getDomain", (event) => {
 		event.data.value = __uv.domain;
 	});
@@ -757,7 +743,6 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 		});
 	});
 
-	// Attribute (node.attributes)
 	client.attribute.on("getValue", (event) => {
 		if (
 			client.element.hasAttribute.call(
@@ -822,7 +807,6 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 		}
 	});
 
-	// URL
 	client.url.on("createObjectURL", (event) => {
 		const url = event.target.call(event.that, event.data.object);
 		if (url.startsWith("blob:" + location.origin)) {
@@ -1119,7 +1103,6 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 		});
 	});
 
-	// Proper hash emulation.
 	if (!!window.window) {
 		__uv.addEventListener.call(window, "hashchange", (event) => {
 			if (event.__uv$dispatched) return false;
@@ -1153,7 +1136,6 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 		}
 	});
 
-	// Hooking functions & descriptors
 	client.fetch.overrideRequest();
 	client.fetch.overrideUrl();
 	client.xhr.overrideOpen();
@@ -1162,7 +1144,7 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 	client.element.overrideAttribute();
 	client.element.overrideInsertAdjacentHTML();
 	client.element.overrideAudio();
-	// client.element.overrideQuerySelector();
+
 	client.node.overrideBaseURI();
 	client.node.overrideTextContent();
 	client.attribute.overrideNameValue();
@@ -1174,7 +1156,7 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 	client.document.overrideParseFromString();
 	client.storage.overrideMethods();
 	client.storage.overrideLength();
-	//client.document.overrideQuerySelector();
+
 	client.object.overrideGetPropertyNames();
 	client.object.overrideGetOwnPropertyDescriptors();
 	client.history.overridePushState();

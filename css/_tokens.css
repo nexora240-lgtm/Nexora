@@ -24,7 +24,7 @@
   --accent-gradient: linear-gradient(90deg, var(--primary-deep), var(--primary));
 }
 
-/* Smooth transitions for theme changes */
+
 html {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
@@ -123,7 +123,7 @@ body {
   --accent-gradient: linear-gradient(135deg, #ff6b35, #ff9d6f);
 }
 
-/* Light scheme with blueberry theme colors */
+
 .light-scheme.theme-midnight-blueberry {
   --primary: #2f6bd4;
   --primary-deep: #1f4a9a;
@@ -133,7 +133,7 @@ body {
   --accent-gradient: linear-gradient(135deg, #4a7fd9, #6ea8fe);
 }
 
-/* Light scheme with grape theme colors */
+
 .light-scheme.theme-midnight-grape {
   --primary: #8f3fb1;
   --primary-deep: #6b2d85;
@@ -143,7 +143,7 @@ body {
   --accent-gradient: linear-gradient(135deg, #a855d9, #c084fc);
 }
 
-/* Light scheme with amber theme colors (default) */
+
 .light-scheme.theme-midnight-amber {
   --primary: #d4550a;
   --primary-deep: #a03e07;
@@ -185,7 +185,7 @@ body {
 .u-gap { gap: var(--control-gap); }
 .round { border-radius: var(--radius); }
 
-/* Only apply focus ring to interactive elements */
+
 button:focus,
 a:focus,
 input:focus,
@@ -199,13 +199,13 @@ textarea:focus,
   border-radius: calc(var(--radius) - 2px);
 }
 
-/* Explicitly prevent focus ring on main content */
+
 .main-content:focus {
   box-shadow: none;
   outline: none;
 }
 
-/* Game State Preservation - Hidden container for keeping game alive */
+
 #preserved-game-loader {
   position: fixed;
   top: -9999px;

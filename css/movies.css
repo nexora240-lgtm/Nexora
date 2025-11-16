@@ -167,7 +167,7 @@
 .vidplus-movies .msg { padding:14px; text-align:center; color: var(--muted); background: color-mix(in srgb, black 8%, transparent); }
 .vidplus-movies .fallback { display:flex; gap:8px; align-items:center; justify-content:center; padding:12px; }
 
-/* Responsive */
+
 @media (max-width:900px) {
   .vidplus-movies { padding:12px; }
   .vidplus-movies[data-view="movies"].mode-movie .searchWrap,

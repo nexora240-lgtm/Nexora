@@ -86,13 +86,13 @@ html, body {
   position: relative;
   overflow: hidden;
   
-  /* Cursor tracking variables */
+  
   --x: 50%;
   --y: 50%;
   --glow-size: 200px;
 }
 
-/* Moving highlight effect */
+
 .home .play-button::before {
   content: "";
   position: absolute;

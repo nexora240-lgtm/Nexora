@@ -38,7 +38,7 @@
       flex: 1;
       max-width: 1200px;
       width: 100%;
-      min-width: 0; /* Allow flex shrinking but maintain aspect ratio */
+      min-width: 0; 
     }
 
     .loader-banner-ad {
@@ -65,12 +65,12 @@
 <body>
   <div class="loader-page">
     <div class="content-wrapper">
-      <!-- Left Ad -->
+      
       <div class="ad-container">
         <div id="leftAdContainer"></div>
       </div>
 
-      <!-- Game Loader Content -->
+      
       <div class="loader-wrapper">
         <div id="gameContainer"></div>
 
@@ -88,20 +88,20 @@
         </footer>
       </div>
 
-      <!-- Right Ad -->
+      
       <div class="ad-container">
         <div id="rightAdContainer"></div>
       </div>
     </div>
   </div>
 
-  <!-- Banner Ad Below Loader -->
+  
   <div class="loader-banner-ad">
     <div id="loaderBannerAdContainer"></div>
   </div>
 
   <script type="text/javascript">
-    // Load left ad immediately
+
     (function() {
       var container = document.getElementById('leftAdContainer');
       var script1 = document.createElement('script');
@@ -123,7 +123,6 @@
       container.appendChild(script2);
     })();
 
-    // Load right ad with slight delay
     setTimeout(function() {
       var container = document.getElementById('rightAdContainer');
       var script1 = document.createElement('script');
@@ -145,7 +144,6 @@
       container.appendChild(script2);
     }, 500);
 
-    // Load banner ad below loader
     setTimeout(function() {
       var container = document.getElementById('loaderBannerAdContainer');
       var script1 = document.createElement('script');
@@ -258,7 +256,7 @@
   </script>
 
   <script>
-    // Theme-aware favicon updater
+
     (function() {
       const FAVICON_MAP = {
         'midnight-amber': '/assets/favicon-amber.png',
@@ -287,14 +285,12 @@
         }
       }
 
-      // Update on page load
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', updateFavicon);
       } else {
         updateFavicon();
       }
 
-      // Update when theme changes
       document.addEventListener('settings:colorSchemeChanged', updateFavicon);
       document.addEventListener('settings:themeChanged', updateFavicon);
     })();

@@ -1,4 +1,4 @@
-/* First-Time Visitor Modal Styles */
+
 
 #first-time-overlay {
   position: fixed;
@@ -47,14 +47,14 @@
   animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   border: 1px solid rgba(255, 255, 255, 0.06);
   
-  /* cursor tracking variables */
+  
   --x: 50%;
   --y: 50%;
   --glow-size: 300px;
   --glow-strength: 0.35;
 }
 
-/* Mouse-tracked glow effect */
+
 #first-time-modal::before {
   content: "";
   position: absolute;
@@ -72,7 +72,7 @@
   z-index: 0;
 }
 
-/* Animated gradient ring border */
+
 #first-time-modal::after {
   content: "";
   position: absolute;
@@ -105,7 +105,7 @@
   opacity: 0.4;
 }
 
-/* Ensure content is above pseudo-elements */
+
 #first-time-modal > * {
   position: relative;
   z-index: 1;
@@ -288,7 +288,7 @@
   transform: scale(1.05);
 }
 
-/* Scrollbar styling for modal */
+
 #first-time-modal::-webkit-scrollbar {
   width: 8px;
 }
@@ -307,7 +307,7 @@
   background: var(--primary-deep);
 }
 
-/* Light theme adjustments */
+
 .light-scheme #first-time-modal {
   background: var(--surface);
   border-color: color-mix(in srgb, var(--surface) 40%, #000 0%);
@@ -335,7 +335,7 @@
   border-top-color: color-mix(in srgb, var(--surface) 6%, #000 0%);
 }
 
-/* About:blank Cloaking Modal */
+
 #cloaking-modal {
   position: relative;
   background: linear-gradient(to bottom, 
@@ -355,14 +355,14 @@
   animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   border: 1px solid rgba(255, 255, 255, 0.06);
   
-  /* cursor tracking variables */
+  
   --x: 50%;
   --y: 50%;
   --glow-size: 300px;
   --glow-strength: 0.35;
 }
 
-/* Mouse-tracked glow effect for cloaking modal */
+
 #cloaking-modal::before {
   content: "";
   position: absolute;
@@ -544,7 +544,7 @@
   transform: scale(1);
 }
 
-/* Cookie Consent Modal */
+
 #cookie-consent-modal {
   position: relative;
   background: linear-gradient(to bottom, 
@@ -564,14 +564,14 @@
   animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   border: 1px solid rgba(255, 255, 255, 0.06);
   
-  /* cursor tracking variables */
+  
   --x: 50%;
   --y: 50%;
   --glow-size: 300px;
   --glow-strength: 0.35;
 }
 
-/* Mouse-tracked glow effect for cookie modal */
+
 #cookie-consent-modal::before {
   content: "";
   position: absolute;
@@ -792,7 +792,7 @@
   transform: scale(1);
 }
 
-/* Panic Button Modal */
+
 #panic-button-modal {
   position: relative;
   background: linear-gradient(to bottom, 
@@ -812,7 +812,7 @@
   animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   border: 1px solid rgba(255, 255, 255, 0.06);
   
-  /* cursor tracking variables */
+  
   --x: 50%;
   --y: 50%;
   --glow-size: 300px;

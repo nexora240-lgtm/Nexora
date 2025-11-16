@@ -78,7 +78,7 @@ body {
   font-family: 'Poppins', Arial, sans-serif !important;
   pointer-events: auto;
   
-  /* cursor tracking variables */
+  
   --x: 50%;
   --y: 50%;
   --glow-size: 300px;
@@ -86,7 +86,7 @@ body {
   --glow-strength: 0.35;
 }
 
-/* deep back glow layer for sidebar */
+
 .sidebar .sidebar-glow {
   position: absolute;
   inset: -24px;
@@ -106,7 +106,7 @@ body {
   will-change: opacity, transform, background-position;
 }
 
-/* cursor-tracked inner highlight for sidebar */
+
 .sidebar::before {
   content: "";
   position: absolute;
@@ -131,7 +131,7 @@ body {
   z-index: 0;
 }
 
-/* animated gradient ring border for sidebar */
+
 .sidebar::after {
   content: "";
   position: absolute;
@@ -162,7 +162,7 @@ body {
   z-index: -1;
 }
 
-/* reveal effects on sidebar hover */
+
 .sidebar:hover::before {
   opacity: 0.6;
   background-image:
@@ -229,16 +229,16 @@ body {
   flex: 1;
   padding: 20px;
   transition: left 0.3s ease;
-  overflow-y: auto; /* changed from visible */
+  overflow-y: auto; 
   overflow-x: hidden;
   min-height: 100vh;
   box-sizing: border-box;
   pointer-events: auto;
-  position: absolute; /* changed from fixed */
+  position: absolute; 
   top: 0;
   right: 0;
   left: 84px;
-  bottom: 0; /* add bottom: 0 */
+  bottom: 0; 
   z-index: 1;
 }
 .sidebar:hover ~ .main-content {
