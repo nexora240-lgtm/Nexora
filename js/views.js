@@ -1,14 +1,13 @@
 function loadView(file) {
-  // Save game state before loading new view if currently on game loader
+
   if (window.GameStateManager && app.querySelector('#gameContainer')) {
     window.GameStateManager.saveState(app);
   }
 
-  // Special handling for game loader - check if we can restore preserved state
   if (file === 'gameloader.html' && window.GameStateManager && window.GameStateManager.hasActiveGame()) {
     const restored = window.GameStateManager.restoreState(app);
     if (restored) {
-      console.log('[Views] Restored preserved game loader');
+      
       return;
     }
   }
@@ -51,10 +50,9 @@ function loadView(file) {
       });
 
       if (window.NexoraChat && typeof window.NexoraChat.init === 'function') {
-        try { window.NexoraChat.init(app); } catch (e) { /* ignore init errors */ }
+        try { window.NexoraChat.init(app); } catch (e) {  }
       }
 
-      // Restore chatroom state if returning to chatroom
       if (file === 'chatroom.html' && typeof restoreChatroomState === 'function') {
         setTimeout(() => {
           restoreChatroomState();

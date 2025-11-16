@@ -12,7 +12,6 @@
   const PANIC_KEY_KEY = 'settings.panicKey';
   const PANIC_URL_KEY = 'settings.panicUrl';
 
-  // Disguise options with their details
   const DISGUISE_OPTIONS = [
     { 
       name: "Clever", 
@@ -80,19 +79,18 @@
       if (location.protocol === 'https:') cookie += '; Secure';
       document.cookie = cookie;
     } catch (e) {
-      console.error('Failed to set cookie:', e);
+      
     }
   }
 
   function isFirstVisit() {
     try {
-      // Check if user has completed first-time modal
+
       const hasVisitedFlag = localStorage.getItem(FIRST_VISIT_KEY);
       if (hasVisitedFlag) {
         return false; // User completed the first-time modal
       }
 
-      // Show modal for all users (including existing ones) since this is a new feature
       return true;
     } catch (e) {
       return false;
@@ -103,20 +101,18 @@
     try {
       localStorage.setItem(FIRST_VISIT_KEY, 'true');
     } catch (e) {
-      console.error('Failed to mark as visited:', e);
+      
     }
   }
 
   function createModal() {
-    // Create overlay
+
     const overlay = document.createElement('div');
     overlay.id = 'first-time-overlay';
 
-    // Create modal container
     const modal = document.createElement('div');
     modal.id = 'first-time-modal';
 
-    // Add mouse tracking for glow effect
     modal.addEventListener('mousemove', (e) => {
       const rect = modal.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -130,7 +126,6 @@
       modal.style.setProperty('--y', '50%');
     });
 
-    // Modal header
     const header = document.createElement('div');
     header.innerHTML = `
       <h2>Welcome to Nexora!</h2>
@@ -140,7 +135,6 @@
       </p>
     `;
 
-    // Create disguise options grid
     const optionsContainer = document.createElement('div');
     optionsContainer.className = 'disguise-options';
 
@@ -158,23 +152,20 @@
       `;
 
       option.addEventListener('click', () => {
-        // Remove selection from all options
+
         optionsContainer.querySelectorAll('.disguise-option').forEach(opt => {
           opt.classList.remove('selected');
         });
-        
-        // Select this option
+
         option.classList.add('selected');
         selectedDisguise = disguise;
-        
-        // Enable continue button
+
         continueBtn.disabled = false;
       });
 
       optionsContainer.appendChild(option);
     });
 
-    // Create action buttons
     const actions = document.createElement('div');
     actions.className = 'modal-actions';
 
@@ -192,7 +183,6 @@
     actions.appendChild(skipBtn);
     actions.appendChild(continueBtn);
 
-    // Assemble modal
     modal.appendChild(header);
     modal.appendChild(optionsContainer);
     modal.appendChild(actions);
@@ -203,26 +193,22 @@
 
   function applyDisguise(disguise) {
     try {
-      // Save to localStorage
+
       localStorage.setItem(DISGUISE_KEY, disguise.name);
       localStorage.setItem(FAVICON_KEY, disguise.icon);
-      
-      // Save to cookies
+
       setCookie(COOKIE_NAME, disguise.name);
       setCookie(COOKIE_FAV, disguise.icon);
 
-      // Apply title
       document.title = disguise.title;
 
-      // Apply favicon
       const existingFavicons = document.querySelectorAll('link[rel~="icon"]');
       existingFavicons.forEach(link => link.remove());
 
       const link = document.createElement('link');
       link.rel = 'icon';
       link.href = disguise.icon;
-      
-      // Set appropriate type based on file extension
+
       if (disguise.icon.includes('.ico')) {
         link.type = 'image/x-icon';
       } else if (disguise.icon.includes('.png')) {
@@ -233,7 +219,7 @@
       
       document.head.appendChild(link);
     } catch (e) {
-      console.error('Failed to apply disguise:', e);
+      
     }
   }
 
@@ -246,7 +232,7 @@
     if (selectedDisguise) {
       applyDisguise(selectedDisguise);
       closeModal();
-      // Show cloaking modal after disguise selection
+
       setTimeout(() => showCloakingModal(), 300);
     }
   }
@@ -261,20 +247,17 @@
     }
   }
 
-  // === About:blank Cloaking Modal ===
   
   let selectedCloakingOption = null;
 
   function createCloakingModal() {
-    // Create overlay
+
     const overlay = document.createElement('div');
     overlay.id = 'first-time-overlay';
 
-    // Create modal container
     const modal = document.createElement('div');
     modal.id = 'cloaking-modal';
 
-    // Add mouse tracking for glow effect
     let rafId = null;
     modal.addEventListener('mousemove', (e) => {
       if (rafId) return;
@@ -293,7 +276,6 @@
       modal.style.setProperty('--y', '50%');
     });
 
-    // Modal header
     const header = document.createElement('div');
     header.innerHTML = `
       <h2>About:Blank 🔒</h2>
@@ -302,7 +284,6 @@
       </p>
     `;
 
-    // Create cloaking options
     const optionsContainer = document.createElement('div');
     optionsContainer.className = 'cloaking-options';
 
@@ -334,7 +315,6 @@
       <div class="checkmark-radio"></div>
     `;
 
-    // Add click handlers
     [enableOption, disableOption].forEach(option => {
       option.addEventListener('click', () => {
         optionsContainer.querySelectorAll('.cloaking-option').forEach(opt => {
@@ -349,7 +329,6 @@
     optionsContainer.appendChild(enableOption);
     optionsContainer.appendChild(disableOption);
 
-    // Create action buttons
     const actions = document.createElement('div');
     actions.className = 'modal-actions';
 
@@ -367,7 +346,6 @@
     actions.appendChild(skipBtn);
     actions.appendChild(continueBtn);
 
-    // Assemble modal
     modal.appendChild(header);
     modal.appendChild(optionsContainer);
     modal.appendChild(actions);
@@ -378,18 +356,17 @@
 
   function applyCloakingSetting(enabled) {
     try {
-      // Only save the setting to localStorage
-      // Do NOT trigger about:blank here - that happens in handleCookieConsentContinue
+
+
       localStorage.setItem(ABOUT_KEY, JSON.stringify(!!enabled));
     } catch (e) {
-      console.error('Failed to apply cloaking setting:', e);
+      
     }
   }
 
   function redirectToDisguiseSite() {
     if (!selectedDisguise) return;
-    
-    // Map of disguises to their actual URLs
+
     const DISGUISE_URLS = {
       "Clever": "https://clever.com/",
       "Google Classroom": "https://classroom.google.com/",
@@ -407,14 +384,14 @@
       try {
         window.location.href = url;
       } catch (e) {
-        console.error('Failed to redirect:', e);
+        
       }
     }
   }
 
   function handleCloakingSkip() {
     closeCloakingModal();
-    // Show panic button modal after skipping cloaking
+
     setTimeout(() => showPanicButtonModal(), 300);
   }
 
@@ -423,7 +400,7 @@
       const enabled = selectedCloakingOption === 'enabled';
       applyCloakingSetting(enabled);
       closeCloakingModal();
-      // Show panic button modal after cloaking selection
+
       setTimeout(() => showPanicButtonModal(), 300);
     }
   }
@@ -443,23 +420,19 @@
     document.body.appendChild(modal);
   }
 
-  // === End Cloaking Modal ===
 
-  // === Panic Button Modal ===
   
   let selectedPanicKey = null;
   let panicUrlValue = '';
 
   function createPanicButtonModal() {
-    // Create overlay
+
     const overlay = document.createElement('div');
     overlay.id = 'first-time-overlay';
 
-    // Create modal container
     const modal = document.createElement('div');
     modal.id = 'panic-button-modal';
 
-    // Add mouse tracking for glow effect
     let rafId = null;
     modal.addEventListener('mousemove', (e) => {
       if (rafId) return;
@@ -478,7 +451,6 @@
       modal.style.setProperty('--y', '50%');
     });
 
-    // Modal header
     const header = document.createElement('div');
     header.innerHTML = `
       <h2>Panic Button ⚡</h2>
@@ -487,12 +459,10 @@
       </p>
     `;
 
-    // Create input container
     const inputsContainer = document.createElement('div');
     inputsContainer.className = 'panic-inputs';
     inputsContainer.style.cssText = 'display: flex; flex-direction: column; gap: 16px; margin: 20px 0;';
 
-    // Keybind input
     const keyInputWrapper = document.createElement('div');
     keyInputWrapper.innerHTML = `
       <label style="display: block; margin-bottom: 8px; font-size: 14px; color: var(--muted, #9e8c80); font-weight: 500;">
@@ -507,7 +477,6 @@
       />
     `;
 
-    // URL input
     const urlInputWrapper = document.createElement('div');
     urlInputWrapper.innerHTML = `
       <label style="display: block; margin-bottom: 8px; font-size: 14px; color: var(--muted, #9e8c80); font-weight: 500;">
@@ -524,7 +493,6 @@
     inputsContainer.appendChild(keyInputWrapper);
     inputsContainer.appendChild(urlInputWrapper);
 
-    // Get input elements
     setTimeout(() => {
       const keyInput = document.getElementById('panic-key-input-modal');
       const urlInput = document.getElementById('panic-url-input-modal');
@@ -532,8 +500,7 @@
       if (keyInput) {
         keyInput.addEventListener('keydown', (event) => {
           event.preventDefault();
-          
-          // Ignore modifier-only keys
+
           if (['Control', 'Alt', 'Shift', 'Meta'].includes(event.key)) {
             return;
           }
@@ -552,20 +519,18 @@
           const keyCombo = parts.join(' + ');
           selectedPanicKey = keyCombo;
           keyInput.value = keyCombo;
-          
-          // Re-enable panic button after setting key
+
           if (window.NexoraPanicButton) {
             window.NexoraPanicButton.setIsSettingKey(false);
           }
-          
-          // Enable continue button if URL is also set
+
           if (panicUrlValue || urlInput.value.trim()) {
             continueBtn.disabled = false;
           }
         });
 
         keyInput.addEventListener('click', () => {
-          // Disable panic button while setting key
+
           if (window.NexoraPanicButton) {
             window.NexoraPanicButton.setIsSettingKey(true);
           }
@@ -573,7 +538,7 @@
         });
 
         keyInput.addEventListener('blur', () => {
-          // Re-enable panic button when input loses focus
+
           if (window.NexoraPanicButton) {
             window.NexoraPanicButton.setIsSettingKey(false);
           }
@@ -586,7 +551,7 @@
       if (urlInput) {
         urlInput.addEventListener('input', () => {
           panicUrlValue = urlInput.value.trim();
-          // Enable continue button if both are set
+
           if (selectedPanicKey && panicUrlValue) {
             continueBtn.disabled = false;
           }
@@ -594,7 +559,6 @@
       }
     }, 0);
 
-    // Create action buttons
     const actions = document.createElement('div');
     actions.className = 'modal-actions';
 
@@ -612,7 +576,6 @@
     actions.appendChild(skipBtn);
     actions.appendChild(continueBtn);
 
-    // Assemble modal
     modal.appendChild(header);
     modal.appendChild(inputsContainer);
     modal.appendChild(actions);
@@ -628,13 +591,13 @@
         localStorage.setItem(PANIC_URL_KEY, url);
       }
     } catch (e) {
-      console.error('Failed to apply panic settings:', e);
+      
     }
   }
 
   function handlePanicSkip() {
     closePanicModal();
-    // Show cookie consent modal after skipping panic button
+
     setTimeout(() => showCookieConsentModal(), 300);
   }
 
@@ -643,7 +606,7 @@
       applyPanicSettings(selectedPanicKey, panicUrlValue);
     }
     closePanicModal();
-    // Show cookie consent modal after panic button setup
+
     setTimeout(() => showCookieConsentModal(), 300);
   }
 
@@ -662,22 +625,18 @@
     document.body.appendChild(modal);
   }
 
-  // === End Panic Button Modal ===
 
-  // === Cookie Consent Modal ===
   
   let selectedCookieOption = null;
 
   function createCookieConsentModal() {
-    // Create overlay
+
     const overlay = document.createElement('div');
     overlay.id = 'first-time-overlay';
 
-    // Create modal container
     const modal = document.createElement('div');
     modal.id = 'cookie-consent-modal';
 
-    // Add mouse tracking for glow effect
     let rafId = null;
     modal.addEventListener('mousemove', (e) => {
       if (rafId) return;
@@ -696,7 +655,6 @@
       modal.style.setProperty('--y', '50%');
     });
 
-    // Modal header
     const header = document.createElement('div');
     header.innerHTML = `
       <h2>Cookie & Storage Preferences 🍪</h2>
@@ -705,7 +663,6 @@
       </p>
     `;
 
-    // Create cookie options
     const optionsContainer = document.createElement('div');
     optionsContainer.className = 'cookie-options';
 
@@ -750,7 +707,6 @@
       <div class="checkmark-radio"></div>
     `;
 
-    // Add click handlers
     [acceptOption, declineOption].forEach(option => {
       option.addEventListener('click', () => {
         optionsContainer.querySelectorAll('.cookie-option').forEach(opt => {
@@ -765,7 +721,6 @@
     optionsContainer.appendChild(acceptOption);
     optionsContainer.appendChild(declineOption);
 
-    // Create action buttons
     const actions = document.createElement('div');
     actions.className = 'modal-actions';
 
@@ -777,7 +732,6 @@
 
     actions.appendChild(continueBtn);
 
-    // Assemble modal
     modal.appendChild(header);
     modal.appendChild(optionsContainer);
     modal.appendChild(actions);
@@ -789,19 +743,19 @@
   function applyCookieConsent(accepted) {
     try {
       if (accepted) {
-        // User accepted cookies
+
         localStorage.setItem(COOKIE_CONSENT_KEY, 'accepted');
-        // Cookies are already set from previous steps
+
       } else {
-        // User declined cookies
+
         localStorage.setItem(COOKIE_CONSENT_KEY, 'declined');
-        // Clear any cookies that were set
+
         try {
-          // Clear cookies by setting them to expire
+
           document.cookie.split(";").forEach(function(c) { 
             document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
           });
-          // Clear relevant localStorage items except consent itself
+
           const itemsToKeep = [COOKIE_CONSENT_KEY, FIRST_VISIT_KEY];
           Object.keys(localStorage).forEach(key => {
             if (!itemsToKeep.includes(key)) {
@@ -809,11 +763,11 @@
             }
           });
         } catch (e) {
-          console.error('Failed to clear storage:', e);
+          
         }
       }
     } catch (e) {
-      console.error('Failed to save cookie consent:', e);
+      
     }
   }
 
@@ -822,26 +776,22 @@
     
     const accepted = selectedCookieOption === 'accept';
     applyCookieConsent(accepted);
-    
-    // Mark as visited FIRST to ensure localStorage is set before any redirects
+
     markAsVisited();
-    
-    // Close modal
+
     closeCookieConsentModal();
-    
-    // Check if cloaking is enabled and trigger it after modal closes
+
     try {
       const aboutBlankEnabled = localStorage.getItem(ABOUT_KEY);
       if (aboutBlankEnabled === 'true' && selectedDisguise) {
-        // Wait for modal to close and localStorage to persist
+
         setTimeout(() => {
-          // Double-check the flag is set before proceeding
+
           if (!localStorage.getItem(FIRST_VISIT_KEY)) {
-            console.warn('First visit flag not set, setting again');
+            
             localStorage.setItem(FIRST_VISIT_KEY, 'true');
           }
-          
-          // Open about:blank window with the site
+
           const win = window.open('about:blank', '_blank');
           if (win) {
             try {
@@ -850,7 +800,6 @@
               doc.write('<!DOCTYPE html><html><head><title>Loading...</title></head><body style="margin:0;padding:0;overflow:hidden;"></body></html>');
               doc.close();
 
-              // Create iframe with the current site
               const iframe = doc.createElement('iframe');
               iframe.style.width = '100%';
               iframe.style.height = '100%';
@@ -868,21 +817,19 @@
               doc.body.style.overflow = 'hidden';
               doc.body.appendChild(iframe);
 
-              // Store reference
               window._aboutWin = win;
 
-              // Redirect current tab to disguise site after iframe loads
               setTimeout(() => {
                 redirectToDisguiseSite();
               }, 500);
             } catch (err) {
-              console.error('Failed to setup about:blank:', err);
+              
             }
           }
         }, 400);
       }
     } catch (e) {
-      console.error('Failed to check cloaking status:', e);
+      
     }
   }
 
@@ -901,10 +848,9 @@
     document.body.appendChild(modal);
   }
 
-  // === End Cookie Consent Modal ===
 
   function showFirstTimeModal() {
-    // Wait for DOM to be fully loaded
+
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
         const modal = createModal();
@@ -916,9 +862,8 @@
     }
   }
 
-  // Initialize: Check if first visit and show modal
   function init() {
-    // Don't show modal if we're in an iframe (already cloaked in about:blank)
+
     if (window.self !== window.top) {
       return;
     }
@@ -928,14 +873,12 @@
     }
   }
 
-  // Run on page load
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
 
-  // Export for potential external use
   window.NexoraFirstTime = {
     showModal: showFirstTimeModal,
     isFirstVisit: isFirstVisit

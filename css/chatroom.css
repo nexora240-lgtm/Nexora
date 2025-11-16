@@ -68,7 +68,7 @@
     transition: transform 260ms cubic-bezier(.2,.9,.2,1), box-shadow 260ms cubic-bezier(.2,.9,.2,1);
 }
 
-/* Back glow layer */
+
 .nexora-chatroom .container::before {
     content: "";
     position: absolute;
@@ -89,7 +89,7 @@
     will-change: opacity, transform;
 }
 
-/* Animated gradient ring border */
+
 .nexora-chatroom .container::after {
     content: "";
     position: absolute;
@@ -270,7 +270,7 @@
     transform: scale(1.05);
 }
 
-/* Fullscreen room code overlay */
+
 .nexora-chatroom .room-code-overlay {
     position: fixed;
     inset: 0;
@@ -381,7 +381,7 @@
     }
 }
 
-/* Mobile responsive */
+
 @media (max-width: 768px) {
     .nexora-chatroom .room-code-large-code {
         font-size: 4rem;
@@ -397,7 +397,7 @@
     }
 }
 
-/* Login Screen */
+
 .nexora-chatroom .login-screen {
     flex: 1;
     display: flex;
@@ -428,7 +428,7 @@
     }
 }
 
-/* Initial choice screen */
+
 .nexora-chatroom .choice-screen {
     width: 100%;
     display: flex;
@@ -503,7 +503,7 @@
     opacity: 0.85;
 }
 
-/* Cursor-tracked inner highlight for choice buttons */
+
 .nexora-chatroom .choice-button::before {
     content: "";
     position: absolute;
@@ -551,7 +551,7 @@
     z-index: 1;
 }
 
-/* Form screen */
+
 .nexora-chatroom .form-screen {
     width: 100%;
     display: none;
@@ -709,7 +709,7 @@
     font-size: 14px;
 }
 
-/* Chat Screen */
+
 .nexora-chatroom .chat-screen {
     flex: 1;
     display: none;
@@ -885,7 +885,7 @@
     display: none;
 }
 
-/* Users Sidebar - Now inside .app container */
+
 .nexora-chatroom .users-sidebar-external {
     width: 280px;
     height: 85vh;
@@ -899,14 +899,14 @@
         0 8px 32px rgba(0, 0, 0, 0.4),
         0 20px 60px var(--orange-shadow),
         inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-    display: none; /* Hidden by default */
+    display: none; 
     flex-direction: column;
     overflow: hidden;
     z-index: 100;
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-/* Show sidebar when chat is active */
+
 .nexora-chatroom:has(.chat-screen.active) .users-sidebar-external {
     display: flex;
     animation: slideInRight 400ms cubic-bezier(.34,.56,.64,1) forwards;
@@ -923,7 +923,7 @@
     }
 }
 
-/* No need to shift container - using flexbox gap now */
+
 
 .nexora-chatroom .users-sidebar-header {
     padding: 16px;
@@ -1084,7 +1084,7 @@
     transform: scale(0.95);
 }
 
-/* System Messages */
+
 .nexora-chatroom .system-message {
     text-align: center;
     padding: 8px 16px;
@@ -1122,7 +1122,7 @@
     animation: fadeIn 0.5s ease-out;
 }
 
-/* Floating subtle animation for app container */
+
 .nexora-chatroom .app {
     animation: subtleFloat 6s ease-in-out infinite;
 }
@@ -1136,7 +1136,7 @@
     }
 }
 
-/* Reduced motion support */
+
 @media (prefers-reduced-motion: reduce) {
     .nexora-chatroom .container,
     .nexora-chatroom .container::before,
@@ -1159,10 +1159,10 @@
     }
 }
 
-/* Mobile responsive */
+
 @media (max-width: 768px) {
     .nexora-chatroom .users-sidebar-external {
-        display: none !important; /* Hide sidebar on mobile */
+        display: none !important; 
     }
     
     .nexora-chatroom .messages {
@@ -1170,14 +1170,14 @@
     }
 }
 
-/* Tablet responsive - hide sidebar when not enough space */
+
 @media (max-width: 1100px) {
     .nexora-chatroom .users-sidebar-external {
-        display: none !important; /* Hide sidebar on smaller screens */
+        display: none !important; 
     }
 }
 
-/* Approval Modal */
+
 .nexora-chatroom .approval-modal {
     position: fixed;
     top: 0;
@@ -1276,7 +1276,7 @@
     border-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Waiting Screen */
+
 .nexora-chatroom .waiting-screen {
     position: absolute;
     top: 0;

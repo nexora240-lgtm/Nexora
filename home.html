@@ -85,7 +85,7 @@
       setScheme: function (scheme) {
         if (scheme === 'light') {
           document.documentElement.classList.add('light-scheme');
-          // Keep theme class for light mode color variations
+
           const savedTheme = localStorage.getItem('settings.theme') || 'midnight-amber';
           const themeClass = 'theme-' + savedTheme;
           document.documentElement.classList.remove('theme-midnight-amber','theme-midnight-blueberry','theme-midnight-grape');
@@ -93,7 +93,7 @@
           try { localStorage.setItem('settings.colorScheme', 'light'); } catch(e){}
         } else {
           document.documentElement.classList.remove('light-scheme');
-          // Re-apply theme class for dark mode
+
           const savedTheme = localStorage.getItem('settings.theme') || 'midnight-amber';
           const themeClass = 'theme-' + savedTheme;
           document.documentElement.classList.remove('theme-midnight-amber','theme-midnight-blueberry','theme-midnight-grape');
@@ -104,7 +104,6 @@
       }
     };
 
-    // Add cursor tracking for Play button
     (function() {
       function setupButtonTracking() {
         const playButton = document.querySelector('.play-button');
@@ -135,7 +134,6 @@
         }, { passive: true });
       }
 
-      // Setup tracking when page loads
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', setupButtonTracking);
       } else {

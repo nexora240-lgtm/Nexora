@@ -17,9 +17,9 @@
   --settings-muted: var(--muted);
   --settings-radius: 14px;
   --settings-accent-gradient: var(--accent-gradient);
-  /* Entry animation */
+  
   animation: settingsEntrance 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  /* Smooth theme transitions */
+  
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 .settings-root, .settings-root * { box-sizing: border-box; }
@@ -31,7 +31,7 @@
   flex-direction: column;
   gap: 22px;
   align-items: flex-start;
-  /* scrolling safety */
+  
   max-height: 100vh;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
@@ -104,10 +104,10 @@
   border-radius:10px;
   border:1px dotted color-mix(in srgb, var(--settings-panel) 8%, #000 0%);
   margin:0;
-  /* panel scrolling safety */
+  
   max-height: calc(100vh - 200px);
   overflow: auto;
-  /* Panel transition when switching */
+  
   animation: panelSlideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
@@ -211,7 +211,7 @@
   position: relative;
 }
 
-/* Dark mode active state */
+
 .settings-root .toggle.active .toggle-track { 
   background: linear-gradient(135deg, var(--settings-accent-deep), var(--settings-accent)); 
   box-shadow: 0 0 20px var(--settings-accent-shadow), 
@@ -226,7 +226,7 @@
               0 0 12px color-mix(in srgb, var(--settings-accent) 60%, transparent);
 }
 
-/* Hover effects */
+
 .settings-root .toggle:hover .toggle-track {
   border-color: color-mix(in srgb, var(--settings-accent) 50%, var(--settings-panel) 50%);
   transform: scale(1.02);
@@ -237,7 +237,7 @@
               0 6px 16px color-mix(in srgb, var(--settings-accent) 50%, transparent);
 }
 
-/* Active/pressed state */
+
 .settings-root .toggle:active .toggle-thumb {
   transform: translateX(0) scale(0.95);
 }
@@ -245,14 +245,14 @@
   transform: translateX(26px) scale(0.95);
 }
 
-/* Focus state for accessibility */
+
 .settings-root .toggle:focus {
   outline: none;
   box-shadow: 0 0 0 3px var(--focus-color);
   border-radius: 999px;
 }
 
-/* Toggle icons inside thumb */
+
 .settings-root .toggle-thumb .toggle-icon {
   position: absolute;
   top: 50%;
@@ -281,7 +281,7 @@
   transform: translate(-50%, -50%) rotate(30deg);
 }
 
-/* Toggle label */
+
 .settings-root .toggle-label {
   transition: color 0.3s ease;
   user-select: none;
@@ -331,17 +331,17 @@
   border-radius: 8px;
 }
 
-/* Visual indicator when scrollable */
+
 .settings-root .app.scrollable,
 .settings-root .panel.scrollable {
   box-shadow: inset 0 8px 18px rgba(0,0,0,0.06);
 }
 
-/* Reduce large min-widths to avoid horizontal overflow when space is tight */
+
 .settings-root .theme-option { min-width: 420px; }
 .settings-root .nav-btn { min-width: 220px; }
 
-/* Responsive tweaks */
+
 @media (max-width:920px) {
   .settings-root .app { padding:32px; }
   .settings-root .nav-btn { padding:16px 28px; min-width:180px; font-size:16px; }
@@ -361,7 +361,7 @@
   .settings-root .settings-title { font-size:24px; }
 }
 
-/* Extra small screens: be more conservative with spacing and widths */
+
 @media (max-width:420px) {
   .settings-root .app { padding:12px; }
   .settings-root .nav-btn { padding:10px 12px; min-width:120px; font-size:14px; }
@@ -370,7 +370,7 @@
   .settings-root .panel { max-height: calc(100vh - 120px); }
 }
 
-/* Moved from inline styles */
+
 #disguise-badge svg { width:48px; height:48px; display:block; }
 .favicon-thumb { width:40px; height:40px; border-radius:6px; object-fit:cover; display:block; }
 .hidden-note { font-size:13px; color:var(--muted,#6b6b6b); margin-top:8px; }
@@ -426,7 +426,7 @@
   .partner-item > div:last-child { width:100%; display:flex; justify-content:flex-end; margin-top:8px; }
 }
 
-/* Animations */
+
 @keyframes settingsEntrance {
   from {
     opacity: 0;
@@ -471,7 +471,7 @@
   }
 }
 
-/* Reduce motion for accessibility */
+
 @media (prefers-reduced-motion: reduce) {
   .settings-root,
   .settings-root .settings-title,
@@ -489,7 +489,7 @@
   }
 }
 
-/* Light scheme enhancements */
+
 .light-scheme .settings-root {
   --settings-page-bg: #fafafa;
   --settings-panel: #ffffff;
@@ -548,7 +548,7 @@
               0 4px 12px var(--settings-accent-shadow);
 }
 
-/* Panic Button Input Styling */
+
 .settings-root input[type="text"],
 .settings-root input[type="url"] {
   padding: 12px 16px;

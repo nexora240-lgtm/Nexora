@@ -92,7 +92,7 @@ h4 {
   .play-button { animation: none !important; opacity: 1 !important; transition: none !important; transform: none !important; }
 }
 
-.home h1, .home h4 { /* explicit to prefer local variables in .home */ }
+.home h1, .home h4 {  }
 
 @media (max-width: 680px) {
   .home { padding: 28px 12px; }

@@ -1,4 +1,4 @@
-/* Global variables and base styles (standalone file) */
+
 :root {
   --g-page-bg: var(--page-bg, #0a0605);
   --g-panel: var(--panel, #1a100d);
@@ -21,7 +21,7 @@
   --game-bg-opacity: 0.7;
   --game-bg-blur: 12px;
   
-  /* Glassmorphism & Neumorphism variables - dynamically based on theme */
+  
   --glass-bg: color-mix(in srgb, var(--g-panel) 40%, transparent);
   --glass-border: color-mix(in srgb, var(--g-text) 15%, transparent);
   --glass-highlight: color-mix(in srgb, var(--g-text) 10%, transparent);
@@ -29,7 +29,7 @@
   --neu-shadow-dark: rgba(0, 0, 0, 0.5);
 }
 
-/* Reset */
+
 * { box-sizing: border-box; }
 
 html, body {
@@ -59,7 +59,7 @@ body {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Loader/play interface */
+
 .loader-page {
   display: flex;
   justify-content: center;
@@ -77,12 +77,12 @@ body {
   gap: 20px;
 }
 
-/* Container: glassmorphic border + neumorphic shadows */
+
 #gameContainer {
   width: 100%;
   max-width: 1200px;
   aspect-ratio: 16 / 9;
-  min-height: 400px; /* Add minimum height */
+  min-height: 400px; 
   background: var(--glass-bg);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -100,7 +100,7 @@ body {
     0 0 60px var(--g-shadow-soft);
 }
 
-/* Two-layered backgrounds */
+
 #gameContainer::before,
 #gameContainer::after {
   content: "";
@@ -130,7 +130,7 @@ body {
   mix-blend-mode: overlay;
 }
 
-/* ensure content (play button, iframe) sits above bg layers */
+
 #gameContainer > * {
   position: relative;
   z-index: 2;
@@ -141,7 +141,7 @@ body {
   opacity: calc(var(--game-bg-opacity) * 0.9);
 }
 
-/* loader start content */
+
 .loader-start {
   display: flex;
   flex-direction: column;
@@ -176,7 +176,7 @@ body {
   border: 1px solid var(--glass-border);
 }
 
-/* Play button - glassmorphic & neumorphic */
+
 .play-btn {
   display: inline-block;
   background: linear-gradient(145deg, 
@@ -237,7 +237,7 @@ body {
 }
 .play-btn.legacy:hover { transform: scale(1.05); }
 
-/* iframe */
+
 .game-iframe { 
   width: 100% !important; 
   height: 100% !important; 
@@ -250,7 +250,7 @@ body {
   bottom: 0;
 }
 
-/* footer - glassmorphic with neumorphic touches */
+
 .loader-footer {
   display: flex;
   align-items: center;
@@ -272,7 +272,7 @@ body {
   gap: 12px;
 }
 
-/* left branding - no border */
+
 .branding { 
   display:flex; 
   align-items:center; 
@@ -286,7 +286,7 @@ body {
   font-size: 1.05rem;
 }
 
-/* right controls */
+
 .controls { display:flex; align-items:center; gap:12px; flex: 0 0 auto; }
 
 .fullscreen-btn {
@@ -326,13 +326,13 @@ body {
     inset 0 1px 0 var(--glass-highlight);
 }
 
-/* Responsiveness */
+
 @media (max-width:900px) {
   .loader-start img { width: 180px; height: 180px; }
   .branding img { height: 36px; }
 }
 
-/* Reduced motion */
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;

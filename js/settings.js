@@ -370,12 +370,12 @@
       schemeToggle?.setAttribute('aria-checked', 'true');
       if (schemeLabel) schemeLabel.textContent = 'Dark Mode';
     } else {
-      // Get current theme before adding light-scheme
+
       const savedTheme = localStorage.getItem(THEME_KEY) || DEFAULT_THEME_ID;
       const themeClass = THEME_CLASS_MAP[savedTheme] || THEME_CLASS_MAP[DEFAULT_THEME_ID];
       
       document.documentElement.classList.add('light-scheme');
-      // Keep the theme class for color variation in light mode
+
       document.documentElement.classList.remove(...Object.values(THEME_CLASS_MAP));
       document.documentElement.classList.add(themeClass);
       
@@ -409,7 +409,7 @@
     const cls = THEME_CLASS_MAP[themeId] || THEME_CLASS_MAP[DEFAULT_THEME_ID];
     const isLight = document.documentElement.classList.contains('light-scheme');
     document.documentElement.classList.remove(...Object.values(THEME_CLASS_MAP));
-    // Always add the theme class for color variation (works in both light and dark)
+
     document.documentElement.classList.add(cls);
     try { localStorage.setItem(THEME_KEY, themeId); } catch (e) {}
     if (emit) document.dispatchEvent(new CustomEvent('settings:themeChanged', { detail: { theme: themeId } }));
@@ -436,15 +436,14 @@
       if (autoCloakStatus) { autoCloakStatus.style.display = 'none'; }
     }
 
-    // Don't automatically open window when toggling in settings
-    // The auto-cloaking will happen on next page load via nexora-boot.js
+
     try {
       if (!enabled) {
-        // If disabling, close any existing about:blank window and redirect to original URL
+
         if (_aboutWin && !_aboutWin.closed) {
           try { 
             _aboutWin.close();
-            // Redirect current window back to the original URL
+
             if (window.opener) {
               window.location.href = window.location.origin;
             }
@@ -554,7 +553,6 @@
     } catch (e) {}
   }
 
-  // === Panic Button Functionality ===
   
   let currentPanicKey = null;
 
@@ -564,8 +562,7 @@
     if (event.altKey) parts.push('Alt');
     if (event.shiftKey) parts.push('Shift');
     if (event.metaKey) parts.push('Meta');
-    
-    // Add the main key
+
     const mainKey = event.key;
     if (!['Control', 'Alt', 'Shift', 'Meta'].includes(mainKey)) {
       parts.push(mainKey === ' ' ? 'Space' : mainKey);
@@ -582,7 +579,7 @@
       if (url) localStorage.setItem(PANIC_URL_KEY, url);
       else localStorage.removeItem(PANIC_URL_KEY);
     } catch (e) {
-      console.error('Failed to save panic settings:', e);
+      
     }
   }
 
@@ -600,8 +597,7 @@
 
   function handlePanicKeyInput(event) {
     event.preventDefault();
-    
-    // Ignore modifier-only keys
+
     if (['Control', 'Alt', 'Shift', 'Meta'].includes(event.key)) {
       return;
     }
@@ -616,8 +612,7 @@
     const url = panicUrlInput ? panicUrlInput.value.trim() : '';
     savePanicSettings(keyCombo, url);
     updatePanicStatus();
-    
-    // Re-enable panic button after setting key
+
     if (window.NexoraPanicButton) {
       window.NexoraPanicButton.setIsSettingKey(false);
     }
@@ -640,7 +635,7 @@
 
   function initPanicButton() {
     try {
-      // Restore saved settings
+
       const savedKey = localStorage.getItem(PANIC_KEY_KEY);
       const savedUrl = localStorage.getItem(PANIC_URL_KEY);
       
@@ -654,19 +649,18 @@
       }
       
       updatePanicStatus();
-      
-      // Set up event listeners
+
       if (panicKeyInput) {
         panicKeyInput.addEventListener('keydown', handlePanicKeyInput);
         panicKeyInput.addEventListener('click', () => {
-          // Disable panic button while setting key
+
           if (window.NexoraPanicButton) {
             window.NexoraPanicButton.setIsSettingKey(true);
           }
           panicKeyInput.value = 'Press a key...';
         });
         panicKeyInput.addEventListener('blur', () => {
-          // Re-enable panic button when input loses focus
+
           if (window.NexoraPanicButton) {
             window.NexoraPanicButton.setIsSettingKey(false);
           }
@@ -685,11 +679,10 @@
         panicUrlInput.addEventListener('change', handlePanicUrlChange);
       }
     } catch (e) {
-      console.error('Failed to initialize panic button:', e);
+      
     }
   }
 
-  // === End Panic Button ===
 
   activate('appearance');
   try { restoreSettingsUI(); } catch (e) {}

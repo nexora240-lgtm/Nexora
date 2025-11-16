@@ -1,6 +1,6 @@
-// Wrap in IIFE to prevent redeclaration errors when navigating back
+
 (function() {
-    // REPLACE THIS WITH YOUR AWS WEBSOCKET API ENDPOINT
+
     const WS_URL = 'wss://4bmnyxahxh.execute-api.us-east-2.amazonaws.com/production';
 
     let ws = null;
@@ -19,13 +19,11 @@
     const PUBLIC_ROOM_CODE = 'PUBLIC'; // Special room code for public chat
     const APPROVAL_TIMEOUT = 60000; // 60 seconds for host to respond
 
-    // State preservation
     const CHATROOM_STATE_KEY = 'nexora_circle_state';
     const USERNAME_COOKIE_KEY = 'nexora_circle_username';
 
-    // Cookie functions
     function saveUsernameToCookie(username) {
-        // Save for session only (no expiry = session cookie)
+
         document.cookie = `${USERNAME_COOKIE_KEY}=${encodeURIComponent(username)}; path=/; SameSite=Strict`;
     }
 
@@ -40,7 +38,6 @@
         return '';
     }
 
-    // Load saved username into input fields when page loads
     function loadSavedUsername() {
         const savedUsername = getUsernameFromCookie();
         if (savedUsername) {
@@ -53,24 +50,19 @@
         }
     }
 
-    // Prevent re-initialization if already loaded
     if (window.NexoraCircle && window.NexoraCircle.initialized) {
-        console.log('Circle already initialized, restoring state...');
-        if (window.NexoraCircle.restoreChatroomState) {
+                if (window.NexoraCircle.restoreChatroomState) {
             window.NexoraCircle.restoreChatroomState();
         }
         return;
     }
 
-// Save state when navigating away
 function saveChatroomState() {
-    console.log('Saving Circle state...', 'username:', currentUsername, 'room:', currentRoomCode);
-    if (currentRoomCode && currentUsername) {
+        if (currentRoomCode && currentUsername) {
         const messagesDiv = document.getElementById('messages');
         const chatScreen = document.getElementById('chatScreen');
         const isInChat = chatScreen?.classList.contains('active') || false;
-        console.log('Chat screen active:', isInChat);
-        const state = {
+                const state = {
             username: currentUsername,
             roomCode: currentRoomCode,
             messagesHTML: messagesDiv ? messagesDiv.innerHTML : '',
@@ -82,56 +74,37 @@ function saveChatroomState() {
             timestamp: Date.now()
         };
         sessionStorage.setItem(CHATROOM_STATE_KEY, JSON.stringify(state));
-        console.log('State saved:', state);
-    } else {
-        console.log('No state to save (no username or room code)');
     }
 }
 
-// Restore state when returning
 function restoreChatroomState() {
-    console.log('Attempting to restore Circle state...');
-    try {
+        try {
         const stateJSON = sessionStorage.getItem(CHATROOM_STATE_KEY);
-        console.log('State from storage:', stateJSON);
-        if (!stateJSON) {
-            console.log('No state found');
-            return false;
+                if (!stateJSON) {
+                        return false;
         }
         
         const state = JSON.parse(stateJSON);
-        console.log('Parsed state:', state);
-        
-        // Check if state is less than 1 hour old
-        if (Date.now() - state.timestamp > 3600000) {
-            console.log('State expired');
-            sessionStorage.removeItem(CHATROOM_STATE_KEY);
+                if (Date.now() - state.timestamp > 3600000) {
+                        sessionStorage.removeItem(CHATROOM_STATE_KEY);
             return false;
         }
         
         currentUsername = state.username;
         currentRoomCode = state.roomCode;
-        console.log('Restoring username:', currentUsername, 'room:', currentRoomCode);
-        
-        // Restore room state
-        if (state.roomUsers) {
+                if (state.roomUsers) {
             roomUsers = state.roomUsers;
-            console.log('Restored roomUsers:', roomUsers);
-        }
+                    }
         if (state.roomOwner) {
             roomOwner = state.roomOwner;
-            console.log('Restored roomOwner:', roomOwner);
-        }
+                    }
         if (state.userJoinTimes) {
             userJoinTimes = state.userJoinTimes;
-            console.log('Restored userJoinTimes:', userJoinTimes);
-        }
+                    }
         
         if (state.isInChat) {
-            console.log('State indicates user was in chat, restoring...');
-            isRestoringState = true;
-            
-            // Restore chat screen state
+                        isRestoringState = true;
+
             const messagesDiv = document.getElementById('messages');
             if (messagesDiv) {
                 messagesDiv.innerHTML = state.messagesHTML;
@@ -144,39 +117,30 @@ function restoreChatroomState() {
             document.getElementById('chatScreen').classList.add('active');
             document.getElementById('headerRoomCode').textContent = `Room Code: ${currentRoomCode}`;
             document.getElementById('largeRoomCode').textContent = currentRoomCode;
-            
-            // Clear message input when restoring state (after DOM is ready)
+
             setTimeout(() => {
                 const messageInput = document.getElementById('messageInput');
                 if (messageInput) {
                     messageInput.value = '';
                 }
             }, 100);
-            
-            // Update users list with restored data
+
             updateUsersList();
-            
-            // Reconnect WebSocket (isReconnecting = true to avoid calling showChatScreen again)
+
             connectWebSocket(false, true);
-            console.log('Circle state restored successfully');
-            
-            // Reset flag after a short delay to allow reconnection
-            setTimeout(() => {
+                        setTimeout(() => {
                 isRestoringState = false;
-                console.log('Ready to receive new messages');
-            }, 500);
+                            }, 500);
             
             return true;
         }
         
         return false;
     } catch (e) {
-        console.error('Error restoring Circle state:', e);
-        return false;
+                return false;
     }
 }
 
-// Cursor tracking for glass morphism glow effects
 const container = document.querySelector('.nexora-chatroom .container');
 if (container) {
     container.addEventListener('mousemove', (e) => {
@@ -193,7 +157,7 @@ function generateRoomCode() {
 }
 
 function showChoiceScreen() {
-    // Clear message input when returning to choice screen
+
     const messageInput = document.getElementById('messageInput');
     if (messageInput) {
         messageInput.value = '';
@@ -212,9 +176,9 @@ function showJoinForm() {
     document.getElementById('createForm').classList.remove('active');
     const publicForm = document.getElementById('publicForm');
     if (publicForm) publicForm.classList.remove('active');
-    // Load saved username
+
     loadSavedUsername();
-    // Focus on username input
+
     setTimeout(() => document.getElementById('joinUsernameInput').focus(), 100);
 }
 
@@ -224,9 +188,9 @@ function showCreateForm() {
     document.getElementById('joinForm').classList.remove('active');
     const publicForm = document.getElementById('publicForm');
     if (publicForm) publicForm.classList.remove('active');
-    // Load saved username
+
     loadSavedUsername();
-    // Focus on username input
+
     setTimeout(() => document.getElementById('createUsernameInput').focus(), 100);
 }
 
@@ -237,9 +201,9 @@ function joinPublicChat() {
     const publicForm = document.getElementById('publicForm');
     if (publicForm) {
         publicForm.classList.add('active');
-        // Load saved username
+
         loadSavedUsername();
-        // Focus on username input
+
         setTimeout(() => {
             const publicInput = document.getElementById('publicUsernameInput');
             if (publicInput) publicInput.focus();
@@ -247,12 +211,10 @@ function joinPublicChat() {
     }
 }
 
-// Disambiguate username if it already exists in the room
 function getUniqueUsername(baseUsername, existingUsers) {
     let username = baseUsername;
     let counter = 1;
-    
-    // Check if base username exists
+
     while (existingUsers.includes(username)) {
         username = `${baseUsername}-${counter}`;
         counter++;
@@ -281,13 +243,11 @@ function createRoom() {
         alert('Please enter a username');
         return;
     }
-    
-    // For room creation, use base username (they're first)
+
     currentUsername = username;
     currentRoomCode = generateRoomCode();
     roomOwner = username; // Set the creator as the owner
-    
-    // Store owner in session storage so others can see it
+
     sessionStorage.setItem(`circle_owner_${currentRoomCode}`, username);
     
     saveUsernameToCookie(username);
@@ -303,8 +263,7 @@ function joinRoom() {
         alert('Please enter both username and circle code');
         return;
     }
-    
-    // Store base username, will disambiguate after getting user list
+
     currentUsername = username;
     currentRoomCode = roomCode;
     saveUsernameToCookie(username);
@@ -313,7 +272,7 @@ function joinRoom() {
 }
 
 function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoining = false) {
-    // Close existing connection if any, but only if it's actually open or connecting
+
     if (ws) {
         if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
             ws.close();
@@ -324,10 +283,7 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
     ws = new WebSocket(WS_URL);
     
     ws.onopen = () => {
-        console.log('✅ WebSocket connected');
-        
-        // First, join the room in DynamoDB with PENDING status if joining
-        const joinStatus = (isJoining && currentRoomCode !== PUBLIC_ROOM_CODE) ? 'PENDING' : 'ACTIVE';
+                const joinStatus = (isJoining && currentRoomCode !== PUBLIC_ROOM_CODE) ? 'PENDING' : 'ACTIVE';
         
         ws.send(JSON.stringify({
             action: 'joinRoom',
@@ -335,47 +291,32 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
             username: currentUsername,
             status: joinStatus
         }));
-        console.log('✅ Sent joinRoom message with status:', joinStatus);
-        
-        // For joining a private room (not creating, not public), send approval request
-        if (isJoining && currentRoomCode !== PUBLIC_ROOM_CODE) {
-            console.log('📨 Sending join request for approval');
-            
-            // Wait a moment for joinRoom to complete, then send request
-            setTimeout(() => {
+                if (isJoining && currentRoomCode !== PUBLIC_ROOM_CODE) {
+                        setTimeout(() => {
                 ws.send(JSON.stringify({
                     action: 'sendMessage',
                     roomCode: currentRoomCode,
                     username: currentUsername,
                     message: `::JOIN_REQUEST::${currentUsername}`
                 }));
-                
-                // Show waiting screen
+
                 showWaitingScreen();
             }, 200);
             
             return; // Don't proceed with normal join flow yet
         }
-        
-        // IMMEDIATELY add self to users list with join time (only if not already there from restoration)
+
         if (!roomUsers.includes(currentUsername)) {
             roomUsers = [currentUsername];
             userJoinTimes[currentUsername] = Date.now();
-            console.log('✅ Set roomUsers to:', roomUsers);
-            console.log('✅ Recorded join time:', userJoinTimes);
-        } else {
-            console.log('✅ Using restored roomUsers:', roomUsers);
-            console.log('✅ Using restored join times:', userJoinTimes);
-        }
-        
-        // If joining an existing room, validate that someone responds
+                                } else {
+                                }
+
         if (isJoining && !isCreatingRoom) {
-            console.log('🔍 Validating room exists...');
-            roomValidationTimeout = setTimeout(() => {
-                // If still only one user (me) after timeout, room doesn't exist
+                        roomValidationTimeout = setTimeout(() => {
+
                 if (roomUsers.length === 1 && roomUsers[0] === currentUsername) {
-                    console.log('❌ Room validation failed - no other users');
-                    alert(`Circle code "${currentRoomCode}" does not exist. Please check the code and try again.`);
+                                        alert(`Circle code "${currentRoomCode}" does not exist. Please check the code and try again.`);
                     if (ws) {
                         ws.close();
                     }
@@ -383,8 +324,7 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                 }
             }, 3500); // Increased to 3.5 seconds to allow for presence responses
         }
-        
-        // Send presence announcement immediately
+
         setTimeout(() => {
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({
@@ -393,15 +333,13 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                     username: currentUsername,
                     message: `::PRESENCE::${roomOwner || ''}::${userJoinTimes[currentUsername]}`
                 }));
-                console.log('✅ Sent presence announcement with owner info:', roomOwner);
-            }
+                            }
         }, 300);
         
         if (!isReconnecting) {
             showChatScreen();
         }
-        
-        // Automatically show enlarged room code when creating a new room
+
         if (isCreatingRoom) {
             setTimeout(() => {
                 toggleRoomCodeOverlay();
@@ -411,42 +349,30 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
     
     ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        
-        // Don't display messages during state restoration
+
         if (isRestoringState) {
-            console.log('Ignoring message during restoration:', data);
-            return;
+                        return;
         }
         
-        console.log('Received message:', data);
-        console.log('Message type:', data.type);
-        console.log('Current roomUsers:', roomUsers);
-        
-        // Handle error responses from Lambda
-        if (data.type === 'error') {
+                                if (data.type === 'error') {
             if (data.error === 'USERNAME_CONFLICT') {
-                console.error('Username conflict:', data.message);
-                
-                // Store the conflicting username before resetting
-                const conflictingUsername = currentUsername;
+                                const conflictingUsername = currentUsername;
                 const conflictingRoomCode = currentRoomCode;
                 
                 alert(data.message);
-                
-                // Close connection
+
                 if (ws) {
                     ws.close();
                     ws = null;
                 }
-                
-                // Show the appropriate form based on what they were doing
+
                 if (conflictingRoomCode === PUBLIC_ROOM_CODE) {
-                    // Was joining public chat
+
                     document.getElementById('chatScreen').classList.remove('active');
                     document.getElementById('loginScreen').classList.remove('hidden');
                     hideWaitingScreen(); // Hide waiting screen if shown
                     joinPublicChat();
-                    // Focus on username input and suggest new username
+
                     setTimeout(() => {
                         const input = document.getElementById('publicUsernameInput');
                         if (input) {
@@ -456,12 +382,12 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                         }
                     }, 100);
                 } else if (conflictingRoomCode) {
-                    // Was joining a private room
+
                     document.getElementById('chatScreen').classList.remove('active');
                     document.getElementById('loginScreen').classList.remove('hidden');
                     hideWaitingScreen(); // Hide waiting screen if shown
                     showJoinForm();
-                    // Pre-fill room code and suggest new username
+
                     setTimeout(() => {
                         const roomInput = document.getElementById('roomCodeInput');
                         const usernameInput = document.getElementById('joinUsernameInput');
@@ -473,8 +399,7 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                         }
                     }, 100);
                 }
-                
-                // Reset state
+
                 roomUsers = [];
                 currentUsername = '';
                 currentRoomCode = '';
@@ -484,59 +409,47 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                 
                 return;
             }
-            console.error('Error from server:', data.error, data.message);
-            return;
+                        return;
         }
-        
-        // Handle regular messages
+
         if (data.message) {
             const username = data.username;
             const messageText = data.message;
-            
-            // Handle join request (for room owner)
+
             if (messageText.startsWith('::JOIN_REQUEST::')) {
                 const requester = messageText.split('::JOIN_REQUEST::')[1];
-                console.log('📨 Join request from:', requester);
-                
-                // Only show to room owner
-                if (currentUsername === roomOwner) {
+                                if (currentUsername === roomOwner) {
                     showApprovalModal(requester);
                 }
                 return;
             }
-            
-            // Handle approval (for pending user)
+
             if (messageText.startsWith('::APPROVED::')) {
                 const parts = messageText.split('::');
                 const approvedUser = parts[2];
                 const owner = parts[3] || '';
-                console.log('✅ Approval received for:', approvedUser, 'owner:', owner);
-                
+                                
                 if (currentUsername === approvedUser) {
-                    // Clear waiting screen and join the room
+
                     hideWaitingScreen();
                     isPendingApproval = false;
-                    
-                    // Set room owner
+
                     if (owner) {
                         roomOwner = owner;
                     }
-                    
-                    // Update status to ACTIVE in DynamoDB
+
                     ws.send(JSON.stringify({
                         action: 'updateStatus',
                         roomCode: currentRoomCode,
                         username: currentUsername,
                         status: 'ACTIVE'
                     }));
-                    
-                    // Now actually join the room UI
+
                     if (!roomUsers.includes(currentUsername)) {
                         roomUsers = [currentUsername];
                         userJoinTimes[currentUsername] = Date.now();
                     }
-                    
-                    // Send presence announcement to everyone
+
                     setTimeout(() => {
                         if (ws && ws.readyState === WebSocket.OPEN) {
                             ws.send(JSON.stringify({
@@ -552,12 +465,10 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                 }
                 return;
             }
-            
-            // Handle denial (for pending user)
+
             if (messageText.startsWith('::DENIED::')) {
                 const deniedUser = messageText.split('::DENIED::')[1];
-                console.log('❌ Denial received for:', deniedUser);
-                
+                                
                 if (currentUsername === deniedUser) {
                     hideWaitingScreen();
                     alert('Your request to join was declined by the host.');
@@ -570,60 +481,45 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                 }
                 return;
             }
-            
-            // Handle presence announcement
+
             if (messageText.startsWith('::PRESENCE::')) {
                 const parts = messageText.split('::');
                 const ownerInfo = parts[2] || '';
                 const joinTime = parseInt(parts[3]) || Date.now();
                 
-                console.log('👤 Received presence from:', username, 'owner info:', ownerInfo, 'join time:', joinTime);
-                console.log('👤 Current roomOwner:', roomOwner, 'Current roomUsers:', roomUsers);
-                
-                // Clear room validation timeout - room exists!
-                if (roomValidationTimeout) {
+                                                if (roomValidationTimeout) {
                     clearTimeout(roomValidationTimeout);
                     roomValidationTimeout = null;
-                    console.log('✅ Room validated - other users found');
-                }
-                
-                // Store owner if provided (and it's not empty)
-                // Update owner even if already set, in case it changed
+                                    }
+
+
                 if (ownerInfo) {
                     if (!roomOwner || roomOwner !== ownerInfo) {
                         roomOwner = ownerInfo;
-                        console.log('📌 Set/updated room owner to:', roomOwner);
-                    }
+                                            }
                 }
-                
-                // Track if this is a new user we're discovering
+
                 const isNewUser = !roomUsers.includes(username);
-                
-                // Always add the user sending the presence if not already in list
+
                 if (isNewUser) {
                     roomUsers.push(username);
                     userJoinTimes[username] = joinTime;
-                    console.log('✅ Added user. New roomUsers:', roomUsers);
-                    console.log('✅ Join times:', userJoinTimes);
-                    updateUsersList();
-                    
-                    // If it's not me, show join message
+                                                            updateUsersList();
+
                     if (username !== currentUsername) {
-                        // Only show "joined" message if they're not the existing owner
-                        // (owner was already there, we're just discovering them)
+
+
                         const isExistingOwner = (username === ownerInfo && ownerInfo);
                         if (!isExistingOwner) {
                             addSystemMessage(`${username} joined the chat`);
                         }
                     }
                 } else {
-                    // User already in list, just update UI in case owner status changed
-                    console.log('👤 User already in list, updating display');
-                    updateUsersList();
+
+                                        updateUsersList();
                 }
-                
-                // Send presence back if we haven't announced to this user yet
-                // This prevents infinite loops while ensuring both sides sync
+
+
                 if (username !== currentUsername && !presenceAnnouncedTo.has(username)) {
                     presenceAnnouncedTo.add(username);
                     setTimeout(() => {
@@ -634,39 +530,31 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                                 username: currentUsername,
                                 message: `::PRESENCE::${roomOwner || ''}::${userJoinTimes[currentUsername]}`
                             }));
-                            console.log('✅ Sent presence back to:', username, '(first time)');
                         }
                     }, 200);
                 }
                 
                 return; // Don't display this message
             }
-            
-            // Handle leave announcement
+
             if (messageText === '::LEAVE::') {
-                console.log('👋 User leaving:', username);
-                if (roomUsers.includes(username)) {
-                    // Check if owner is leaving
+                                if (roomUsers.includes(username)) {
+
                     const ownerLeaving = (username === roomOwner);
                     
                     roomUsers = roomUsers.filter(u => u !== username);
                     delete userJoinTimes[username];
-                    
-                    // If owner left and there are other users, transfer ownership
+
                     if (ownerLeaving && roomUsers.length > 0) {
-                        // Find user who joined earliest (oldest member)
+
                         const oldestUser = roomUsers.reduce((oldest, user) => {
                             return (userJoinTimes[user] || Infinity) < (userJoinTimes[oldest] || Infinity) ? user : oldest;
                         });
                         
                         const oldOwner = roomOwner;
                         roomOwner = oldestUser;
-                        console.log('👑 Ownership transferred from', oldOwner, 'to', oldestUser);
-                        
-                        // Update sessionStorage with new owner
-                        sessionStorage.setItem(`circle_owner_${currentRoomCode}`, oldestUser);
-                        
-                        // Notify everyone about ownership transfer
+                                                sessionStorage.setItem(`circle_owner_${currentRoomCode}`, oldestUser);
+
                         if (ws && ws.readyState === WebSocket.OPEN) {
                             ws.send(JSON.stringify({
                                 action: 'sendMessage',
@@ -690,12 +578,10 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                 }
                 return; // Don't display this message
             }
-            
-            // Handle kick notification
+
             if (messageText.startsWith('::KICK::')) {
                 const kickedUsername = messageText.split('::KICK::')[1];
-                console.log('⚠️ Kick notification for:', kickedUsername);
-                if (kickedUsername === currentUsername) {
+                                if (kickedUsername === currentUsername) {
                     alert('You have been kicked from the circle.');
                     leaveChat();
                     return;
@@ -708,58 +594,49 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                 }
                 return; // Don't display this message
             }
-            
-            // Handle owner change notification
+
             if (messageText.startsWith('::OWNER_CHANGE::')) {
                 const newOwner = messageText.split('::OWNER_CHANGE::')[1];
-                console.log('👑 Owner change notification - new owner:', newOwner);
-                roomOwner = newOwner;
-                
-                // Update sessionStorage with new owner
+                                roomOwner = newOwner;
+
                 sessionStorage.setItem(`circle_owner_${currentRoomCode}`, newOwner);
                 
                 updateUsersList();
                 return; // Don't display this message
             }
-            
-            // Regular message - display it
-            console.log('💬 Regular message from', username);
-            displayMessage(username, messageText, data.timestamp, username === currentUsername);
+
+                        displayMessage(username, messageText, data.timestamp, username === currentUsername);
         }
     };
     
     ws.onerror = (error) => {
-        // Only log and alert for non-reconnecting scenarios
+
         if (!isReconnecting) {
-            console.error('WebSocket error:', error);
-            alert('Connection error. Please try again.');
+                        alert('Connection error. Please try again.');
         }
     };
     
     ws.onclose = () => {
-        // Only log if not reconnecting to reduce console noise
+
         if (!isReconnecting) {
-            console.log('WebSocket closed');
-        }
+                    }
     };
 }
 
-// Send leave message when user closes tab/browser
 window.addEventListener('beforeunload', () => {
     if (ws && ws.readyState === WebSocket.OPEN && currentRoomCode && currentUsername) {
-        // Send leave notification synchronously
+
         ws.send(JSON.stringify({
             action: 'sendMessage',
             roomCode: currentRoomCode,
             username: currentUsername,
             message: '::LEAVE::'
         }));
-        console.log('📤 Sent leave message on page unload');
-    }
+            }
 });
 
 function leaveChat() {
-    // Send leave notification
+
     if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({
             action: 'sendMessage',
@@ -768,51 +645,43 @@ function leaveChat() {
             message: '::LEAVE::'
         }));
     }
-    
-    // Close WebSocket connection
+
     if (ws) {
         ws.close();
         ws = null;
     }
-    
-    // Reset state
+
     roomUsers = [];
     currentUsername = '';
     currentRoomCode = '';
     roomOwner = '';
     userJoinTimes = {};
     presenceAnnouncedTo.clear(); // Clear presence tracking
-    
-    // Clear saved state from sessionStorage
+
     sessionStorage.removeItem(CHATROOM_STATE_KEY);
-    
-    // Clear messages
+
     const messagesDiv = document.getElementById('messages');
     if (messagesDiv) {
         messagesDiv.innerHTML = '';
     }
-    
-    // Clear message input
+
     const messageInput = document.getElementById('messageInput');
     if (messageInput) {
         messageInput.value = '';
     }
-    
-    // Hide room code
+
     const roomCodeElement = document.getElementById('headerRoomCode');
     if (roomCodeElement) {
         roomCodeElement.textContent = '';
         roomCodeElement.style.display = 'none';
     }
-    
-    // Return to login screen
+
     document.getElementById('chatScreen').classList.remove('active');
     document.getElementById('loginScreen').classList.remove('hidden');
-    
-    // Hide external sidebar
+
     const sidebar = document.getElementById('usersSidebar');
     if (sidebar) {
-        // CSS handles visibility now
+
     }
     
     showChoiceScreen();
@@ -821,36 +690,27 @@ function leaveChat() {
 function showChatScreen() {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('chatScreen').classList.add('active');
-    
-    // Clear messages div when entering a NEW circle (not restoring)
+
     if (!isRestoringState) {
         const messagesDiv = document.getElementById('messages');
         if (messagesDiv) {
             messagesDiv.innerHTML = '';
         }
     }
-    
-    // Clear message input when entering a circle
+
     const messageInput = document.getElementById('messageInput');
     if (messageInput) {
         messageInput.value = '';
     }
-    
-    // FORCE show the sidebar (CSS handles this now)
+
     const sidebar = document.getElementById('usersSidebar');
     if (sidebar) {
-        console.log('✅ SIDEBAR SHOULD BE VISIBLE VIA CSS');
-    } else {
-        console.error('❌ SIDEBAR ELEMENT NOT FOUND');
     }
-    
-    // FORCE update the user list
-    console.log('🔄 Forcing user list update with:', roomUsers);
+
     updateUsersList();
     
     const roomCodeElement = document.getElementById('headerRoomCode');
-    
-    // Update header differently for public chat
+
     if (currentRoomCode === PUBLIC_ROOM_CODE) {
         roomCodeElement.textContent = '';  // Hide room code for public chat
         roomCodeElement.style.display = 'none';
@@ -860,14 +720,12 @@ function showChatScreen() {
         roomCodeElement.style.display = 'inline-block';
         document.getElementById('largeRoomCode').textContent = currentRoomCode;
     }
-    
-    // Initialize user list with current user
+
     if (!roomUsers.includes(currentUsername)) {
         roomUsers.push(currentUsername);
     }
     updateUsersList();
-    
-    // Try to request user list from server (if supported)
+
     setTimeout(() => {
         if (ws && ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({
@@ -896,8 +754,7 @@ function sendMessage() {
             username: currentUsername,
             message: message
         }));
-        
-        // Ensure current user is in the list
+
         if (!roomUsers.includes(currentUsername)) {
             roomUsers.push(currentUsername);
             updateUsersList();
@@ -948,69 +805,45 @@ function updateUsersList() {
     const usersList = document.getElementById('usersList');
     const userCount = document.getElementById('userCount');
     
-    console.log('=== UPDATE USERS LIST ===');
-    console.log('usersList element:', usersList);
-    console.log('userCount element:', userCount);
-    console.log('roomUsers:', roomUsers);
-    console.log('currentUsername:', currentUsername);
-    console.log('roomOwner:', roomOwner);
-    
+                            
     if (!usersList || !userCount) {
-        console.error('User list elements not found in DOM!');
-        return;
+                return;
     }
     
-    console.log('Updating user list:', roomUsers);
-    userCount.textContent = roomUsers.length;
-    
-    // DON'T clear the list - just check what's there
-    console.log('Current usersList.children.length BEFORE clear:', usersList.children.length);
-    console.log('Current usersList.innerHTML BEFORE clear:', usersList.innerHTML);
-    
+        userCount.textContent = roomUsers.length;
+
+            
     usersList.innerHTML = '';
     
-    console.log('Cleared list. Now adding', roomUsers.length, 'users');
-    
+        
     const isPublicChat = currentRoomCode === PUBLIC_ROOM_CODE;
     
-    console.log('About to loop through', roomUsers.length, 'users');
-    
+        
     roomUsers.forEach((user, index) => {
-        console.log(`Creating user item ${index + 1}:`, user, 'roomOwner:', roomOwner, 'match:', user === roomOwner);
-        const userDiv = document.createElement('div');
+                const userDiv = document.createElement('div');
         userDiv.className = 'user-item';
         
         const usernameSpan = document.createElement('span');
         usernameSpan.className = 'user-name';
         usernameSpan.textContent = user;
         
-        console.log('Created span with text:', usernameSpan.textContent);
-        
-        // Add owner class for room owner (star icon via CSS)
-        if (user === roomOwner && roomOwner) {
+                if (user === roomOwner && roomOwner) {
             usernameSpan.classList.add('owner');
             userDiv.classList.add('owner');
-            console.log('✅ Added owner class to user:', user);
-        } else {
-            console.log('❌ NOT owner - user:', user, 'roomOwner:', roomOwner);
-        }
-        
-        // Add "You" indicator for current user
+                    } else {
+                    }
+
         if (user === currentUsername) {
             usernameSpan.textContent += ' (You)';
             usernameSpan.classList.add('current-user');
             userDiv.classList.add('current-user');
-            console.log('Added current-user class and (You) text');
         }
         
         userDiv.appendChild(usernameSpan);
-        console.log('Appended span to userDiv');
-        
-        // Add kick button only if:
-        // 1. Not yourself
-        // 2. Not public chat
-        // 3. Current user is the owner
-        // 4. Target user is not the owner
+
+
+
+
         const canKick = user !== currentUsername && 
                         !isPublicChat && 
                         currentUsername === roomOwner && 
@@ -1022,21 +855,14 @@ function updateUsersList() {
             kickBtn.textContent = 'Kick';
             kickBtn.onclick = () => kickUser(user);
             userDiv.appendChild(kickBtn);
-            console.log('Added kick button');
-        }
+                    }
         
         usersList.appendChild(userDiv);
-        console.log('✅ Appended user item to list');
-        console.log('userDiv HTML:', userDiv.outerHTML);
-        console.log('usersList now has', usersList.children.length, 'children');
     });
-    
-    console.log('✅ Finished updating user list. Total items:', usersList.children.length);
-    console.log('Final usersList.innerHTML:', usersList.innerHTML);
 }
 
 function kickUser(username) {
-    // Double-check permissions
+
     if (currentUsername !== roomOwner) {
         alert('Only the circle owner can kick users.');
         return;
@@ -1052,20 +878,18 @@ function kickUser(username) {
     }
     
     if (ws && ws.readyState === WebSocket.OPEN) {
-        // Send kick notification as a message
+
         ws.send(JSON.stringify({
             action: 'sendMessage',
             roomCode: currentRoomCode,
             username: currentUsername,
             message: `::KICK::${username}`
         }));
-        
-        // Immediately remove from local list
+
         roomUsers = roomUsers.filter(u => u !== username);
         updateUsersList();
         addSystemMessage(`${username} was kicked from the chat`);
-        
-        // Also send server kick if supported
+
         ws.send(JSON.stringify({
             action: 'kickUser',
             roomCode: currentRoomCode,
@@ -1089,46 +913,39 @@ function handleKeyPress(event) {
     }
 }
 
-// Approval system functions
 let currentPendingUser = null;
 let waitingTimerInterval = null;
 let approvalQueue = []; // Queue for multiple simultaneous join requests
 
 function showApprovalModal(username) {
-    // Add user to queue if not already there
+
     if (!approvalQueue.includes(username) && username !== currentPendingUser) {
         approvalQueue.push(username);
-        console.log('📋 Added to approval queue:', username, 'Queue:', approvalQueue);
-    }
-    
-    // Add user to pending list and start timer
+            }
+
     if (!pendingUsers.includes(username)) {
         pendingUsers.push(username);
     }
-    
-    // Start auto-deny timer (60 seconds)
+
     approvalTimers[username] = setTimeout(() => {
-        console.log('⏰ Auto-denying user due to timeout:', username);
-        autoDenyUser(username);
+                autoDenyUser(username);
     }, APPROVAL_TIMEOUT);
-    
-    // Show modal if not currently showing one
+
     if (!currentPendingUser) {
         showNextApprovalRequest();
     }
 }
 
 function showNextApprovalRequest() {
-    // If there's someone in the queue, show them
+
     if (approvalQueue.length > 0) {
         currentPendingUser = approvalQueue.shift();
-        console.log('👀 Showing approval for:', currentPendingUser, 'Remaining in queue:', approvalQueue.length);
-        
+                
         const modal = document.getElementById('approvalModal');
         const usernameDisplay = document.getElementById('approvalUsername');
         
         if (modal && usernameDisplay) {
-            // Update count display if there are more waiting
+
             let displayText = currentPendingUser;
             if (approvalQueue.length > 0) {
                 displayText += ` (+${approvalQueue.length} more waiting)`;
@@ -1146,24 +963,20 @@ function approveUser() {
     
     const username = currentPendingUser;
     const modal = document.getElementById('approvalModal');
-    
-    // Clear timer
+
     if (approvalTimers[username]) {
         clearTimeout(approvalTimers[username]);
         delete approvalTimers[username];
     }
-    
-    // Remove from pending list
+
     pendingUsers = pendingUsers.filter(u => u !== username);
-    
-    // Add approved user to room users list
+
     if (!roomUsers.includes(username)) {
         roomUsers.push(username);
         userJoinTimes[username] = Date.now();
         updateUsersList();
     }
-    
-    // Send approval message with room owner info
+
     if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({
             action: 'sendMessage',
@@ -1174,8 +987,7 @@ function approveUser() {
         
         addSystemMessage(`${username} joined the chat`);
     }
-    
-// Show next request in queue or close modal
+
     if (approvalQueue.length > 0) {
         showNextApprovalRequest();
     } else {
@@ -1184,24 +996,21 @@ function approveUser() {
         }
         currentPendingUser = null;
     }
-    }
+}
 
 function denyUser() {
     if (!currentPendingUser) return;
     
     const username = currentPendingUser;
     const modal = document.getElementById('approvalModal');
-    
-    // Clear timer
+
     if (approvalTimers[username]) {
         clearTimeout(approvalTimers[username]);
         delete approvalTimers[username];
     }
-    
-    // Remove from pending list
+
     pendingUsers = pendingUsers.filter(u => u !== username);
-    
-    // Send denial message
+
     if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({
             action: 'sendMessage',
@@ -1210,8 +1019,7 @@ function denyUser() {
             message: `::DENIED::${username}`
         }));
     }
-    
-    // Close modal
+
     if (modal) {
         modal.style.display = 'none';
     }
@@ -1219,10 +1027,9 @@ function denyUser() {
 }
 
 function autoDenyUser(username) {
-    // Remove from queue if present
+
     approvalQueue = approvalQueue.filter(u => u !== username);
-    
-    // If this is the currently displayed user, show next or close
+
     if (currentPendingUser === username) {
         if (approvalQueue.length > 0) {
             showNextApprovalRequest();
@@ -1234,11 +1041,9 @@ function autoDenyUser(username) {
             currentPendingUser = null;
         }
     }
-    
-    // Remove from pending list
+
     pendingUsers = pendingUsers.filter(u => u !== username);
-    
-    // Send denial message
+
     if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({
             action: 'sendMessage',
@@ -1258,8 +1063,7 @@ function showWaitingScreen() {
     if (waitingScreen) {
         waitingScreen.style.display = 'flex';
     }
-    
-    // Start countdown timer
+
     let timeLeft = 60;
     const timerDisplay = document.getElementById('waitingTimer');
     
@@ -1304,7 +1108,6 @@ function cancelJoinRequest() {
     document.getElementById('chatScreen').classList.remove('active');
 }
 
-// Cursor tracking for choice buttons
 (function() {
     function setupChoiceButtonTracking() {
         const choiceButtons = document.querySelectorAll('.nexora-chatroom .choice-button');
@@ -1333,7 +1136,6 @@ function cancelJoinRequest() {
         });
     }
 
-    // Setup tracking when page loads
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', setupChoiceButtonTracking);
     } else {
@@ -1341,18 +1143,15 @@ function cancelJoinRequest() {
     }
 })();
 
-    // Expose necessary functions globally
     window.NexoraCircle = {
         initialized: true,
         saveChatroomState: saveChatroomState,
         restoreChatroomState: restoreChatroomState
     };
 
-    // Make functions globally accessible for compatibility
     window.saveChatroomState = saveChatroomState;
     window.restoreChatroomState = restoreChatroomState;
 
-    // Also expose UI functions that HTML might call
     window.showChoiceScreen = showChoiceScreen;
     window.showJoinForm = showJoinForm;
     window.showCreateForm = showCreateForm;
@@ -1368,8 +1167,7 @@ function cancelJoinRequest() {
     window.approveUser = approveUser;
     window.denyUser = denyUser;
     window.cancelJoinRequest = cancelJoinRequest;
-    
-    // Load saved username when chatroom initializes
+
     setTimeout(loadSavedUsername, 100);
 
 })();
