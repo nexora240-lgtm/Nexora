@@ -199,57 +199,129 @@
       }
     }
 
-    function initLoader() {
-      const allGames    = JSON.parse(sessionStorage.getItem("gamesList")    || "[]");
-      const currentGame = JSON.parse(sessionStorage.getItem("currentGame") || "null");
-      if (!currentGame) {
-        location.href = "game.html";
-        return;
+    function fileToTitle(fileName) {
+      let name = fileName;
+
+      // Remove 'cl' prefix if it exists
+      if (name.toLowerCase().startsWith('cl')) {
+        name = name.substring(2);
       }
 
+      // Handle special cases
+      name = name.replace(/io$/i, '.io');
+      name = name.replace(/lol$/i, 'LOL');
+      name = name.replace(/3D/g, '3D');
+      name = name.replace(/2D/g, '2D');
+
+      // Add spaces before numbers and capital letters
+      name = name.replace(/([a-z])([A-Z0-9])/g, '$1 $2');
+      name = name.replace(/([0-9])([a-zA-Z])/g, '$1 $2');
+
+      // Capitalize first letter of each word
+      name = name.split(/\s+/).map(word =>
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ');
+
+      return name;
+    }
+
+    function initLoader() {
       const container = document.getElementById("gameContainer");
       const fsBtn     = document.getElementById("fullscreenBtn");
 
-      const primaryBg = currentGame.thumbnail ? `url("${currentGame.thumbnail}")` : 'none';
+      // Check if this is a UGC game
+      const ugcGameFile = sessionStorage.getItem("ugcGameFile");
 
-      const secondaryCandidate =
-        currentGame.thumbnail2 ||
-        currentGame.background2 ||
-        currentGame.background ||
-        currentGame.thumbnail;
-      const secondaryBg = secondaryCandidate ? `url("${secondaryCandidate}")` : 'none';
+      if (ugcGameFile) {
+        // Load UGC game from CDN
+        const gameTitle = fileToTitle(ugcGameFile);
+        const cdnUrl = `https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile/${ugcGameFile}.html`;
 
-      container.style.setProperty('--game-bg', primaryBg);
-      container.style.setProperty('--game-bg-2', secondaryBg);
+        // Set a generic background
+        container.style.setProperty('--game-bg', 'linear-gradient(135deg, #2e3244 0%, #36224b 100%)');
+        container.style.setProperty('--game-bg-2', 'linear-gradient(135deg, #2e3244 0%, #36224b 100%)');
+        container.style.setProperty('--game-bg-blur', '0px');
+        container.style.setProperty('--game-bg-opacity', '1');
 
-      container.style.setProperty('--game-bg-blur', '12px');
+        container.innerHTML = `
+          <div class="loader-start">
+            <div style="font-size: 64px; color: #79aadb; margin-bottom: 20px;">
+              <i class="fas fa-gamepad"></i>
+            </div>
+            <h2 style="color: white; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">${gameTitle}</h2>
+            <button id="playBtn" class="play-btn">Play Now</button>
+          </div>
+        `;
 
-      container.style.setProperty('--game-bg-opacity', '0.7');
+        document.getElementById("playBtn").onclick = () => {
+          // Load game in iframe
+          const iframe = document.createElement("iframe");
+          iframe.src = cdnUrl;
+          iframe.setAttribute("allowfullscreen", "");
+          iframe.frameBorder = 0;
+          iframe.className = "game-iframe";
+          container.innerHTML = "";
+          container.appendChild(iframe);
 
-      container.innerHTML = `
-        <div class="loader-start">
-          <img src="${currentGame.thumbnail}" alt="${currentGame.title}" />
-          <button id="playBtn" class="play-btn">Play Now</button>
-        </div>
-      `;
+          container.classList.add('is-playing');
+        };
 
-      document.getElementById("playBtn").onclick = () => {
-        const iframe = document.createElement("iframe");
-        iframe.src = normalizeToHttpsS3(currentGame.file);
-        iframe.setAttribute("allowfullscreen", "");
-        iframe.frameBorder = 0;
-        iframe.className = "game-iframe";
-        container.innerHTML = "";
-        container.appendChild(iframe);
+        fsBtn.onclick = () => {
+          const el = container.querySelector(".game-iframe") || container;
+          if (el.requestFullscreen) el.requestFullscreen();
+          else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        };
 
-        container.classList.add('is-playing');
-      };
+      } else {
+        // Original behavior - load from game-info.json
+        const allGames    = JSON.parse(sessionStorage.getItem("gamesList")    || "[]");
+        const currentGame = JSON.parse(sessionStorage.getItem("currentGame") || "null");
+        if (!currentGame) {
+          location.href = "games.html";
+          return;
+        }
 
-      fsBtn.onclick = () => {
-        const el = container.querySelector(".game-iframe") || container;
-        if (el.requestFullscreen) el.requestFullscreen();
-        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-      };
+        const primaryBg = currentGame.thumbnail ? `url("${currentGame.thumbnail}")` : 'none';
+
+        const secondaryCandidate =
+          currentGame.thumbnail2 ||
+          currentGame.background2 ||
+          currentGame.background ||
+          currentGame.thumbnail;
+        const secondaryBg = secondaryCandidate ? `url("${secondaryCandidate}")` : 'none';
+
+        container.style.setProperty('--game-bg', primaryBg);
+        container.style.setProperty('--game-bg-2', secondaryBg);
+
+        container.style.setProperty('--game-bg-blur', '12px');
+
+        container.style.setProperty('--game-bg-opacity', '0.7');
+
+        container.innerHTML = `
+          <div class="loader-start">
+            <img src="${currentGame.thumbnail}" alt="${currentGame.title}" />
+            <button id="playBtn" class="play-btn">Play Now</button>
+          </div>
+        `;
+
+        document.getElementById("playBtn").onclick = () => {
+          const iframe = document.createElement("iframe");
+          iframe.src = normalizeToHttpsS3(currentGame.file);
+          iframe.setAttribute("allowfullscreen", "");
+          iframe.frameBorder = 0;
+          iframe.className = "game-iframe";
+          container.innerHTML = "";
+          container.appendChild(iframe);
+
+          container.classList.add('is-playing');
+        };
+
+        fsBtn.onclick = () => {
+          const el = container.querySelector(".game-iframe") || container;
+          if (el.requestFullscreen) el.requestFullscreen();
+          else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        };
+      }
     }
 
     initLoader();
