@@ -11,7 +11,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-  <link rel="stylesheet" href="/css/chatbot.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@latest/css/chatbot.css" />
   <title>AI Chatbot</title>
 </head>
 
@@ -39,6 +39,7 @@
   (function(){
     if(window.NexoraChat) return;
 
+    // ⚠️ REPLACE THIS WITH YOUR AWS LAMBDA API GATEWAY URL
     const LAMBDA_ENDPOINT = 'https://t53kvu1sn6.execute-api.us-east-2.amazonaws.com/default/Chatbot';
 
     const CHAT_STORAGE_KEY = 'nexora_chat_session';
@@ -202,7 +203,7 @@
       try {
         sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chatHistory));
       } catch(e) {
-        
+        console.error('Failed to save chat history:', e);
       }
     }
 
@@ -222,7 +223,7 @@
           startIntroLoop(root);
         }
       } catch(e) {
-        
+        console.error('Failed to reset chat:', e);
       }
     }
 
@@ -279,7 +280,7 @@
         scrollEl.scrollTop = scrollEl.scrollHeight;
         requestAnimationFrame(()=>{ if(window.hljs) hljs.highlightAll(); });
       } catch(e) {
-        
+        console.error('Failed to load chat history:', e);
       }
     }
 
@@ -400,7 +401,10 @@
       showTypingIndicator(root);
 
       try {
-
+        console.log('Sending to:', LAMBDA_ENDPOINT);
+        console.log('Current origin:', window.location.origin);
+        
+        // Build the messages array correctly
         const messages = [
           { role: "system", content: "You are a AI assistant. Use emojis only on headers and titles, Use markdown formatting and struture your responses with headings, subheadings, bullet points, and numbered lists where appropriate. When providing code snippets, ensure they are enclosed in triple backticks with the correct language specified for syntax highlighting. Always aim to be clear and concise in your explanations." },
           { role: "user", content: prompt }
@@ -410,8 +414,9 @@
           messages: messages
         };
         
-        );
-
+        console.log('Request body:', JSON.stringify(requestBody));
+        
+        // Call your AWS Lambda endpoint with more detailed error handling
         let res;
         try {
           res = await fetch(LAMBDA_ENDPOINT, {
@@ -422,12 +427,12 @@
             body: JSON.stringify(requestBody),
             mode: 'cors'
           });
-          
-          ]));
+          console.log('Response status:', res.status);
+          console.log('Response headers:', Object.fromEntries([...res.headers.entries()]));
         } catch (fetchError) {
-          
-          
-          
+          console.error('Fetch failed:', fetchError);
+          console.error('Error name:', fetchError.name);
+          console.error('Error message:', fetchError.message);
           throw new Error(`Network request failed: ${fetchError.message}. This may be due to CORS policy, network connectivity, or the Lambda endpoint being unavailable.`);
         }
         
@@ -435,7 +440,7 @@
           let errorDetail = `HTTP ${res.status}`;
           try {
             const errorText = await res.text();
-            
+            console.log('Error response:', errorText);
             try {
               const errorData = JSON.parse(errorText);
               errorDetail = errorData.error || errorData.message || errorText || errorDetail;
@@ -443,13 +448,13 @@
               errorDetail = errorText || errorDetail;
             }
           } catch {
-
+            // If reading response fails, use default error
           }
           throw new Error(errorDetail);
         }
 
         const data = await res.json();
-        
+        console.log('Success response:', data);
         
         const reply = data.choices?.[0]?.message?.content || data.error || "API Error";
         const replyStr = String(reply || "");
@@ -461,7 +466,7 @@
       } catch (err) {
         hideTypingIndicator(root);
         const errorMsg = err?.message || String(err);
-        
+        console.error("Fetch error:", err);
         addBotMessage(`<div class="bot-chunk"><strong>Error:</strong> ${escapeHtml(errorMsg)}</div>`, root);
       } finally {
         sendEl.classList.remove("typing");

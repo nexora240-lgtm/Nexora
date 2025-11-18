@@ -169,43 +169,82 @@
   </script>
 
   <script>
+    function normalizeToHttpsS3(urlStr) {
+      try {
+        const u = new URL(urlStr);
+        if (u.protocol === 'https:' && u.hostname.endsWith('.s3.amazonaws.com')) {
+          return urlStr;
+        }
+
+        if (/s3-website.*\.amazonaws\.com$/i.test(u.hostname)) {
+          const parts = u.hostname.split('.');
+          if (u.hostname.startsWith('s3-website')) {
+            const pathParts = u.pathname.replace(/^\/+/,'').split('/');
+            if (pathParts.length >= 2) {
+              const bucket = pathParts.shift();
+              const key = pathParts.join('/');
+              return `https://${bucket}.s3.${parts[1].replace('s3-website-','')}.amazonaws.com/${key}`;
+            } else {
+            }
+          } else {
+            const bucket = parts[0];
+            const match = u.hostname.match(/s3-website-([a-z0-9-]+)\.amazonaws\.com$/i);
+            const region = match ? match[1] : 'us-east-1';
+            const key = u.pathname.replace(/^\/+/,'');
+            return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
+          }
+        }
+
+        return urlStr;
+      } catch (e) {
+        return urlStr;
+      }
+    }
+
     function initLoader() {
-      const gameName = sessionStorage.getItem("currentGame");
-      const gameTitle = sessionStorage.getItem("currentGameTitle");
-      const gameImage = sessionStorage.getItem("currentGameImage");
-      
-      if (!gameName) {
-        location.href = "games.html";
+      const allGames    = JSON.parse(sessionStorage.getItem("gamesList")    || "[]");
+      const currentGame = JSON.parse(sessionStorage.getItem("currentGame") || "null");
+      if (!currentGame) {
+        location.href = "game.html";
         return;
       }
 
       const container = document.getElementById("gameContainer");
       const fsBtn     = document.getElementById("fullscreenBtn");
 
-      const displayTitle = gameTitle || gameName;
-      const imageHTML = gameImage ? `<img src="${gameImage}" alt="${displayTitle}" class="game-preview-image" />` : '';
+      const primaryBg = currentGame.thumbnail ? `url("${currentGame.thumbnail}")` : 'none';
+
+      const secondaryCandidate =
+        currentGame.thumbnail2 ||
+        currentGame.background2 ||
+        currentGame.background ||
+        currentGame.thumbnail;
+      const secondaryBg = secondaryCandidate ? `url("${secondaryCandidate}")` : 'none';
+
+      container.style.setProperty('--game-bg', primaryBg);
+      container.style.setProperty('--game-bg-2', secondaryBg);
+
+      container.style.setProperty('--game-bg-blur', '12px');
+
+      container.style.setProperty('--game-bg-opacity', '0.7');
 
       container.innerHTML = `
         <div class="loader-start">
-          ${imageHTML}
-          <h2>${displayTitle}</h2>
+          <img src="${currentGame.thumbnail}" alt="${currentGame.title}" />
           <button id="playBtn" class="play-btn">Play Now</button>
         </div>
       `;
 
       document.getElementById("playBtn").onclick = () => {
-        fetch(`https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile/${gameName}.html?t=${Date.now()}`)
-          .then(response => response.text())
-          .then(text => {
-            const iframe = document.createElement("iframe");
-            iframe.srcdoc = text;
-            iframe.setAttribute("allowfullscreen", "");
-            iframe.frameBorder = 0;
-            iframe.className = "game-iframe";
-            container.innerHTML = "";
-            container.appendChild(iframe);
-            container.classList.add('is-playing');
-          });
+        const iframe = document.createElement("iframe");
+        iframe.src = normalizeToHttpsS3(currentGame.file);
+        iframe.setAttribute("allowfullscreen", "");
+        iframe.frameBorder = 0;
+        iframe.className = "game-iframe";
+        container.innerHTML = "";
+        container.appendChild(iframe);
+
+        container.classList.add('is-playing');
       };
 
       fsBtn.onclick = () => {
