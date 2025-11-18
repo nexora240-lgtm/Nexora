@@ -1,17 +1,4 @@
 function loadView(file) {
-
-  if (window.GameStateManager && app.querySelector('#gameContainer')) {
-    window.GameStateManager.saveState(app);
-  }
-
-  if (file === 'gameloader.html' && window.GameStateManager && window.GameStateManager.hasActiveGame()) {
-    const restored = window.GameStateManager.restoreState(app);
-    if (restored) {
-      
-      return;
-    }
-  }
-
   fetch('/' + file)
     .then(res => res.text())
     .then(html => {

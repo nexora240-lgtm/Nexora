@@ -284,8 +284,7 @@ body {
 }
 
 
-.game-card > img,
-.game-card > * {
+.game-card > img {
   display: block;
   width: 100%;
   height: 100%;
@@ -312,6 +311,22 @@ body {
   animation: fadeIn 0.4s ease-out 0.3s backwards;
   z-index: 2;
   border-radius: 0 0 var(--g-radius) var(--g-radius);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* When there's no image, center the title */
+.game-card:not(:has(img)) .game-title {
+  position: static;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: var(--g-panel);
+  border-radius: var(--g-radius);
+  text-align: center;
+  padding: 20px;
 }
 
 

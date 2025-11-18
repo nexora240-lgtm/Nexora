@@ -760,7 +760,7 @@ function sendMessage() {
             updateUsersList();
         }
         
-        displayMessage(currentUsername, message, Date.now(), true);
+        // Remove local display - message will be displayed when server echoes it back
         input.value = '';
     } else {
         alert('Not connected. Please refresh and try again.');

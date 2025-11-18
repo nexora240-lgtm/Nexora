@@ -11,9 +11,9 @@
   </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="/css/theme-tokens.css" />
-  <link rel="stylesheet" href="/css/gameloader.css" />
-  <link rel="icon" type="image/png" id="favicon" href="/assets/logos/nexora-amber.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@latest/css/theme-tokens.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@latest/css/gameloader.css" />
+  <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@latest/assets/logos/nexora-amber.png">
   <style>
     .content-wrapper {
       display: flex;
@@ -38,7 +38,7 @@
       flex: 1;
       max-width: 1200px;
       width: 100%;
-      min-width: 0; 
+      min-width: 0; /* Allow flex shrinking but maintain aspect ratio */
     }
 
     .loader-banner-ad {
@@ -65,43 +65,43 @@
 <body>
   <div class="loader-page">
     <div class="content-wrapper">
-      
+      <!-- Left Ad -->
       <div class="ad-container">
         <div id="leftAdContainer"></div>
       </div>
 
-      
+      <!-- Game Loader Content -->
       <div class="loader-wrapper">
         <div id="gameContainer"></div>
 
         <footer class="loader-footer">
           <div class="branding">
-            <img src="/assets/logos/nexora-amber.png" alt="Nexora Logo" />
+            <img src="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@latest/assets/logos/nexora-amber.png" alt="Nexora Logo" />
             <span>Nexora</span>
           </div>
 
           <div class="controls">
             <button id="fullscreenBtn" class="fullscreen-btn" aria-label="Toggle full screen">
-              <img src="/assets/icons/full-screen-icon.svg" alt="Full Screen" />
+              <img src="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@latest/assets/icons/full-screen-icon.svg" alt="Full Screen" />
             </button>
           </div>
         </footer>
       </div>
 
-      
+      <!-- Right Ad -->
       <div class="ad-container">
         <div id="rightAdContainer"></div>
       </div>
     </div>
   </div>
 
-  
+  <!-- Banner Ad Below Loader -->
   <div class="loader-banner-ad">
     <div id="loaderBannerAdContainer"></div>
   </div>
 
   <script type="text/javascript">
-
+    // Load left ad immediately
     (function() {
       var container = document.getElementById('leftAdContainer');
       var script1 = document.createElement('script');
@@ -123,6 +123,7 @@
       container.appendChild(script2);
     })();
 
+    // Load right ad with slight delay
     setTimeout(function() {
       var container = document.getElementById('rightAdContainer');
       var script1 = document.createElement('script');
@@ -144,6 +145,7 @@
       container.appendChild(script2);
     }, 500);
 
+    // Load banner ad below loader
     setTimeout(function() {
       var container = document.getElementById('loaderBannerAdContainer');
       var script1 = document.createElement('script');
@@ -167,176 +169,65 @@
   </script>
 
   <script>
-    function normalizeToHttpsS3(urlStr) {
-      try {
-        const u = new URL(urlStr);
-        if (u.protocol === 'https:' && u.hostname.endsWith('.s3.amazonaws.com')) {
-          return urlStr;
-        }
-
-        if (/s3-website.*\.amazonaws\.com$/i.test(u.hostname)) {
-          const parts = u.hostname.split('.');
-          if (u.hostname.startsWith('s3-website')) {
-            const pathParts = u.pathname.replace(/^\/+/,'').split('/');
-            if (pathParts.length >= 2) {
-              const bucket = pathParts.shift();
-              const key = pathParts.join('/');
-              return `https://${bucket}.s3.${parts[1].replace('s3-website-','')}.amazonaws.com/${key}`;
-            } else {
-            }
-          } else {
-            const bucket = parts[0];
-            const match = u.hostname.match(/s3-website-([a-z0-9-]+)\.amazonaws\.com$/i);
-            const region = match ? match[1] : 'us-east-1';
-            const key = u.pathname.replace(/^\/+/,'');
-            return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
-          }
-        }
-
-        return urlStr;
-      } catch (e) {
-        return urlStr;
-      }
-    }
-
-    function fileToTitle(fileName) {
-      let name = fileName;
-
-      // Remove 'cl' prefix if it exists
-      if (name.toLowerCase().startsWith('cl')) {
-        name = name.substring(2);
-      }
-
-      // Handle special cases
-      name = name.replace(/io$/i, '.io');
-      name = name.replace(/lol$/i, 'LOL');
-      name = name.replace(/3D/g, '3D');
-      name = name.replace(/2D/g, '2D');
-
-      // Add spaces before numbers and capital letters
-      name = name.replace(/([a-z])([A-Z0-9])/g, '$1 $2');
-      name = name.replace(/([0-9])([a-zA-Z])/g, '$1 $2');
-
-      // Capitalize first letter of each word
-      name = name.split(/\s+/).map(word =>
-        word.charAt(0).toUpperCase() + word.slice(1)
-      ).join(' ');
-
-      return name;
-    }
-
     function initLoader() {
+      const gameName = sessionStorage.getItem("currentGame");
+      const gameTitle = sessionStorage.getItem("currentGameTitle");
+      const gameImage = sessionStorage.getItem("currentGameImage");
+      
+      if (!gameName) {
+        location.href = "games.html";
+        return;
+      }
+
       const container = document.getElementById("gameContainer");
       const fsBtn     = document.getElementById("fullscreenBtn");
 
-      // Check if this is a UGC game
-      const ugcGameFile = sessionStorage.getItem("ugcGameFile");
+      const displayTitle = gameTitle || gameName;
+      const imageHTML = gameImage ? `<img src="${gameImage}" alt="${displayTitle}" class="game-preview-image" />` : '';
 
-      if (ugcGameFile) {
-        // Load UGC game from CDN
-        const gameTitle = fileToTitle(ugcGameFile);
-        const cdnUrl = `https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile/${ugcGameFile}.html`;
+      container.innerHTML = `
+        <div class="loader-start">
+          ${imageHTML}
+          <h2>${displayTitle}</h2>
+          <button id="playBtn" class="play-btn">Play Now</button>
+        </div>
+      `;
 
-        // Set a generic background
-        container.style.setProperty('--game-bg', 'linear-gradient(135deg, #2e3244 0%, #36224b 100%)');
-        container.style.setProperty('--game-bg-2', 'linear-gradient(135deg, #2e3244 0%, #36224b 100%)');
-        container.style.setProperty('--game-bg-blur', '0px');
-        container.style.setProperty('--game-bg-opacity', '1');
+      document.getElementById("playBtn").onclick = () => {
+        fetch(`https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile/${gameName}.html?t=${Date.now()}`)
+          .then(response => response.text())
+          .then(text => {
+            const iframe = document.createElement("iframe");
+            iframe.srcdoc = text;
+            iframe.setAttribute("allowfullscreen", "");
+            iframe.frameBorder = 0;
+            iframe.className = "game-iframe";
+            container.innerHTML = "";
+            container.appendChild(iframe);
+            container.classList.add('is-playing');
+          });
+      };
 
-        container.innerHTML = `
-          <div class="loader-start">
-            <div style="font-size: 64px; color: #79aadb; margin-bottom: 20px;">
-              <i class="fas fa-gamepad"></i>
-            </div>
-            <h2 style="color: white; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">${gameTitle}</h2>
-            <button id="playBtn" class="play-btn">Play Now</button>
-          </div>
-        `;
-
-        document.getElementById("playBtn").onclick = () => {
-          // Load game in iframe
-          const iframe = document.createElement("iframe");
-          iframe.src = cdnUrl;
-          iframe.setAttribute("allowfullscreen", "");
-          iframe.frameBorder = 0;
-          iframe.className = "game-iframe";
-          container.innerHTML = "";
-          container.appendChild(iframe);
-
-          container.classList.add('is-playing');
-        };
-
-        fsBtn.onclick = () => {
-          const el = container.querySelector(".game-iframe") || container;
-          if (el.requestFullscreen) el.requestFullscreen();
-          else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-        };
-
-      } else {
-        // Original behavior - load from game-info.json
-        const allGames    = JSON.parse(sessionStorage.getItem("gamesList")    || "[]");
-        const currentGame = JSON.parse(sessionStorage.getItem("currentGame") || "null");
-        if (!currentGame) {
-          location.href = "games.html";
-          return;
-        }
-
-        const primaryBg = currentGame.thumbnail ? `url("${currentGame.thumbnail}")` : 'none';
-
-        const secondaryCandidate =
-          currentGame.thumbnail2 ||
-          currentGame.background2 ||
-          currentGame.background ||
-          currentGame.thumbnail;
-        const secondaryBg = secondaryCandidate ? `url("${secondaryCandidate}")` : 'none';
-
-        container.style.setProperty('--game-bg', primaryBg);
-        container.style.setProperty('--game-bg-2', secondaryBg);
-
-        container.style.setProperty('--game-bg-blur', '12px');
-
-        container.style.setProperty('--game-bg-opacity', '0.7');
-
-        container.innerHTML = `
-          <div class="loader-start">
-            <img src="${currentGame.thumbnail}" alt="${currentGame.title}" />
-            <button id="playBtn" class="play-btn">Play Now</button>
-          </div>
-        `;
-
-        document.getElementById("playBtn").onclick = () => {
-          const iframe = document.createElement("iframe");
-          iframe.src = normalizeToHttpsS3(currentGame.file);
-          iframe.setAttribute("allowfullscreen", "");
-          iframe.frameBorder = 0;
-          iframe.className = "game-iframe";
-          container.innerHTML = "";
-          container.appendChild(iframe);
-
-          container.classList.add('is-playing');
-        };
-
-        fsBtn.onclick = () => {
-          const el = container.querySelector(".game-iframe") || container;
-          if (el.requestFullscreen) el.requestFullscreen();
-          else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-        };
-      }
+      fsBtn.onclick = () => {
+        const el = container.querySelector(".game-iframe") || container;
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      };
     }
 
     initLoader();
   </script>
 
   <script>
-
+    // Theme-aware favicon updater
     (function() {
       const FAVICON_MAP = {
-        'midnight-amber': '/assets/favicon-amber.png',
-        'midnight-blueberry': '/assets/favicon-blueberry.png',
-        'midnight-grape': '/assets/favicon-grape.png'
+        'midnight-amber': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@latest/assets/favicon-amber.png',
+        'midnight-blueberry': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@latest/assets/favicon-blueberry.png',
+        'midnight-grape': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@latest/assets/favicon-grape.png'
       };
 
-      const DEFAULT_FAVICON = '/assets/favicon-amber.png';
+      const DEFAULT_FAVICON = 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@latest/assets/favicon-amber.png';
 
       function updateFavicon() {
         const favicon = document.getElementById('favicon');
@@ -357,12 +248,14 @@
         }
       }
 
+      // Update on page load
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', updateFavicon);
       } else {
         updateFavicon();
       }
 
+      // Update when theme changes
       document.addEventListener('settings:colorSchemeChanged', updateFavicon);
       document.addEventListener('settings:themeChanged', updateFavicon);
     })();
