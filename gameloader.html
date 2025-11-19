@@ -235,16 +235,37 @@
         </div>
       `;
 
-      document.getElementById("playBtn").onclick = () => {
+      document.getElementById("playBtn").onclick = async () => {
         const iframe = document.createElement("iframe");
-        iframe.src = normalizeToHttpsS3(currentGame.file);
         iframe.setAttribute("allowfullscreen", "");
+        iframe.setAttribute("allow", "autoplay; fullscreen; gamepad; microphone; camera");
         iframe.frameBorder = 0;
         iframe.className = "game-iframe";
         container.innerHTML = "";
         container.appendChild(iframe);
 
         container.classList.add('is-playing');
+
+        // Fetch the HTML content and create a blob URL for better compatibility
+        try {
+          const response = await fetch(currentGame.file);
+          const htmlContent = await response.text();
+          
+          // Create blob URL with proper MIME type
+          const blob = new Blob([htmlContent], { type: 'text/html' });
+          const blobUrl = URL.createObjectURL(blob);
+          
+          iframe.src = blobUrl;
+          
+          // Clean up blob URL when iframe is removed
+          iframe.addEventListener('load', () => {
+            // Keep the blob URL alive while iframe is active
+          });
+        } catch (error) {
+          console.error('Error loading game:', error);
+          // Fallback to direct src if fetch fails
+          iframe.src = normalizeToHttpsS3(currentGame.file);
+        }
       };
 
       fsBtn.onclick = () => {
