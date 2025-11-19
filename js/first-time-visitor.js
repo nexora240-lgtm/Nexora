@@ -16,47 +16,47 @@
     { 
       name: "Clever", 
       title: "Clever | Portal",
-      icon: "/assets/favicon/clever.ico"
+      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/clever.ico"
     },
     { 
       name: "Google Classroom", 
       title: "Home",
-      icon: "/assets/favicon/classroom.ico"
+      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/classroom.ico"
     },
     { 
       name: "Canvas", 
       title: "Dashboard",
-      icon: "/assets/favicon/canvas.png"
+      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/canvas.png"
     },
     { 
       name: "Google Drive", 
       title: "Home - Google Drive",
-      icon: "/assets/favicon/drive.png"
+      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/drive.png"
     },
     { 
       name: "Seesaw", 
       title: "Seesaw",
-      icon: "/assets/favicon/seesaw.jpg"
+      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/seesaw.jpg"
     },
     { 
       name: "Edpuzzle", 
       title: "Edpuzzle",
-      icon: "/assets/favicon/edpuzzle.png"
+      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/edpuzzle.png"
     },
     { 
       name: "Kahoot!", 
       title: "Enter Game PIN - Kahoot!",
-      icon: "/assets/favicon/kahoot.ico"
+      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/kahoot.ico"
     },
     { 
       name: "Quizlet", 
       title: "Your Sets | Quizlet",
-      icon: "/assets/favicon/quizlet.png"
+      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/quizlet.png"
     },
     { 
       name: "Khan Academy", 
       title: "Dashboard | Khan Academy",
-      icon: "/assets/favicon/khanacademy.ico"
+      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/khanacademy.ico"
     }
   ];
 
