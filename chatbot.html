@@ -12,6 +12,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@latest/css/chatbot.css" />
+  <style>
+    .mode-selector {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 10;
+      padding: 8px 14px;
+      background: color-mix(in srgb, var(--panel, #1a100d) 80%, transparent);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid color-mix(in srgb, var(--orange, #d4550a) 30%, transparent);
+      border-radius: 8px;
+      color: var(--muted, #c9a08a);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      outline: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .mode-selector:hover {
+      background: color-mix(in srgb, var(--orange, #d4550a) 15%, transparent);
+      border-color: var(--orange, #d4550a);
+      color: var(--orange, #d4550a);
+      box-shadow: 0 4px 12px rgba(212, 85, 10, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .mode-selector:focus {
+      border-color: var(--orange, #d4550a);
+      box-shadow: 0 4px 12px rgba(212, 85, 10, 0.5);
+    }
+
+    .mode-selector:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .mode-selector option {
+      background: #1a100d;
+      color: #f8e7e0;
+      padding: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .mode-selector {
+        font-size: 12px;
+        padding: 6px 10px;
+      }
+    }
+  </style>
   <title>AI Chatbot</title>
 </head>
 
@@ -19,6 +72,14 @@
   <div class="nexora">
     <div class="app">
       <div class="chat">
+        <select id="ai-mode" class="mode-selector" title="Select AI mode" aria-label="Select AI assistant mode">
+          <option value="general">💬 General</option>
+          <option value="coder">💻 Coder</option>
+          <option value="writing">✍️ Writing</option>
+          <option value="creative">🎨 Creative</option>
+          <option value="math">🔢 Math Assistant</option>
+          <option value="tutor">🎓 Tutor</option>
+        </select>
         <button id="reset-chat" class="reset-btn" title="Reset chat" aria-label="Reset chat">🗑️ Reset</button>
         <div class="intro" id="intro"><h1>What can I help you with?</h1></div>
         <div class="scroll" id="scroll" aria-live="polite"></div>
@@ -43,7 +104,42 @@
     const LAMBDA_ENDPOINT = 'https://t53kvu1sn6.execute-api.us-east-2.amazonaws.com/default/Chatbot';
 
     const CHAT_STORAGE_KEY = 'nexora_chat_session';
+    const MODE_STORAGE_KEY = 'nexora_ai_mode';
     let chatHistory = [];
+    let currentMode = 'general';
+
+    const AI_MODES = {
+      general: {
+        name: "General Assistant",
+        maxHistory: 10,
+        systemPrompt: "You are a helpful AI assistant, Use markdown formatting and structure your responses with headings, subheadings, bullet points, and numbered lists where appropriate. When providing code snippets, ensure they are enclosed in triple backticks with the correct language specified for syntax highlighting. Always aim to be clear and concise in your explanations."
+      },
+      coder: {
+        name: "Code Assistant",
+        maxHistory: Infinity,
+        systemPrompt: "You are an expert programming assistant specialized in helping with code. Focus on providing clean, efficient, and well-documented code solutions. Always use proper syntax highlighting by specifying the language in code blocks. Include comments explaining complex logic. Suggest best practices and potential optimizations. When debugging, explain the root cause and provide fixes. Support multiple programming languages including JavaScript, Python, Java, C++, and more."
+      },
+      writing: {
+        name: "Writing Assistant",
+        maxHistory: 20,
+        systemPrompt: "You are a professional writing assistant specialized in creating, editing, and improving written content. Help with grammar, style, clarity, and structure. Provide constructive feedback on tone and readability. Assist with various writing tasks including essays, articles, emails, creative writing, and technical documentation. Suggest improvements while maintaining the author's voice. Use markdown formatting to organize your feedback and suggestions clearly."
+      },
+      creative: {
+        name: "Creative Partner",
+        maxHistory: 20,
+        systemPrompt: "You are a creative AI assistant specialized in brainstorming, storytelling, and artistic ideas. Help generate creative concepts, story plots, character development, marketing slogans, design ideas, and innovative solutions. Encourage out-of-the-box thinking and provide multiple creative alternatives. Use vivid descriptions and engaging language. Support various creative domains including writing, visual arts, music, and design."
+      },
+      math: {
+        name: "Math Assistant",
+        maxHistory: 10,
+        systemPrompt: "You are an expert mathematics assistant specialized in solving mathematical problems and explaining concepts clearly. Help with arithmetic, algebra, calculus, geometry, statistics, and advanced mathematics. Show step-by-step solutions with detailed explanations. Use proper mathematical notation and formatting. Break down complex problems into manageable steps. Verify calculations and provide multiple approaches when applicable. Support students at all levels from basic math to university-level mathematics."
+      },
+      tutor: {
+        name: "Educational Tutor",
+        maxHistory: Infinity,
+        systemPrompt: "You are a patient and knowledgeable educational tutor. Break down complex topics into easy-to-understand explanations. Use examples, analogies, and step-by-step instructions to teach concepts. Adapt your teaching style to different learning levels. Encourage questions and provide practice exercises when appropriate. Cover subjects including mathematics, science, history, languages, and more. Use markdown formatting to create well-structured lessons with clear headings and organized content."
+      }
+    };
 
     function escapeHtml(s){
       return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -154,7 +250,7 @@
       scrollEl.appendChild(div);
       scrollEl.scrollTop = scrollEl.scrollHeight;
       
-      chatHistory.push({ role: 'user', content: text });
+      chatHistory.push({ role: 'user', content: text, text: text });
       saveChatHistory();
     }
 
@@ -167,7 +263,7 @@
 
       const name = document.createElement("div");
       name.className = "bot-name";
-      name.textContent = "Gemini 2.5 Pro";
+      name.textContent = AI_MODES[currentMode]?.name || "ChatGPT 3.5 Turbo";
 
       const body = document.createElement("div");
       body.innerHTML = markup;
@@ -253,7 +349,7 @@
 
             const name = document.createElement("div");
             name.className = "bot-name";
-            name.textContent = "Gemini 2.5 Pro";
+            name.textContent = AI_MODES[currentMode]?.name || "ChatGPT 3.5 Turbo";
 
             const body = document.createElement("div");
             body.innerHTML = msg.content;
@@ -356,7 +452,7 @@
 
       const name = document.createElement('div');
       name.className = 'bot-name';
-      name.textContent = 'Gemini 2.5 Pro';
+      name.textContent = AI_MODES[currentMode]?.name || 'ChatGPT 3.5 Turbo';
 
       const body = document.createElement('div');
       body.innerHTML = `<div class="typing-indicator"><div class="loader" aria-hidden="true"></div><div>Typing...</div></div>`;
@@ -404,17 +500,31 @@
         console.log('Sending to:', LAMBDA_ENDPOINT);
         console.log('Current origin:', window.location.origin);
         
-        // Build the messages array correctly
+        // Build the messages array with mode-specific conversation history
+        const systemPrompt = AI_MODES[currentMode]?.systemPrompt || AI_MODES.general.systemPrompt;
+        const maxHistory = AI_MODES[currentMode]?.maxHistory || 10;
+        
         const messages = [
-          { role: "system", content: "You are a AI assistant. Use emojis only on headers and titles, Use markdown formatting and struture your responses with headings, subheadings, bullet points, and numbered lists where appropriate. When providing code snippets, ensure they are enclosed in triple backticks with the correct language specified for syntax highlighting. Always aim to be clear and concise in your explanations." },
-          { role: "user", content: prompt }
+          { role: "system", content: systemPrompt }
         ];
+        
+        // Limit conversation history based on current mode
+        const recentHistory = maxHistory === Infinity ? chatHistory : chatHistory.slice(-maxHistory);
+        
+        recentHistory.forEach(msg => {
+          if(msg.role === 'user'){
+            messages.push({ role: "user", content: msg.text || msg.content });
+          } else if(msg.role === 'bot'){
+            messages.push({ role: "assistant", content: msg.text || msg.content });
+          }
+        });
         
         const requestBody = {
           messages: messages
         };
         
         console.log('Request body:', JSON.stringify(requestBody));
+        console.log('Message count:', messages.length);
         
         // Call your AWS Lambda endpoint with more detailed error handling
         let res;
@@ -488,6 +598,28 @@
       if(resetBtn && !resetBtn.dataset.nexoraReset){
         resetBtn.dataset.nexoraReset = '1';
         resetBtn.addEventListener('click', () => resetChat(root));
+      }
+
+      const modeSelector = root.querySelector ? root.querySelector('#ai-mode') : document.querySelector('#ai-mode');
+      if(modeSelector && !modeSelector.dataset.nexoraMode){
+        modeSelector.dataset.nexoraMode = '1';
+        
+        // Load saved mode
+        try {
+          const savedMode = localStorage.getItem(MODE_STORAGE_KEY);
+          if(savedMode && AI_MODES[savedMode]){
+            currentMode = savedMode;
+            modeSelector.value = savedMode;
+          }
+        } catch(e) {}
+        
+        modeSelector.addEventListener('change', (e) => {
+          currentMode = e.target.value;
+          try {
+            localStorage.setItem(MODE_STORAGE_KEY, currentMode);
+          } catch(e) {}
+          resetChat(root);
+        });
       }
 
       sendEl.addEventListener("click", boundSend);
