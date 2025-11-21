@@ -8,3 +8,4 @@ sonobi.com, 192ecdea01, RESELLER, d1a215d9eb5aee9e
 google.com, pub-6644558441501035, DIRECT, f08c47fec0942fa0
 google.com, pub-1175987143200523, RESELLER, f08c47fec0942fa0
 risecodes.com, 608fee2f84a3a300011acd3f, DIRECT
+google.com, pub-7925754855607435, DIRECT, f08c47fec0942fa0
