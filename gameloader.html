@@ -26,50 +26,17 @@
       width: 100%;
     }
 
-    .ad-container {
-      width: 160px;
-      flex-shrink: 0;
-      position: sticky;
-      top: 20px;
-      align-self: flex-start;
-    }
-
     .loader-wrapper {
       flex: 1;
       max-width: 1200px;
       width: 100%;
-      min-width: 0; /* Allow flex shrinking but maintain aspect ratio */
-    }
-
-    .loader-banner-ad {
-      width: 100%;
-      max-width: 1200px;
-      margin: 20px auto 40px;
-      padding: 0 20px;
-      display: flex;
-      justify-content: center;
-    }
-
-    @media (max-width: 1400px) {
-      .ad-container {
-        display: none;
-      }
-      
-      .loader-wrapper {
-        max-width: 1200px;
-        margin: 0 auto;
-      }
+      min-width: 0;
     }
   </style>
 </head>
 <body>
   <div class="loader-page">
     <div class="content-wrapper">
-      <!-- Left Ad -->
-      <div class="ad-container">
-        <div id="leftAdContainer"></div>
-      </div>
-
       <!-- Game Loader Content -->
       <div class="loader-wrapper">
         <div id="gameContainer"></div>
@@ -87,86 +54,8 @@
           </div>
         </footer>
       </div>
-
-      <!-- Right Ad -->
-      <div class="ad-container">
-        <div id="rightAdContainer"></div>
-      </div>
     </div>
   </div>
-
-  <!-- Banner Ad Below Loader -->
-  <div class="loader-banner-ad">
-    <div id="loaderBannerAdContainer"></div>
-  </div>
-
-  <script type="text/javascript">
-    // Load left ad immediately
-    (function() {
-      var container = document.getElementById('leftAdContainer');
-      var script1 = document.createElement('script');
-      script1.type = 'text/javascript';
-      script1.innerHTML = `
-        atOptions = {
-          'key' : 'c1f3208965def858cc7daea4d7e8de4b',
-          'format' : 'iframe',
-          'height' : 600,
-          'width' : 160,
-          'params' : {}
-        };
-      `;
-      container.appendChild(script1);
-      
-      var script2 = document.createElement('script');
-      script2.type = 'text/javascript';
-      script2.src = '//www.highperformanceformat.com/c1f3208965def858cc7daea4d7e8de4b/invoke.js';
-      container.appendChild(script2);
-    })();
-
-    // Load right ad with slight delay
-    setTimeout(function() {
-      var container = document.getElementById('rightAdContainer');
-      var script1 = document.createElement('script');
-      script1.type = 'text/javascript';
-      script1.innerHTML = `
-        atOptions = {
-          'key' : 'c1f3208965def858cc7daea4d7e8de4b',
-          'format' : 'iframe',
-          'height' : 600,
-          'width' : 160,
-          'params' : {}
-        };
-      `;
-      container.appendChild(script1);
-      
-      var script2 = document.createElement('script');
-      script2.type = 'text/javascript';
-      script2.src = '//www.highperformanceformat.com/c1f3208965def858cc7daea4d7e8de4b/invoke.js';
-      container.appendChild(script2);
-    }, 500);
-
-    // Load banner ad below loader
-    setTimeout(function() {
-      var container = document.getElementById('loaderBannerAdContainer');
-      var script1 = document.createElement('script');
-      script1.type = 'text/javascript';
-      script1.innerHTML = `
-        atOptions = {
-          'key' : '88ed04e42f466cc97ec5c8c7cc0735d5',
-          'format' : 'iframe',
-          'height' : 90,
-          'width' : 728,
-          'params' : {}
-        };
-      `;
-      container.appendChild(script1);
-      
-      var script2 = document.createElement('script');
-      script2.type = 'text/javascript';
-      script2.src = '//www.highperformanceformat.com/88ed04e42f466cc97ec5c8c7cc0735d5/invoke.js';
-      container.appendChild(script2);
-    }, 1000);
-  </script>
 
   <script>
     function normalizeToHttpsS3(urlStr) {

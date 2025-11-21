@@ -43,7 +43,7 @@
       text-align: center;
     }
 
-    /* Ad layout container */
+    /* Content wrapper */
     .content-wrapper {
       display: flex;
       justify-content: center;
@@ -52,26 +52,12 @@
       max-width: 1600px;
       margin: 0 auto;
       padding: 0 20px 40px 20px;
-      min-height: 100vh; /* ensure content takes up space */
-    }
-
-    .ad-container {
-      width: 160px;
-      flex-shrink: 0;
-      position: sticky;
-      top: 80px;
-      align-self: flex-start;
+      min-height: 100vh;
     }
 
     .grid {
       flex: 1;
       max-width: 1200px;
-    }
-
-    @media (max-width: 1400px) {
-      .ad-container {
-        display: none;
-      }
     }
 
     /* Game Suggestion Button */
@@ -170,18 +156,8 @@
   </div>
 
   <div class="content-wrapper">
-    <!-- Left Ad -->
-    <div class="ad-container">
-      <div id="leftAdContainer"></div>
-    </div>
-
     <!-- Game Grid -->
     <div class="grid" id="gameGrid"></div>
-
-    <!-- Right Ad -->
-    <div class="ad-container">
-      <div id="rightAdContainer"></div>
-    </div>
   </div>
 
   <!-- Game Suggestion Button -->
@@ -191,52 +167,6 @@
       <span>Suggest a Game</span>
     </a>
   </div>
-
-  <script type="text/javascript">
-    // Load left ad immediately
-    (function() {
-      var container = document.getElementById('leftAdContainer');
-      var script1 = document.createElement('script');
-      script1.type = 'text/javascript';
-      script1.innerHTML = `
-        atOptions = {
-          'key' : 'c1f3208965def858cc7daea4d7e8de4b',
-          'format' : 'iframe',
-          'height' : 600,
-          'width' : 160,
-          'params' : {}
-        };
-      `;
-      container.appendChild(script1);
-      
-      var script2 = document.createElement('script');
-      script2.type = 'text/javascript';
-      script2.src = '//www.highperformanceformat.com/c1f3208965def858cc7daea4d7e8de4b/invoke.js';
-      container.appendChild(script2);
-    })();
-
-    // Load right ad with slight delay
-    setTimeout(function() {
-      var container = document.getElementById('rightAdContainer');
-      var script1 = document.createElement('script');
-      script1.type = 'text/javascript';
-      script1.innerHTML = `
-        atOptions = {
-          'key' : 'c1f3208965def858cc7daea4d7e8de4b',
-          'format' : 'iframe',
-          'height' : 600,
-          'width' : 160,
-          'params' : {}
-        };
-      `;
-      container.appendChild(script1);
-      
-      var script2 = document.createElement('script');
-      script2.type = 'text/javascript';
-      script2.src = '//www.highperformanceformat.com/c1f3208965def858cc7daea4d7e8de4b/invoke.js';
-      container.appendChild(script2);
-    }, 500);
-  </script>
 
   <script>
   (async function(){

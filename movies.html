@@ -26,44 +26,15 @@
       padding: 0 20px;
     }
 
-    .movies-ad-container {
-      width: 160px;
-      flex-shrink: 0;
-      position: sticky;
-      top: 20px;
-      align-self: flex-start;
-    }
-
     .movies-content {
       flex: 1;
       max-width: 980px;
       min-width: 0;
     }
-
-    .movies-banner-ad {
-      width: 100%;
-      max-width: 980px;
-      margin: 20px auto 40px;
-      padding: 0 20px;
-      display: flex;
-      justify-content: center;
-    }
-
-    @media (max-width: 1400px) {
-      .movies-ad-container {
-        display: none;
-      }
-    }
   </style>
 </head>
 <body>
   <div class="movies-page-wrapper">
-    
-    <div class="movies-ad-container">
-      <div id="leftMovieAdContainer"></div>
-    </div>
-
-    
     <div class="movies-content">
       <div class="vidplus-movies app mode-movie" data-view="movies" role="application" aria-label="VidPlus embed preview">
         <div class="top">
@@ -111,83 +82,7 @@
         </div>
       </div>
     </div>
-
-    
-    <div class="movies-ad-container">
-      <div id="rightMovieAdContainer"></div>
-    </div>
   </div>
-
-  
-  <div class="movies-banner-ad">
-    <div id="moviesBannerAdContainer"></div>
-  </div>
-
-  <script type="text/javascript">
-
-    (function() {
-      var container = document.getElementById('leftMovieAdContainer');
-      var script1 = document.createElement('script');
-      script1.type = 'text/javascript';
-      script1.innerHTML = `
-        atOptions = {
-          'key' : 'c1f3208965def858cc7daea4d7e8de4b',
-          'format' : 'iframe',
-          'height' : 600,
-          'width' : 160,
-          'params' : {}
-        };
-      `;
-      container.appendChild(script1);
-      
-      var script2 = document.createElement('script');
-      script2.type = 'text/javascript';
-      script2.src = '//www.highperformanceformat.com/c1f3208965def858cc7daea4d7e8de4b/invoke.js';
-      container.appendChild(script2);
-    })();
-
-    setTimeout(function() {
-      var container = document.getElementById('rightMovieAdContainer');
-      var script1 = document.createElement('script');
-      script1.type = 'text/javascript';
-      script1.innerHTML = `
-        atOptions = {
-          'key' : 'c1f3208965def858cc7daea4d7e8de4b',
-          'format' : 'iframe',
-          'height' : 600,
-          'width' : 160,
-          'params' : {}
-        };
-      `;
-      container.appendChild(script1);
-      
-      var script2 = document.createElement('script');
-      script2.type = 'text/javascript';
-      script2.src = 'https://www.highperformanceformat.com/c1f3208965def858cc7daea4d7e8de4b/invoke.js';
-      container.appendChild(script2);
-    }, 500);
-
-    setTimeout(function() {
-      var container = document.getElementById('moviesBannerAdContainer');
-      var script1 = document.createElement('script');
-      script1.type = 'text/javascript';
-      script1.innerHTML = `
-        atOptions = {
-          'key' : '88ed04e42f466cc97ec5c8c7cc0735d5',
-          'format' : 'iframe',
-          'height' : 90,
-          'width' : 728,
-          'params' : {}
-        };
-      `;
-      container.appendChild(script1);
-      
-      var script2 = document.createElement('script');
-      script2.type = 'text/javascript';
-      script2.src = 'https://www.highperformanceformat.com/88ed04e42f466cc97ec5c8c7cc0735d5/invoke.js';
-      container.appendChild(script2);
-    }, 1000);
-  </script>
 
   <script>
 (function safeInit(){
