@@ -227,7 +227,7 @@ body {
 .pagination {
   position: fixed;
   bottom: 0;
-  left: 0;
+  left: 60px;
   right: 0;
   display: flex;
   justify-content: center;
@@ -238,6 +238,12 @@ body {
   background: var(--g-surface);
   border-top: 2px solid var(--g-border);
   z-index: 1000;
+  transition: left 0.3s ease;
+}
+
+.sidebar:hover ~ * .pagination,
+body:has(.sidebar:hover) .pagination {
+  left: 250px;
 }
 
 .pagination button {
