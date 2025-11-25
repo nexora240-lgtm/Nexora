@@ -25,14 +25,16 @@ function loadView(file) {
 
       app.innerHTML = doc.body ? doc.body.innerHTML : '';
 
-      scripts.forEach(s => {
+      scripts.forEach(scriptNode => {
         const newScript = document.createElement('script');
-        if (s.src) {
-          newScript.src = s.src;
-          newScript.async = false;
-        } else {
-          newScript.textContent = s.textContent;
+        Array.from(scriptNode.attributes).forEach(attr => {
+          newScript.setAttribute(attr.name, attr.value);
+        });
+
+        if (!scriptNode.src) {
+          newScript.textContent = scriptNode.textContent;
         }
+
         document.body.appendChild(newScript);
       });
 
@@ -57,7 +59,10 @@ function loadView(file) {
 function renderHome()     { loadView('home.html'); }
 function renderGames()    { loadView('games.html'); }
 function renderMovies()   { loadView('movies.html'); }
-function renderProxy()    { loadView('proxy.html'); }
+function renderProxy()    { 
+  // Proxy page requires full page reload due to service worker dependencies
+  window.location.href = '/proxy.html';
+}
 function renderHacks()    { loadView('hacks.html'); }
 function renderChatbot()  { loadView('chatbot.html'); }
 function renderChatroom() { loadView('chatroom.html'); }

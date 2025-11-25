@@ -1,5 +1,70 @@
 "use strict";
 
+// Global scramjet instance
+let scramjet = null;
+let swReady = false;
+
+let proxyInitialized = false;
+
+async function initProxyBrowser() {
+  if (proxyInitialized) return;
+  proxyInitialized = true;
+
+  console.log('Proxy browser loaded');
+
+  try {
+    const { ScramjetController } = $scramjetLoadController();
+    scramjet = new ScramjetController({
+      prefix: "/scramjet/",
+      files: {
+        wasm: "/scram/scramjet.wasm.wasm",
+        all: "/scram/scramjet.all.js",
+        sync: "/scram/scramjet.sync.js",
+      }
+    });
+    await scramjet.init();
+    console.log('Scramjet initialized');
+
+    const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+
+    try {
+      await connection.setTransport("/epoxy/index.mjs", [{
+        wisp: window._CONFIG?.wispurl || "wss://anura.pro/"
+      }]);
+      console.log('Epoxy transport configured with WISP:', window._CONFIG?.wispurl);
+    } catch (e) {
+      console.warn('Epoxy/WISP transport failed, trying bare transport:', e);
+      try {
+        await connection.setTransport("/baremux/index.mjs", [
+          window._CONFIG?.bareurl || "https://aluu.xyz/bare/"
+        ]);
+        console.log('Bare transport configured:', window._CONFIG?.bareurl);
+      } catch (e2) {
+        console.error('All transports failed, proxy may not work correctly:', e2);
+      }
+    }
+
+    await navigator.serviceWorker.register("/sw.js");
+    await navigator.serviceWorker.ready;
+    swReady = true;
+    console.log('Service worker ready');
+
+    window.scramjet = scramjet;
+
+  } catch (err) {
+    console.error("Initialization failed:", err);
+    alert('Failed to initialize proxy. Please refresh the page.');
+  }
+
+  createNewTab();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initProxyBrowser, { once: true });
+} else {
+  initProxyBrowser();
+}
+
 // Tab Management
 let tabCounter = 0;
 let activeTabId = null;
@@ -15,12 +80,19 @@ function getFavicon(url) {
   }
 }
 
-// Get proxy URL
+// Get proxy URL using Scramjet
 function getProxyUrl(url) {
-  if (typeof __uv$config !== 'undefined') {
-    return __uv$config.prefix + __uv$config.encodeUrl(url);
+  if (!swReady) {
+    console.warn('Service worker not ready yet');
   }
-  return "/s/ultraviolet/" + encodeURIComponent(url);
+  if (scramjet) {
+    const encoded = scramjet.encodeUrl(url);
+    console.log('Encoded URL:', url, '->', encoded);
+    return encoded;
+  }
+  // Fallback if scramjet not yet initialized
+  console.warn('Scramjet not initialized, using fallback encoding');
+  return "/scramjet/" + encodeURIComponent(url);
 }
 
 // Search function (from arsenic)
@@ -145,71 +217,74 @@ function createNewTab() {
 }
 
 // Open proxy page
-function openProxyPage(url) {
-  registerSW().then(() => {
-    const tabId = activeTabId || `tab-${++tabCounter}`;
-    let tab = document.getElementById(tabId);
-    let iframe = document.getElementById(`${tabId}-frame`);
+async function openProxyPage(url) {
+  // Wait for service worker to be ready
+  if (!swReady) {
+    console.log('Waiting for service worker...');
+    await navigator.serviceWorker.ready;
+    swReady = true;
+    console.log('Service worker is now ready');
+  }
+  
+  const tabId = activeTabId || `tab-${++tabCounter}`;
+  let tab = document.getElementById(tabId);
+  let iframe = document.getElementById(`${tabId}-frame`);
+  
+  // If no active tab, create one
+  if (!tab) {
+    const tabBar = document.getElementById('tab-bar');
+    const newTabBtn = tabBar.querySelector('.new-tab-btn');
     
-    // If no active tab, create one
-    if (!tab) {
-      const tabBar = document.getElementById('tab-bar');
-      const newTabBtn = tabBar.querySelector('.new-tab-btn');
-      
-      tab = document.createElement('div');
-      tab.className = 'tab';
-      tab.id = tabId;
-      tab.innerHTML = `
-        <img class="tab-favicon" src="${getFavicon(url)}" alt="">
-        <span class="tab-title">Loading...</span>
-        <button class="tab-close" onclick="closeTab('${tabId}')">×</button>
-      `;
-      
-      tab.onclick = function(e) {
-        if (!e.target.classList.contains('tab-close')) {
-          switchToTab(tabId);
-        }
-      };
-      
-      tabBar.insertBefore(tab, newTabBtn);
-      
-      const contentArea = document.getElementById('content-area');
-      iframe = document.createElement('iframe');
-      iframe.className = 'proxy-frame';
-      iframe.id = `${tabId}-frame`;
-      iframe.sandbox = "allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads";
-      iframe.allow = "fullscreen; geolocation; microphone; camera";
-      
-      iframe.onload = function() {
-        hideLoading();
-        try {
-          if (iframe.contentDocument && iframe.contentDocument.title) {
-            tab.querySelector('.tab-title').textContent = iframe.contentDocument.title || 'Untitled';
-          }
-        } catch (e) {
-          tab.querySelector('.tab-title').textContent = 'Untitled';
-        }
-        
-        // Try to intercept link clicks to open in new tabs
-        setupLinkInterception(iframe);
-      };
-      
-      contentArea.appendChild(iframe);
-      switchToTab(tabId);
-    } else {
-      // Update existing tab
-      tab.querySelector('.tab-title').textContent = 'Loading...';
-      tab.querySelector('.tab-favicon').src = getFavicon(url);
-    }
+    tab = document.createElement('div');
+    tab.className = 'tab';
+    tab.id = tabId;
+    tab.innerHTML = `
+      <img class="tab-favicon" src="${getFavicon(url)}" alt="">
+      <span class="tab-title">Loading...</span>
+      <button class="tab-close" onclick="closeTab('${tabId}')">×</button>
+    `;
     
-    showLoading();
-    iframe.src = getProxyUrl(url);
-    document.getElementById('address-bar').value = url;
-    document.getElementById('welcome-screen').style.display = 'none';
-  }).catch(err => {
-    console.error('Failed to register service worker:', err);
-    alert('Failed to initialize proxy. Please refresh the page.');
-  });
+    tab.onclick = function(e) {
+      if (!e.target.classList.contains('tab-close')) {
+        switchToTab(tabId);
+      }
+    };
+    
+    tabBar.insertBefore(tab, newTabBtn);
+    
+    const contentArea = document.getElementById('content-area');
+    iframe = document.createElement('iframe');
+    iframe.className = 'proxy-frame';
+    iframe.id = `${tabId}-frame`;
+    iframe.sandbox = "allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads";
+    iframe.allow = "fullscreen; geolocation; microphone; camera";
+    
+    iframe.onload = function() {
+      hideLoading();
+      try {
+        if (iframe.contentDocument && iframe.contentDocument.title) {
+          tab.querySelector('.tab-title').textContent = iframe.contentDocument.title || 'Untitled';
+        }
+      } catch (e) {
+        tab.querySelector('.tab-title').textContent = 'Untitled';
+      }
+      
+      // Try to intercept link clicks to open in new tabs
+      setupLinkInterception(iframe);
+    };
+    
+    contentArea.appendChild(iframe);
+    switchToTab(tabId);
+  } else {
+    // Update existing tab
+    tab.querySelector('.tab-title').textContent = 'Loading...';
+    tab.querySelector('.tab-favicon').src = getFavicon(url);
+  }
+  
+  showLoading();
+  iframe.src = getProxyUrl(url);
+  document.getElementById('address-bar').value = url;
+  document.getElementById('welcome-screen').style.display = 'none';
 }
 
 // Handle address bar submit
@@ -380,11 +455,3 @@ function showLoading() {
 function hideLoading() {
   document.getElementById('loading-indicator').classList.remove('loading');
 }
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('Proxy browser loaded');
-  
-  // Create initial tab
-  createNewTab();
-});

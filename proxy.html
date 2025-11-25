@@ -785,9 +785,16 @@
     </div>
   </div>
 
-  <script src="s/uv/uv.bundle.js"></script>
-  <script src="s/uv/uv.config.js"></script>
-  <script src="s/register-sw.js"></script>
+  <script src="/baremux/index.js"></script>
+  <script src="/scram/scramjet.all.js"></script>
+  <script type="module" src="/epoxy/index.mjs"></script>
+  <script>
+    // Configure WISP and Bare URLs
+    window._CONFIG = {
+      wispurl: "wss://anura.pro/",
+      bareurl: "https://aluu.xyz/bare/"
+    };
+  </script>
   <script>
     // Mouse tracking for glow effects
     document.addEventListener('DOMContentLoaded', function() {
