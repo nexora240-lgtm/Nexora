@@ -12,134 +12,8 @@
   </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@latest/css/games.css" />
+  <link rel="stylesheet" href="css/games.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      background: #000000;
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      min-height: 100vh; /* changed from height: 100% to min-height: 100vh */
-    }
-
-    body {
-      overflow-y: auto !important;
-      overflow-x: hidden !important;
-      height: auto; /* add this to override any height constraints */
-      background: rgba(0, 0, 0, 0) !important;
-    }
-
-    /* optional minimal no-results style */
-    .no-results {
-      color: #999;
-      font-size: 1rem;
-      padding: 2rem;
-      text-align: center;
-    }
-
-    /* Content wrapper */
-    .content-wrapper {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      gap: 20px;
-      max-width: 1600px;
-      margin: 0 auto;
-      padding: 0 20px 40px 20px;
-      min-height: 100vh;
-    }
-
-    .grid {
-      flex: 1;
-      max-width: 1200px;
-    }
-
-    /* Game Suggestion Button */
-    .suggestion-section {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 40px 20px 60px 20px;
-      animation: fadeSlideUp 0.5s ease-out;
-    }
-
-    .suggestion-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px 32px;
-      background: linear-gradient(135deg, var(--g-accent), var(--g-accent-deep));
-      color: var(--g-on-accent);
-      text-decoration: none;
-      font-size: 1.1rem;
-      font-weight: 600;
-      border-radius: var(--g-radius);
-      border: 2px solid transparent;
-      box-shadow: 0 4px 16px var(--g-shadow), 0 2px 8px rgba(0,0,0,0.2);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-      cursor: pointer;
-    }
-
-    .suggestion-btn::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: var(--glow-size);
-      height: var(--glow-size);
-      background: radial-gradient(
-        circle,
-        rgba(255, 255, 255, 0.2) 0%,
-        transparent 70%
-      );
-      transform: translate(-50%, -50%);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-    }
-
-    .suggestion-btn:hover {
-      transform: translateY(-2px) scale(1.05);
-      box-shadow: 0 8px 24px var(--g-shadow), 0 4px 12px rgba(0,0,0,0.3);
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .suggestion-btn:hover::before {
-      opacity: 1;
-    }
-
-    .suggestion-btn:active {
-      transform: translateY(0) scale(1.02);
-      box-shadow: 0 2px 8px var(--g-shadow);
-    }
-
-    .suggestion-btn i {
-      font-size: 1.3rem;
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.8; transform: scale(1.1); }
-    }
-
-    @media (max-width: 600px) {
-      .suggestion-btn {
-        font-size: 1rem;
-        padding: 14px 28px;
-      }
-    }
-  </style>
 </head>
 <body>
 
@@ -157,10 +31,23 @@
     </div>
   </div>
 
+  <!-- Filter Tabs -->
+  <div class="filter-tabs">
+    <button class="filter-tab active" data-filter="all">
+      All Games
+    </button>
+    <button class="filter-tab" data-filter="favorites">
+      Favorites (<span id="favCount">0</span>)
+    </button>
+  </div>
+
   <div class="content-wrapper">
     <!-- Game Grid -->
     <div class="grid" id="gameGrid"></div>
   </div>
+
+  <!-- Pagination -->
+  <div class="pagination" id="pagination"></div>
 
   <!-- Game Suggestion Button -->
   <div class="suggestion-section">
@@ -172,13 +59,48 @@
 
   <script>
   (async function(){
-    // Detect if animations are disabled or not working
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const GAMES_PER_PAGE = 100;
+    let currentPage = 1;
+    let allGames = [];
+    let filteredGames = [];
+    let currentFilter = 'all';
+    
+    // Favorites manager
+    const FavoritesManager = {
+      get() {
+        const saved = localStorage.getItem('nexora_favorites');
+        return saved ? JSON.parse(saved) : [];
+      },
+      set(favorites) {
+        localStorage.setItem('nexora_favorites', JSON.stringify(favorites));
+        this.updateCount();
+      },
+      toggle(gameTitle) {
+        const favorites = this.get();
+        const index = favorites.indexOf(gameTitle);
+        if (index > -1) {
+          favorites.splice(index, 1);
+        } else {
+          favorites.push(gameTitle);
+        }
+        this.set(favorites);
+        return index === -1; // return true if now favorited
+      },
+      isFavorited(gameTitle) {
+        return this.get().includes(gameTitle);
+      },
+      updateCount() {
+        const count = this.get().length;
+        const countEl = document.getElementById('favCount');
+        if (countEl) countEl.textContent = count;
+      }
+    };
     
     // load games
     const resp  = await fetch('game-info.json');
-    const games = await resp.json();
-    sessionStorage.setItem("gamesList", JSON.stringify(games));
+    allGames = await resp.json();
+    sessionStorage.setItem("gamesList", JSON.stringify(allGames));
+    FavoritesManager.updateCount();
 
     // cursor-tracked highlight binding
     function bindCardHighlight(card) {
@@ -252,20 +174,122 @@
       return score;
     }
 
+    // Render pagination controls
+    function renderPagination(totalGames) {
+      const totalPages = Math.ceil(totalGames / GAMES_PER_PAGE);
+      const pagination = document.getElementById("pagination");
+      pagination.innerHTML = "";
+
+      if (totalPages <= 1) return;
+
+      // Previous button
+      const prevBtn = document.createElement("button");
+      prevBtn.textContent = "‹";
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.onclick = () => {
+        if (currentPage > 1) {
+          currentPage--;
+          const appEl = document.getElementById('app');
+          if (appEl) appEl.scrollTop = 0;
+          initGames(document.getElementById("searchInput").value);
+        }
+      };
+      pagination.appendChild(prevBtn);
+
+      // Calculate which 5 pages to show
+      let startPage, endPage;
+      
+      if (totalPages <= 5) {
+        // Show all pages if 5 or fewer
+        startPage = 1;
+        endPage = totalPages;
+      } else {
+        // Show 5 pages centered around current page
+        startPage = Math.max(1, currentPage - 2);
+        endPage = Math.min(totalPages, startPage + 4);
+        
+        // Adjust if we're near the end
+        if (endPage === totalPages) {
+          startPage = Math.max(1, totalPages - 4);
+        }
+      }
+
+      // Add "..." before if not starting at page 1
+      if (startPage > 1) {
+        const ellipsis = document.createElement("span");
+        ellipsis.className = "ellipsis";
+        ellipsis.textContent = "...";
+        pagination.appendChild(ellipsis);
+      }
+
+      // Show the 5 page buttons
+      for (let page = startPage; page <= endPage; page++) {
+        const btn = document.createElement("button");
+        btn.textContent = page;
+        btn.className = page === currentPage ? "active" : "";
+        btn.onclick = () => {
+          currentPage = page;
+          const appEl = document.getElementById('app');
+          if (appEl) appEl.scrollTop = 0;
+          initGames(document.getElementById("searchInput").value);
+        };
+        pagination.appendChild(btn);
+      }
+
+      // Add "..." after if not ending at last page
+      if (endPage < totalPages) {
+        const ellipsis = document.createElement("span");
+        ellipsis.className = "ellipsis";
+        ellipsis.textContent = "...";
+        pagination.appendChild(ellipsis);
+      }
+
+      // Next button
+      const nextBtn = document.createElement("button");
+      nextBtn.textContent = "›";
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.onclick = () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          const appEl = document.getElementById('app');
+          if (appEl) appEl.scrollTop = 0;
+          initGames(document.getElementById("searchInput").value);
+        }
+      };
+      pagination.appendChild(nextBtn);
+    }
+
     // render grid with fuzzy-ranked results
     function initGames(filter = "") {
       const grid = document.getElementById("gameGrid");
       grid.innerHTML = "";
 
-      const candidates = games.map(g => {
+      // Filter and sort games
+      let gamesToShow = allGames;
+      
+      // Apply favorites filter
+      if (currentFilter === 'favorites') {
+        const favs = FavoritesManager.get();
+        gamesToShow = allGames.filter(g => favs.includes(g.title));
+      }
+      
+      const candidates = gamesToShow.map(g => {
         const titleScore = fuzzyScore(filter.trim(), g.title || "");
-        // If you have tags or descriptions, compute additional scores here and take max
         return { game: g, score: titleScore };
       })
       .filter(item => item.score !== -Infinity)
       .sort((a, b) => b.score - a.score);
 
-      candidates.forEach((cand, index) => {
+      filteredGames = candidates;
+
+      // Calculate pagination
+      const totalGames = candidates.length;
+      const startIndex = (currentPage - 1) * GAMES_PER_PAGE;
+      const endIndex = Math.min(startIndex + GAMES_PER_PAGE, totalGames);
+      const pageGames = candidates.slice(startIndex, endIndex);
+
+      // Render games for current page
+      pageGames.forEach((cand, index) => {
         const game = cand.game;
         const card = document.createElement("div");
         card.className = "game-card";
@@ -298,24 +322,32 @@
         title.className   = "game-title";
         title.textContent = game.title;
 
+        // Favorite star
+        const star = document.createElement("div");
+        star.className = "favorite-star" + (FavoritesManager.isFavorited(game.title) ? " favorited" : "");
+        star.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+        star.onclick = (e) => {
+          e.stopPropagation();
+          const isFav = FavoritesManager.toggle(game.title);
+          star.classList.toggle('favorited', isFav);
+          // If viewing favorites and unfavorited, refresh the view
+          if (currentFilter === 'favorites' && !isFav) {
+            initGames(document.getElementById("searchInput").value);
+          }
+        };
+
         card.appendChild(img);
         card.appendChild(title);
+        card.appendChild(star);
         grid.appendChild(card);
 
         bindCardHighlight(card);
-        
-        // Force visibility if animations are disabled or not supported
-        if (prefersReducedMotion) {
-          card.style.opacity = '1';
-          card.style.transform = 'none';
-        } else {
-          // Fallback: ensure card is visible after animation should complete
-          setTimeout(() => {
-            card.classList.add('loaded');
-          }, 600 + (index * 80)); // match animation duration + stagger
-        }
       });
 
+      // Render pagination
+      renderPagination(totalGames);
+
+      // Show no results message
       if (filter && candidates.length === 0) {
         const noCard = document.createElement("div");
         noCard.className = "no-results";
@@ -326,7 +358,10 @@
 
     // wire input (trimmed)
     const inputEl = document.getElementById("searchInput");
-    inputEl.addEventListener("input", e => initGames(e.target.value));
+    inputEl.addEventListener("input", e => {
+      currentPage = 1; // Reset to first page on search
+      initGames(e.target.value);
+    });
     // optional: support pressing Escape to clear input
     inputEl.addEventListener("keydown", e => {
       if (e.key === 'Escape') {
@@ -334,6 +369,17 @@
         initGames('');
         inputEl.blur();
       }
+    });
+
+    // Filter tabs
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentFilter = tab.dataset.filter;
+        currentPage = 1;
+        initGames(document.getElementById('searchInput').value);
+      });
     });
 
     // initial render

@@ -27,7 +27,6 @@ body {
 body {
   margin: 0;
   font-family: Poppins, Arial, sans-serif;
-  background: var(--sb-page-bg);
   color: var(--sb-text);
 }
 
@@ -41,7 +40,6 @@ body {
   box-shadow:
     0 0 20px var(--sb-shadow),
     inset 0 0 20px var(--sb-shadow);
-  background: linear-gradient(180deg, var(--sb-page-bg), color-mix(in srgb, var(--sb-page-bg) 24%, #000 0%));
   z-index: 0;
   pointer-events: none;
 }

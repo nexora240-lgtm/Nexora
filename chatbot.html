@@ -21,12 +21,12 @@
       left: 12px;
       z-index: 10;
       padding: 8px 14px;
-      background: color-mix(in srgb, var(--panel, #1a100d) 80%, transparent);
+      background: transparent;
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      border: 1px solid color-mix(in srgb, var(--orange, #d4550a) 30%, transparent);
+      border: 1px solid color-mix(in srgb, var(--orange) 30%, transparent);
       border-radius: 8px;
-      color: var(--muted, #c9a08a);
+      color: var(--muted);
       font-size: 13px;
       font-weight: 600;
       font-family: inherit;
@@ -37,16 +37,16 @@
     }
 
     .mode-selector:hover {
-      background: color-mix(in srgb, var(--orange, #d4550a) 15%, transparent);
-      border-color: var(--orange, #d4550a);
-      color: var(--orange, #d4550a);
-      box-shadow: 0 4px 12px rgba(212, 85, 10, 0.5);
+      background: transparent;
+      border-color: var(--orange);
+      color: var(--orange);
+      box-shadow: 0 4px 12px var(--orange-shadow);
       transform: translateY(-2px);
     }
 
     .mode-selector:focus {
-      border-color: var(--orange, #d4550a);
-      box-shadow: 0 4px 12px rgba(212, 85, 10, 0.5);
+      border-color: var(--orange);
+      box-shadow: 0 4px 12px var(--orange-shadow);
     }
 
     .mode-selector:active {
@@ -55,8 +55,8 @@
     }
 
     .mode-selector option {
-      background: #1a100d;
-      color: #f8e7e0;
+      background: transparent;
+      color: var(--text);
       padding: 8px;
     }
 

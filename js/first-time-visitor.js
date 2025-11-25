@@ -169,18 +169,12 @@
     const actions = document.createElement('div');
     actions.className = 'modal-actions';
 
-    const skipBtn = document.createElement('button');
-    skipBtn.className = 'btn-skip';
-    skipBtn.textContent = 'Skip for Now';
-    skipBtn.addEventListener('click', handleSkip);
-
     const continueBtn = document.createElement('button');
     continueBtn.className = 'btn-continue';
     continueBtn.textContent = 'Continue';
     continueBtn.disabled = true;
     continueBtn.addEventListener('click', handleContinue);
 
-    actions.appendChild(skipBtn);
     actions.appendChild(continueBtn);
 
     modal.appendChild(header);
@@ -329,21 +323,19 @@
     optionsContainer.appendChild(enableOption);
     optionsContainer.appendChild(disableOption);
 
+    // Set "Enable Cloaking" as selected by default
+    enableOption.classList.add('selected');
+    selectedCloakingOption = 'enabled';
+
     const actions = document.createElement('div');
     actions.className = 'modal-actions';
-
-    const skipBtn = document.createElement('button');
-    skipBtn.className = 'btn-skip';
-    skipBtn.textContent = 'Skip';
-    skipBtn.addEventListener('click', handleCloakingSkip);
 
     const continueBtn = document.createElement('button');
     continueBtn.className = 'btn-continue';
     continueBtn.textContent = 'Continue';
-    continueBtn.disabled = true;
+    continueBtn.disabled = false;
     continueBtn.addEventListener('click', handleCloakingContinue);
 
-    actions.appendChild(skipBtn);
     actions.appendChild(continueBtn);
 
     modal.appendChild(header);

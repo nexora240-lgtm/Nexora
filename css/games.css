@@ -28,31 +28,22 @@
 
 * { box-sizing: border-box; }
 
-
 html, body {
   min-height: 100vh; 
   height: auto; 
   margin: 0;
   padding: 0;
+  width: 100%;
   overflow-x: hidden;
   overflow-y: auto; 
 }
 
-
-@keyframes fadeSlideUp {
-  0% { opacity: 0; transform: translateY(20px) scale(0.98); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
-
-
 body {
   margin: 0;
   padding: 0; 
-  background: var(--g-page-bg);
+  padding-bottom: 80px; /* Space for fixed pagination */
   color: var(--g-text);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Inter, Arial, sans-serif;
-  animation: fadeIn 0.3s ease-out;
   position: relative; 
 }
 
@@ -62,7 +53,6 @@ body {
   top: 0;
   z-index: 10;
   padding: 12px;
-  animation: fadeSlideUp 0.3s ease-out;
   background: transparent; 
 }
 
@@ -80,7 +70,6 @@ body {
   border: 1px solid color-mix(in srgb, var(--g-panel) 12%, black);
   border-radius: 999px;
   padding: 6px 8px;
-  animation: fadeSlideUp 0.3s ease-out 0.1s backwards;
 }
 .input-row:focus-within {
   border-color: color-mix(in srgb, var(--g-accent) 65%, transparent);
@@ -113,6 +102,252 @@ body {
   padding-bottom: 60px; 
 }
 
+/* optional minimal no-results style */
+.no-results {
+  color: #999;
+  font-size: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+/* Favorites Star */
+.favorite-star {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(145deg, 
+    color-mix(in srgb, var(--g-accent) 80%, transparent), 
+    color-mix(in srgb, var(--g-accent-deep) 80%, transparent));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--g-on-accent) 20%, transparent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+  box-shadow: 
+    -4px -4px 10px color-mix(in srgb, var(--g-text) 5%, transparent),
+    4px 4px 14px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 color-mix(in srgb, var(--g-on-accent) 20%, transparent),
+    0 0 20px var(--g-shadow-soft);
+}
+
+.favorite-star:hover {
+  transform: scale(1.1);
+  background: color-mix(in srgb, var(--g-panel) 40%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-color: color-mix(in srgb, var(--g-text) 15%, transparent);
+  box-shadow: 
+    -3px -3px 8px color-mix(in srgb, var(--g-text) 5%, transparent),
+    3px 3px 10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 color-mix(in srgb, var(--g-on-accent) 20%, transparent);
+}
+
+.favorite-star svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--g-on-accent);
+  stroke-width: 2;
+  transition: all 0.2s ease;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.favorite-star.favorited svg {
+  fill: #ffd700;
+  stroke: #ffd700;
+}
+
+/* Filter Tabs */
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 12px 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  padding: 8px 20px;
+  background: var(--g-panel);
+  color: var(--g-text);
+  border: 2px solid var(--g-border);
+  border-radius: 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-tab:hover {
+  background: var(--g-panel-2);
+  border-color: var(--g-accent);
+  transform: translateY(-1px);
+}
+
+.filter-tab.active {
+  background: var(--g-accent);
+  color: var(--g-on-accent);
+  border-color: var(--g-accent);
+}
+
+.filter-tab svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Content wrapper */
+.content-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 20px 100px 20px;
+  min-height: 100vh;
+}
+
+.content-wrapper .grid {
+  flex: 1;
+  max-width: 1200px;
+  padding-bottom: 80px;
+}
+
+/* Pagination */
+.pagination {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  flex-wrap: wrap;
+  background: var(--g-surface);
+  border-top: 2px solid var(--g-border);
+  z-index: 1000;
+}
+
+.pagination button {
+  min-width: 44px;
+  height: 44px;
+  padding: 8px 12px;
+  background: var(--g-surface);
+  color: var(--g-on-surface);
+  border: 2px solid var(--g-border);
+  border-radius: var(--g-radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: var(--g-accent);
+  color: var(--g-on-accent);
+  border-color: var(--g-accent);
+  transform: translateY(-2px);
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination button.active {
+  background: var(--g-accent);
+  color: var(--g-on-accent);
+  border-color: var(--g-accent);
+}
+
+.pagination .ellipsis {
+  padding: 8px;
+  color: var(--g-on-surface);
+  opacity: 0.6;
+}
+
+/* Game Suggestion Button */
+.suggestion-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 20px 60px 20px;
+}
+
+.suggestion-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 32px;
+  background: linear-gradient(135deg, var(--g-accent), var(--g-accent-deep));
+  color: var(--g-on-accent);
+  text-decoration: none;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: var(--g-radius);
+  border: 2px solid transparent;
+  box-shadow: 0 4px 16px var(--g-shadow), 0 2px 8px rgba(0,0,0,0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.suggestion-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--glow-size);
+  height: var(--glow-size);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.2) 0%,
+    transparent 70%
+  );
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.suggestion-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 24px var(--g-shadow), 0 4px 12px rgba(0,0,0,0.3);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.suggestion-btn:hover::before {
+  opacity: 1;
+}
+
+.suggestion-btn:active {
+  transform: translateY(0) scale(1.02);
+  box-shadow: 0 2px 8px var(--g-shadow);
+}
+
+.suggestion-btn i {
+  font-size: 1.3rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
 
 .game-card {
   position: relative;
@@ -126,9 +361,8 @@ body {
     box-shadow 260ms cubic-bezier(.2,.9,.2,1);
   aspect-ratio: 16 / 9;
   opacity: 0;
-  animation: fadeSlideUp 0.6s ease-out forwards;
-  animation-delay: calc(var(--card-index) * 0.08s);
-  will-change: transform, box-shadow;
+  animation: fadeUp 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  will-change: transform, box-shadow, opacity;
   transform-origin: center;
 
   
@@ -137,18 +371,6 @@ body {
 
   
   padding: 2px;
-}
-
-
-@supports not (animation: fadeSlideUp 0.6s ease-out forwards) {
-  .game-card {
-    opacity: 1;
-  }
-}
-
-
-.game-card.loaded {
-  opacity: 1;
 }
 
 
@@ -308,7 +530,6 @@ body {
   background: linear-gradient(to top, color-mix(in srgb, black 85%, transparent), transparent);
   text-shadow: 0 1px 2px color-mix(in srgb, black 60%, transparent);
   font-size: 1.05rem;
-  animation: fadeIn 0.4s ease-out 0.3s backwards;
   z-index: 2;
   border-radius: 0 0 var(--g-radius) var(--g-radius);
   white-space: nowrap;
@@ -329,6 +550,18 @@ body {
   padding: 20px;
 }
 
+
+/* Fade-up animation */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .game-card,
@@ -351,5 +584,12 @@ body {
   .game-title {
     animation: none !important;
     opacity: 1 !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .suggestion-btn {
+    font-size: 1rem;
+    padding: 14px 28px;
   }
 }

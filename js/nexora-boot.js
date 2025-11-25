@@ -20,6 +20,103 @@
     "Khan Academy": "Dashboard | Khan Academy"
   };
 
+  function showPopupBlockedNotification() {
+    // Remove any existing notification
+    const existing = document.getElementById('popup-blocked-notification');
+    if (existing) {
+      existing.remove();
+    }
+
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.id = 'popup-blocked-notification';
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+      color: white;
+      padding: 20px 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      z-index: 999999;
+      font-family: 'Poppins', Arial, sans-serif;
+      max-width: 500px;
+      width: 90%;
+      box-sizing: border-box;
+      animation: slideDown 0.3s ease-out;
+    `;
+
+    notification.innerHTML = `
+      <style>
+        @keyframes slideDown {
+          from { transform: translateX(-50%) translateY(-100px); opacity: 0; }
+          to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+        #popup-blocked-notification h3 {
+          margin: 0 0 12px 0;
+          font-size: 18px;
+          font-weight: 700;
+        }
+        #popup-blocked-notification p {
+          margin: 0 0 16px 0;
+          font-size: 14px;
+          line-height: 1.5;
+          opacity: 0.95;
+        }
+        #popup-blocked-notification button {
+          background: white;
+          color: #ff6b6b;
+          border: none;
+          padding: 10px 24px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-family: 'Poppins', Arial, sans-serif;
+          margin-right: 10px;
+        }
+        #popup-blocked-notification button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        #popup-blocked-notification button:active {
+          transform: translateY(0);
+        }
+        #popup-blocked-notification .dismiss-btn {
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+        }
+        #popup-blocked-notification .dismiss-btn:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
+      </style>
+      <h3>🚫 Pop-ups Blocked</h3>
+      <p><strong>Please enable pop-ups for this site.</strong><br>
+      This feature disguises the site in an about:blank tab to keep your browsing private. Without pop-ups enabled, this privacy feature cannot work.</p>
+      <button id="retry-popup-btn">Try Again</button>
+      <button class="dismiss-btn" id="dismiss-popup-btn">Disable Feature</button>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Add retry button handler
+    document.getElementById('retry-popup-btn').addEventListener('click', () => {
+      notification.remove();
+      checkAndApplyAutoCloaking();
+    });
+
+    // Add dismiss button handler
+    document.getElementById('dismiss-popup-btn').addEventListener('click', () => {
+      try {
+        localStorage.setItem(ABOUT_KEY, 'false');
+        notification.remove();
+      } catch (e) {}
+    });
+  }
+
   function checkAndApplyAutoCloaking() {
     try {
 
@@ -39,6 +136,18 @@
         const savedDisguise = cookieDisguise || localStorage.getItem(DISGUISE_KEY) || '';
 
         const win = window.open('about:blank', '_blank');
+        
+        // Check if popup was blocked
+        if (!win || win.closed || typeof win.closed === 'undefined') {
+          // Popup was blocked, show notification
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', showPopupBlockedNotification);
+          } else {
+            showPopupBlockedNotification();
+          }
+          return;
+        }
+
         if (win) {
           try {
             const doc = win.document;

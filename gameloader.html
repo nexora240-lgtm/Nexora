@@ -13,19 +13,23 @@
   </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@latest/css/theme-tokens.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@latest/css/gameloader.css" />
+  <link rel="stylesheet" href="css/theme-tokens.css" />
+  <link rel="stylesheet" href="css/gameloader.css" />
   <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/nexora-amber.png">
   <style>
     .content-wrapper {
       display: flex;
       justify-content: center;
-      align-items: flex-start;
+      align-items: center;
       gap: 20px;
       max-width: 1600px;
+      max-height: 100vh;
       margin: 0 auto;
-      padding: 0 20px;
+      padding: 20px;
       width: 100%;
+      height: 100%;
+      overflow: hidden;
+      box-sizing: border-box;
     }
 
     .loader-wrapper {
@@ -33,6 +37,10 @@
       max-width: 1200px;
       width: 100%;
       min-width: 0;
+      max-height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
   </style>
 </head>
@@ -45,8 +53,7 @@
 
         <footer class="loader-footer">
           <div class="branding">
-            <img src="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/nexora-amber.png" alt="Nexora Logo" />
-            <span>Nexora</span>
+            <span id="gameTitle">Loading...</span>
           </div>
 
           <div class="controls">
@@ -102,6 +109,10 @@
 
       const container = document.getElementById("gameContainer");
       const fsBtn     = document.getElementById("fullscreenBtn");
+      const gameTitle = document.getElementById("gameTitle");
+
+      // Set game title in footer
+      gameTitle.textContent = currentGame.title || "Unknown Game";
 
       const primaryBg = currentGame.thumbnail ? `url("${currentGame.thumbnail}")` : 'none';
 
