@@ -1236,15 +1236,41 @@ function cancelJoinRequest() {
         // Track mouse position on container
         addTracking(container);
         
-        // Track mouse position on buttons
-        const buttons = document.querySelectorAll('.nexora-chatroom button');
-        buttons.forEach(addTracking);
-        console.log('[Chatroom Mouse Tracking] Buttons:', buttons.length);
-
-        // Track mouse position on choice buttons
-        const choiceButtons = document.querySelectorAll('.choice-button');
-        choiceButtons.forEach(addTracking);
-        console.log('[Chatroom Mouse Tracking] Choice buttons:', choiceButtons.length);
+        // Function to track all interactive elements
+        const trackAllElements = () => {
+            // Track mouse position on buttons
+            const buttons = document.querySelectorAll('.nexora-chatroom button');
+            buttons.forEach(addTracking);
+            
+            // Track mouse position on choice buttons
+            const choiceButtons = document.querySelectorAll('.choice-button');
+            choiceButtons.forEach(addTracking);
+            
+            // Track inputs
+            const inputs = document.querySelectorAll('.nexora-chatroom input');
+            inputs.forEach(addTracking);
+        };
+        
+        trackAllElements();
+        
+        // Set up MutationObserver to track dynamically added elements
+        const observer = new MutationObserver((mutations) => {
+            let shouldRetrack = false;
+            mutations.forEach((mutation) => {
+                if (mutation.addedNodes.length > 0) {
+                    shouldRetrack = true;
+                }
+            });
+            if (shouldRetrack) {
+                trackAllElements();
+            }
+        });
+        
+        // Observe the entire chatroom for changes
+        const chatroom = document.querySelector('.nexora-chatroom');
+        if (chatroom) {
+            observer.observe(chatroom, { childList: true, subtree: true });
+        }
 
         console.log('[Chatroom Mouse Tracking] Setup complete');
     }

@@ -46,7 +46,7 @@
     --y: 50%;
     --glow-size: 300px;
     --glow-size-hover: 400px;
-    --glow-strength: 0.35;
+    --glow-strength: 0.25;
     
     position: relative;
     background: linear-gradient(to bottom, 
@@ -86,8 +86,8 @@
             transparent 100%),
         radial-gradient(
             var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
-            color-mix(in srgb, var(--orange) 18%, transparent) 0%,
-            color-mix(in srgb, var(--orange) 8%, transparent) 30%,
+            color-mix(in srgb, var(--orange) 10%, transparent) 0%,
+            color-mix(in srgb, var(--orange) 5%, transparent) 30%,
             transparent 68%
         );
     background-blend-mode: screen, normal;
@@ -149,7 +149,7 @@
 
 
 .nexora-chatroom .container:hover::before {
-    opacity: 0.6;
+    opacity: 0.25;
     background-image:
         linear-gradient(135deg,
             color-mix(in srgb, var(--orange) 12%, transparent) 0%,
@@ -157,7 +157,7 @@
             transparent 100%),
         radial-gradient(
             var(--glow-size-hover) circle at var(--x, 50%) var(--y, 50%),
-            color-mix(in srgb, var(--orange) 24%, transparent) 0%,
+            color-mix(in srgb, var(--orange) 16%, transparent) 0%,
             color-mix(in srgb, var(--orange) 12%, transparent) 28%,
             transparent 70%
         );
@@ -552,7 +552,7 @@
     --y: 50%;
     --glow-size: 200px;
     --glow-size-hover: 280px;
-    --glow-strength: 0.35;
+    --glow-strength: 0.25;
 
     width: 100%;
     padding: 24px 20px;
@@ -601,8 +601,8 @@
     background-image:
         radial-gradient(
             var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
-            color-mix(in srgb, var(--orange) 18%, transparent) 0%,
-            color-mix(in srgb, var(--orange) 8%, transparent) 30%,
+            color-mix(in srgb, var(--orange) 10%, transparent) 0%,
+            color-mix(in srgb, var(--orange) 5%, transparent) 30%,
             transparent 68%
         );
     opacity: 0;
@@ -623,12 +623,12 @@
 }
 
 .nexora-chatroom .choice-button:hover::before {
-    opacity: 1;
+    opacity: 0.6;
     background-image:
         radial-gradient(
             var(--glow-size-hover) circle at var(--x, 50%) var(--y, 50%),
-            color-mix(in srgb, var(--orange) 32%, transparent) 0%,
-            color-mix(in srgb, var(--orange) 16%, transparent) 28%,
+            color-mix(in srgb, var(--orange) 20%, transparent) 0%,
+            color-mix(in srgb, var(--orange) 10%, transparent) 28%,
             transparent 70%
         );
 }
@@ -746,7 +746,7 @@
     --y: 50%;
     --glow-size: 180px;
     --glow-size-hover: 240px;
-    --glow-strength: 0.28;
+    --glow-strength: 0.18;
 
     width: 100%;
     padding: 15px;
@@ -772,8 +772,8 @@
     background-image:
         radial-gradient(
             var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
-            color-mix(in srgb, #ffffff 12%, transparent) 0%,
-            color-mix(in srgb, #ffffff 6%, transparent) 30%,
+            color-mix(in srgb, #ffffff 8%, transparent) 0%,
+            color-mix(in srgb, #ffffff 4%, transparent) 30%,
             transparent 68%
         );
     opacity: 0;
@@ -783,12 +783,12 @@
 }
 
 .nexora-chatroom button:hover::before {
-    opacity: 0.4;
+    opacity: 0.2;
     background-image:
         radial-gradient(
             var(--glow-size-hover) circle at var(--x, 50%) var(--y, 50%),
-            color-mix(in srgb, #ffffff 20%, transparent) 0%,
-            color-mix(in srgb, #ffffff 10%, transparent) 28%,
+            color-mix(in srgb, #ffffff 14%, transparent) 0%,
+            color-mix(in srgb, #ffffff 7%, transparent) 28%,
             transparent 70%
         );
 }

@@ -3,47 +3,144 @@
   --panel-2: var(--surface-2, #1f1410);
   --muted: var(--muted, #c9a08a);
   --text: var(--text, #f8e7e0);
-  --radius: var(--radius, 12px);
+  --radius: 14px;
   --accent-gradient: linear-gradient(90deg, var(--primary-deep, #ff4d00) 0%, var(--primary, #ff6a00) 52%, color-mix(in srgb, var(--primary, #ff8400) 100%, transparent 0%));
   --play-text: var(--on-primary, #fff0e8);
   --page-bg: var(--page-bg, #0a0605);
   --primary-shadow: var(--primary-shadow, rgba(196,78,27,0.75));
+  --orange: var(--primary, #d4550a);
+  --orange-deep: var(--primary-deep, #992f05);
   font-family: Inter, system-ui, Roboto, Arial;
 }
 
 .vidplus-movies *, .vidplus-movies *::before, .vidplus-movies *::after { box-sizing: border-box; }
 
 .vidplus-movies {
+  --x: 50%;
+  --y: 50%;
+  --glow-size: 300px;
+  --glow-size-hover: 400px;
+  --glow-strength: 0.35;
+  
   margin: 32px auto;
   max-width: 980px;
   padding: 20px;
-  border-radius: var(--radius);
-  background: transparent;
-  box-shadow: none;
+  border-radius: 20px;
+  background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--orange, #d4550a) 8%, transparent),
+    color-mix(in srgb, var(--panel, #1a100d) 35%, transparent) 50%,
+    color-mix(in srgb, var(--orange-deep, #992f05) 12%, transparent));
+  background-color: color-mix(in srgb, var(--panel) 25%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
   width: 100%;
   color: var(--text);
-  background: var(--page-bg);
   box-sizing: border-box;
+  position: relative;
+  transition: transform 260ms cubic-bezier(.2,.9,.2,1), box-shadow 260ms cubic-bezier(.2,.9,.2,1);
+  will-change: transform;
 }
 
 .vidplus-movies .top { display:flex; align-items:flex-start; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
-.vidplus-movies .tabs { display:flex; gap:8px; padding:8px; border-radius:12px; background: linear-gradient(180deg, var(--panel), var(--panel-2)); align-items:center; }
+.vidplus-movies .tabs { 
+  display:flex; 
+  gap:8px; 
+  padding:8px; 
+  border-radius:14px; 
+  background: color-mix(in srgb, var(--panel-2) 40%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  align-items:center;
+  box-shadow: 
+    -3px -3px 8px rgba(255, 255, 255, 0.03),
+    3px 3px 8px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
 
 .vidplus-movies .tab {
-  display:flex; align-items:center; justify-content:center;
-  padding:0.6rem 1.2rem; border-radius:12px;
-  color:var(--muted); cursor:pointer; font-weight:700;
-  min-height:44px; min-width:110px; box-sizing:border-box;
-  transition: background .15s, color .15s, box-shadow .15s;
+  --x: 50%;
+  --y: 50%;
+  --glow-size: 180px;
+  --glow-size-hover: 240px;
+  
+  display:flex; 
+  align-items:center; 
+  justify-content:center;
+  padding:0.6rem 1.2rem; 
+  border-radius:14px;
+  color:var(--muted); 
+  cursor:pointer; 
+  font-weight:700;
+  min-height:44px; 
+  min-width:110px; 
+  box-sizing:border-box;
+  transition: all 0.18s ease;
+  background: color-mix(in srgb, var(--panel-2) 40%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    -3px -3px 8px rgba(255, 255, 255, 0.03),
+    3px 3px 8px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.vidplus-movies .tab::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 14px;
+  background-image:
+    radial-gradient(
+      var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--orange) 18%, transparent) 0%,
+      color-mix(in srgb, var(--orange) 8%, transparent) 30%,
+      transparent 68%
+    );
+  opacity: 0;
+  transition: opacity 140ms ease-out;
+  will-change: opacity;
+  z-index: 0;
+}
+
+.vidplus-movies .tab:hover::before {
+  opacity: 1;
+  background-image:
+    radial-gradient(
+      var(--glow-size-hover) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--orange) 32%, transparent) 0%,
+      color-mix(in srgb, var(--orange) 16%, transparent) 28%,
+      transparent 70%
+    );
 }
 .vidplus-movies .tab.active {
   background: var(--accent-gradient);
   color: var(--play-text);
-  box-shadow: 2px 3px 24px -4px var(--primary-shadow);
+  border: 1px solid color-mix(in srgb, var(--orange) 40%, transparent);
+  box-shadow: 
+    -2px -2px 6px rgba(255, 255, 255, 0.1),
+    2px 2px 6px rgba(0, 0, 0, 0.4),
+    0 4px 16px var(--primary-shadow),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.2),
+    inset 1px 1px 3px rgba(255, 255, 255, 0.1);
 }
 .vidplus-movies .tab:not(.active):hover {
-  background: var(--page-bg);
+  background: color-mix(in srgb, var(--orange) 18%, color-mix(in srgb, var(--panel-2) 50%, transparent));
+  transform: scale(1.02);
   color: var(--play-text);
+  box-shadow: 
+    -1px -1px 4px rgba(255, 255, 255, 0.04),
+    1px 1px 4px rgba(0, 0, 0, 0.5),
+    inset -2px -2px 6px rgba(0, 0, 0, 0.3),
+    inset 2px 2px 6px rgba(255, 255, 255, 0.02);
 }
 
 .vidplus-movies .controls { display:flex; gap:12px; align-items:flex-end; flex:1; min-width:0; }
@@ -52,59 +149,175 @@
 .vidplus-movies .field { display:flex; flex-direction:column; gap:6px; min-width:0; }
 .vidplus-movies label { font-size:13px; color: var(--muted); }
 .vidplus-movies input, .vidplus-movies select {
-  padding:10px; border-radius:10px;
-  border:1px solid color-mix(in srgb, var(--panel) 6%, #000 0%);
-  background: color-mix(in srgb, var(--panel-2) 8%, transparent);
-  color: var(--text); outline:none; min-width:0;
+  padding:10px; 
+  border-radius:14px;
+  border:1px solid rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--panel-2) 40%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text); 
+  outline:none; 
+  min-width:0;
+  transition: all 0.18s ease;
+  box-shadow: 
+    -3px -3px 8px rgba(255, 255, 255, 0.03),
+    3px 3px 8px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.vidplus-movies input:focus, .vidplus-movies select:focus {
+  border-color: color-mix(in srgb, var(--orange) 40%, transparent);
+  background: color-mix(in srgb, var(--orange) 8%, color-mix(in srgb, var(--panel-2) 50%, transparent));
+  box-shadow: 
+    -1px -1px 4px rgba(255, 255, 255, 0.04),
+    1px 1px 4px rgba(0, 0, 0, 0.5),
+    inset -2px -2px 6px rgba(0, 0, 0, 0.3),
+    inset 2px 2px 6px rgba(255, 255, 255, 0.02),
+    0 0 0 3px color-mix(in srgb, var(--orange) 12%, transparent);
 }
 .vidplus-movies input::placeholder { color: color-mix(in srgb, var(--text) 16%, transparent); }
 
 .vidplus-movies .searchWrap { position:relative; min-width:0; flex:1 1 auto; transition: max-width .18s ease; z-index:1100; transform: translateZ(0); }
 
 .vidplus-movies .results {
-  position:absolute; z-index:2147483646; left:0; top:calc(100% + 6px);
-  background: var(--page-bg);
-  border: 1px solid color-mix(in srgb, var(--panel) 6%, #000 0%);
-  width:100%; max-height:360px; overflow:auto; border-radius:12px;
-  padding:6px; box-shadow: 0 8px 30px rgba(0,0,0,0.6);
-  will-change: transform, opacity; pointer-events:auto;
+  position:absolute; 
+  z-index:2147483646; 
+  left:0; 
+  top:calc(100% + 6px);
+  background: color-mix(in srgb, var(--panel-2) 40%, transparent);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  width:100%; 
+  max-height:360px; 
+  overflow:auto; 
+  border-radius:14px;
+  padding:6px; 
+  box-shadow: 
+    0 8px 32px rgba(0,0,0,0.3),
+    -2px -2px 6px rgba(255, 255, 255, 0.04),
+    2px 2px 6px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  will-change: transform, opacity; 
+  pointer-events:auto;
 }
 .vidplus-movies .results[data-clamped="true"] { z-index:99999; }
 
-.vidplus-movies .result { display:flex; gap:10px; padding:8px; border-radius:10px; cursor:pointer; align-items:center; transition: background .12s ease, transform .12s ease; }
-.vidplus-movies .result:hover { background: color-mix(in srgb, var(--panel-2) 6%, transparent); transform: translateX(2px); }
+.vidplus-movies .result { 
+  display:flex; 
+  gap:10px; 
+  padding:8px; 
+  border-radius:14px; 
+  cursor:pointer; 
+  align-items:center; 
+  transition: all 0.18s ease;
+  background: transparent;
+}
+.vidplus-movies .result:hover { 
+  background: color-mix(in srgb, var(--orange) 12%, color-mix(in srgb, var(--panel-2) 50%, transparent));
+  transform: translateX(2px) scale(1.01);
+  box-shadow: 
+    -1px -1px 4px rgba(255, 255, 255, 0.04),
+    1px 1px 4px rgba(0, 0, 0, 0.5),
+    inset -2px -2px 6px rgba(0, 0, 0, 0.3),
+    inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+}
 
-.vidplus-movies .poster { width:44px; height:66px; object-fit:cover; border-radius:6px; flex-shrink:0; }
+.vidplus-movies .poster { 
+  width:44px; 
+  height:66px; 
+  object-fit:cover; 
+  border-radius:10px; 
+  flex-shrink:0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
 .vidplus-movies .rmeta { font-size:13px; color: var(--muted); }
 .vidplus-movies .title { color: var(--text); font-weight:700; }
 .vidplus-movies .no-key { padding:10px; color: var(--muted); font-size:13px; }
 
 .vidplus-movies .btn-unified, .vidplus-movies .fallback button {
+  --x: 50%;
+  --y: 50%;
+  --glow-size: 200px;
+  --glow-size-hover: 280px;
+  
   display:inline-block;
   background: var(--accent-gradient);
   color: var(--play-text);
-  border: none;
+  border: 1px solid color-mix(in srgb, var(--orange) 40%, transparent);
   padding: 0.8rem 1.6rem;
   font-size: 1.1rem;
   font-weight: 700;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
   text-decoration: none;
-  box-shadow: 2px 3px 24px -4px var(--primary-shadow);
-  transition: transform .2s, box-shadow .2s, background .15s, color .15s;
+  box-shadow: 
+    -2px -2px 6px rgba(255, 255, 255, 0.1),
+    2px 2px 6px rgba(0, 0, 0, 0.4),
+    0 4px 16px var(--primary-shadow),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.2),
+    inset 1px 1px 3px rgba(255, 255, 255, 0.1);
+  transition: all 0.18s ease;
   line-height:1;
-  min-height:44px; min-width:110px; box-sizing:border-box;
+  min-height:44px; 
+  min-width:110px; 
+  box-sizing:border-box;
+  position: relative;
+  overflow: hidden;
+}
+
+.vidplus-movies .btn-unified::before, .vidplus-movies .fallback button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 14px;
+  background-image:
+    radial-gradient(
+      var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, #fff 22%, transparent) 0%,
+      color-mix(in srgb, #fff 10%, transparent) 30%,
+      transparent 68%
+    );
+  opacity: 0;
+  transition: opacity 140ms ease-out;
+  will-change: opacity;
+  z-index: 1;
+}
+
+.vidplus-movies .btn-unified:not(#previewBtn):not(.tab):not(.active):hover::before,
+.vidplus-movies .fallback button:hover::before {
+  opacity: 1;
+  background-image:
+    radial-gradient(
+      var(--glow-size-hover) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, #fff 40%, transparent) 0%,
+      color-mix(in srgb, #fff 18%, transparent) 28%,
+      transparent 70%
+    );
 }
 .vidplus-movies #previewBtn:hover, .vidplus-movies #previewBtn:focus {
   background: var(--accent-gradient) !important;
   color: var(--play-text) !important;
-  box-shadow: 2px 3px 24px -4px var(--primary-shadow) !important;
-  transform: none !important; outline: none;
+  box-shadow: 
+    -2px -2px 6px rgba(255, 255, 255, 0.1),
+    2px 2px 6px rgba(0, 0, 0, 0.4),
+    0 6px 20px var(--primary-shadow),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.2),
+    inset 1px 1px 3px rgba(255, 255, 255, 0.1) !important;
+  transform: scale(1.02) !important; 
+  outline: none;
 }
 .vidplus-movies .btn-unified:not(#previewBtn):not(.tab):not(.active):hover {
-  background: var(--page-bg);
+  background: color-mix(in srgb, var(--orange) 18%, color-mix(in srgb, var(--panel-2) 50%, transparent));
   color: var(--play-text);
-  box-shadow: 0 6px 28px rgba(0,0,0,0.5);
+  transform: scale(1.02);
+  box-shadow: 
+    -1px -1px 4px rgba(255, 255, 255, 0.04),
+    1px 1px 4px rgba(0, 0, 0, 0.5),
+    0 6px 28px rgba(0,0,0,0.5),
+    inset -2px -2px 6px rgba(0, 0, 0, 0.3),
+    inset 2px 2px 6px rgba(255, 255, 255, 0.02);
 }
 
 .vidplus-movies .seasonField { width:220px; flex:0 0 220px; min-width:0; }
@@ -126,10 +339,17 @@
 
 .vidplus-movies .previewWrap {
   margin-top: 18px;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--panel) 6%, #000 0%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   height: 620px;
+  background: color-mix(in srgb, var(--panel-2) 20%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 
+    -3px -3px 8px rgba(255, 255, 255, 0.03),
+    3px 3px 8px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
   background: var(--panel); 
   display: block; 
   position: relative; 
