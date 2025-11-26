@@ -350,6 +350,55 @@
       setActive(root.querySelector('.tab.active') || tabs[0]);
       showMessage('Search for a title, click a result, then Play');
 
+      // Mouse tracking for nemophoric effects
+      function setupMouseTracking() {
+        const trackingContainer = root;
+        const trackableElements = [
+          trackingContainer,
+          ...Array.from(root.querySelectorAll('.tab')),
+          previewBtn,
+          ...Array.from(root.querySelectorAll('.btn-unified')),
+        ].filter(Boolean);
+
+        let rafId = null;
+        let mouseX = 0;
+        let mouseY = 0;
+
+        function updateMousePosition(e) {
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+          
+          if (!rafId) {
+            rafId = requestAnimationFrame(updateElementsPosition);
+          }
+        }
+
+        function updateElementsPosition() {
+          trackableElements.forEach(el => {
+            if (!el || !el.getBoundingClientRect) return;
+            
+            const rect = el.getBoundingClientRect();
+            const x = mouseX - rect.left;
+            const y = mouseY - rect.top;
+            
+            el.style.setProperty('--x', `${x}px`);
+            el.style.setProperty('--y', `${y}px`);
+          });
+          
+          rafId = null;
+        }
+
+        document.addEventListener('mousemove', updateMousePosition);
+        pushDisposable(() => {
+          try {
+            document.removeEventListener('mousemove', updateMousePosition);
+            if (rafId) cancelAnimationFrame(rafId);
+          } catch(e){}
+        });
+      }
+
+      setupMouseTracking();
+
       function cleanupView(){
         while(disposables.length){
           try { const fn = disposables.pop(); if(typeof fn === 'function') fn(); } catch(e){  }

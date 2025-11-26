@@ -13,7 +13,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora@latest/css/chatbot.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <link rel="stylesheet" href="css/chatbot.css" />
   <style>
     .mode-selector {
       position: absolute;
@@ -97,6 +98,8 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
   <script>
   (function(){
@@ -190,8 +193,39 @@
     }
 
     function formatMarkdown(text){
+      // Extract and protect LaTeX expressions before any processing
+      const mathStore = [];
+      
+      // Extract display math blocks first ($$...$$ or \[...\])
+      text = text.replace(/\$\$([\s\S]+?)\$\$/g, (match) => {
+        const id = `KATEXBLOCK${mathStore.length}KATEX`;
+        mathStore.push({ id, content: match });
+        return id;
+      });
+      
+      text = text.replace(/\\\[([\s\S]+?)\\\]/g, (match) => {
+        const id = `KATEXBLOCK${mathStore.length}KATEX`;
+        mathStore.push({ id, content: match });
+        return id;
+      });
+      
+      // Extract inline math (\(...\) or $...$)
+      text = text.replace(/\\\((.+?)\\\)/g, (match) => {
+        const id = `KATEXINLINE${mathStore.length}KATEX`;
+        mathStore.push({ id, content: match });
+        return id;
+      });
+      
+      text = text.replace(/\$([^\$\n]+?)\$/g, (match) => {
+        const id = `KATEXINLINE${mathStore.length}KATEX`;
+        mathStore.push({ id, content: match });
+        return id;
+      });
+      
+      // Now escape HTML
       let html = escapeHtml(text);
       
+      // Process markdown
       html = html.replace(/^(\-{3,}|\*{3,}|_{3,})$/gm, '<hr>');
       html = html.replace(/^###### (.+)$/gm, '<h6>$1</h6>');
       html = html.replace(/^##### (.+)$/gm, '<h5>$1</h5>');
@@ -228,6 +262,11 @@
       html = html.replace(/<li>\[ \] (.+)<\/li>/g, '<li><input type="checkbox" disabled> $1</li>');
       html = html.replace(/<li>\[x\] (.+)<\/li>/gi, '<li><input type="checkbox" disabled checked> $1</li>');
       html = html.replace(/\n/g, '<br>');
+      
+      // Restore all LaTeX expressions
+      mathStore.forEach(({ id, content }) => {
+        html = html.replace(new RegExp(id, 'g'), content);
+      });
       
       return html;
     }
@@ -273,6 +312,24 @@
       wrap.appendChild(name);
       wrap.appendChild(body);
       scrollEl.appendChild(wrap);
+      
+      // Render LaTeX math expressions
+      if(window.renderMathInElement) {
+        try {
+          renderMathInElement(body, {
+            delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '\\[', right: '\\]', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false}
+            ],
+            throwOnError: false
+          });
+        } catch(e) {
+          console.error('KaTeX rendering error:', e);
+        }
+      }
+      
       scrollEl.scrollTop = scrollEl.scrollHeight;
 
       wrap.querySelectorAll(".copy-btn").forEach(btn=>{
@@ -359,6 +416,23 @@
             wrap.appendChild(name);
             wrap.appendChild(body);
             scrollEl.appendChild(wrap);
+            
+            // Render LaTeX math expressions
+            if(window.renderMathInElement) {
+              try {
+                renderMathInElement(body, {
+                  delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '$', right: '$', display: false},
+                    {left: '\\(', right: '\\)', display: false}
+                  ],
+                  throwOnError: false
+                });
+              } catch(e) {
+                console.error('KaTeX rendering error:', e);
+              }
+            }
             
             wrap.querySelectorAll(".copy-btn").forEach(btn=>{
               if(btn.dataset.nexoraCopy) return;
