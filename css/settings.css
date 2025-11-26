@@ -1,9 +1,8 @@
 .settings-root {
   isolation: isolate;
-  contain: layout style size;
   display: block;
   box-sizing: border-box;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  font-family: 'Poppins', Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -21,6 +20,12 @@
   animation: settingsEntrance 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   
   transition: background-color 0.3s ease, color 0.3s ease;
+  
+  --x: 50%;
+  --y: 50%;
+  --glow-size: 300px;
+  --glow-size-hover: 400px;
+  --glow-strength: 0.35;
 }
 .settings-root, .settings-root * { box-sizing: border-box; }
 
@@ -31,16 +36,12 @@
   flex-direction: column;
   gap: 22px;
   align-items: flex-start;
-  
-  max-height: 100vh;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 .settings-root .settings-title {
   margin: 0;
   font-size: 34px;
-  line-height: 1.05;
+  line-height: 1.25;
   font-weight: 600;
   color: transparent;
   background: var(--settings-accent-gradient);
@@ -52,8 +53,24 @@
   animation: titleSlideIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.1s backwards;
 }
 
+.settings-root .header-row {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
 .settings-root .nav-buttons { 
-  display:flex; gap:14px; margin-top:12px; align-items:center; flex-wrap:wrap;
+  display:flex;
+  gap:14px;
+  margin-top:12px;
+  align-items:center;
+  flex-wrap:wrap;
   animation: contentFadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.2s backwards;
 }
 
@@ -67,8 +84,10 @@
   height:auto;
   max-height:60px;
   border-radius:14px;
-  background:var(--settings-panel-2);
-  border:1px solid color-mix(in srgb, var(--settings-panel) 40%, #000 0%);
+  background: color-mix(in srgb, var(--settings-panel-2) 60%, transparent);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  border:1px solid rgba(255, 255, 255, 0.06);
   color:var(--settings-muted);
   cursor:pointer;
   font-size:17px;
@@ -78,6 +97,33 @@
   user-select:none;
   will-change: transform, box-shadow;
   box-sizing:border-box;
+  position: relative;
+  overflow: hidden;
+}
+.settings-root .nav-btn::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  pointer-events: none;
+  border-radius: 12px;
+  background-image:
+    radial-gradient(
+      var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--settings-accent) 12%, transparent) 0%,
+      color-mix(in srgb, var(--settings-accent) 6%, transparent) 30%,
+      transparent 68%
+    );
+  opacity: 0;
+  transition: opacity 140ms ease-out;
+  will-change: opacity;
+  z-index: 0;
+}
+.settings-root .nav-btn:hover::before {
+  opacity: 0.5;
+}
+.settings-root .nav-btn > * {
+  position: relative;
+  z-index: 1;
 }
 .settings-root .nav-btn:active { transform: translateY(1px); }
 .settings-root .nav-btn.active {
@@ -99,22 +145,81 @@
 }
 
 .settings-root .content { 
-  width:100%; max-width:1060px; margin-top:12px; display:flex; flex-direction:column; gap:22px; box-sizing: border-box;
+  width:100%;
+  max-width:1060px;
+  margin-top:12px;
+  display:flex;
+  flex-direction:column;
+  gap:22px;
+  box-sizing: border-box;
   animation: contentFadeIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.3s backwards;
 }
 
 .settings-root .panel {
-  background: transparent;
-  padding:12px;
-  border-radius:10px;
-  border:1px dotted color-mix(in srgb, var(--settings-panel) 8%, #000 0%);
+  background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--settings-accent) 5%, transparent),
+    color-mix(in srgb, var(--settings-panel) 25%, transparent) 50%,
+    color-mix(in srgb, var(--settings-accent-deep) 8%, transparent));
+  background-color: color-mix(in srgb, var(--settings-panel) 20%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  padding:20px;
+  border-radius:16px;
+  border:1px solid rgba(255, 255, 255, 0.06);
   margin:0;
   
-  max-height: calc(100vh - 200px);
-  overflow: auto;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
   
   animation: panelSlideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+  position: relative;
+}
+
+.settings-root .panel::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  pointer-events: none;
+  border-radius: 12px;
+  background-image:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--settings-accent) 8%, transparent) 0%,
+      color-mix(in srgb, var(--settings-accent-deep) 5%, transparent) 40%,
+      transparent 100%),
+    radial-gradient(
+      var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--settings-accent) 18%, transparent) 0%,
+      color-mix(in srgb, var(--settings-accent) 8%, transparent) 30%,
+      transparent 68%
+    );
+  background-blend-mode: screen, normal;
+  opacity: 0;
+  transition: opacity 140ms ease-out;
+  will-change: opacity;
+  z-index: 0;
+}
+
+.settings-root .panel:hover::before {
+  opacity: 0.6;
+  background-image:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--settings-accent) 12%, transparent) 0%,
+      color-mix(in srgb, var(--settings-accent-deep) 8%, transparent) 40%,
+      transparent 100%),
+    radial-gradient(
+      var(--glow-size-hover) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--settings-accent) 24%, transparent) 0%,
+      color-mix(in srgb, var(--settings-accent) 12%, transparent) 28%,
+      transparent 70%
+    );
+  transition: opacity 120ms ease-out;
+}
+
+.settings-root .panel > * {
+  position: relative;
+  z-index: 1;
 }
 
 .settings-root .panel.switching-out {
@@ -146,8 +251,10 @@
 .settings-root .theme-option {
   padding:16px 20px;
   border-radius:12px;
-  background: var(--settings-panel-2);
-  border:1px solid color-mix(in srgb, var(--settings-panel) 40%, #000 0%);
+  background: color-mix(in srgb, var(--settings-panel-2) 50%, transparent);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  border:1px solid rgba(255, 255, 255, 0.06);
   color:var(--settings-muted);
   cursor:pointer;
   font-size:16px;
@@ -158,6 +265,33 @@
   will-change: transform, box-shadow;
   animation: contentFadeIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   animation-delay: calc(var(--item-index, 0) * 0.05s);
+  position: relative;
+  overflow: hidden;
+}
+.settings-root .theme-option::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  pointer-events: none;
+  border-radius: 10px;
+  background-image:
+    radial-gradient(
+      var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--settings-accent) 12%, transparent) 0%,
+      color-mix(in srgb, var(--settings-accent) 6%, transparent) 30%,
+      transparent 68%
+    );
+  opacity: 0;
+  transition: opacity 140ms ease-out;
+  will-change: opacity;
+  z-index: 0;
+}
+.settings-root .theme-option:hover::before {
+  opacity: 0.4;
+}
+.settings-root .theme-option > * {
+  position: relative;
+  z-index: 1;
 }
 .settings-root .theme-option:active { transform: translateY(1px); }
 .settings-root .theme-option.selected {
@@ -167,7 +301,16 @@
   box-shadow: 0 8px 22px var(--settings-accent-shadow);
 }
 
-.settings-root .subsection { margin-top:12px; background:transparent; padding:12px; border-radius:10px; border:1px dashed color-mix(in srgb, var(--settings-panel) 6%, #000 0%); }
+.settings-root .subsection { 
+  margin-top:12px; 
+  background: color-mix(in srgb, var(--settings-panel) 15%, transparent);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  padding:16px; 
+  border-radius:12px; 
+  border:1px solid rgba(255, 255, 255, 0.04); 
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
 .settings-root .row { display:flex; gap:12px; align-items:center; margin-top:8px; }
 .settings-root .blank-link {
   color:var(--settings-on-accent);
@@ -295,11 +438,49 @@
 .settings-root .policy-block,
 .settings-root .uptime-block,
 .settings-root .discord-block {
-  display:flex; gap:12px; align-items:flex-start; justify-content:space-between; padding:12px; border-radius:10px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--settings-panel) 6%, #000 0%), transparent);
-  border:1px dashed color-mix(in srgb, var(--settings-panel) 6%, #000 0%);
+  display:flex; gap:12px; align-items:flex-start; justify-content:space-between; 
+  padding:16px; 
+  border-radius:12px;
+  background: color-mix(in srgb, var(--settings-panel) 20%, transparent);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  border:1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
   animation: contentFadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   animation-delay: calc(var(--item-index, 0) * 0.08s);
+  position: relative;
+  overflow: hidden;
+}
+.settings-root .policy-block::before,
+.settings-root .uptime-block::before,
+.settings-root .discord-block::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  pointer-events: none;
+  border-radius: 10px;
+  background-image:
+    radial-gradient(
+      var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--settings-accent) 10%, transparent) 0%,
+      color-mix(in srgb, var(--settings-accent) 5%, transparent) 30%,
+      transparent 68%
+    );
+  opacity: 0;
+  transition: opacity 140ms ease-out;
+  will-change: opacity;
+  z-index: 0;
+}
+.settings-root .policy-block:hover::before,
+.settings-root .uptime-block:hover::before,
+.settings-root .discord-block:hover::before {
+  opacity: 0.3;
+}
+.settings-root .policy-block > *,
+.settings-root .uptime-block > *,
+.settings-root .discord-block > * {
+  position: relative;
+  z-index: 1;
 }
 .settings-root .policy-info,
 .settings-root .uptime-info,
@@ -396,13 +577,43 @@
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:10px;
-  border-radius:8px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--settings-panel) 3%, #000 0%), transparent);
-  border:1px dashed color-mix(in srgb, var(--settings-panel) 4%, #000 0%);
+  padding:14px;
+  border-radius:12px;
+  background: color-mix(in srgb, var(--settings-panel) 18%, transparent);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  border:1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
   gap:12px;
   animation: contentFadeIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   animation-delay: calc(var(--item-index, 0) * 0.06s);
+  position: relative;
+  overflow: hidden;
+}
+.partner-item::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  pointer-events: none;
+  border-radius: 10px;
+  background-image:
+    radial-gradient(
+      var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--settings-accent) 10%, transparent) 0%,
+      color-mix(in srgb, var(--settings-accent) 5%, transparent) 30%,
+      transparent 68%
+    );
+  opacity: 0;
+  transition: opacity 140ms ease-out;
+  will-change: opacity;
+  z-index: 0;
+}
+.partner-item:hover::before {
+  opacity: 0.3;
+}
+.partner-item > * {
+  position: relative;
+  z-index: 1;
 }
 .partner-item .partner-info { display:flex; gap:12px; align-items:center; max-width:78%; }
 .partner-item .partner-name { font-weight:700; color:var(--settings-accent); margin:0; }
@@ -508,6 +719,7 @@
 
 .light-scheme .settings-root .nav-btn {
   border: 1px solid rgba(0,0,0,0.08);
+  background: color-mix(in srgb, var(--settings-panel-2) 70%, transparent);
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
@@ -517,6 +729,7 @@
 
 .light-scheme .settings-root .theme-option {
   border: 1px solid rgba(0,0,0,0.08);
+  background: color-mix(in srgb, var(--settings-panel-2) 60%, transparent);
   box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 
@@ -526,13 +739,15 @@
 
 .light-scheme .settings-root .panel {
   border: 1px solid rgba(0,0,0,0.06);
-  background: rgba(255,255,255,0.6);
-  backdrop-filter: blur(10px);
+  background: color-mix(in srgb, var(--settings-panel) 40%, transparent);
+  background-color: rgba(255,255,255,0.4);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
 }
 
 .light-scheme .settings-root .subsection {
-  background: rgba(248,248,248,0.5);
-  border: 1px dashed rgba(0,0,0,0.08);
+  background: color-mix(in srgb, var(--settings-panel-2) 40%, transparent);
+  border: 1px solid rgba(0,0,0,0.08);
 }
 
 .light-scheme .settings-root .toggle-track {
@@ -553,25 +768,43 @@
               0 4px 12px var(--settings-accent-shadow);
 }
 
+.light-scheme .settings-root input[type="text"],
+.light-scheme .settings-root input[type="url"] {
+  background: color-mix(in srgb, var(--settings-panel-2) 60%, transparent);
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.light-scheme .settings-root .policy-block,
+.light-scheme .settings-root .uptime-block,
+.light-scheme .settings-root .discord-block,
+.light-scheme .settings-root .partner-item {
+  background: color-mix(in srgb, var(--settings-panel) 40%, transparent);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
 
 .settings-root input[type="text"],
 .settings-root input[type="url"] {
   padding: 12px 16px;
   border-radius: 10px;
-  background: var(--settings-panel-2);
-  border: 1px solid color-mix(in srgb, var(--settings-panel) 40%, #000 0%);
+  background: color-mix(in srgb, var(--settings-panel-2) 40%, transparent);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   color: var(--text);
   font-size: 15px;
   font-family: inherit;
   transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
   box-sizing: border-box;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
 }
 
 .settings-root input[type="text"]:focus,
 .settings-root input[type="url"]:focus {
   outline: none;
   border-color: var(--settings-accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--settings-accent) 20%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--settings-accent) 20%, transparent),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
 .settings-root input[type="text"]::placeholder,
@@ -583,6 +816,7 @@
 .settings-root input[type="text"]:hover,
 .settings-root input[type="url"]:hover {
   border-color: color-mix(in srgb, var(--settings-accent) 50%, var(--settings-panel) 50%);
+  background: color-mix(in srgb, var(--settings-panel-2) 50%, transparent);
 }
 
 .settings-root input[type="text"][readonly] {

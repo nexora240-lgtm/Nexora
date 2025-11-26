@@ -351,6 +351,10 @@
       panel.hidden = !show;
       panel.setAttribute('aria-hidden', !show);
     });
+    // Reapply mouse tracking after panel switch
+    if (window.setupMouseTrackingSettings) {
+      setTimeout(() => window.setupMouseTrackingSettings(), 50);
+    }
   }
   tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.target)));
 
@@ -803,6 +807,7 @@
 
   const DEFAULT_LOGO = 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/nexora-amber.png';
   const DEFAULT_FAVICON = 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/favicon-amber.png';
+  const settingsRoot = document.getElementById('settingsRoot');
 
   function setLogoAndFaviconForTheme(themeId) {
     const isLight = document.documentElement.classList.contains('light-scheme');
@@ -881,7 +886,97 @@
     }
     
     setLogoAndFaviconForTheme(currentTheme || 'midnight-amber');
+    
+    // Add mouse tracking for interactive elements
+    setupMouseTracking(settingsRoot);
   }
+
+  function setupMouseTracking(rootEl = settingsRoot || document.getElementById('settingsRoot')) {
+    const root = rootEl;
+    if (!root) {
+      console.warn('[Mouse Tracking] No settings root element found; skipping setup');
+      return;
+    }
+
+    console.log('[Mouse Tracking] Setting up mouse tracking for settings page');
+    
+    // Helper function to add tracking to an element
+    const addTracking = (element) => {
+      if (!element || element._hasMouseTracking) return;
+      element._hasMouseTracking = true;
+      
+      let rafId = null;
+      const updateFromEvent = (e) => {
+        const rect = element.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        
+        if (rafId) return;
+        rafId = requestAnimationFrame(() => {
+          element.style.setProperty('--x', x + '%');
+          element.style.setProperty('--y', y + '%');
+          rafId = null;
+        });
+      };
+      
+      element.addEventListener('mousemove', updateFromEvent);
+      element.addEventListener('mouseleave', () => {
+        element.style.setProperty('--x', '50%');
+        element.style.setProperty('--y', '50%');
+      }, { passive: true });
+      
+      console.log('[Mouse Tracking] Added tracking to:', element.className || element.id || element.tagName);
+    };
+
+    // Track mouse position on nav buttons
+    const navButtons = root.querySelectorAll('.nav-btn');
+    navButtons.forEach(addTracking);
+    console.log('[Mouse Tracking] Nav buttons:', navButtons.length);
+
+    // Track mouse position on theme options (not select elements)
+    const themeOptions = root.querySelectorAll('.theme-option:not(select)');
+    themeOptions.forEach(addTracking);
+    console.log('[Mouse Tracking] Theme options:', themeOptions.length);
+
+    // Track mouse position on currently visible panels
+    const visiblePanels = Array.from(root.querySelectorAll('.panel')).filter(panel => !panel.hidden);
+    visiblePanels.forEach(addTracking);
+    console.log('[Mouse Tracking] Panels:', visiblePanels.length);
+
+    // Track mouse on policy/uptime/discord/partner blocks
+    const infoBlocks = root.querySelectorAll('.policy-block, .uptime-block, .discord-block, .partner-item');
+    infoBlocks.forEach(addTracking);
+    console.log('[Mouse Tracking] Blocks:', infoBlocks.length);
+
+    // Track mouse on settings root for global effects
+    addTracking(root);
+    console.log('[Mouse Tracking] Root element tracked');
+    
+    // Set up MutationObserver to track dynamically added elements
+    if (!root._mutationObserver) {
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === 1) { // Element node
+              if (node.matches && (node.matches('.policy-block') || node.matches('.uptime-block') || 
+                  node.matches('.discord-block') || node.matches('.partner-item'))) {
+                addTracking(node);
+              }
+              // Check children too
+              if (node.querySelectorAll) {
+                node.querySelectorAll('.policy-block, .uptime-block, .discord-block, .partner-item').forEach(addTracking);
+              }
+            }
+          });
+        });
+      });
+      observer.observe(root, { childList: true, subtree: true });
+      root._mutationObserver = observer;
+    }
+  }
+  
+  // Make setupMouseTracking globally accessible
+  window.setupMouseTrackingSettings = setupMouseTracking;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

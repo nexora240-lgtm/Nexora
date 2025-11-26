@@ -250,9 +250,9 @@ body:has(.sidebar:hover) .pagination {
   min-width: 44px;
   height: 44px;
   padding: 8px 12px;
-  background: var(--g-surface);
+  background: rgba(128, 128, 128, 0.3);
   color: var(--g-on-surface);
-  border: 2px solid var(--g-border);
+  border: 2px solid rgba(128, 128, 128, 0.4);
   border-radius: var(--g-radius);
   font-size: 1rem;
   font-weight: 600;
