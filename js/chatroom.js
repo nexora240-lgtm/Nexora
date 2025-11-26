@@ -16,7 +16,7 @@
     let isPendingApproval = false; // Track if current user is waiting for approval
     let myConnectionId = null; // Store our WebSocket connection ID
     let presenceAnnouncedTo = new Set(); // Track users we've already announced presence to
-    const PUBLIC_ROOM_CODE = 'PUBLIC'; // Special room code for public chat
+    const PUBLIC_ROOM_CODE = '000000'; // Special room code for public chat (using 6-digit format)
     const APPROVAL_TIMEOUT = 60000; // 60 seconds for host to respond
 
     const CHATROOM_STATE_KEY = 'nexora_circle_state';
@@ -232,6 +232,7 @@ function joinPublicChatWithUsername() {
     
     currentUsername = username;
     currentRoomCode = PUBLIC_ROOM_CODE;
+    roomOwner = ''; // No owner in public chat
     saveUsernameToCookie(username);
     
     connectWebSocket();
@@ -412,7 +413,18 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                         return;
         }
 
-        if (data.message) {
+        // Handle server error messages (have message but no username)
+        if (data.message && !data.username) {
+            console.warn('[Chatroom] Server message:', data.message);
+            if (data.connectionId) {
+                console.debug('[Chatroom] Connection ID:', data.connectionId);
+            }
+            // Don't display these as chat messages
+            return;
+        }
+
+        // Check if this is a chat message (must have both message and username)
+        if (data.message && data.username) {
             const username = data.username;
             const messageText = data.message;
 
@@ -492,8 +504,8 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                     roomValidationTimeout = null;
                                     }
 
-
-                if (ownerInfo) {
+                // Only set owner if NOT in public chat
+                if (ownerInfo && currentRoomCode !== PUBLIC_ROOM_CODE) {
                     if (!roomOwner || roomOwner !== ownerInfo) {
                         roomOwner = ownerInfo;
                                             }
@@ -540,12 +552,12 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
             if (messageText === '::LEAVE::') {
                                 if (roomUsers.includes(username)) {
 
-                    const ownerLeaving = (username === roomOwner);
+                    const ownerLeaving = (username === roomOwner) && (currentRoomCode !== PUBLIC_ROOM_CODE);
                     
                     roomUsers = roomUsers.filter(u => u !== username);
                     delete userJoinTimes[username];
 
-                    if (ownerLeaving && roomUsers.length > 0) {
+                    if (ownerLeaving && roomUsers.length > 0 && currentRoomCode !== PUBLIC_ROOM_CODE) {
 
                         const oldestUser = roomUsers.reduce((oldest, user) => {
                             return (userJoinTimes[user] || Infinity) < (userJoinTimes[oldest] || Infinity) ? user : oldest;
@@ -605,7 +617,13 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                 return; // Don't display this message
             }
 
-                        displayMessage(username, messageText, data.timestamp, username === currentUsername);
+            // Validate message data before displaying
+            if (!username || username === 'undefined') {
+                console.error('[Chatroom] Invalid username in message:', data);
+                return;
+            }
+            
+            displayMessage(username, messageText, data.timestamp, username === currentUsername);
         }
     };
     
@@ -769,13 +787,28 @@ function sendMessage() {
 
 function displayMessage(username, message, timestamp, isOwn) {
     const messagesDiv = document.getElementById('messages');
+    if (!messagesDiv) return;
+    
+    // Validate inputs
+    if (!username || !message) {
+        console.error('[Chatroom] Invalid message data:', { username, message, timestamp });
+        return;
+    }
+    
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${isOwn ? 'own' : ''}`;
     
-    const time = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    // Handle invalid or missing timestamp
+    let time = 'Now';
+    if (timestamp) {
+        const date = new Date(timestamp);
+        if (!isNaN(date.getTime())) {
+            time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+    }
     
     messageDiv.innerHTML = `
-        <div class="message-username">${username}</div>
+        <div class="message-username">${escapeHtml(username)}</div>
         <div class="message-content">${escapeHtml(message)}</div>
         <div class="message-time">${time}</div>
     `;
@@ -818,8 +851,8 @@ function updateUsersList() {
         
     const isPublicChat = currentRoomCode === PUBLIC_ROOM_CODE;
     
-    // Show pending users first (only for room owner)
-    if (currentUsername === roomOwner && pendingUsers.length > 0) {
+    // Show pending users first (only for room owner in private rooms, NOT public chat)
+    if (currentUsername === roomOwner && pendingUsers.length > 0 && !isPublicChat) {
         pendingUsers.forEach((user) => {
             const userDiv = document.createElement('div');
             userDiv.className = 'user-item pending-user';
@@ -900,7 +933,8 @@ function updateUsersList() {
         usernameSpan.className = 'user-name';
         usernameSpan.textContent = user;
         
-                if (user === roomOwner && roomOwner) {
+                // Only show owner badge if NOT in public chat
+        if (user === roomOwner && roomOwner && !isPublicChat) {
             usernameSpan.classList.add('owner');
             userDiv.classList.add('owner');
                     } else {
@@ -935,6 +969,11 @@ function updateUsersList() {
 }
 
 function kickUser(username) {
+    // No kicking in public chat
+    if (currentRoomCode === PUBLIC_ROOM_CODE) {
+        alert('Kicking is not allowed in the public circle.');
+        return;
+    }
 
     if (currentUsername !== roomOwner) {
         alert('Only the circle owner can kick users.');
