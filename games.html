@@ -71,7 +71,7 @@
   </div>
 
   <!-- Pagination -->
-  <div class="pagination" id="pagination" style="left: 0 !important;"></div>
+  <div class="pagination" id="pagination"></div>
 
   <!-- Game Suggestion Button -->
   <div class="suggestion-section">
@@ -286,12 +286,15 @@
       const totalPages = Math.ceil(totalGames / GAMES_PER_PAGE);
       const pagination = document.getElementById("pagination");
       
-      console.log(`renderPagination called: totalGames=${totalGames}, totalPages=${totalPages}, GAMES_PER_PAGE=${GAMES_PER_PAGE}`);
+      if (!pagination) return;
       
+      // Always show pagination container for consistency
+      pagination.style.display = 'flex';
       pagination.innerHTML = "";
 
       if (totalPages <= 1) {
-        console.log('Skipping pagination: only 1 page or less');
+        // Hide pagination if only 1 page
+        pagination.style.display = 'none';
         return;
       }
 
@@ -396,7 +399,7 @@
     });
     
     // render grid with fuzzy-ranked results
-    async function initGames(filter = "") {
+    function initGames(filter = "") {
       const grid = document.getElementById("gameGrid");
       grid.innerHTML = "";
       
@@ -418,7 +421,7 @@
         return { game: g, score: titleScore };
       })
       .filter(item => item.score !== -Infinity)
-      .sort((a, b) => b.score - a.score);
+      .sort((a, b) => b.score - a.sort);
 
       filteredGames = candidates;
 
@@ -427,6 +430,9 @@
       const startIndex = (currentPage - 1) * GAMES_PER_PAGE;
       const endIndex = Math.min(startIndex + GAMES_PER_PAGE, totalGames);
       const pageGames = candidates.slice(startIndex, endIndex);
+      
+      // ⚡ RENDER PAGINATION IMMEDIATELY - Don't wait for views
+      renderPagination(totalGames);
 
       // Render games for current page
       pageGames.forEach((cand, index) => {
@@ -510,29 +516,30 @@
         cardObserver.observe(card);
       });
       
-      // Fetch views for current page games
+      // ⚡ FETCH VIEWS IN BACKGROUND - Don't block rendering
       if (pageGames.length > 0) {
         const gameIds = pageGames.map(c => c.game.title);
-        const views = await ViewsAPI.fetchBatch(gameIds);
-        Object.assign(viewsCache, views);
         
-        // Update view counts in DOM
-        pageGames.forEach((cand, index) => {
-          const count = views[cand.game.title] || 0;
-          const cards = grid.querySelectorAll('.game-card');
-          if (cards[index]) {
-            const viewCountEl = cards[index].querySelector('.view-count span');
-            if (viewCountEl) {
-              viewCountEl.textContent = ViewsAPI.formatCount(count);
-              cards[index].querySelector('.view-count').style.opacity = count > 0 ? '1' : '0.5';
+        // Fetch views asynchronously without blocking
+        ViewsAPI.fetchBatch(gameIds).then(views => {
+          Object.assign(viewsCache, views);
+          
+          // Update view counts in DOM after they load
+          pageGames.forEach((cand, index) => {
+            const count = views[cand.game.title] || 0;
+            const cards = grid.querySelectorAll('.game-card');
+            if (cards[index]) {
+              const viewCountEl = cards[index].querySelector('.view-count span');
+              if (viewCountEl) {
+                viewCountEl.textContent = ViewsAPI.formatCount(count);
+                cards[index].querySelector('.view-count').style.opacity = count > 0 ? '1' : '0.5';
+              }
             }
-          }
+          });
+        }).catch(error => {
+          console.error('Failed to load view counts:', error);
         });
       }
-
-      // Render pagination
-      renderPagination(totalGames);
-      console.log(`Rendered pagination: ${totalGames} total games, ${Math.ceil(totalGames / GAMES_PER_PAGE)} pages, current page: ${currentPage}`);
 
       // Show no results message
       if (filter && candidates.length === 0) {

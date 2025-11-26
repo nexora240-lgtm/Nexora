@@ -33,9 +33,10 @@ function loadView(file) {
       }
 
       if (file === 'chatroom.html' && typeof restoreChatroomState === 'function') {
-        setTimeout(() => {
+        // Use requestAnimationFrame for faster, smoother restoration
+        requestAnimationFrame(() => {
           restoreChatroomState();
-        }, 150);
+        });
       }
     })
     .catch(() => {
@@ -47,10 +48,19 @@ function loadView(file) {
 }
 
 function loadScriptsSequentially(scripts) {
-  // Maintain original script execution order so dependent bundles (e.g., proxy) initialize correctly.
-  return scripts.reduce((chain, scriptNode) => {
-    return chain.then(() => appendScriptNode(scriptNode));
-  }, Promise.resolve());
+  // Group scripts: those with src and those without
+  const inlineScripts = scripts.filter(s => !s.getAttribute('src'));
+  const externalScripts = scripts.filter(s => s.getAttribute('src'));
+  
+  // Load external scripts in parallel, then inline scripts sequentially
+  const externalPromises = externalScripts.map(scriptNode => appendScriptNode(scriptNode));
+  
+  return Promise.all(externalPromises).then(() => {
+    // Then execute inline scripts sequentially after external scripts load
+    return inlineScripts.reduce((chain, scriptNode) => {
+      return chain.then(() => appendScriptNode(scriptNode));
+    }, Promise.resolve());
+  });
 }
 
 function appendScriptNode(scriptNode) {

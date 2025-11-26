@@ -172,123 +172,161 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      if (!document.getElementById('particles-js')) {
-        var div = document.createElement('div');
-        div.id = 'particles-js';
-        div.style.position = 'fixed';
-        div.style.top = '0';
-        div.style.left = '0';
-        div.style.width = '100%';
-        div.style.height = '100%';
-        div.style.zIndex = '-1';
-        div.style.pointerEvents = 'none';
-        document.body.appendChild(div);
+      // Check if particles are enabled (default true)
+      let particlesEnabled = true;
+      try {
+        const savedParticles = localStorage.getItem('settings.particles');
+        if (savedParticles !== null) {
+          particlesEnabled = JSON.parse(savedParticles);
+        }
+      } catch (e) {
+        particlesEnabled = true;
       }
 
-      var script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js';
-      script.onload = function() {
-        var cfg = {
-          "particles": {
-            "number": {
-              "value": 100,
-              "density": {
-                "enable": true,
-                "value_area": 800
-              }
-            },
-            "color": {
-              "value": "#ffffff"
-            },
-            "shape": {
-              "type": "circle"
-            },
-            "opacity": {
-              "value": 0.3,
-              "random": true,
-              "anim": {
-                "enable": true,
-                "speed": 0.5,
-                "opacity_min": 0.1,
-                "sync": false
-              }
-            },
-            "size": {
-              "value": 6.4,
-              "random": true,
-              "anim": {
-                "enable": false,
-                "speed": 71.71429026757396,
-                "size_min": 0.1,
-                "sync": false
-              }
-            },
-            "line_linked": {
-              "enable": false,
-              "distance": 150,
-              "color": "#ffffff",
-              "opacity": 0.1,
-              "width": 1
-            },
-            "move": {
-              "enable": true,
-              "speed": 1,
-              "random": false,
-              "straight": false,
-              "out_mode": "out",
-              "bounce": false,
-              "attract": {
-                "enable": false,
-                "rotateX": 600,
-                "rotateY": 1200
-              }
-            }
-          },
-          "interactivity": {
-            "detect_on": "canvas",
-            "events": {
-              "onhover": {
-                "enable": true,
-                "mode": "bubble"
-              },
-              "onclick": {
-                "enable": true,
-                "mode": "repulse"
-              },
-              "resize": true
-            },
-            "modes": {
-              "grab": {
-                "distance": 400,
-                "line_linked": {
-                  "opacity": 1
+      function initParticles() {
+        if (!document.getElementById('particles-js')) {
+          var div = document.createElement('div');
+          div.id = 'particles-js';
+          div.style.position = 'fixed';
+          div.style.top = '0';
+          div.style.left = '0';
+          div.style.width = '100%';
+          div.style.height = '100%';
+          div.style.zIndex = '-1';
+          div.style.pointerEvents = 'none';
+          document.body.appendChild(div);
+        }
+
+        var script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js';
+        script.onload = function() {
+          var cfg = {
+            "particles": {
+              "number": {
+                "value": 100,
+                "density": {
+                  "enable": true,
+                  "value_area": 800
                 }
               },
-              "bubble": {
-                "distance": 286.85716107029583,
-                "size": 7.968254474174885,
-                "duration": 2.1514287080272188,
-                "opacity": 8,
-                "speed": 3
+              "color": {
+                "value": "#ffffff"
               },
-              "repulse": {
-                "distance": 113.14228450435593,
-                "duration": 0.4
+              "shape": {
+                "type": "circle"
               },
-              "push": {
-                "particles_nb": 4
+              "opacity": {
+                "value": 0.5,
+                "random": false,
+                "anim": {
+                  "enable": false,
+                  "speed": 0.5,
+                  "opacity_min": 0.1,
+                  "sync": false
+                }
               },
-              "remove": {
-                "particles_nb": 2
+              "size": {
+                "value": 7,
+                "random": true,
+                "anim": {
+                  "enable": false,
+                  "speed": 71.71429026757396,
+                  "size_min": 0.1,
+                  "sync": false
+                }
+              },
+              "line_linked": {
+                "enable": false,
+                "distance": 150,
+                "color": "#ffffff",
+                "opacity": 0.1,
+                "width": 1
+              },
+              "move": {
+                "enable": true,
+                "speed": 1,
+                "random": false,
+                "straight": false,
+                "out_mode": "out",
+                "bounce": false,
+                "attract": {
+                  "enable": false,
+                  "rotateX": 600,
+                  "rotateY": 1200
+                }
               }
-            }
-          },
-          "retina_detect": true
-        };
+            },
+            "interactivity": {
+              "detect_on": "canvas",
+              "events": {
+                "onhover": {
+                  "enable": true,
+                  "mode": "bubble"
+                },
+                "onclick": {
+                  "enable": true,
+                  "mode": "repulse"
+                },
+                "resize": true
+              },
+              "modes": {
+                "grab": {
+                  "distance": 400,
+                  "line_linked": {
+                    "opacity": 1
+                  }
+                },
+                "bubble": {
+                  "distance": 286.85716107029583,
+                  "size": 7.968254474174885,
+                  "duration": 2.1514287080272188,
+                  "opacity": 8,
+                  "speed": 3
+                },
+                "repulse": {
+                  "distance": 113.14228450435593,
+                  "duration": 0.4
+                },
+                "push": {
+                  "particles_nb": 4
+                },
+                "remove": {
+                  "particles_nb": 2
+                }
+              }
+            },
+            "retina_detect": true
+          };
 
-        particlesJS('particles-js', cfg);
-      };
-      document.head.appendChild(script);
+          particlesJS('particles-js', cfg);
+        };
+        document.head.appendChild(script);
+      }
+
+      function removeParticles() {
+        var particlesDiv = document.getElementById('particles-js');
+        if (particlesDiv) {
+          particlesDiv.remove();
+        }
+        // Also destroy pJSDom if particles.js loaded
+        if (window.pJSDom && window.pJSDom.length > 0) {
+          window.pJSDom = [];
+        }
+      }
+
+      // Initialize or remove based on saved preference
+      if (particlesEnabled) {
+        initParticles();
+      }
+
+      // Listen for settings changes
+      document.addEventListener('settings:particlesToggled', function(e) {
+        if (e.detail.enabled) {
+          initParticles();
+        } else {
+          removeParticles();
+        }
+      });
     });
   </script>
 
