@@ -70,6 +70,25 @@ let tabCounter = 0;
 let activeTabId = null;
 const searchEngineUrl = "https://duckduckgo.com/?q=%s";
 
+const MAX_TABS = 14;
+
+function updateNewTabButtonState() {
+  const tabBar = document.getElementById('tab-bar');
+  if (!tabBar) return;
+  const newTabBtn = tabBar.querySelector('.new-tab-btn');
+  if (!newTabBtn) return;
+
+  const currentTabs = tabBar.querySelectorAll('.tab').length;
+  const atLimit = currentTabs >= MAX_TABS;
+
+  newTabBtn.disabled = atLimit;
+  if (atLimit) {
+    newTabBtn.classList.add('new-tab-btn-disabled');
+  } else {
+    newTabBtn.classList.remove('new-tab-btn-disabled');
+  }
+}
+
 // Helper to get favicon
 function getFavicon(url) {
   try {
@@ -161,12 +180,21 @@ function closeTab(tabId) {
       document.getElementById('address-bar').value = '';
     }
   }
+
+  // Update new-tab button state after closing
+  updateNewTabButtonState();
 }
 
 // Create new tab
 function createNewTab() {
-  const tabId = `tab-${++tabCounter}`;
   const tabBar = document.getElementById('tab-bar');
+  const existingTabs = tabBar.querySelectorAll('.tab').length;
+  if (existingTabs >= MAX_TABS) {
+    updateNewTabButtonState();
+    return;
+  }
+
+  const tabId = `tab-${++tabCounter}`;
   const newTabBtn = tabBar.querySelector('.new-tab-btn');
   
   // Create tab button
@@ -214,6 +242,9 @@ function createNewTab() {
   // Switch to new tab
   switchToTab(tabId);
   document.getElementById('address-bar').focus();
+
+  // Update new-tab button state after creating
+  updateNewTabButtonState();
 }
 
 // Open proxy page
@@ -233,6 +264,11 @@ async function openProxyPage(url) {
   // If no active tab, create one
   if (!tab) {
     const tabBar = document.getElementById('tab-bar');
+    const existingTabs = tabBar.querySelectorAll('.tab').length;
+    if (existingTabs >= MAX_TABS) {
+      updateNewTabButtonState();
+      return;
+    }
     const newTabBtn = tabBar.querySelector('.new-tab-btn');
     
     tab = document.createElement('div');
@@ -275,6 +311,9 @@ async function openProxyPage(url) {
     
     contentArea.appendChild(iframe);
     switchToTab(tabId);
+
+    // Update new-tab button state after creating
+    updateNewTabButtonState();
   } else {
     // Update existing tab
     tab.querySelector('.tab-title').textContent = 'Loading...';
@@ -383,9 +422,14 @@ function setupLinkInterception(iframe) {
 // Listen for messages from iframes
 window.addEventListener('message', function(event) {
   if (event.data && event.data.type === 'open-new-tab' && event.data.url) {
+    const tabBar = document.getElementById('tab-bar');
+    const existingTabs = tabBar.querySelectorAll('.tab').length;
+    if (existingTabs >= MAX_TABS) {
+      updateNewTabButtonState();
+      return;
+    }
     // Create a new tab with the URL
     const newTabId = `tab-${++tabCounter}`;
-    const tabBar = document.getElementById('tab-bar');
     const newTabBtn = tabBar.querySelector('.new-tab-btn');
     
     const tab = document.createElement('div');
@@ -432,6 +476,9 @@ window.addEventListener('message', function(event) {
     
     // Switch to the new tab
     switchToTab(newTabId);
+
+    // Update new-tab button state after creating
+    updateNewTabButtonState();
   }
 });
 

@@ -818,8 +818,81 @@ function updateUsersList() {
         
     const isPublicChat = currentRoomCode === PUBLIC_ROOM_CODE;
     
+    // Show pending users first (only for room owner)
+    if (currentUsername === roomOwner && pendingUsers.length > 0) {
+        pendingUsers.forEach((user) => {
+            const userDiv = document.createElement('div');
+            userDiv.className = 'user-item pending-user';
+            
+            const usernameSpan = document.createElement('span');
+            usernameSpan.className = 'user-name pending-name';
+            usernameSpan.textContent = user;
+            userDiv.appendChild(usernameSpan);
+            
+            // Create countdown timer display
+            const countdownSpan = document.createElement('span');
+            countdownSpan.className = 'approval-countdown';
+            countdownSpan.id = `countdown-${user}`;
+            
+            // Calculate remaining time
+            if (approvalTimers[user]) {
+                const elapsed = Date.now() - approvalTimers[user].startTime;
+                const remaining = Math.max(0, Math.ceil((APPROVAL_TIMEOUT - elapsed) / 1000));
+                countdownSpan.textContent = `${remaining}s`;
+                
+                // Start interval to update countdown
+                if (approvalTimers[user].interval) {
+                    clearInterval(approvalTimers[user].interval);
+                }
+                approvalTimers[user].interval = setInterval(() => {
+                    const countdownEl = document.getElementById(`countdown-${user}`);
+                    if (countdownEl) {
+                        const elapsed = Date.now() - approvalTimers[user].startTime;
+                        const remaining = Math.max(0, Math.ceil((APPROVAL_TIMEOUT - elapsed) / 1000));
+                        countdownEl.textContent = `${remaining}s`;
+                    }
+                }, 1000);
+            } else {
+                countdownSpan.textContent = '60s';
+            }
+            
+            userDiv.appendChild(countdownSpan);
+            
+            // Create Allow button
+            const allowBtn = document.createElement('button');
+            allowBtn.className = 'allow-button';
+            allowBtn.textContent = 'Allow';
+            allowBtn.onclick = () => approveUser(user);
+            userDiv.appendChild(allowBtn);
+            
+            // Create Deny button (optional, small X button)
+            const denyBtn = document.createElement('button');
+            denyBtn.className = 'deny-inline-button';
+            denyBtn.textContent = '✕';
+            denyBtn.title = 'Deny';
+            denyBtn.onclick = () => denyUser(user);
+            userDiv.appendChild(denyBtn);
+            
+            usersList.appendChild(userDiv);
+        });
+    }
+    
+    // Sort users: owner first, then current user, then others
+    const sortedUsers = [...roomUsers].sort((a, b) => {
+        // Owner always first
+        if (a === roomOwner) return -1;
+        if (b === roomOwner) return 1;
         
-    roomUsers.forEach((user, index) => {
+        // Current user second (if not owner)
+        if (a === currentUsername) return -1;
+        if (b === currentUsername) return 1;
+        
+        // Others maintain original order
+        return 0;
+    });
+    
+        
+    sortedUsers.forEach((user, index) => {
                 const userDiv = document.createElement('div');
         userDiv.className = 'user-item';
         
@@ -918,54 +991,29 @@ let waitingTimerInterval = null;
 let approvalQueue = []; // Queue for multiple simultaneous join requests
 
 function showApprovalModal(username) {
-
-    if (!approvalQueue.includes(username) && username !== currentPendingUser) {
-        approvalQueue.push(username);
-            }
-
+    // Add to pending users list
     if (!pendingUsers.includes(username)) {
         pendingUsers.push(username);
     }
 
-    approvalTimers[username] = setTimeout(() => {
-                autoDenyUser(username);
-    }, APPROVAL_TIMEOUT);
+    // Start countdown timer for auto-deny
+    approvalTimers[username] = {
+        timeout: setTimeout(() => {
+            autoDenyUser(username);
+        }, APPROVAL_TIMEOUT),
+        startTime: Date.now()
+    };
 
-    if (!currentPendingUser) {
-        showNextApprovalRequest();
-    }
+    // Update the users list to show pending user
+    updateUsersList();
 }
 
-function showNextApprovalRequest() {
-
-    if (approvalQueue.length > 0) {
-        currentPendingUser = approvalQueue.shift();
-                
-        const modal = document.getElementById('approvalModal');
-        const usernameDisplay = document.getElementById('approvalUsername');
-        
-        if (modal && usernameDisplay) {
-
-            let displayText = currentPendingUser;
-            if (approvalQueue.length > 0) {
-                displayText += ` (+${approvalQueue.length} more waiting)`;
-            }
-            usernameDisplay.textContent = displayText;
-            modal.style.display = 'flex';
-        }
-    } else {
-        currentPendingUser = null;
-    }
-}
-
-function approveUser() {
-    if (!currentPendingUser) return;
-    
-    const username = currentPendingUser;
-    const modal = document.getElementById('approvalModal');
+function approveUser(username) {
+    if (!username || !pendingUsers.includes(username)) return;
 
     if (approvalTimers[username]) {
-        clearTimeout(approvalTimers[username]);
+        clearTimeout(approvalTimers[username].timeout);
+        clearInterval(approvalTimers[username].interval);
         delete approvalTimers[username];
     }
 
@@ -987,29 +1035,19 @@ function approveUser() {
         
         addSystemMessage(`${username} joined the chat`);
     }
-
-    if (approvalQueue.length > 0) {
-        showNextApprovalRequest();
-    } else {
-        if (modal) {
-            modal.style.display = 'none';
-        }
-        currentPendingUser = null;
-    }
 }
 
-function denyUser() {
-    if (!currentPendingUser) return;
-    
-    const username = currentPendingUser;
-    const modal = document.getElementById('approvalModal');
+function denyUser(username) {
+    if (!username || !pendingUsers.includes(username)) return;
 
     if (approvalTimers[username]) {
-        clearTimeout(approvalTimers[username]);
+        clearTimeout(approvalTimers[username].timeout);
+        clearInterval(approvalTimers[username].interval);
         delete approvalTimers[username];
     }
 
     pendingUsers = pendingUsers.filter(u => u !== username);
+    updateUsersList();
 
     if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({
@@ -1019,30 +1057,17 @@ function denyUser() {
             message: `::DENIED::${username}`
         }));
     }
-
-    if (modal) {
-        modal.style.display = 'none';
-    }
-    currentPendingUser = null;
 }
 
 function autoDenyUser(username) {
-
-    approvalQueue = approvalQueue.filter(u => u !== username);
-
-    if (currentPendingUser === username) {
-        if (approvalQueue.length > 0) {
-            showNextApprovalRequest();
-        } else {
-            const modal = document.getElementById('approvalModal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-            currentPendingUser = null;
-        }
-    }
-
     pendingUsers = pendingUsers.filter(u => u !== username);
+    
+    if (approvalTimers[username]) {
+        clearInterval(approvalTimers[username].interval);
+        delete approvalTimers[username];
+    }
+    
+    updateUsersList();
 
     if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({
@@ -1169,5 +1194,66 @@ function cancelJoinRequest() {
     window.cancelJoinRequest = cancelJoinRequest;
 
     setTimeout(loadSavedUsername, 100);
+
+    // Setup mouse tracking for interactive elements
+    function setupMouseTracking() {
+        const container = document.querySelector('.nexora-chatroom .container');
+        if (!container) {
+            console.warn('[Chatroom Mouse Tracking] No container element found');
+            return;
+        }
+
+        console.log('[Chatroom Mouse Tracking] Setting up mouse tracking for chatroom');
+        
+        // Helper function to add tracking to an element
+        const addTracking = (element) => {
+            if (!element || element._hasMouseTracking) return;
+            element._hasMouseTracking = true;
+            
+            let rafId = null;
+            const updateFromEvent = (e) => {
+                const rect = element.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                
+                if (rafId) return;
+                rafId = requestAnimationFrame(() => {
+                    element.style.setProperty('--x', x + '%');
+                    element.style.setProperty('--y', y + '%');
+                    rafId = null;
+                });
+            };
+            
+            element.addEventListener('mousemove', updateFromEvent);
+            element.addEventListener('mouseleave', () => {
+                element.style.setProperty('--x', '50%');
+                element.style.setProperty('--y', '50%');
+            }, { passive: true });
+            
+            console.log('[Chatroom Mouse Tracking] Added tracking to:', element.className || element.id || element.tagName);
+        };
+
+        // Track mouse position on container
+        addTracking(container);
+        
+        // Track mouse position on buttons
+        const buttons = document.querySelectorAll('.nexora-chatroom button');
+        buttons.forEach(addTracking);
+        console.log('[Chatroom Mouse Tracking] Buttons:', buttons.length);
+
+        // Track mouse position on choice buttons
+        const choiceButtons = document.querySelectorAll('.choice-button');
+        choiceButtons.forEach(addTracking);
+        console.log('[Chatroom Mouse Tracking] Choice buttons:', choiceButtons.length);
+
+        console.log('[Chatroom Mouse Tracking] Setup complete');
+    }
+    
+    // Initialize mouse tracking when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupMouseTracking);
+    } else {
+        setupMouseTracking();
+    }
 
 })();

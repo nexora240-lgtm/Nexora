@@ -21,14 +21,16 @@
 <body>
   <div class="settings-root" id="settingsRoot" aria-live="polite">
     <div class="app">
-      <h1 class="settings-title">Settings</h1>
+      <div class="header-row">
+        <h1 class="settings-title">Settings</h1>
 
-      <nav class="nav-buttons" role="tablist" aria-label="Settings sections">
+        <nav class="nav-buttons" role="tablist" aria-label="Settings sections">
         <button class="nav-btn active" data-target="appearance" role="tab" aria-selected="true">Appearance</button>
         <button class="nav-btn" data-target="cloaking" role="tab" aria-selected="false">Cloaking</button>
         <button class="nav-btn" data-target="legal" role="tab" aria-selected="false">Legal</button>
         <button class="nav-btn" data-target="misc" role="tab" aria-selected="false">Misc</button>
-      </nav>
+        </nav>
+      </div>
 
       <div class="content">
         <section id="appearance" class="panel" role="tabpanel">
@@ -186,6 +188,21 @@
                 </div>
                 <div class="policy-actions">
                   <a class="policy-btn" role="button" href="https://thenexoraproject.xyz/cookies" target="_blank" rel="noopener noreferrer" aria-label="Open Cookie Policy">
+                    <span>Open</span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"/></svg>
+                  </a>
+                </div>
+              </div>
+
+              <div style="height:12px;"></div>
+
+              <div class="policy-block" role="region" aria-labelledby="disclaimer-title">
+                <div class="policy-info">
+                  <p id="disclaimer-title" class="policy-title">Disclaimer</p>
+                  <p class="policy-desc">Read the Disclaimer to understand the limitations of liability and other important legal notices for using this project.</p>
+                </div>
+                <div class="policy-actions">
+                  <a class="policy-btn" role="button" href="https://thenexoraproject.xyz/disclaimer.html" target="_blank" rel="noopener noreferrer" aria-label="Open Disclaimer">
                     <span>Open</span>
                     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"/></svg>
                   </a>

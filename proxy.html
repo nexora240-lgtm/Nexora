@@ -57,7 +57,7 @@
       flex-direction: column;
       height: 100vh;
       padding: 12px;
-      gap: 12px;
+      gap: 0;
       --x: 50%;
       --y: 50%;
       --glow-size: 300px;
@@ -126,8 +126,9 @@
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-radius: 8px 8px 0 0;
-      min-width: 180px;
-      max-width: 240px;
+      min-width: 100px;
+      max-width: none;
+      flex: 0 1 auto;
       cursor: pointer;
       transition: all var(--transition-medium) cubic-bezier(0.4, 0, 0.2, 1);
       border: 1px solid rgba(255, 255, 255, 0.04);
@@ -256,6 +257,20 @@
 
     .new-tab-btn:active {
       transform: scale(0.95) rotate(90deg);
+    }
+
+    .new-tab-btn.new-tab-btn-disabled,
+    .new-tab-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.4;
+      background: color-mix(in srgb, var(--surface) 20%, transparent);
+      transform: none;
+    }
+
+    .new-tab-btn.new-tab-btn-disabled:hover,
+    .new-tab-btn:disabled:hover {
+      background: color-mix(in srgb, var(--surface) 20%, transparent);
+      transform: none;
     }
 
     /* Navigation Bar */
