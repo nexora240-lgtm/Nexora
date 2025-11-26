@@ -14,6 +14,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="css/games.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    .view-count {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .view-count i {
+      font-size: 0.7rem;
+      opacity: 0.8;
+    }
+  </style>
+  <script src="config.js"></script>
 </head>
 <body>
 
@@ -47,7 +71,7 @@
   </div>
 
   <!-- Pagination -->
-  <div class="pagination" id="pagination"></div>
+  <div class="pagination" id="pagination" style="left: 0 !important;"></div>
 
   <!-- Game Suggestion Button -->
   <div class="suggestion-section">
@@ -59,11 +83,94 @@
 
   <script>
   (async function(){
+    // Ensure _CONFIG is available
+    if (typeof _CONFIG === 'undefined') {
+      window._CONFIG = {
+        viewsApiUrl: 'https://j2ii8694xc.execute-api.us-east-2.amazonaws.com'
+      };
+    }
+    
     const GAMES_PER_PAGE = 100;
     let currentPage = 1;
     let allGames = [];
     let filteredGames = [];
     let currentFilter = 'all';
+    let viewsCache = {};
+    
+    // Views API utilities
+    const ViewsAPI = {
+      async fetchBatch(gameIds) {
+        if (!_CONFIG.viewsApiUrl || _CONFIG.viewsApiUrl.includes('YOUR-API-ID')) {
+          console.warn('Views API not configured');
+          return {};
+        }
+        try {
+          const response = await fetch(`${_CONFIG.viewsApiUrl}/views/batch`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ gameIds })
+          });
+          const data = await response.json();
+          // Handle both old format (views) and new format (stats)
+          const statsMap = data.stats || data.views || {};
+          // Convert stats format to simple view counts
+          const viewsOnly = {};
+          for (const gameId in statsMap) {
+            viewsOnly[gameId] = typeof statsMap[gameId] === 'object' 
+              ? statsMap[gameId].viewCount 
+              : statsMap[gameId];
+          }
+          return viewsOnly;
+        } catch (error) {
+          console.error('Failed to fetch views:', error);
+          return {};
+        }
+      },
+      async increment(gameId) {
+        if (!_CONFIG.viewsApiUrl || _CONFIG.viewsApiUrl.includes('YOUR-API-ID')) {
+          return;
+        }
+        try {
+          const response = await fetch(`${_CONFIG.viewsApiUrl}/views/increment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ gameId })
+          });
+          const data = await response.json();
+          if (data.success) {
+            viewsCache[gameId] = data.viewCount;
+          }
+        } catch (error) {
+          console.error('Failed to increment view:', error);
+        }
+      },
+      formatCount(count) {
+        if (count >= 1000000) {
+          return (count / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+        }
+        if (count >= 1000) {
+          return (count / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+        }
+        return count.toString();
+      }
+    };
+    
+    // Debounce utility
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+    
+    // Virtual scrolling state
+    let visibleCards = new Set();
+    const BUFFER_SIZE = 20; // Cards to render outside viewport
     
     // Favorites manager
     const FavoritesManager = {
@@ -178,9 +285,15 @@
     function renderPagination(totalGames) {
       const totalPages = Math.ceil(totalGames / GAMES_PER_PAGE);
       const pagination = document.getElementById("pagination");
+      
+      console.log(`renderPagination called: totalGames=${totalGames}, totalPages=${totalPages}, GAMES_PER_PAGE=${GAMES_PER_PAGE}`);
+      
       pagination.innerHTML = "";
 
-      if (totalPages <= 1) return;
+      if (totalPages <= 1) {
+        console.log('Skipping pagination: only 1 page or less');
+        return;
+      }
 
       // Previous button
       const prevBtn = document.createElement("button");
@@ -191,6 +304,7 @@
           currentPage--;
           const appEl = document.getElementById('app');
           if (appEl) appEl.scrollTop = 0;
+          window.scrollTo(0, 0);
           initGames(document.getElementById("searchInput").value);
         }
       };
@@ -231,6 +345,7 @@
           currentPage = page;
           const appEl = document.getElementById('app');
           if (appEl) appEl.scrollTop = 0;
+          window.scrollTo(0, 0);
           initGames(document.getElementById("searchInput").value);
         };
         pagination.appendChild(btn);
@@ -253,16 +368,41 @@
           currentPage++;
           const appEl = document.getElementById('app');
           if (appEl) appEl.scrollTop = 0;
+          window.scrollTo(0, 0);
           initGames(document.getElementById("searchInput").value);
         }
       };
       pagination.appendChild(nextBtn);
     }
 
+    // Intersection Observer for virtual scrolling
+    const cardObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const card = entry.target;
+          const img = card.querySelector('img');
+          if (img && !img.dataset.loaded) {
+            img.dataset.loaded = 'true';
+          }
+          visibleCards.add(card);
+        } else {
+          visibleCards.delete(entry.target);
+        }
+      });
+    }, {
+      root: null,
+      rootMargin: '200px',
+      threshold: 0.01
+    });
+    
     // render grid with fuzzy-ranked results
-    function initGames(filter = "") {
+    async function initGames(filter = "") {
       const grid = document.getElementById("gameGrid");
       grid.innerHTML = "";
+      
+      // Disconnect previous observers
+      cardObserver.disconnect();
+      visibleCards.clear();
 
       // Filter and sort games
       let gamesToShow = allGames;
@@ -298,6 +438,9 @@
           const newGameData = JSON.stringify(game);
           const currentGameData = sessionStorage.getItem("currentGame");
           
+          console.log('Game card clicked:', game.title);
+          console.log('Setting currentGame in sessionStorage:', newGameData);
+          
           // Check if this is a different game than what's currently loaded
           if (currentGameData !== newGameData && window.GameStateManager) {
             // Clear the old game state when selecting a new game
@@ -305,18 +448,30 @@
           }
           
           sessionStorage.setItem("currentGame", newGameData);
+          
+          // Verify it was saved
+          const saved = sessionStorage.getItem("currentGame");
+          console.log('Verified sessionStorage:', saved ? 'saved successfully' : 'FAILED TO SAVE');
+          
           // keep your existing navigation behavior
           if (typeof navigate === 'function') {
+            console.log('Using navigate function to /loader');
             navigate('/loader');
           } else {
             // fallback: try location change if navigate not defined
-            try { location.href = '/loader'; } catch (e) {}
+            console.log('navigate function not found, using location.href');
+            try { 
+              location.href = 'gameloader.html'; 
+            } catch (e) {
+              console.error('Navigation failed:', e);
+            }
           }
         };
 
         const img   = document.createElement("img");
         img.src     = game.thumbnail;
         img.alt     = game.title;
+        img.loading = "lazy";
 
         const title = document.createElement("div");
         title.className   = "game-title";
@@ -335,17 +490,49 @@
             initGames(document.getElementById("searchInput").value);
           }
         };
+        
+        // View count badge
+        const viewCount = document.createElement("div");
+        viewCount.className = "view-count";
+        const count = viewsCache[game.title] || 0;
+        viewCount.innerHTML = `<i class="fas fa-eye"></i><span>${ViewsAPI.formatCount(count)}</span>`;
+        viewCount.style.opacity = count > 0 ? '1' : '0.5';
 
         card.appendChild(img);
         card.appendChild(title);
         card.appendChild(star);
+        card.appendChild(viewCount);
         grid.appendChild(card);
 
         bindCardHighlight(card);
+        
+        // Observe card for virtual scrolling
+        cardObserver.observe(card);
       });
+      
+      // Fetch views for current page games
+      if (pageGames.length > 0) {
+        const gameIds = pageGames.map(c => c.game.title);
+        const views = await ViewsAPI.fetchBatch(gameIds);
+        Object.assign(viewsCache, views);
+        
+        // Update view counts in DOM
+        pageGames.forEach((cand, index) => {
+          const count = views[cand.game.title] || 0;
+          const cards = grid.querySelectorAll('.game-card');
+          if (cards[index]) {
+            const viewCountEl = cards[index].querySelector('.view-count span');
+            if (viewCountEl) {
+              viewCountEl.textContent = ViewsAPI.formatCount(count);
+              cards[index].querySelector('.view-count').style.opacity = count > 0 ? '1' : '0.5';
+            }
+          }
+        });
+      }
 
       // Render pagination
       renderPagination(totalGames);
+      console.log(`Rendered pagination: ${totalGames} total games, ${Math.ceil(totalGames / GAMES_PER_PAGE)} pages, current page: ${currentPage}`);
 
       // Show no results message
       if (filter && candidates.length === 0) {
@@ -356,11 +543,15 @@
       }
     }
 
-    // wire input (trimmed)
+    // wire input (trimmed) with debounce
     const inputEl = document.getElementById("searchInput");
-    inputEl.addEventListener("input", e => {
+    const debouncedSearch = debounce((value) => {
       currentPage = 1; // Reset to first page on search
-      initGames(e.target.value);
+      initGames(value);
+    }, 300);
+    
+    inputEl.addEventListener("input", e => {
+      debouncedSearch(e.target.value);
     });
     // optional: support pressing Escape to clear input
     inputEl.addEventListener("keydown", e => {

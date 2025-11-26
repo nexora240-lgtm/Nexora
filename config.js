@@ -7,4 +7,6 @@ let _CONFIG = {
       location.host +
       "/wisp/",
   bareurl: host + "/bare/",
+  // Views API Configuration - Replace with your AWS API Gateway URL
+  viewsApiUrl: "https://j2ii8694xc.execute-api.us-east-2.amazonaws.com"
 };

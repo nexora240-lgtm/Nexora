@@ -15,7 +15,104 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="css/theme-tokens.css" />
   <link rel="stylesheet" href="css/gameloader.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/nexora-amber.png">
+  <script src="config.js"></script>
+  <style>
+    .favorite-star-btn {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(145deg, 
+        color-mix(in srgb, var(--primary-accent, #d4550a) 80%, transparent), 
+        color-mix(in srgb, var(--primary-deep, #992f05) 80%, transparent));
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid color-mix(in srgb, var(--on-primary, #fff0e8) 20%, transparent);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 
+        -4px -4px 10px color-mix(in srgb, var(--text, #f8e7e0) 5%, transparent),
+        4px 4px 14px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 color-mix(in srgb, var(--on-primary, #fff0e8) 20%, transparent);
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    .favorite-star-btn:hover {
+      transform: scale(1.1);
+    }
+    .favorite-star-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: var(--on-primary, #fff0e8);
+      stroke-width: 2;
+      transition: all 0.2s ease;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+    }
+    .favorite-star-btn.favorited svg {
+      fill: #ffd700;
+      stroke: #ffd700;
+    }
+    .like-dislike-btns {
+      display: inline-flex;
+      gap: 8px;
+      margin-left: 12px;
+      align-items: center;
+    }
+    .vote-btn {
+      width: 32px;
+      height: 32px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .vote-btn:hover {
+      transform: scale(1.1);
+      background: rgba(0, 0, 0, 0.8);
+    }
+    .vote-btn i {
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+    .vote-btn.like-btn i {
+      color: #fff;
+    }
+    .vote-btn.like-btn.active {
+      background: linear-gradient(145deg, #4ade80, #22c55e);
+      border-color: #22c55e;
+    }
+    .vote-btn.like-btn.active i {
+      color: white;
+    }
+    .vote-btn.dislike-btn i {
+      color: #fff;
+    }
+    .vote-btn.dislike-btn.active {
+      background: linear-gradient(145deg, #f87171, #ef4444);
+      border-color: #ef4444;
+    }
+    .vote-btn.dislike-btn.active i {
+      color: white;
+    }
+    .vote-count {
+      font-size: 0.85em;
+      color: rgba(255, 255, 255, 0.8);
+      min-width: 20px;
+      text-align: center;
+    }
+  </style>
   <style>
     .loader-page .content-wrapper {
       display: flex;
@@ -50,6 +147,23 @@
         <footer class="loader-footer">
           <div class="branding">
             <span id="gameTitle">Loading...</span>
+            <span id="favoriteStar" class="favorite-star-btn" style="margin-left: 12px;" title="Add to favorites">
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </span>
+            <span id="viewCount" style="opacity: 0.7; font-size: 0.9em; display: inline-flex; align-items: center; gap: 4px;">
+              <i class="fas fa-eye" style="font-size: 0.85em;"></i>
+              <span>--</span>
+            </span>
+            <span class="like-dislike-btns">
+              <button id="likeBtn" class="vote-btn like-btn" title="Like">
+                <i class="fas fa-thumbs-up"></i>
+              </button>
+              <span id="likeCount" class="vote-count">0</span>
+              <button id="dislikeBtn" class="vote-btn dislike-btn" title="Dislike">
+                <i class="fas fa-thumbs-down"></i>
+              </button>
+              <span id="dislikeCount" class="vote-count">0</span>
+            </span>
           </div>
 
           <div class="controls">
@@ -63,7 +177,16 @@
   </div>
 
   <script>
-    function normalizeToHttpsS3(urlStr) {
+    // Wrap everything in IIFE to prevent variable redeclaration on re-navigation
+    (function() {
+      // Ensure _CONFIG is available
+      if (typeof _CONFIG === 'undefined') {
+        window._CONFIG = {
+          viewsApiUrl: 'https://j2ii8694xc.execute-api.us-east-2.amazonaws.com'
+        };
+      }
+      
+      function normalizeToHttpsS3(urlStr) {
       try {
         const u = new URL(urlStr);
         if (u.protocol === 'https:' && u.hostname.endsWith('.s3.amazonaws.com')) {
@@ -95,20 +218,306 @@
       }
     }
 
+    // Favorites manager (same as in games.html)
+    const FavoritesManager = {
+      get() {
+        const saved = localStorage.getItem('nexora_favorites');
+        return saved ? JSON.parse(saved) : [];
+      },
+      set(favorites) {
+        localStorage.setItem('nexora_favorites', JSON.stringify(favorites));
+      },
+      toggle(gameTitle) {
+        const favorites = this.get();
+        const index = favorites.indexOf(gameTitle);
+        if (index > -1) {
+          favorites.splice(index, 1);
+        } else {
+          favorites.push(gameTitle);
+        }
+        this.set(favorites);
+        return index === -1; // return true if now favorited
+      },
+      isFavorited(gameTitle) {
+        return this.get().includes(gameTitle);
+      }
+    };
+    
+    // Vote tracking manager
+    const VoteManager = {
+      getVotes() {
+        const saved = localStorage.getItem('nexora_votes');
+        return saved ? JSON.parse(saved) : {};
+      },
+      getVote(gameId) {
+        const votes = this.getVotes();
+        return votes[gameId] || null; // returns 'like', 'dislike', or null
+      },
+      setVote(gameId, voteType) {
+        const votes = this.getVotes();
+        votes[gameId] = voteType;
+        localStorage.setItem('nexora_votes', JSON.stringify(votes));
+      },
+      removeVote(gameId) {
+        const votes = this.getVotes();
+        delete votes[gameId];
+        localStorage.setItem('nexora_votes', JSON.stringify(votes));
+      }
+    };
+    
+    // View utilities
+    function formatViewCount(count) {
+      if (count >= 1000000) {
+        return (count / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+      }
+      if (count >= 1000) {
+        return (count / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+      }
+      return count.toString();
+    }
+    
+    async function fetchAndDisplayViews(gameId) {
+      if (!_CONFIG.viewsApiUrl || _CONFIG.viewsApiUrl.includes('YOUR-API-ID')) {
+        return;
+      }
+      try {
+        const response = await fetch(`${_CONFIG.viewsApiUrl}/views/${encodeURIComponent(gameId)}`);
+        const data = await response.json();
+        const viewCountEl = document.querySelector('#viewCount span');
+        const likeCountEl = document.getElementById('likeCount');
+        const dislikeCountEl = document.getElementById('dislikeCount');
+        
+        if (viewCountEl && data.viewCount !== undefined) {
+          viewCountEl.textContent = formatViewCount(data.viewCount);
+        }
+        if (likeCountEl && data.likeCount !== undefined) {
+          likeCountEl.textContent = formatViewCount(data.likeCount);
+        }
+        if (dislikeCountEl && data.dislikeCount !== undefined) {
+          dislikeCountEl.textContent = formatViewCount(data.dislikeCount);
+        }
+      } catch (error) {
+        console.error('Failed to fetch views:', error);
+      }
+    }
+    
+    async function incrementLike(gameId, previousVote = null) {
+      console.log('incrementLike called for:', gameId);
+      console.log('API URL:', _CONFIG.viewsApiUrl);
+      
+      if (!_CONFIG.viewsApiUrl || _CONFIG.viewsApiUrl.includes('YOUR-API-ID')) {
+        console.warn('API not configured, skipping like increment');
+        return;
+      }
+      
+      const url = `${_CONFIG.viewsApiUrl}/likes/increment`;
+      console.log('Fetching:', url);
+      
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ gameId, previousVote })
+        });
+        
+        console.log('Response status:', response.status);
+        const data = await response.json();
+        console.log('Response data:', data);
+        console.log('data.likeCount:', data.likeCount, 'type:', typeof data.likeCount);
+        console.log('data.dislikeCount:', data.dislikeCount, 'type:', typeof data.dislikeCount);
+        
+        if (data.success) {
+          const likeCountEl = document.getElementById('likeCount');
+          const dislikeCountEl = document.getElementById('dislikeCount');
+          console.log('likeCountEl:', likeCountEl);
+          console.log('dislikeCountEl:', dislikeCountEl);
+          
+          if (likeCountEl && data.likeCount !== undefined) {
+            const formatted = formatViewCount(data.likeCount);
+            console.log('Formatted like count:', formatted);
+            likeCountEl.textContent = formatted;
+            console.log('Like count element text is now:', likeCountEl.textContent);
+          }
+          if (dislikeCountEl && data.dislikeCount !== undefined) {
+            const formatted = formatViewCount(data.dislikeCount);
+            console.log('Formatted dislike count:', formatted);
+            dislikeCountEl.textContent = formatted;
+            console.log('Dislike count element text is now:', dislikeCountEl.textContent);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to increment like:', error);
+      }
+    }
+    
+    async function incrementDislike(gameId, previousVote = null) {
+      console.log('incrementDislike called for:', gameId);
+      console.log('API URL:', _CONFIG.viewsApiUrl);
+      
+      if (!_CONFIG.viewsApiUrl || _CONFIG.viewsApiUrl.includes('YOUR-API-ID')) {
+        console.warn('API not configured, skipping dislike increment');
+        return;
+      }
+      
+      const url = `${_CONFIG.viewsApiUrl}/dislikes/increment`;
+      console.log('Fetching:', url);
+      
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ gameId, previousVote })
+        });
+        
+        console.log('Response status:', response.status);
+        const data = await response.json();
+        console.log('Response data:', data);
+        console.log('data.likeCount:', data.likeCount, 'type:', typeof data.likeCount);
+        console.log('data.dislikeCount:', data.dislikeCount, 'type:', typeof data.dislikeCount);
+        
+        if (data.success) {
+          const likeCountEl = document.getElementById('likeCount');
+          const dislikeCountEl = document.getElementById('dislikeCount');
+          console.log('likeCountEl:', likeCountEl);
+          console.log('dislikeCountEl:', dislikeCountEl);
+          
+          if (likeCountEl && data.likeCount !== undefined) {
+            const formatted = formatViewCount(data.likeCount);
+            console.log('Formatted like count:', formatted);
+            likeCountEl.textContent = formatted;
+            console.log('Like count element text is now:', likeCountEl.textContent);
+          }
+          if (dislikeCountEl && data.dislikeCount !== undefined) {
+            const formatted = formatViewCount(data.dislikeCount);
+            console.log('Formatted dislike count:', formatted);
+            dislikeCountEl.textContent = formatted;
+            console.log('Dislike count element text is now:', dislikeCountEl.textContent);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to increment dislike:', error);
+      }
+    }
+    
+    async function incrementView(gameId) {
+      if (!_CONFIG.viewsApiUrl || _CONFIG.viewsApiUrl.includes('YOUR-API-ID')) {
+        return;
+      }
+      try {
+        const response = await fetch(`${_CONFIG.viewsApiUrl}/views/increment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ gameId })
+        });
+        const data = await response.json();
+        if (data.success) {
+          const viewCountEl = document.querySelector('#viewCount span');
+          if (viewCountEl) {
+            viewCountEl.textContent = formatViewCount(data.viewCount);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to increment view:', error);
+      }
+    }
+    
     function initLoader() {
       const allGames    = JSON.parse(sessionStorage.getItem("gamesList")    || "[]");
       const currentGame = JSON.parse(sessionStorage.getItem("currentGame") || "null");
+      
+      console.log('initLoader called, currentGame:', currentGame);
+      
       if (!currentGame) {
-        location.href = "game.html";
+        console.error('No game data found in sessionStorage, redirecting to games.html');
+        location.href = "games.html";
         return;
       }
 
       const container = document.getElementById("gameContainer");
       const fsBtn     = document.getElementById("fullscreenBtn");
       const gameTitle = document.getElementById("gameTitle");
+      const favStar   = document.getElementById("favoriteStar");
+      const likeBtn   = document.getElementById("likeBtn");
+      const dislikeBtn = document.getElementById("dislikeBtn");
+      
+      if (!container || !gameTitle) {
+        console.error('Required DOM elements not found');
+        return;
+      }
 
       // Set game title in footer
       gameTitle.textContent = currentGame.title || "Unknown Game";
+      
+      // Initialize favorite button
+      if (favStar && FavoritesManager.isFavorited(currentGame.title)) {
+        favStar.classList.add('favorited');
+      }
+      
+      // Favorite button click handler
+      if (favStar) {
+        favStar.onclick = (e) => {
+          e.stopPropagation();
+          const isFav = FavoritesManager.toggle(currentGame.title);
+          favStar.classList.toggle('favorited', isFav);
+        };
+      }
+      
+      // Initialize vote buttons with saved state
+      const savedVote = VoteManager.getVote(currentGame.title);
+      if (savedVote === 'like' && likeBtn) {
+        likeBtn.classList.add('active');
+      } else if (savedVote === 'dislike' && dislikeBtn) {
+        dislikeBtn.classList.add('active');
+      }
+      
+      // Like button handler
+      if (likeBtn) {
+        likeBtn.onclick = () => {
+          console.log('Like button clicked for game:', currentGame.title);
+          const currentVote = VoteManager.getVote(currentGame.title);
+          console.log('Current vote:', currentVote);
+          const previousVote = currentVote;
+          
+          if (currentVote === 'like') {
+            console.log('Already liked, ignoring');
+            return;
+          } else if (currentVote === 'dislike') {
+            console.log('Switching from dislike to like');
+            if (dislikeBtn) dislikeBtn.classList.remove('active');
+          }
+          
+          likeBtn.classList.add('active');
+          VoteManager.setVote(currentGame.title, 'like');
+          console.log('Calling incrementLike...');
+          incrementLike(currentGame.title, previousVote);
+        };
+      }
+      
+      // Dislike button handler
+      if (dislikeBtn) {
+        dislikeBtn.onclick = () => {
+          console.log('Dislike button clicked for game:', currentGame.title);
+          const currentVote = VoteManager.getVote(currentGame.title);
+          console.log('Current vote:', currentVote);
+          const previousVote = currentVote;
+          
+          if (currentVote === 'dislike') {
+            console.log('Already disliked, ignoring');
+            return;
+          } else if (currentVote === 'like') {
+            console.log('Switching from like to dislike');
+            if (likeBtn) likeBtn.classList.remove('active');
+          }
+          
+          dislikeBtn.classList.add('active');
+          VoteManager.setVote(currentGame.title, 'dislike');
+          console.log('Calling incrementDislike...');
+          incrementDislike(currentGame.title, previousVote);
+        };
+      }
+      
+      // Fetch initial view count
+      fetchAndDisplayViews(currentGame.title);
 
       const primaryBg = currentGame.thumbnail ? `url("${currentGame.thumbnail}")` : 'none';
 
@@ -134,6 +543,9 @@
       `;
 
       document.getElementById("playBtn").onclick = async () => {
+        // Increment view count when game starts
+        incrementView(currentGame.title);
+        
         const iframe = document.createElement("iframe");
         iframe.setAttribute("allowfullscreen", "");
         iframe.setAttribute("allow", "autoplay; fullscreen; gamepad; microphone; camera");
@@ -166,14 +578,17 @@
         }
       };
 
-      fsBtn.onclick = () => {
-        const el = container.querySelector(".game-iframe") || container;
-        if (el.requestFullscreen) el.requestFullscreen();
-        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-      };
+      if (fsBtn) {
+        fsBtn.onclick = () => {
+          const el = container.querySelector(".game-iframe") || container;
+          if (el.requestFullscreen) el.requestFullscreen();
+          else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        };
+      }
     }
 
     initLoader();
+    })(); // Close IIFE
   </script>
 
   <script>
