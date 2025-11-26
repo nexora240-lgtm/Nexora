@@ -25,18 +25,8 @@ function loadView(file) {
 
       app.innerHTML = doc.body ? doc.body.innerHTML : '';
 
-      scripts.forEach(scriptNode => {
-        const newScript = document.createElement('script');
-        Array.from(scriptNode.attributes).forEach(attr => {
-          newScript.setAttribute(attr.name, attr.value);
-        });
-
-        if (!scriptNode.src) {
-          newScript.textContent = scriptNode.textContent;
-        }
-
-        document.body.appendChild(newScript);
-      });
+      loadScriptsSequentially(scripts)
+        .catch(err => console.error('Failed to load view scripts', err));
 
       if (window.NexoraChat && typeof window.NexoraChat.init === 'function') {
         try { window.NexoraChat.init(app); } catch (e) {  }
@@ -54,6 +44,44 @@ function loadView(file) {
         <p>Failed to load ${file}.</p>
       `;
     });
+}
+
+function loadScriptsSequentially(scripts) {
+  // Maintain original script execution order so dependent bundles (e.g., proxy) initialize correctly.
+  return scripts.reduce((chain, scriptNode) => {
+    return chain.then(() => appendScriptNode(scriptNode));
+  }, Promise.resolve());
+}
+
+function appendScriptNode(scriptNode) {
+  return new Promise(resolve => {
+    const newScript = document.createElement('script');
+    Array.from(scriptNode.attributes).forEach(attr => {
+      newScript.setAttribute(attr.name, attr.value);
+    });
+
+    const hasSrc = Boolean(scriptNode.getAttribute('src'));
+    const isAsync = scriptNode.hasAttribute('async') || scriptNode.hasAttribute('defer') || scriptNode.getAttribute('type') === 'module';
+
+    if (!hasSrc) {
+      newScript.textContent = scriptNode.textContent;
+      document.body.appendChild(newScript);
+      resolve();
+      return;
+    }
+
+    if (!isAsync) {
+      newScript.async = false;
+    }
+
+    newScript.addEventListener('load', () => resolve(), { once: true });
+    newScript.addEventListener('error', event => {
+      console.error('Script failed to load:', scriptNode.getAttribute('src'), event);
+      resolve();
+    }, { once: true });
+
+    document.body.appendChild(newScript);
+  });
 }
 
 function renderHome()     { loadView('home.html'); }

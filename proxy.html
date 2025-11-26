@@ -39,17 +39,25 @@
       }
     }
 
+    html {
+      height: 100%;
+      overflow: hidden;
+    }
+
     body {
       font-family: 'Poppins', Arial, sans-serif;
       color: var(--text);
       overflow: hidden;
-      height: 100vh;
+      height: 100%;
+      min-height: 100vh;
     }
 
     .browser-container {
       display: flex;
       flex-direction: column;
       height: 100vh;
+      padding: 12px;
+      gap: 12px;
       --x: 50%;
       --y: 50%;
       --glow-size: 300px;
@@ -90,7 +98,7 @@
         0 4px 16px rgba(0, 0, 0, 0.2),
         inset 0 0 0 1px rgba(255, 255, 255, 0.03);
       border-radius: 12px 12px 0 0;
-      margin: 12px 12px 0 12px;
+      margin: 0;
       animation: slideDown calc(0.5s / var(--animation-speed)) ease-out;
     }
 
@@ -266,7 +274,7 @@
       box-shadow: 
         0 4px 16px rgba(0, 0, 0, 0.2),
         inset 0 0 0 1px rgba(255, 255, 255, 0.03);
-      margin: 0 12px;
+      margin: 0;
       animation: slideInLeft calc(0.5s / var(--animation-speed)) ease-out calc(0.1s / var(--animation-speed)) backwards;
     }
 
@@ -457,7 +465,8 @@
       overflow: hidden;
       background: transparent;
       border-radius: 0 0 12px 12px;
-      margin: 0 12px 12px 12px;
+      margin: 0;
+      min-height: 0;
     }
 
     .proxy-frame {
