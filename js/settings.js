@@ -20,6 +20,7 @@
   const CUSTOM_TITLE_KEY = 'settings.customTitle';
   const PANIC_KEY_KEY = 'settings.panicKey';
   const PANIC_URL_KEY = 'settings.panicUrl';
+  const PARTICLES_KEY = 'settings.particles';
   const THEME_CLASS_MAP = {
     'midnight-amber': 'theme-midnight-amber',
     'midnight-blueberry': 'theme-midnight-blueberry',
@@ -44,6 +45,9 @@
   const schemeToggle = root.querySelector('#schemeToggle');
   const schemeInput = root.querySelector('#schemeToggleInput');
   const schemeLabel = root.querySelector('#schemeLabel');
+  const particlesToggle = root.querySelector('#particlesToggle');
+  const particlesInput = root.querySelector('#particlesToggleInput');
+  const particlesLabel = root.querySelector('#particlesLabel');
   const aboutToggle = root.querySelector('#aboutToggle');
   const aboutInput = root.querySelector('#aboutToggleInput');
   const autoCloakStatus = root.querySelector('#auto-cloak-status');
@@ -405,6 +409,25 @@
     });
   }
 
+  function setParticlesState(enabled, emitEvent = true) {
+    if (!particlesToggle || !particlesInput) return;
+    particlesInput.checked = !!enabled;
+    particlesToggle.classList.toggle('active', !!enabled);
+    particlesToggle.setAttribute('aria-checked', !!enabled ? 'true' : 'false');
+    try { localStorage.setItem(PARTICLES_KEY, JSON.stringify(!!enabled)); } catch (e) {}
+    if (particlesLabel) particlesLabel.textContent = !!enabled ? 'Particles [Enabled]' : 'Particles [Disabled]';
+    if (emitEvent) document.dispatchEvent(new CustomEvent('settings:particlesToggled', { detail: { enabled: !!enabled } }));
+  }
+  if (particlesToggle) {
+    particlesToggle.addEventListener('click', () => setParticlesState(!particlesInput.checked));
+    particlesToggle.addEventListener('keydown', (ev) => { 
+      if (ev.key === 'Enter' || ev.key === ' ') { 
+        ev.preventDefault(); 
+        setParticlesState(!particlesInput.checked); 
+      }
+    });
+  }
+
   function clearThemeOptionSelection() {
     root.querySelectorAll('.theme-option.selected').forEach(b => { b.classList.remove('selected'); b.setAttribute('aria-pressed', 'false'); });
   }
@@ -535,6 +558,9 @@
 
       const savedAbout = JSON.parse(localStorage.getItem(ABOUT_KEY) || 'false');
       setAboutState(Boolean(savedAbout), false);
+
+      const savedParticles = JSON.parse(localStorage.getItem(PARTICLES_KEY) || 'true');
+      setParticlesState(Boolean(savedParticles), false);
 
       const cookieDisguise = getCookie(COOKIE_NAME);
       const savedDisguise = cookieDisguise || localStorage.getItem(DISGUISE_KEY) || '';
