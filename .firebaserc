@@ -1,34 +1,30 @@
 {
   "projects": {
-    "default": "noterplusfire02",
-    "site02": "noterplusfire02",
-    "site06": "noterplusfire06",
-    "site11": "noterplusfire11",
-    "site18": "noterplusfire18"
+    "default": "noterplusfire02"
   },
   "targets": {
-    "site02": {
+    "noterplusfire02": {
       "hosting": {
         "main": [
           "noterplusfire02"
         ]
       }
     },
-    "site06": {
+    "noterplusfire06": {
       "hosting": {
         "main": [
           "noterplusfire06"
         ]
       }
     },
-    "site11": {
+    "noterplusfire11": {
       "hosting": {
         "main": [
           "noterplusfire11"
         ]
       }
     },
-    "site18": {
+    "noterplusfire18": {
       "hosting": {
         "main": [
           "noterplusfire18"
