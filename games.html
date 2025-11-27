@@ -97,6 +97,29 @@
     let currentFilter = 'all';
     let viewsCache = {};
     
+    // Cleanup tracking for games page
+    const cleanupTasks = [];
+    
+    function registerCleanup(task) {
+      cleanupTasks.push(task);
+    }
+    
+    function cleanup() {
+      cleanupTasks.forEach(task => {
+        try {
+          task();
+        } catch (e) {
+          console.error('Games cleanup error:', e);
+        }
+      });
+      cleanupTasks.length = 0;
+    }
+    
+    // Export cleanup for SPA navigation
+    if (typeof window !== 'undefined') {
+      window.gamesCleanup = cleanup;
+    }
+    
     // Views API utilities
     const ViewsAPI = {
       async fetchBatch(gameIds) {
@@ -557,16 +580,24 @@
       initGames(value);
     }, 300);
     
-    inputEl.addEventListener("input", e => {
+    const inputHandler = e => {
       debouncedSearch(e.target.value);
-    });
-    // optional: support pressing Escape to clear input
-    inputEl.addEventListener("keydown", e => {
+    };
+    
+    const keydownHandler = e => {
       if (e.key === 'Escape') {
         inputEl.value = '';
         initGames('');
         inputEl.blur();
       }
+    };
+    
+    inputEl.addEventListener("input", inputHandler);
+    inputEl.addEventListener("keydown", keydownHandler);
+    
+    registerCleanup(() => {
+      inputEl.removeEventListener("input", inputHandler);
+      inputEl.removeEventListener("keydown", keydownHandler);
     });
 
     // Filter tabs

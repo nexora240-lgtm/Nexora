@@ -144,6 +144,31 @@
       <div class="loader-wrapper">
         <div id="gameContainer"></div>
 
+        <!-- Episode Selector Sidebar (for TV series) -->
+        <div id="episodeSidebar" class="episode-sidebar" style="display: none;">
+          <div class="episode-sidebar-header">
+            <button id="episodeSidebarToggle" class="episode-sidebar-toggle" title="Toggle episodes">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+              </svg>
+            </button>
+          </div>
+          <div class="episode-sidebar-content">
+            <div class="episode-sidebar-title">Episodes</div>
+            <div class="episode-season-selector">
+              <select id="sidebarSeasonSelect" class="sidebar-season-dropdown">
+                <!-- Populated by JS -->
+              </select>
+            </div>
+            <div class="episode-list" id="episodeList">
+              <!-- Episodes will be populated by JS -->
+            </div>
+          </div>
+        </div>
+
         <footer class="loader-footer">
           <div class="branding">
             <span id="gameTitle">Loading...</span>
