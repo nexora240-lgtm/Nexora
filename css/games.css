@@ -92,21 +92,14 @@ body {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
-  padding: 20px clamp(16px, 4vw, 32px) 140px;
+  padding: 20px;
   max-width: 1200px;
   margin: 0 auto 40px;
   overflow: visible;
-  min-height: calc(100vh - 100px);
-}
-
-@media (max-width: 600px) {
-  .grid {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 16px;
-    padding: 16px 12px 160px;
-  }
+  min-height: calc(100vh - 100px); 
+  padding-bottom: 60px; 
 }
 
 /* optional minimal no-results style */
@@ -234,7 +227,7 @@ body {
 .pagination {
   position: fixed;
   bottom: 0;
-  left: 84px;
+  left: 60px;
   right: 0;
   display: flex;
   justify-content: center;
@@ -252,37 +245,9 @@ body {
   opacity: 1;
 }
 
-body.sidebar-open .pagination {
-  left: 274px;
-}
-
-@media (max-width: 900px) {
-  .pagination {
-    left: 0;
-    right: 0;
-  }
-  body.sidebar-open .pagination {
-    left: 0;
-  }
-}
-
-@media (max-width: 720px) {
-  .pagination {
-    left: 0;
-    right: 0;
-  }
-  body.sidebar-open .pagination { left: 0; }
-}
-
-@media (max-width: 600px) {
-  .pagination {
-    left: 0;
-    right: 0;
-    border-radius: 0;
-  }
-  body.sidebar-open .pagination {
-    left: 0;
-  }
+.sidebar:hover ~ * .pagination,
+body:has(.sidebar:hover) .pagination {
+  left: 250px;
 }
 
 .pagination button {

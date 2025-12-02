@@ -4,12 +4,8 @@ html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  min-height: 100%;
-  overflow-x: hidden;
-}
-
-body {
-  min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
 }
 
 .home {
@@ -20,8 +16,8 @@ body {
   --on-accent-local: var(--on-primary, #fff0e8);
 
   width: 100%;
-  min-height: 100vh;
-  overflow: visible;
+  height: 100%;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
