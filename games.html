@@ -91,11 +91,27 @@
     }
     
     const GAMES_PER_PAGE = 100;
+    const VIEWS_CACHE_STORAGE_KEY = 'nexora_viewsCache';
     let currentPage = 1;
     let allGames = [];
     let filteredGames = [];
     let currentFilter = 'all';
-    let viewsCache = {};
+    let viewsCache = (() => {
+      try {
+        const stored = sessionStorage.getItem(VIEWS_CACHE_STORAGE_KEY);
+        return stored ? JSON.parse(stored) : {};
+      } catch (e) {
+        return {};
+      }
+    })();
+
+    function persistViewsCache() {
+      try {
+        sessionStorage.setItem(VIEWS_CACHE_STORAGE_KEY, JSON.stringify(viewsCache));
+      } catch (e) {
+        /* ignore */
+      }
+    }
     
     // Cleanup tracking for games page
     const cleanupTasks = [];
@@ -125,13 +141,24 @@
       async fetchBatch(gameIds) {
         if (!_CONFIG.viewsApiUrl || _CONFIG.viewsApiUrl.includes('YOUR-API-ID')) {
           console.warn('Views API not configured');
-          return {};
+          return gameIds.reduce((acc, id) => {
+            acc[id] = viewsCache[id] || 0;
+            return acc;
+          }, {});
         }
         try {
+          const uncachedIds = gameIds.filter(id => typeof viewsCache[id] === 'undefined');
+          if (!uncachedIds.length) {
+            return gameIds.reduce((acc, id) => {
+              acc[id] = viewsCache[id];
+              return acc;
+            }, {});
+          }
+
           const response = await fetch(`${_CONFIG.viewsApiUrl}/views/batch`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ gameIds })
+            body: JSON.stringify({ gameIds: uncachedIds })
           });
           const data = await response.json();
           // Handle both old format (views) and new format (stats)
@@ -143,10 +170,25 @@
               ? statsMap[gameId].viewCount 
               : statsMap[gameId];
           }
-          return viewsOnly;
+          Object.assign(viewsCache, viewsOnly);
+          persistViewsCache();
+
+          return gameIds.reduce((acc, id) => {
+            if (typeof viewsCache[id] !== 'undefined') {
+              acc[id] = viewsCache[id];
+            } else if (typeof viewsOnly[id] !== 'undefined') {
+              acc[id] = viewsOnly[id];
+            } else {
+              acc[id] = 0;
+            }
+            return acc;
+          }, {});
         } catch (error) {
           console.error('Failed to fetch views:', error);
-          return {};
+          return gameIds.reduce((acc, id) => {
+            acc[id] = viewsCache[id] || 0;
+            return acc;
+          }, {});
         }
       },
       async increment(gameId) {
@@ -162,6 +204,7 @@
           const data = await response.json();
           if (data.success) {
             viewsCache[gameId] = data.viewCount;
+            persistViewsCache();
           }
         } catch (error) {
           console.error('Failed to increment view:', error);
@@ -231,6 +274,12 @@
     allGames = await resp.json();
     sessionStorage.setItem("gamesList", JSON.stringify(allGames));
     FavoritesManager.updateCount();
+
+    // ⚡ Prefetch ALL view counts immediately to avoid loading delays
+    const allGameIds = allGames.map(g => g.title);
+    ViewsAPI.fetchBatch(allGameIds).catch(err => {
+      console.error('Failed to prefetch view counts:', err);
+    });
 
     // cursor-tracked highlight binding
     function bindCardHighlight(card) {
@@ -539,29 +588,35 @@
         cardObserver.observe(card);
       });
       
-      // ⚡ FETCH VIEWS IN BACKGROUND - Don't block rendering
+      // ⚡ Use cached view counts immediately - no async update needed
       if (pageGames.length > 0) {
         const gameIds = pageGames.map(c => c.game.title);
+        const missingIds = gameIds.filter(id => typeof viewsCache[id] === 'undefined');
         
-        // Fetch views asynchronously without blocking
-        ViewsAPI.fetchBatch(gameIds).then(views => {
-          Object.assign(viewsCache, views);
-          
-          // Update view counts in DOM after they load
-          pageGames.forEach((cand, index) => {
-            const count = views[cand.game.title] || 0;
-            const cards = grid.querySelectorAll('.game-card');
-            if (cards[index]) {
-              const viewCountEl = cards[index].querySelector('.view-count span');
-              if (viewCountEl) {
-                viewCountEl.textContent = ViewsAPI.formatCount(count);
-                cards[index].querySelector('.view-count').style.opacity = count > 0 ? '1' : '0.5';
+        // Only fetch if we have games without cached counts
+        if (missingIds.length > 0) {
+          ViewsAPI.fetchBatch(missingIds).then(views => {
+            Object.assign(viewsCache, views);
+            persistViewsCache();
+            
+            // Update only the cards that needed fetching
+            pageGames.forEach((cand, index) => {
+              if (missingIds.includes(cand.game.title)) {
+                const count = views[cand.game.title] || 0;
+                const cards = grid.querySelectorAll('.game-card');
+                if (cards[index]) {
+                  const viewCountEl = cards[index].querySelector('.view-count span');
+                  if (viewCountEl) {
+                    viewCountEl.textContent = ViewsAPI.formatCount(count);
+                    cards[index].querySelector('.view-count').style.opacity = count > 0 ? '1' : '0.5';
+                  }
+                }
               }
-            }
+            });
+          }).catch(error => {
+            console.error('Failed to load view counts:', error);
           });
-        }).catch(error => {
-          console.error('Failed to load view counts:', error);
-        });
+        }
       }
 
       // Show no results message

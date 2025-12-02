@@ -691,6 +691,7 @@ body {
   z-index: 9999;
   display: none;
   overflow-y: auto;
+  transition: transform 0.3s ease;
 }
 
 .player-modal.active {
@@ -773,23 +774,25 @@ body {
   display: flex;
   gap: 24px;
   position: relative;
+  transition: all 0.3s ease;
 }
 
 .player-wrapper {
   flex: 1;
   width: 100%;
   height: 0;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  padding-bottom: 42%; /* Reduced height - more comfortable viewing */
   position: relative;
   background: var(--page-bg);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
   transition: all 0.3s ease;
+  min-width: 0;
 }
 
 .player-content-wrapper.with-sidebar .player-wrapper {
-  flex: 1;
+  flex: 1 1 auto;
 }
 
 .player-wrapper iframe {
@@ -816,12 +819,14 @@ body {
   display: flex;
   flex-direction: column;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  transition: all 0.3s ease;
+  transition: width 0.3s ease, opacity 0.3s ease;
   flex-shrink: 0;
+  flex-grow: 0;
 }
 
 .player-episode-sidebar.collapsed {
   width: 56px;
+  min-width: 56px;
 }
 
 .player-episode-sidebar.collapsed .player-sidebar-content {
@@ -1994,4 +1999,23 @@ button:focus-visible,
 input:focus-visible {
   outline: 3px solid var(--orange);
   outline-offset: 2px;
+}
+
+/* Sidebar hover compensation for player modal */
+body:has(.sidebar:hover) .player-modal {
+  transform: translateX(95px);
+}
+
+body:has(.sidebar:hover) .player-modal .player-close {
+  right: calc(20px - 95px);
+}
+
+@media (max-width: 720px) {
+  body:has(.sidebar:hover) .player-modal {
+    transform: translateX(82px);
+  }
+  
+  body:has(.sidebar:hover) .player-modal .player-close {
+    right: calc(12px - 82px);
+  }
 }

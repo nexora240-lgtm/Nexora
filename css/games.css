@@ -635,6 +635,36 @@ body:has(.sidebar:hover) .pagination {
   }
 }
 
+html.performance-no-animations .game-card,
+html.performance-fast .game-card,
+html.performance-no-animations .game-card::before,
+html.performance-fast .game-card::before,
+html.performance-no-animations .game-card::after,
+html.performance-fast .game-card::after,
+html.performance-no-animations .game-card .back-glow,
+html.performance-fast .game-card .back-glow {
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+html.performance-no-animations .game-card,
+html.performance-fast .game-card {
+  opacity: 1 !important;
+}
+
+html.performance-no-animations .search-bar,
+html.performance-fast .search-bar,
+html.performance-no-animations .input-row,
+html.performance-fast .input-row,
+html.performance-no-animations .game-title,
+html.performance-fast .game-title,
+html.performance-no-animations body,
+html.performance-fast body {
+  animation: none !important;
+  opacity: 1 !important;
+}
+
 @media (max-width: 600px) {
   .suggestion-btn {
     font-size: 1rem;

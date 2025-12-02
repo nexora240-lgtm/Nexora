@@ -328,6 +328,20 @@ html, body {
   #gameContainer::after { filter: none; transform: none; }
 }
 
+/* Performance overrides */
+html.performance-no-animations .play-btn,
+html.performance-fast .play-btn {
+  opacity: 1 !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+html.performance-no-animations .loader-start,
+html.performance-fast .loader-start {
+  opacity: 1 !important;
+  animation: none !important;
+}
+
 
 /* ===== EPISODE SIDEBAR ===== */
 .episode-sidebar {

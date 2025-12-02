@@ -305,6 +305,174 @@
   border:1px solid rgba(255, 255, 255, 0.04); 
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
 }
+
+/* Performance preset buttons */
+.performance-presets {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.performance-preset-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--settings-panel-2) 50%, transparent);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  flex: 1;
+  min-width: 200px;
+  text-align: left;
+  transition: background .3s ease, box-shadow .12s ease, color .3s ease, transform .12s ease, border-color .3s ease;
+  will-change: transform, box-shadow;
+  position: relative;
+  overflow: hidden;
+}
+
+.performance-preset-btn::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  pointer-events: none;
+  border-radius: 10px;
+  background-image:
+    radial-gradient(
+      var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--settings-accent) 12%, transparent) 0%,
+      color-mix(in srgb, var(--settings-accent) 6%, transparent) 30%,
+      transparent 68%
+    );
+  opacity: 0;
+  transition: opacity 140ms ease-out;
+  will-change: opacity;
+  z-index: 0;
+}
+
+.performance-preset-btn:hover::before {
+  opacity: 0.4;
+}
+
+.performance-preset-btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+.performance-preset-btn:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--settings-accent-shadow) 60%, transparent);
+}
+
+.performance-preset-btn:active {
+  transform: translateY(1px);
+}
+
+.performance-preset-btn.selected {
+  background: var(--settings-panel);
+  border: 1px solid var(--settings-accent-deep);
+  box-shadow: 0 8px 22px var(--settings-accent-shadow);
+}
+
+.performance-preset-btn .preset-icon {
+  font-size: 28px;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+.performance-preset-btn .preset-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.performance-preset-btn .preset-name {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--settings-accent);
+}
+
+.performance-preset-btn .preset-desc {
+  font-size: 13px;
+  color: var(--settings-muted);
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.performance-preset-btn.selected .preset-name {
+  color: var(--settings-on-accent);
+}
+
+.performance-preset-btn.selected .preset-desc {
+  color: color-mix(in srgb, var(--settings-on-accent) 80%, transparent);
+}
+
+/* Performance state classes */
+.performance-fast .nav-btn::before,
+.performance-fast .theme-option::before,
+.performance-fast .panel::before,
+.performance-fast .policy-block::before,
+.performance-fast .uptime-block::before,
+.performance-fast .discord-block::before,
+.performance-fast .partner-item::before,
+.performance-fast .performance-preset-btn::before {
+  display: none !important;
+}
+
+.performance-no-animations .settings-root,
+.performance-no-animations .settings-root *,
+.performance-fast .settings-root,
+.performance-fast .settings-root * {
+  animation: none !important;
+}
+
+.performance-no-glow .settings-root .nav-btn.active,
+.performance-no-glow .settings-root .theme-option.selected,
+.performance-no-glow .settings-root .toggle.active .toggle-track {
+  box-shadow: none !important;
+}
+
+.performance-no-blur .settings-root .nav-btn,
+.performance-no-blur .settings-root .theme-option,
+.performance-no-blur .settings-root .panel,
+.performance-no-blur .settings-root .subsection,
+.performance-no-blur .settings-root .policy-block,
+.performance-no-blur .settings-root .uptime-block,
+.performance-no-blur .settings-root .discord-block,
+.performance-no-blur .settings-root .partner-item,
+.performance-no-blur .settings-root .performance-preset-btn {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.performance-no-transforms .settings-root .nav-btn:hover,
+.performance-no-transforms .settings-root .theme-option:hover,
+.performance-no-transforms .settings-root .policy-btn:hover,
+.performance-no-transforms .settings-root .blank-link:hover,
+.performance-no-transforms .settings-root .uptime-btn:hover,
+.performance-no-transforms .settings-root .discord-btn:hover,
+.performance-no-transforms .settings-root .performance-preset-btn:hover {
+  transform: none !important;
+}
+
+.performance-no-mouse-tracking .settings-root .nav-btn::before,
+.performance-no-mouse-tracking .settings-root .theme-option::before,
+.performance-no-mouse-tracking .settings-root .panel::before,
+.performance-no-mouse-tracking .settings-root .policy-block::before,
+.performance-no-mouse-tracking .settings-root .uptime-block::before,
+.performance-no-mouse-tracking .settings-root .discord-block::before,
+.performance-no-mouse-tracking .settings-root .partner-item::before,
+.performance-no-mouse-tracking .settings-root .performance-preset-btn::before {
+  display: none !important;
+}
+
 .settings-root .row { display:flex; gap:12px; align-items:center; margin-top:8px; }
 .settings-root .blank-link {
   color:var(--settings-on-accent);
