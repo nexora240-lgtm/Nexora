@@ -6,7 +6,6 @@
   left: 0;
   width: 100%;
   height: 100%;
-  padding: 16px;
   background: linear-gradient(180deg, 
     color-mix(in srgb, var(--page-bg, #0a0605) 95%, transparent),
     color-mix(in srgb, var(--page-bg, #0a0605) 85%, #000));
@@ -16,21 +15,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box;
-  overflow-y: auto;
   opacity: 0;
   animation: fadeIn 0.3s ease-out forwards;
   box-shadow:
     0 0 20px var(--primary-shadow, rgba(212,85,10,0.25)),
     inset 0 0 20px var(--primary-shadow, rgba(212,85,10,0.15));
-}
-
-#first-time-modal,
-#cloaking-modal,
-#cookie-consent-modal,
-#panic-button-modal {
-  max-height: calc(100vh - 32px);
-  overflow-y: auto;
 }
 
 @keyframes fadeIn {
