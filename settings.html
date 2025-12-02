@@ -70,23 +70,6 @@
 
             <div style="height:16px;"></div>
 
-            <h2>Particle Effects</h2>
-            <p class="description">Enable or disable animated particle effects in the background. When enabled, interactive particles will appear on the home page.</p>
-
-            <div class="subsection" style="display:flex;flex-direction:column;gap:12px;">
-              <div class="row" style="align-items:center; margin:0; gap:16px;">
-                <div class="toggle" tabindex="0" role="switch" aria-checked="true" id="particlesToggle" aria-label="Toggle particle effects">
-                  <input id="particlesToggleInput" type="checkbox" aria-hidden="true" />
-                  <span class="toggle-track" aria-hidden="true">
-                    <span class="toggle-thumb" aria-hidden="true"></span>
-                  </span>
-                </div>
-                <span class="toggle-label" id="particlesLabel" style="font-weight: 600; color: var(--settings-accent); font-size: 15px;">Particles [Enabled]</span>
-              </div>
-            </div>
-
-            <div style="height:16px;"></div>
-
             <h2>Performance</h2>
             <p class="description">Customize visual effects and animations to match your device's performance. Choose a preset or customize individual options.</p>
 
@@ -124,6 +107,19 @@
               <p class="description" style="margin-top:6px;">Fine-tune individual performance settings to your preference.</p>
 
               <div style="display:flex;flex-direction:column;gap:16px;margin-top:12px;">
+                <div class="row" style="align-items:center; margin:0; gap:16px; justify-content:space-between;">
+                  <div style="flex:1;">
+                    <div style="font-weight: 600; color: var(--settings-accent); font-size: 15px;">Particle Effects</div>
+                    <div class="description" style="margin-top:4px;">Animated particle effects in the background</div>
+                  </div>
+                  <div class="toggle" tabindex="0" role="switch" aria-checked="true" id="particlesToggle" aria-label="Toggle particle effects">
+                    <input id="particlesToggleInput" type="checkbox" aria-hidden="true" />
+                    <span class="toggle-track" aria-hidden="true">
+                      <span class="toggle-thumb" aria-hidden="true"></span>
+                    </span>
+                  </div>
+                </div>
+
                 <div class="row" style="align-items:center; margin:0; gap:16px; justify-content:space-between;">
                   <div style="flex:1;">
                     <div style="font-weight: 600; color: var(--settings-accent); font-size: 15px;">Mouse Highlight Tracking</div>

@@ -53,7 +53,6 @@
   const schemeLabel = root.querySelector('#schemeLabel');
   const particlesToggle = root.querySelector('#particlesToggle');
   const particlesInput = root.querySelector('#particlesToggleInput');
-  const particlesLabel = root.querySelector('#particlesLabel');
   const aboutToggle = root.querySelector('#aboutToggle');
   const aboutInput = root.querySelector('#aboutToggleInput');
   const autoCloakStatus = root.querySelector('#auto-cloak-status');
@@ -364,6 +363,7 @@
   // Performance preset configurations
   const PERFORMANCE_PRESETS = {
     fast: {
+      particles: false,
       mouseTracking: false,
       animations: false,
       glow: false,
@@ -371,6 +371,7 @@
       transforms: false
     },
     normal: {
+      particles: true,
       mouseTracking: false,
       animations: true,
       glow: false,
@@ -378,6 +379,7 @@
       transforms: false
     },
     fancy: {
+      particles: true,
       mouseTracking: true,
       animations: true,
       glow: true,
@@ -401,6 +403,7 @@
     if (!settings) return null;
     for (const [presetName, presetSettings] of Object.entries(PERFORMANCE_PRESETS)) {
       if (
+        presetSettings.particles === settings.particles &&
         presetSettings.mouseTracking === settings.mouseTracking &&
         presetSettings.animations === settings.animations &&
         presetSettings.glow === settings.glow &&
@@ -428,6 +431,7 @@
       document.dispatchEvent(new CustomEvent('settings:performanceChanged', {
         detail: {
           settings: {
+            particles: !!settings.particles,
             mouseTracking: !!settings.mouseTracking,
             animations: !!settings.animations,
             glow: !!settings.glow,
@@ -444,55 +448,67 @@
     if (!settings) return;
     const { persist = true, presetName = null } = options;
 
-    setPerformanceClassState('performance-no-mouse-tracking', !settings.mouseTracking);
-    setPerformanceClassState('performance-no-animations', !settings.animations);
-    setPerformanceClassState('performance-no-glow', !settings.glow);
-    setPerformanceClassState('performance-no-blur', !settings.blur);
-    setPerformanceClassState('performance-no-transforms', !settings.transforms);
+    const normalized = {
+      particles: settings.particles !== undefined ? !!settings.particles : (particlesInput ? !!particlesInput.checked : true),
+      mouseTracking: settings.mouseTracking !== undefined ? !!settings.mouseTracking : true,
+      animations: settings.animations !== undefined ? !!settings.animations : true,
+      glow: settings.glow !== undefined ? !!settings.glow : true,
+      blur: settings.blur !== undefined ? !!settings.blur : true,
+      transforms: settings.transforms !== undefined ? !!settings.transforms : true
+    };
+
+    setParticlesState(normalized.particles, true);
+
+    setPerformanceClassState('performance-no-mouse-tracking', !normalized.mouseTracking);
+    setPerformanceClassState('performance-no-animations', !normalized.animations);
+    setPerformanceClassState('performance-no-glow', !normalized.glow);
+    setPerformanceClassState('performance-no-blur', !normalized.blur);
+    setPerformanceClassState('performance-no-transforms', !normalized.transforms);
 
     if (mouseTrackingToggle && mouseTrackingInput) {
-      mouseTrackingInput.checked = settings.mouseTracking;
-      mouseTrackingToggle.classList.toggle('active', settings.mouseTracking);
-      mouseTrackingToggle.setAttribute('aria-checked', settings.mouseTracking ? 'true' : 'false');
+      mouseTrackingInput.checked = normalized.mouseTracking;
+      mouseTrackingToggle.classList.toggle('active', normalized.mouseTracking);
+      mouseTrackingToggle.setAttribute('aria-checked', normalized.mouseTracking ? 'true' : 'false');
     }
 
     if (animationsToggle && animationsInput) {
-      animationsInput.checked = settings.animations;
-      animationsToggle.classList.toggle('active', settings.animations);
-      animationsToggle.setAttribute('aria-checked', settings.animations ? 'true' : 'false');
+      animationsInput.checked = normalized.animations;
+      animationsToggle.classList.toggle('active', normalized.animations);
+      animationsToggle.setAttribute('aria-checked', normalized.animations ? 'true' : 'false');
     }
 
     if (glowToggle && glowInput) {
-      glowInput.checked = settings.glow;
-      glowToggle.classList.toggle('active', settings.glow);
-      glowToggle.setAttribute('aria-checked', settings.glow ? 'true' : 'false');
+      glowInput.checked = normalized.glow;
+      glowToggle.classList.toggle('active', normalized.glow);
+      glowToggle.setAttribute('aria-checked', normalized.glow ? 'true' : 'false');
     }
 
     if (blurToggle && blurInput) {
-      blurInput.checked = settings.blur;
-      blurToggle.classList.toggle('active', settings.blur);
-      blurToggle.setAttribute('aria-checked', settings.blur ? 'true' : 'false');
+      blurInput.checked = normalized.blur;
+      blurToggle.classList.toggle('active', normalized.blur);
+      blurToggle.setAttribute('aria-checked', normalized.blur ? 'true' : 'false');
     }
 
     if (transformsToggle && transformsInput) {
-      transformsInput.checked = settings.transforms;
-      transformsToggle.classList.toggle('active', settings.transforms);
-      transformsToggle.setAttribute('aria-checked', settings.transforms ? 'true' : 'false');
+      transformsInput.checked = normalized.transforms;
+      transformsToggle.classList.toggle('active', normalized.transforms);
+      transformsToggle.setAttribute('aria-checked', normalized.transforms ? 'true' : 'false');
     }
 
     if (persist) {
-      savePerformanceSettings(settings);
+      savePerformanceSettings(normalized);
     }
 
-    const resolvedPreset = presetName || matchPerformancePreset(settings);
+    const resolvedPreset = presetName || matchPerformancePreset(normalized);
     updatePresetSelection(resolvedPreset);
     setPerformanceClassState('performance-fast', resolvedPreset === 'fast');
 
-    emitPerformanceChange(settings, resolvedPreset);
+    emitPerformanceChange(normalized, resolvedPreset);
   }
 
   function savePerformanceSettings(settings) {
     try {
+      localStorage.setItem(PARTICLES_KEY, JSON.stringify(settings.particles));
       localStorage.setItem(MOUSE_TRACKING_KEY, JSON.stringify(settings.mouseTracking));
       localStorage.setItem(ANIMATIONS_KEY, JSON.stringify(settings.animations));
       localStorage.setItem(GLOW_KEY, JSON.stringify(settings.glow));
@@ -503,11 +519,12 @@
 
   function getCurrentPerformanceSettings() {
     return {
-      mouseTracking: mouseTrackingInput ? mouseTrackingInput.checked : true,
-      animations: animationsInput ? animationsInput.checked : true,
-      glow: glowInput ? glowInput.checked : true,
-      blur: blurInput ? blurInput.checked : true,
-      transforms: transformsInput ? transformsInput.checked : true
+      particles: particlesInput ? !!particlesInput.checked : true,
+      mouseTracking: mouseTrackingInput ? !!mouseTrackingInput.checked : true,
+      animations: animationsInput ? !!animationsInput.checked : true,
+      glow: glowInput ? !!glowInput.checked : true,
+      blur: blurInput ? !!blurInput.checked : true,
+      transforms: transformsInput ? !!transformsInput.checked : true
     };
   }
 
@@ -562,6 +579,7 @@
   attachPerformanceToggle(glowToggle, glowInput, 'glow');
   attachPerformanceToggle(blurToggle, blurInput, 'blur');
   attachPerformanceToggle(transformsToggle, transformsInput, 'transforms');
+  attachPerformanceToggle(particlesToggle, particlesInput, 'particles');
 
   function activate(section) {
     tabs.forEach(t => {
@@ -630,23 +648,20 @@
     });
   }
 
+  let currentParticlesState = null;
+
   function setParticlesState(enabled, emitEvent = true) {
     if (!particlesToggle || !particlesInput) return;
-    particlesInput.checked = !!enabled;
-    particlesToggle.classList.toggle('active', !!enabled);
-    particlesToggle.setAttribute('aria-checked', !!enabled ? 'true' : 'false');
-    try { localStorage.setItem(PARTICLES_KEY, JSON.stringify(!!enabled)); } catch (e) {}
-    if (particlesLabel) particlesLabel.textContent = !!enabled ? 'Particles [Enabled]' : 'Particles [Disabled]';
-    if (emitEvent) document.dispatchEvent(new CustomEvent('settings:particlesToggled', { detail: { enabled: !!enabled } }));
-  }
-  if (particlesToggle) {
-    particlesToggle.addEventListener('click', () => setParticlesState(!particlesInput.checked));
-    particlesToggle.addEventListener('keydown', (ev) => { 
-      if (ev.key === 'Enter' || ev.key === ' ') { 
-        ev.preventDefault(); 
-        setParticlesState(!particlesInput.checked); 
-      }
-    });
+    const nextState = !!enabled;
+    const stateChanged = currentParticlesState !== nextState;
+    currentParticlesState = nextState;
+    particlesInput.checked = nextState;
+    particlesToggle.classList.toggle('active', nextState);
+    particlesToggle.setAttribute('aria-checked', nextState ? 'true' : 'false');
+    setPerformanceClassState('performance-no-particles', !nextState);
+    if (emitEvent && stateChanged) {
+      document.dispatchEvent(new CustomEvent('settings:particlesToggled', { detail: { enabled: nextState } }));
+    }
   }
 
   function clearThemeOptionSelection() {
@@ -809,6 +824,7 @@
       } else {
         // Restore individual settings or default to Fancy
         const savedSettings = {
+          particles: Boolean(savedParticles),
           mouseTracking: JSON.parse(localStorage.getItem(MOUSE_TRACKING_KEY) || 'true'),
           animations: JSON.parse(localStorage.getItem(ANIMATIONS_KEY) || 'true'),
           glow: JSON.parse(localStorage.getItem(GLOW_KEY) || 'true'),
