@@ -722,6 +722,10 @@
     continueBtn.disabled = true;
     continueBtn.addEventListener('click', handleCookieConsentContinue);
 
+    acceptOption.classList.add('selected');
+    selectedCookieOption = 'accept';
+    continueBtn.disabled = false;
+
     actions.appendChild(continueBtn);
 
     modal.appendChild(header);
