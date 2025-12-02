@@ -21,6 +21,12 @@
   const PANIC_KEY_KEY = 'settings.panicKey';
   const PANIC_URL_KEY = 'settings.panicUrl';
   const PARTICLES_KEY = 'settings.particles';
+  const PERFORMANCE_PRESET_KEY = 'settings.performancePreset';
+  const MOUSE_TRACKING_KEY = 'settings.mouseTracking';
+  const ANIMATIONS_KEY = 'settings.animations';
+  const GLOW_KEY = 'settings.glow';
+  const BLUR_KEY = 'settings.blur';
+  const TRANSFORMS_KEY = 'settings.transforms';
   const THEME_CLASS_MAP = {
     'midnight-amber': 'theme-midnight-amber',
     'midnight-blueberry': 'theme-midnight-blueberry',
@@ -64,6 +70,19 @@
   const clearPanicKeyBtn = root.querySelector('#clearPanicKey');
   const panicStatus = root.querySelector('#panic-status');
   const panicKeyDisplay = root.querySelector('#panic-key-display');
+
+  // Performance controls
+  const performancePresetButtons = root.querySelectorAll('.performance-preset-btn');
+  const mouseTrackingToggle = root.querySelector('#mouseTrackingToggle');
+  const mouseTrackingInput = root.querySelector('#mouseTrackingInput');
+  const animationsToggle = root.querySelector('#animationsToggle');
+  const animationsInput = root.querySelector('#animationsInput');
+  const glowToggle = root.querySelector('#glowToggle');
+  const glowInput = root.querySelector('#glowInput');
+  const blurToggle = root.querySelector('#blurToggle');
+  const blurInput = root.querySelector('#blurInput');
+  const transformsToggle = root.querySelector('#transformsToggle');
+  const transformsInput = root.querySelector('#transformsInput');
 
   if (disguiseBadge && disguiseBadge.parentNode) {
     disguiseBadge.parentNode.removeChild(disguiseBadge);
@@ -342,6 +361,208 @@
     if (emit) document.dispatchEvent(new CustomEvent('settings:disguiseChanged', { detail: { disguise: choice } }));
   }
 
+  // Performance preset configurations
+  const PERFORMANCE_PRESETS = {
+    fast: {
+      mouseTracking: false,
+      animations: false,
+      glow: false,
+      blur: false,
+      transforms: false
+    },
+    normal: {
+      mouseTracking: false,
+      animations: true,
+      glow: false,
+      blur: true,
+      transforms: false
+    },
+    fancy: {
+      mouseTracking: true,
+      animations: true,
+      glow: true,
+      blur: true,
+      transforms: true
+    }
+  };
+
+  const performanceClassTargets = [document.documentElement];
+  if (root) performanceClassTargets.push(root);
+
+  function setPerformanceClassState(className, enabled) {
+    performanceClassTargets.forEach(target => {
+      if (target) {
+        target.classList.toggle(className, enabled);
+      }
+    });
+  }
+
+  function matchPerformancePreset(settings) {
+    if (!settings) return null;
+    for (const [presetName, presetSettings] of Object.entries(PERFORMANCE_PRESETS)) {
+      if (
+        presetSettings.mouseTracking === settings.mouseTracking &&
+        presetSettings.animations === settings.animations &&
+        presetSettings.glow === settings.glow &&
+        presetSettings.blur === settings.blur &&
+        presetSettings.transforms === settings.transforms
+      ) {
+        return presetName;
+      }
+    }
+    return null;
+  }
+
+  function persistPerformancePreset(presetName) {
+    try {
+      if (presetName) {
+        localStorage.setItem(PERFORMANCE_PRESET_KEY, presetName);
+      } else {
+        localStorage.removeItem(PERFORMANCE_PRESET_KEY);
+      }
+    } catch (e) {}
+  }
+
+  function emitPerformanceChange(settings, presetName) {
+    try {
+      document.dispatchEvent(new CustomEvent('settings:performanceChanged', {
+        detail: {
+          settings: {
+            mouseTracking: !!settings.mouseTracking,
+            animations: !!settings.animations,
+            glow: !!settings.glow,
+            blur: !!settings.blur,
+            transforms: !!settings.transforms
+          },
+          preset: presetName || null
+        }
+      }));
+    } catch (e) {}
+  }
+
+  function applyPerformanceSettings(settings, options = {}) {
+    if (!settings) return;
+    const { persist = true, presetName = null } = options;
+
+    setPerformanceClassState('performance-no-mouse-tracking', !settings.mouseTracking);
+    setPerformanceClassState('performance-no-animations', !settings.animations);
+    setPerformanceClassState('performance-no-glow', !settings.glow);
+    setPerformanceClassState('performance-no-blur', !settings.blur);
+    setPerformanceClassState('performance-no-transforms', !settings.transforms);
+
+    if (mouseTrackingToggle && mouseTrackingInput) {
+      mouseTrackingInput.checked = settings.mouseTracking;
+      mouseTrackingToggle.classList.toggle('active', settings.mouseTracking);
+      mouseTrackingToggle.setAttribute('aria-checked', settings.mouseTracking ? 'true' : 'false');
+    }
+
+    if (animationsToggle && animationsInput) {
+      animationsInput.checked = settings.animations;
+      animationsToggle.classList.toggle('active', settings.animations);
+      animationsToggle.setAttribute('aria-checked', settings.animations ? 'true' : 'false');
+    }
+
+    if (glowToggle && glowInput) {
+      glowInput.checked = settings.glow;
+      glowToggle.classList.toggle('active', settings.glow);
+      glowToggle.setAttribute('aria-checked', settings.glow ? 'true' : 'false');
+    }
+
+    if (blurToggle && blurInput) {
+      blurInput.checked = settings.blur;
+      blurToggle.classList.toggle('active', settings.blur);
+      blurToggle.setAttribute('aria-checked', settings.blur ? 'true' : 'false');
+    }
+
+    if (transformsToggle && transformsInput) {
+      transformsInput.checked = settings.transforms;
+      transformsToggle.classList.toggle('active', settings.transforms);
+      transformsToggle.setAttribute('aria-checked', settings.transforms ? 'true' : 'false');
+    }
+
+    if (persist) {
+      savePerformanceSettings(settings);
+    }
+
+    const resolvedPreset = presetName || matchPerformancePreset(settings);
+    updatePresetSelection(resolvedPreset);
+    setPerformanceClassState('performance-fast', resolvedPreset === 'fast');
+
+    emitPerformanceChange(settings, resolvedPreset);
+  }
+
+  function savePerformanceSettings(settings) {
+    try {
+      localStorage.setItem(MOUSE_TRACKING_KEY, JSON.stringify(settings.mouseTracking));
+      localStorage.setItem(ANIMATIONS_KEY, JSON.stringify(settings.animations));
+      localStorage.setItem(GLOW_KEY, JSON.stringify(settings.glow));
+      localStorage.setItem(BLUR_KEY, JSON.stringify(settings.blur));
+      localStorage.setItem(TRANSFORMS_KEY, JSON.stringify(settings.transforms));
+    } catch (e) {}
+  }
+
+  function getCurrentPerformanceSettings() {
+    return {
+      mouseTracking: mouseTrackingInput ? mouseTrackingInput.checked : true,
+      animations: animationsInput ? animationsInput.checked : true,
+      glow: glowInput ? glowInput.checked : true,
+      blur: blurInput ? blurInput.checked : true,
+      transforms: transformsInput ? transformsInput.checked : true
+    };
+  }
+
+  function updatePresetSelection(presetName) {
+    performancePresetButtons.forEach(btn => {
+      const isSelected = btn.dataset.preset === presetName;
+      btn.classList.toggle('selected', isSelected);
+      btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+    });
+  }
+
+  function applyPreset(presetName, saveToStorage = true) {
+    const preset = PERFORMANCE_PRESETS[presetName];
+    if (!preset) return;
+
+    applyPerformanceSettings(preset, { presetName });
+
+    if (saveToStorage) {
+      persistPerformancePreset(presetName);
+    }
+  }
+
+  // Performance preset button handlers
+  performancePresetButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const preset = btn.dataset.preset;
+      applyPreset(preset, true);
+    });
+  });
+
+  function attachPerformanceToggle(toggleEl, inputEl, featureKey) {
+    if (!toggleEl || !inputEl) return;
+    const triggerUpdate = () => {
+      const settings = getCurrentPerformanceSettings();
+      settings[featureKey] = !inputEl.checked;
+      applyPerformanceSettings(settings);
+      const matchingPreset = matchPerformancePreset(settings);
+      persistPerformancePreset(matchingPreset);
+    };
+
+    toggleEl.addEventListener('click', triggerUpdate);
+    toggleEl.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        triggerUpdate();
+      }
+    });
+  }
+
+  attachPerformanceToggle(mouseTrackingToggle, mouseTrackingInput, 'mouseTracking');
+  attachPerformanceToggle(animationsToggle, animationsInput, 'animations');
+  attachPerformanceToggle(glowToggle, glowInput, 'glow');
+  attachPerformanceToggle(blurToggle, blurInput, 'blur');
+  attachPerformanceToggle(transformsToggle, transformsInput, 'transforms');
+
   function activate(section) {
     tabs.forEach(t => {
       const active = t.dataset.target === section;
@@ -580,6 +801,22 @@
       else updateFaviconPreview(FALLBACK_NONE_FAVICON);
 
       applyDisguisePreview(savedDisguise || '', false);
+
+      // Restore performance settings
+      const savedPreset = localStorage.getItem(PERFORMANCE_PRESET_KEY);
+      if (savedPreset && PERFORMANCE_PRESETS[savedPreset]) {
+        applyPreset(savedPreset, false);
+      } else {
+        // Restore individual settings or default to Fancy
+        const savedSettings = {
+          mouseTracking: JSON.parse(localStorage.getItem(MOUSE_TRACKING_KEY) || 'true'),
+          animations: JSON.parse(localStorage.getItem(ANIMATIONS_KEY) || 'true'),
+          glow: JSON.parse(localStorage.getItem(GLOW_KEY) || 'true'),
+          blur: JSON.parse(localStorage.getItem(BLUR_KEY) || 'true'),
+          transforms: JSON.parse(localStorage.getItem(TRANSFORMS_KEY) || 'true')
+        };
+        applyPerformanceSettings(savedSettings);
+      }
     } catch (e) {}
   }
 
@@ -974,6 +1211,11 @@
     infoBlocks.forEach(addTracking);
     console.log('[Mouse Tracking] Blocks:', infoBlocks.length);
 
+    // Track mouse on performance preset buttons
+    const presetButtons = root.querySelectorAll('.performance-preset-btn');
+    presetButtons.forEach(addTracking);
+    console.log('[Mouse Tracking] Performance presets:', presetButtons.length);
+
     // Track mouse on settings root for global effects
     addTracking(root);
     console.log('[Mouse Tracking] Root element tracked');
@@ -985,12 +1227,13 @@
           mutation.addedNodes.forEach((node) => {
             if (node.nodeType === 1) { // Element node
               if (node.matches && (node.matches('.policy-block') || node.matches('.uptime-block') || 
-                  node.matches('.discord-block') || node.matches('.partner-item'))) {
+                  node.matches('.discord-block') || node.matches('.partner-item') ||
+                  node.matches('.performance-preset-btn'))) {
                 addTracking(node);
               }
               // Check children too
               if (node.querySelectorAll) {
-                node.querySelectorAll('.policy-block, .uptime-block, .discord-block, .partner-item').forEach(addTracking);
+                node.querySelectorAll('.policy-block, .uptime-block, .discord-block, .partner-item, .performance-preset-btn').forEach(addTracking);
               }
             }
           });

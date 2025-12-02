@@ -1234,8 +1234,21 @@ function cancelJoinRequest() {
 
     setTimeout(loadSavedUsername, 100);
 
+    let chatroomMouseTrackingInitialized = false;
+    let chatroomMouseTrackingObserver = null;
+    const trackedMouseElements = new Set();
+
     // Setup mouse tracking for interactive elements
     function setupMouseTracking() {
+        if (chatroomMouseTrackingInitialized) {
+            return;
+        }
+
+        if (document.documentElement.classList.contains('performance-no-mouse-tracking')) {
+            console.log('[Chatroom Mouse Tracking] Disabled due to performance settings');
+            return;
+        }
+
         const container = document.querySelector('.nexora-chatroom .container');
         if (!container) {
             console.warn('[Chatroom Mouse Tracking] No container element found');
@@ -1246,7 +1259,7 @@ function cancelJoinRequest() {
         
         // Helper function to add tracking to an element
         const addTracking = (element) => {
-            if (!element || element._hasMouseTracking) return;
+            if (!element || element._hasMouseTracking || document.documentElement.classList.contains('performance-no-mouse-tracking')) return;
             element._hasMouseTracking = true;
             
             let rafId = null;
@@ -1262,12 +1275,22 @@ function cancelJoinRequest() {
                     rafId = null;
                 });
             };
-            
-            element.addEventListener('mousemove', updateFromEvent);
-            element.addEventListener('mouseleave', () => {
+
+            const resetPosition = () => {
                 element.style.setProperty('--x', '50%');
                 element.style.setProperty('--y', '50%');
-            }, { passive: true });
+            };
+            
+            element.addEventListener('mousemove', updateFromEvent);
+            element.addEventListener('mouseleave', resetPosition, { passive: true });
+
+            element._mouseTrackingCleanup = () => {
+                element.removeEventListener('mousemove', updateFromEvent);
+                element.removeEventListener('mouseleave', resetPosition);
+                element._hasMouseTracking = false;
+                trackedMouseElements.delete(element);
+            };
+            trackedMouseElements.add(element);
             
             console.log('[Chatroom Mouse Tracking] Added tracking to:', element.className || element.id || element.tagName);
         };
@@ -1311,7 +1334,25 @@ function cancelJoinRequest() {
             observer.observe(chatroom, { childList: true, subtree: true });
         }
 
+        chatroomMouseTrackingObserver = observer;
+        chatroomMouseTrackingInitialized = true;
         console.log('[Chatroom Mouse Tracking] Setup complete');
+    }
+
+    function teardownMouseTracking() {
+        if (!chatroomMouseTrackingInitialized) return;
+        trackedMouseElements.forEach((element) => {
+            if (typeof element._mouseTrackingCleanup === 'function') {
+                element._mouseTrackingCleanup();
+            }
+        });
+        trackedMouseElements.clear();
+        if (chatroomMouseTrackingObserver) {
+            chatroomMouseTrackingObserver.disconnect();
+            chatroomMouseTrackingObserver = null;
+        }
+        chatroomMouseTrackingInitialized = false;
+        console.log('[Chatroom Mouse Tracking] Torn down due to performance settings');
     }
     
     // Initialize mouse tracking when DOM is ready
@@ -1320,5 +1361,14 @@ function cancelJoinRequest() {
     } else {
         setupMouseTracking();
     }
+
+    document.addEventListener('settings:performanceChanged', (event) => {
+        const disabled = event && event.detail && event.detail.settings ? !event.detail.settings.mouseTracking : document.documentElement.classList.contains('performance-no-mouse-tracking');
+        if (disabled) {
+            teardownMouseTracking();
+        } else if (!chatroomMouseTrackingInitialized) {
+            setupMouseTracking();
+        }
+    });
 
 })();

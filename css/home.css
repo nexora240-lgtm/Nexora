@@ -124,6 +124,18 @@ html, body {
   border-radius: 8px;
 }
 
+html.performance-no-animations .home h1,
+html.performance-no-animations .home h4,
+html.performance-no-animations .home .play-button,
+html.performance-fast .home h1,
+html.performance-fast .home h4,
+html.performance-fast .home .play-button {
+  animation: none !important;
+  transition: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home h1, .home h4, .home .play-button {
     animation: none !important;

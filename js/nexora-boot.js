@@ -7,6 +7,12 @@
   const FAVICON_KEY = 'settings.faviconData';
   const CUSTOM_TITLE_KEY = 'settings.customTitle';
   const ABOUT_KEY = 'settings.aboutBlank';
+  const PERFORMANCE_PRESET_KEY = 'settings.performancePreset';
+  const MOUSE_TRACKING_KEY = 'settings.mouseTracking';
+  const ANIMATIONS_KEY = 'settings.animations';
+  const GLOW_KEY = 'settings.glow';
+  const BLUR_KEY = 'settings.blur';
+  const TRANSFORMS_KEY = 'settings.transforms';
   const DEFAULT_FALLBACK = 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/nexora-amber.png';
   const CODE_LEVEL_TITLES = {
     "Clever": "Clever | Portal",
@@ -18,6 +24,30 @@
     "Kahoot!": "Enter Game PIN - Kahoot!",
     "Quizlet": "Your Sets | Quizlet",
     "Khan Academy": "Dashboard | Khan Academy"
+  };
+
+  const PERFORMANCE_PRESETS = {
+    fast: {
+      mouseTracking: false,
+      animations: false,
+      glow: false,
+      blur: false,
+      transforms: false
+    },
+    normal: {
+      mouseTracking: false,
+      animations: true,
+      glow: false,
+      blur: true,
+      transforms: false
+    },
+    fancy: {
+      mouseTracking: true,
+      animations: true,
+      glow: true,
+      blur: true,
+      transforms: true
+    }
   };
 
   function showPopupBlockedNotification() {
@@ -307,10 +337,64 @@
     } catch (e) {}
   }
 
+  function matchPerformancePreset(settings) {
+    if (!settings) return null;
+    for (const [presetName, presetSettings] of Object.entries(PERFORMANCE_PRESETS)) {
+      if (
+        presetSettings.mouseTracking === settings.mouseTracking &&
+        presetSettings.animations === settings.animations &&
+        presetSettings.glow === settings.glow &&
+        presetSettings.blur === settings.blur &&
+        presetSettings.transforms === settings.transforms
+      ) {
+        return presetName;
+      }
+    }
+    return null;
+  }
+
+  function readPerformanceSettings() {
+    let presetName = null;
+    try {
+      presetName = localStorage.getItem(PERFORMANCE_PRESET_KEY);
+    } catch (e) {
+      presetName = null;
+    }
+
+    if (presetName && PERFORMANCE_PRESETS[presetName]) {
+      return { settings: PERFORMANCE_PRESETS[presetName], preset: presetName };
+    }
+
+    const fallbackSettings = {
+      mouseTracking: JSON.parse(localStorage.getItem(MOUSE_TRACKING_KEY) || 'true'),
+      animations: JSON.parse(localStorage.getItem(ANIMATIONS_KEY) || 'true'),
+      glow: JSON.parse(localStorage.getItem(GLOW_KEY) || 'true'),
+      blur: JSON.parse(localStorage.getItem(BLUR_KEY) || 'true'),
+      transforms: JSON.parse(localStorage.getItem(TRANSFORMS_KEY) || 'true')
+    };
+
+    return { settings: fallbackSettings, preset: matchPerformancePreset(fallbackSettings) };
+  }
+
+  function applyPerformancePreferences() {
+    try {
+      const doc = document.documentElement;
+      const { settings, preset } = readPerformanceSettings();
+
+      doc.classList.toggle('performance-no-mouse-tracking', !settings.mouseTracking);
+      doc.classList.toggle('performance-no-animations', !settings.animations);
+      doc.classList.toggle('performance-no-glow', !settings.glow);
+      doc.classList.toggle('performance-no-blur', !settings.blur);
+      doc.classList.toggle('performance-no-transforms', !settings.transforms);
+      doc.classList.toggle('performance-fast', (preset || matchPerformancePreset(settings)) === 'fast');
+    } catch (e) {}
+  }
+
   window.NexoraBoot = {
     applySavedTitle,
     applySavedFavicon,
     applySavedTheme,
+    applyPerformancePreferences,
     setCookie
   };
 
@@ -318,6 +402,7 @@
     applySavedTitle();
     applySavedFavicon();
     applySavedTheme();
+    applyPerformancePreferences();
   } catch (e) {}
 
   if (document.readyState === 'loading') {

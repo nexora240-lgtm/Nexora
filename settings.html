@@ -84,6 +84,112 @@
                 <span class="toggle-label" id="particlesLabel" style="font-weight: 600; color: var(--settings-accent); font-size: 15px;">Particles [Enabled]</span>
               </div>
             </div>
+
+            <div style="height:16px;"></div>
+
+            <h2>Performance</h2>
+            <p class="description">Customize visual effects and animations to match your device's performance. Choose a preset or customize individual options.</p>
+
+            <div class="subsection">
+              <h3 style="margin:0;font-size:15px;color:var(--settings-accent);font-weight:600;">Presets</h3>
+              <p class="description" style="margin-top:6px;">Quick performance configurations optimized for different use cases.</p>
+
+              <div class="performance-presets" role="list" style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;">
+                <button class="performance-preset-btn" data-preset="fast" role="listitem" aria-pressed="false">
+                  <div class="preset-icon">⚡</div>
+                  <div class="preset-info">
+                    <div class="preset-name">Fast</div>
+                    <div class="preset-desc">Minimal effects for maximum speed</div>
+                  </div>
+                </button>
+                <button class="performance-preset-btn" data-preset="normal" role="listitem" aria-pressed="false">
+                  <div class="preset-icon">⚙️</div>
+                  <div class="preset-info">
+                    <div class="preset-name">Normal</div>
+                    <div class="preset-desc">Balanced performance and visuals</div>
+                  </div>
+                </button>
+                <button class="performance-preset-btn selected" data-preset="fancy" role="listitem" aria-pressed="true">
+                  <div class="preset-icon">✨</div>
+                  <div class="preset-info">
+                    <div class="preset-name">Fancy</div>
+                    <div class="preset-desc">Full effects for premium experience</div>
+                  </div>
+                </button>
+              </div>
+
+              <div style="height:16px;"></div>
+
+              <h3 style="margin:0;font-size:15px;color:var(--settings-accent);font-weight:600;">Custom Options</h3>
+              <p class="description" style="margin-top:6px;">Fine-tune individual performance settings to your preference.</p>
+
+              <div style="display:flex;flex-direction:column;gap:16px;margin-top:12px;">
+                <div class="row" style="align-items:center; margin:0; gap:16px; justify-content:space-between;">
+                  <div style="flex:1;">
+                    <div style="font-weight: 600; color: var(--settings-accent); font-size: 15px;">Mouse Highlight Tracking</div>
+                    <div class="description" style="margin-top:4px;">Interactive glow effects that follow your cursor</div>
+                  </div>
+                  <div class="toggle" tabindex="0" role="switch" aria-checked="true" id="mouseTrackingToggle" aria-label="Toggle mouse tracking">
+                    <input id="mouseTrackingInput" type="checkbox" aria-hidden="true" />
+                    <span class="toggle-track" aria-hidden="true">
+                      <span class="toggle-thumb" aria-hidden="true"></span>
+                    </span>
+                  </div>
+                </div>
+
+                <div class="row" style="align-items:center; margin:0; gap:16px; justify-content:space-between;">
+                  <div style="flex:1;">
+                    <div style="font-weight: 600; color: var(--settings-accent); font-size: 15px;">Animations</div>
+                    <div class="description" style="margin-top:4px;">Smooth transitions and entrance animations</div>
+                  </div>
+                  <div class="toggle" tabindex="0" role="switch" aria-checked="true" id="animationsToggle" aria-label="Toggle animations">
+                    <input id="animationsInput" type="checkbox" aria-hidden="true" />
+                    <span class="toggle-track" aria-hidden="true">
+                      <span class="toggle-thumb" aria-hidden="true"></span>
+                    </span>
+                  </div>
+                </div>
+
+                <div class="row" style="align-items:center; margin:0; gap:16px; justify-content:space-between;">
+                  <div style="flex:1;">
+                    <div style="font-weight: 600; color: var(--settings-accent); font-size: 15px;">Glow Effects</div>
+                    <div class="description" style="margin-top:4px;">Luminous shadows and accent glows</div>
+                  </div>
+                  <div class="toggle" tabindex="0" role="switch" aria-checked="true" id="glowToggle" aria-label="Toggle glow effects">
+                    <input id="glowInput" type="checkbox" aria-hidden="true" />
+                    <span class="toggle-track" aria-hidden="true">
+                      <span class="toggle-thumb" aria-hidden="true"></span>
+                    </span>
+                  </div>
+                </div>
+
+                <div class="row" style="align-items:center; margin:0; gap:16px; justify-content:space-between;">
+                  <div style="flex:1;">
+                    <div style="font-weight: 600; color: var(--settings-accent); font-size: 15px;">Backdrop Blur</div>
+                    <div class="description" style="margin-top:4px;">Frosted glass background blur effects</div>
+                  </div>
+                  <div class="toggle" tabindex="0" role="switch" aria-checked="true" id="blurToggle" aria-label="Toggle backdrop blur">
+                    <input id="blurInput" type="checkbox" aria-hidden="true" />
+                    <span class="toggle-track" aria-hidden="true">
+                      <span class="toggle-thumb" aria-hidden="true"></span>
+                    </span>
+                  </div>
+                </div>
+
+                <div class="row" style="align-items:center; margin:0; gap:16px; justify-content:space-between;">
+                  <div style="flex:1;">
+                    <div style="font-weight: 600; color: var(--settings-accent); font-size: 15px;">Hover Transforms</div>
+                    <div class="description" style="margin-top:4px;">Scale and lift effects on hover interactions</div>
+                  </div>
+                  <div class="toggle" tabindex="0" role="switch" aria-checked="true" id="transformsToggle" aria-label="Toggle hover transforms">
+                    <input id="transformsInput" type="checkbox" aria-hidden="true" />
+                    <span class="toggle-track" aria-hidden="true">
+                      <span class="toggle-thumb" aria-hidden="true"></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
