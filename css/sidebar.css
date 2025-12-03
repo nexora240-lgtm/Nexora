@@ -52,11 +52,12 @@ body {
 }
 
 .sidebar {
-  position: fixed;
-  top: 12px;
-  left: 12px;
-  height: calc(100vh - 24px);
+  position: fixed !important;
+  top: 12px !important;
+  left: 12px !important;
+  height: calc(100vh - 24px) !important;
   width: 60px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   background: var(--sb-sidebar-bg);
@@ -66,7 +67,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 20px;
   overflow: hidden;
-  transition: width 0.3s ease;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding-top: 20px;
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.3),
@@ -162,16 +163,16 @@ body {
 
 
 .sidebar:hover::before {
-  opacity: 0.6;
+  opacity: 0.7;
   background-image:
     linear-gradient(135deg,
-      color-mix(in srgb, var(--sb-accent) 12%, transparent) 0%,
-      color-mix(in srgb, var(--sb-accent-deep) 8%, transparent) 40%,
+      color-mix(in srgb, var(--sb-accent) 16%, transparent) 0%,
+      color-mix(in srgb, var(--sb-accent-deep) 10%, transparent) 40%,
       transparent 100%),
     radial-gradient(
       var(--glow-size-hover) circle at var(--x, 50%) var(--y, 50%),
-      color-mix(in srgb, var(--sb-accent) 24%, transparent) 0%,
-      color-mix(in srgb, var(--sb-accent) 12%, transparent) 28%,
+      color-mix(in srgb, var(--sb-accent) 28%, transparent) 0%,
+      color-mix(in srgb, var(--sb-accent) 14%, transparent) 28%,
       transparent 70%
     );
   transition: opacity 120ms ease-out, background-position 160ms ease-out;
@@ -247,30 +248,58 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
+  flex-direction: row;
+  gap: 12px;
   margin-bottom: 20px;
   padding: 10px;
   white-space: nowrap;
   overflow: hidden;
+  height: 76px;
+  flex-shrink: 0;
+  transition: gap 0.3s ease;
+}
+
+.sidebar:not(:hover) .sidebar-title {
+  gap: 0;
 }
 
 .sidebar-title img {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 0 2px rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.sidebar:hover .sidebar-title img {
+  transform: scale(1.05) rotate(-2deg);
 }
 
 .sidebar-title span {
   font-size: 1.5rem;
-  font-weight: bold;
+  font-weight: 700;
   letter-spacing: 2px;
   color: var(--sb-accent);
+  opacity: 1;
+  max-width: 200px;
+  transition: opacity 0.25s ease, max-width 0.3s ease;
+  margin-top: 0;
+  text-shadow: 0 2px 8px color-mix(in srgb, var(--sb-shadow) 40%, transparent);
+  background: linear-gradient(135deg, var(--sb-accent), var(--sb-accent-deep));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .sidebar:not(:hover) .sidebar-title span {
-  display: none;
+  opacity: 0;
+  max-width: 0;
+  pointer-events: none;
 }
 
 .sidebar a {
@@ -278,27 +307,48 @@ body {
   align-items: center;
   justify-content: flex-start;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   text-decoration: none;
-  font-size: 18px;
+  font-size: 16px;
+  font-weight: 500;
   color: var(--sb-text);
-  border-radius: var(--sb-radius);
-  margin: 8px 10px;
-  background: color-mix(in srgb, var(--sb-surface) 40%, transparent);
+  border-radius: 14px;
+  margin: 6px 10px;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--sb-surface) 50%, transparent),
+    color-mix(in srgb, var(--sb-surface) 35%, transparent));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
   box-shadow: 
-    -3px -3px 8px rgba(255, 255, 255, 0.03),
-    3px 3px 8px rgba(0, 0, 0, 0.4),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
   white-space: nowrap;
   overflow: hidden;
   line-height: 1;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--sb-accent) 18%, transparent),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
 }
 
 .sidebar:not(:hover) a {
-  justify-content: center;
-  padding: 10px 0;
+  padding: 12px 11px;
   gap: 0;
+  margin: 6px 8px;
   box-shadow: 
     -2px -2px 6px rgba(255, 255, 255, 0.03),
     2px 2px 6px rgba(0, 0, 0, 0.4);
@@ -306,36 +356,62 @@ body {
 
 .sidebar a:hover,
 .sidebar a:focus {
-  background: color-mix(in srgb, var(--sb-accent) 25%, color-mix(in srgb, var(--sb-surface) 50%, transparent));
-  transform: scale(1.02);
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--sb-accent) 22%, color-mix(in srgb, var(--sb-surface) 60%, transparent)),
+    color-mix(in srgb, var(--sb-accent) 18%, color-mix(in srgb, var(--sb-surface) 45%, transparent)));
+  transform: translateY(-2px) scale(1.02);
+  border-color: color-mix(in srgb, var(--sb-accent) 25%, transparent);
   box-shadow: 
-    -1px -1px 4px rgba(255, 255, 255, 0.04),
-    1px 1px 4px rgba(0, 0, 0, 0.5),
-    inset -2px -2px 6px rgba(0, 0, 0, 0.3),
-    inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+    0 6px 20px color-mix(in srgb, var(--sb-shadow) 35%, transparent),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
   color: var(--on-primary, #fff0e8);
   outline: none;
 }
 
+.sidebar a:hover::before,
+.sidebar a:focus::before {
+  opacity: 1;
+}
+
+.sidebar a:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 0.1s;
+}
+
 .sidebar i {
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.sidebar a:hover i {
+  transform: scale(1.1) rotate(-5deg);
 }
 
 .sidebar span {
   display: inline-flex;
   align-items: center;
-  height: 20px;
+  height: 22px;
+  letter-spacing: 0.3px;
+  opacity: 1;
+  max-width: 200px;
+  transition: opacity 0.2s ease, max-width 0.3s ease;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .sidebar:not(:hover) span {
-  display: none;
+  opacity: 0;
+  max-width: 0;
 }
 
 .site-title {
