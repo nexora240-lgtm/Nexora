@@ -26,8 +26,6 @@
 
 .nexora *, .nexora *::before, .nexora *::after { box-sizing: inherit; }
 
-html, body { height: 100%; }
-
 .nexora body { margin: 0; }
 
 .nexora .app { display: flex; flex-direction: column; height: 100%; }

@@ -2,7 +2,7 @@
 .url-bar {
   position: fixed;
   top: 20px;
-  left: calc(84px + (100vw - 84px) / 2);
+  left: calc(50% + 42px);
   transform: translateX(-50%) translateY(-8px);
   display: flex;
   align-items: center;
@@ -24,18 +24,13 @@
   opacity: 0;
   animation: slideDown 0.5s ease-out 0.4s forwards;
   font-family: 'Poppins', Arial, sans-serif;
-  transition: left 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Center in full viewport when in proxy page (no sidebar visible) */
-body:not(:has(.sidebar)) .url-bar {
-  left: 50%;
+  transition: left 0.3s ease, transform 0.3s ease;
 }
 
 /* Move URL bar when sidebar is expanded */
 .sidebar:hover ~ * .url-bar,
 body:has(.sidebar:hover) .url-bar {
-  left: calc(274px + (100vw - 274px) / 2);
+  left: calc(50% + 137px);
 }
 
 @keyframes slideDown {
@@ -87,7 +82,7 @@ body:has(.sidebar:hover) .url-bar {
   .url-bar {
     top: 12px;
     padding: 12px 30px;
-    left: calc(76px + (100vw - 76px) / 2);
+    left: calc(50% + 38px);
   }
   
   .url-bar-url {
@@ -97,7 +92,7 @@ body:has(.sidebar:hover) .url-bar {
   
   .sidebar:hover ~ * .url-bar,
   body:has(.sidebar:hover) .url-bar {
-    left: calc(240px + (100vw - 240px) / 2);
+    left: calc(50% + 120px);
   }
 }
 
