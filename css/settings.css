@@ -21,7 +21,7 @@
   
   animation: settingsEntrance 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   
   --x: 50%;
   --y: 50%;
@@ -256,7 +256,7 @@
   font-weight:600;
   min-width:420px;
   text-align:left;
-  transition: background .3s ease, box-shadow .12s ease, color .3s ease, transform .12s ease, border-color .3s ease;
+  transition: background .45s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow .25s cubic-bezier(0.34, 1.56, 0.64, 1), color .45s cubic-bezier(0.34, 1.56, 0.64, 1), transform .25s cubic-bezier(0.34, 1.56, 0.64, 1), border-color .45s cubic-bezier(0.34, 1.56, 0.64, 1);
   will-change: transform, box-shadow;
   animation: contentFadeIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   animation-delay: calc(var(--item-index, 0) * 0.05s);
@@ -288,12 +288,35 @@
   position: relative;
   z-index: 1;
 }
-.settings-root .theme-option:active { transform: translateY(1px); }
+.settings-root .theme-option:active { 
+  transform: scale(0.96) translateY(1px); 
+  transition: transform .12s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 .settings-root .theme-option.selected {
   background: var(--settings-panel);
   border: 1px solid var(--settings-accent-deep);
   color: var(--settings-on-accent);
   box-shadow: 0 8px 22px var(--settings-accent-shadow);
+  transform: scale(1.02);
+  animation: themeSelected 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes themeSelected {
+  0% {
+    transform: scale(0.94);
+    box-shadow: 0 4px 12px var(--settings-accent-shadow);
+    filter: brightness(1);
+  }
+  40% {
+    transform: scale(1.06);
+    box-shadow: 0 12px 35px var(--settings-accent-shadow);
+    filter: brightness(1.25);
+  }
+  100% {
+    transform: scale(1.02);
+    box-shadow: 0 8px 22px var(--settings-accent-shadow);
+    filter: brightness(1);
+  }
 }
 
 .settings-root .subsection { 
@@ -985,6 +1008,57 @@
 .settings-root input[type="text"][readonly] {
   cursor: pointer;
   user-select: none;
+}
+
+/* Ripple effect for theme options */
+.theme-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, 
+    color-mix(in srgb, var(--settings-accent) 35%, transparent) 0%,
+    color-mix(in srgb, var(--settings-accent) 25%, transparent) 25%,
+    transparent 70%);
+  transform: scale(0);
+  animation: ripple 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+/* Celebration particles when theme changes */
+.theme-particle {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  animation: particle-float 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes particle-float {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(var(--float-y, -100px)) translateX(var(--float-x, 0)) scale(0);
+    opacity: 0;
+  }
 }
 
 
