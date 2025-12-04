@@ -110,6 +110,7 @@
 
     const CHAT_STORAGE_KEY = 'nexora_chat_session';
     const MODE_STORAGE_KEY = 'nexora_ai_mode';
+    const LIMIT_STORAGE_KEY = 'nexora_rate_limits_v1';
     let chatHistory = [];
     let currentMode = 'general';
 
@@ -145,6 +146,151 @@
         systemPrompt: "You are a patient and knowledgeable educational tutor. Break down complex topics into easy-to-understand explanations. Use examples, analogies, and step-by-step instructions to teach concepts. Adapt your teaching style to different learning levels. Encourage questions and provide practice exercises when appropriate. Cover subjects including mathematics, science, history, languages, and more. Use markdown formatting to create well-structured lessons with clear headings and organized content."
       }
     };
+    // Client-side rate limiting
+    const RATE_LIMIT = {
+      cooldownMs: 5000,    // time between sends
+      perHour: 20,        // max requests per hour
+      perDay: 80          // max requests per day
+    };
+
+    function now(){ return Date.now(); }
+
+    function loadLimitState(){
+      try{
+        const raw = localStorage.getItem(LIMIT_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+      }catch{ return {}; }
+    }
+
+    function saveLimitState(state){
+      try{ localStorage.setItem(LIMIT_STORAGE_KEY, JSON.stringify(state)); }catch{}
+    }
+
+    function resetIfWindowElapsed(state){
+      const t = now();
+      const oneHour = 3_600_000, oneDay = 86_400_000;
+      // Initialize
+      state.lastSendAt = state.lastSendAt || 0;
+      state.hourStart = state.hourStart || t;
+      state.dayStart = state.dayStart || t;
+      state.hourCount = state.hourCount || 0;
+      state.dayCount = state.dayCount || 0;
+      if(t - state.hourStart   >= oneHour){ state.hourStart   = t; state.hourCount   = 0; }
+      if(t - state.dayStart    >= oneDay ){ state.dayStart    = t; state.dayCount    = 0; }
+      return state;
+    }
+
+    function canSendNow(){
+      const state = resetIfWindowElapsed(loadLimitState());
+      const t = now();
+      const cooldownOk = (t - (state.lastSendAt || 0)) >= RATE_LIMIT.cooldownMs;
+      const hourOk   = state.hourCount   < RATE_LIMIT.perHour;
+      const dayOk    = state.dayCount    < RATE_LIMIT.perDay;
+      return { ok: cooldownOk && hourOk && dayOk, state, reason: { cooldownOk, hourOk, dayOk } };
+    }
+
+    function recordSend(){
+      const state = resetIfWindowElapsed(loadLimitState());
+      state.lastSendAt = now();
+      state.hourCount++;
+      state.dayCount++;
+      saveLimitState(state);
+    }
+
+    function remainingLimits(){
+      const state = resetIfWindowElapsed(loadLimitState());
+      return {
+        hourRemaining:   Math.max(0, RATE_LIMIT.perHour   - (state.hourCount   || 0)),
+        dayRemaining:    Math.max(0, RATE_LIMIT.perDay    - (state.dayCount    || 0)),
+        cooldownMsLeft:  Math.max(0, RATE_LIMIT.cooldownMs - (now() - (state.lastSendAt || 0)))
+      };
+    }
+
+
+    // Lightweight client-side token optimization utilities
+    const TOKEN_OPT = {
+      // Hard caps to avoid overly long requests; adjust as needed
+      maxUserChars: 4000,
+      maxSystemChars: 1500,
+      keepRecentTurns: 6, // keep last N messages verbatim
+    };
+
+    function truncateText(s, max){
+      if(typeof s !== 'string') return s;
+      if(s.length <= max) return s;
+      // Prefer cutting on sentence boundary when possible
+      const slice = s.slice(0, max);
+      const lastPeriod = slice.lastIndexOf('.');
+      if(lastPeriod > max * 0.6) return slice.slice(0, lastPeriod + 1) + '…';
+      return slice.trim() + '…';
+    }
+
+    function compactMarkdown(s){
+      if(!s) return s;
+      let t = String(s);
+      // Remove repeated whitespace
+      t = t.replace(/[ \t]{2,}/g, ' ');
+      // Collapse long blank lines
+      t = t.replace(/\n{3,}/g, '\n\n');
+      // Trim overly long code blocks by keeping header + first ~50 lines
+      t = t.replace(/```([\s\S]*?)```/g, (m) => {
+        const lines = m.split('\n');
+        if(lines.length <= 60) return m; // keep small blocks
+        const head = lines.slice(0, 55).join('\n');
+        return head + '\n...\n```';
+      });
+      return t;
+    }
+
+    function summarizeTurn(text){
+      // Very cheap heuristic summary: take first 1-2 sentences
+      if(!text) return '';
+      const s = text.replace(/\s+/g, ' ').trim();
+      const parts = s.split(/(?<=[.!?])\s+/);
+      return parts.slice(0, 2).join(' ');
+    }
+
+    function buildOptimizedMessages(systemPrompt, history, mode){
+      const messages = [];
+      // Compact and truncate system prompt
+      const sys = truncateText(compactMarkdown(systemPrompt), TOKEN_OPT.maxSystemChars);
+      messages.push({ role: 'system', content: sys });
+
+      // Keep last N turns verbatim; earlier turns get summarized
+      const keep = TOKEN_OPT.keepRecentTurns;
+      const early = history.slice(0, Math.max(0, history.length - keep));
+      const recent = history.slice(-keep);
+
+      if(early.length){
+        // Summarize earlier dialogue to reduce tokens
+        const userSummaries = [];
+        const assistantSummaries = [];
+        early.forEach(msg => {
+          if(msg.role === 'user') userSummaries.push('- ' + summarizeTurn(msg.text || msg.content));
+          else if(msg.role === 'bot') assistantSummaries.push('- ' + summarizeTurn(msg.text || msg.content));
+        });
+        const summary = [
+          'Context summary of earlier turns:',
+          userSummaries.length ? 'User:' : '',
+          ...userSummaries,
+          assistantSummaries.length ? 'Assistant:' : '',
+          ...assistantSummaries
+        ].filter(Boolean).join('\n');
+        messages.push({ role: 'system', content: truncateText(summary, 1200) });
+      }
+
+      // Add recent turns, compacted and truncated
+      recent.forEach(msg => {
+        const contentRaw = msg.text || msg.content || '';
+        const compact = compactMarkdown(contentRaw);
+        const limit = msg.role === 'user' ? TOKEN_OPT.maxUserChars : TOKEN_OPT.maxUserChars;
+        const content = truncateText(compact, limit);
+        if(msg.role === 'user') messages.push({ role: 'user', content });
+        else messages.push({ role: 'assistant', content });
+      });
+
+      return messages;
+    }
 
     function escapeHtml(s){
       return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -304,7 +450,7 @@
 
       const name = document.createElement("div");
       name.className = "bot-name";
-      name.textContent = AI_MODES[currentMode]?.name || "ChatGPT 3.5 Turbo";
+      name.textContent = AI_MODES[currentMode]?.name || "gpt-5 nano";
 
       const body = document.createElement("div");
       body.innerHTML = markup;
@@ -408,7 +554,7 @@
 
             const name = document.createElement("div");
             name.className = "bot-name";
-            name.textContent = AI_MODES[currentMode]?.name || "ChatGPT 3.5 Turbo";
+            name.textContent = AI_MODES[currentMode]?.name || "gpt-5 nano";
 
             const body = document.createElement("div");
             body.innerHTML = msg.content;
@@ -528,7 +674,7 @@
 
       const name = document.createElement('div');
       name.className = 'bot-name';
-      name.textContent = AI_MODES[currentMode]?.name || 'ChatGPT 3.5 Turbo';
+      name.textContent = AI_MODES[currentMode]?.name || 'gpt-5 nano';
 
       const body = document.createElement('div');
       body.innerHTML = `<div class="typing-indicator"><div class="loader" aria-hidden="true"></div><div>Typing...</div></div>`;
@@ -556,6 +702,18 @@
       const prompt = promptEl.value.trim();
       if(!prompt) return;
 
+      // Rate limit checks
+      const gate = canSendNow();
+      if(!gate.ok){
+        const left = remainingLimits();
+        const reasons = [];
+        if(!gate.reason.cooldownOk) reasons.push(`cooldown ${Math.ceil(left.cooldownMsLeft/1000)}s`);
+        if(!gate.reason.hourOk)     reasons.push('hour cap reached');
+        if(!gate.reason.dayOk)      reasons.push('day cap reached');
+        addBotMessage(`<div class="bot-chunk"><strong>Rate limit:</strong> Please wait — ${escapeHtml(reasons.join(', '))}. Remaining: ${left.hourRemaining} this hour, ${left.dayRemaining} today.</div>`, root);
+        return;
+      }
+
       stopIntroLoop(root);
 
       if(introEl && !introEl.classList.contains("hidden")){
@@ -573,27 +731,16 @@
       showTypingIndicator(root);
 
       try {
+        // Record request on send attempt
+        recordSend();
         console.log('Sending to:', LAMBDA_ENDPOINT);
         console.log('Current origin:', window.location.origin);
         
-        // Build the messages array with mode-specific conversation history
+        // Build the messages array with token-optimized context
         const systemPrompt = AI_MODES[currentMode]?.systemPrompt || AI_MODES.general.systemPrompt;
         const maxHistory = AI_MODES[currentMode]?.maxHistory || 10;
-        
-        const messages = [
-          { role: "system", content: systemPrompt }
-        ];
-        
-        // Limit conversation history based on current mode
-        const recentHistory = maxHistory === Infinity ? chatHistory : chatHistory.slice(-maxHistory);
-        
-        recentHistory.forEach(msg => {
-          if(msg.role === 'user'){
-            messages.push({ role: "user", content: msg.text || msg.content });
-          } else if(msg.role === 'bot'){
-            messages.push({ role: "assistant", content: msg.text || msg.content });
-          }
-        });
+        const limitedHistory = maxHistory === Infinity ? chatHistory : chatHistory.slice(-maxHistory);
+        const messages = buildOptimizedMessages(systemPrompt, limitedHistory, currentMode);
         
         const requestBody = {
           messages: messages

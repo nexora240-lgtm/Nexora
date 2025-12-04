@@ -67,16 +67,32 @@
       transform: translateX(-50%);
       background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
       color: white;
-      padding: 20px 30px;
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      padding: 24px 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
       z-index: 999999;
       font-family: 'Poppins', Arial, sans-serif;
-      max-width: 500px;
+      max-width: 420px;
       width: 90%;
       box-sizing: border-box;
-      animation: slideDown 0.3s ease-out;
+      animation: slideDown 0.4s ease-out;
+      text-align: center;
     `;
+
+    // Create animated arrow
+    const arrow = document.createElement('div');
+    arrow.id = 'popup-arrow';
+    arrow.style.cssText = `
+      position: fixed;
+      top: 10px;
+      right: 290px;
+      font-size: 48px;
+      z-index: 999998;
+      animation: bounce 1s infinite, glow 2s infinite;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+      pointer-events: none;
+    `;
+    arrow.innerHTML = '👆';
 
     notification.innerHTML = `
       <style>
@@ -84,67 +100,43 @@
           from { transform: translateX(-50%) translateY(-100px); opacity: 0; }
           to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-15px); }
+        }
+        @keyframes glow {
+          0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)); }
+          50% { filter: drop-shadow(0 0 20px rgba(255, 255, 255, 1)); }
+        }
         #popup-blocked-notification h3 {
-          margin: 0 0 12px 0;
-          font-size: 18px;
+          margin: 0 0 16px 0;
+          font-size: 24px;
           font-weight: 700;
         }
         #popup-blocked-notification p {
-          margin: 0 0 16px 0;
-          font-size: 14px;
-          line-height: 1.5;
-          opacity: 0.95;
+          margin: 0;
+          font-size: 16px;
+          line-height: 1.6;
+          font-weight: 500;
         }
-        #popup-blocked-notification button {
-          background: white;
-          color: #ff6b6b;
-          border: none;
-          padding: 10px 24px;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-family: 'Poppins', Arial, sans-serif;
-          margin-right: 10px;
-        }
-        #popup-blocked-notification button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        #popup-blocked-notification button:active {
-          transform: translateY(0);
-        }
-        #popup-blocked-notification .dismiss-btn {
-          background: rgba(255, 255, 255, 0.2);
-          color: white;
-        }
-        #popup-blocked-notification .dismiss-btn:hover {
-          background: rgba(255, 255, 255, 0.3);
+        #popup-blocked-notification .big-emoji {
+          font-size: 64px;
+          margin: 10px 0;
         }
       </style>
-      <h3>🚫 Pop-ups Blocked</h3>
-      <p><strong>Please enable pop-ups for this site.</strong><br>
-      This feature disguises the site in an about:blank tab to keep your browsing private. Without pop-ups enabled, this privacy feature cannot work.</p>
-      <button id="retry-popup-btn">Try Again</button>
-      <button class="dismiss-btn" id="dismiss-popup-btn">Disable Feature</button>
+      <div class="big-emoji">🚫</div>
+      <h3>Pop-ups Are Blocked!</h3>
+      <p>Click the icon in your address bar ☝️<br>then allow pop-ups</p>
     `;
 
     document.body.appendChild(notification);
+    document.body.appendChild(arrow);
 
-    // Add retry button handler
-    document.getElementById('retry-popup-btn').addEventListener('click', () => {
-      notification.remove();
-      checkAndApplyAutoCloaking();
-    });
-
-    // Add dismiss button handler
-    document.getElementById('dismiss-popup-btn').addEventListener('click', () => {
-      try {
-        localStorage.setItem(ABOUT_KEY, 'false');
-        notification.remove();
-      } catch (e) {}
-    });
+    // Auto-remove after showing for a while
+    setTimeout(() => {
+      if (notification.parentNode) notification.remove();
+      if (arrow.parentNode) arrow.remove();
+    }, 10000);
   }
 
   function checkAndApplyAutoCloaking() {

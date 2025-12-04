@@ -117,13 +117,12 @@
     .loader-page .content-wrapper {
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       gap: 20px;
       max-width: 1600px;
       margin: 0 auto;
       padding: 20px;
       width: 100%;
-      height: 100%;
       box-sizing: border-box;
     }
 
@@ -199,6 +198,17 @@
         </footer>
       </div>
     </div>
+
+    <!-- Related Games Section -->
+    <section class="related-games-section">
+      <h2 class="related-games-title">
+        <i class="fas fa-gamepad"></i>
+        Other Games You May Like
+      </h2>
+      <div class="related-games-grid" id="relatedGamesGrid">
+        <!-- Games will be populated by JS -->
+      </div>
+    </section>
   </div>
 
   <script>
@@ -567,9 +577,15 @@
         </div>
       `;
 
-      document.getElementById("playBtn").onclick = async () => {
+      // Function to start the game (used by both Play Now button and autoplay)
+      async function startGame() {
         // Increment view count when game starts
         incrementView(currentGame.title);
+        
+        // Save game state for "Continue Playing" feature
+        if (window.GameStateManager) {
+          window.GameStateManager.saveState(currentGame);
+        }
         
         const iframe = document.createElement("iframe");
         iframe.setAttribute("allowfullscreen", "");
@@ -584,7 +600,48 @@
         // Fetch the HTML content and create a blob URL for better compatibility
         try {
           const response = await fetch(currentGame.file);
-          const htmlContent = await response.text();
+          let htmlContent = await response.text();
+          
+          // Inject audio tracking script to enable pause/resume when hidden
+          const audioTrackingScript = '<scr' + 'ipt>' +
+            '(function() {' +
+            '  window._audioContexts = window._audioContexts || [];' +
+            '  var OriginalAudioContext = window.AudioContext || window.webkitAudioContext;' +
+            '  if (OriginalAudioContext) {' +
+            '    window.AudioContext = window.webkitAudioContext = function() {' +
+            '      var ctx = new OriginalAudioContext();' +
+            '      window._audioContexts.push(ctx);' +
+            '      return ctx;' +
+            '    };' +
+            '  }' +
+            '  document.addEventListener("visibilitychange", function() {' +
+            '    if (document.hidden) {' +
+            '      window._audioContexts.forEach(function(ctx) {' +
+            '        if (ctx.state === "running") ctx.suspend();' +
+            '      });' +
+            '      document.querySelectorAll("audio, video").forEach(function(el) {' +
+            '        if (!el.paused) { el.dataset.wasPlaying = "true"; el.pause(); }' +
+            '      });' +
+            '    } else {' +
+            '      window._audioContexts.forEach(function(ctx) {' +
+            '        if (ctx.state === "suspended") ctx.resume();' +
+            '      });' +
+            '      document.querySelectorAll("audio, video").forEach(function(el) {' +
+            '        if (el.dataset.wasPlaying === "true") { el.play(); delete el.dataset.wasPlaying; }' +
+            '      });' +
+            '    }' +
+            '  });' +
+            '})();' +
+            '</scr' + 'ipt>';
+          
+          // Inject the script right after <head> or at the beginning
+          if (htmlContent.includes('<head>')) {
+            htmlContent = htmlContent.replace('<head>', '<head>' + audioTrackingScript);
+          } else if (htmlContent.includes('<html>')) {
+            htmlContent = htmlContent.replace('<html>', '<html><head>' + audioTrackingScript + '</head>');
+          } else {
+            htmlContent = audioTrackingScript + htmlContent;
+          }
           
           // Create blob URL with proper MIME type
           const blob = new Blob([htmlContent], { type: 'text/html' });
@@ -601,7 +658,17 @@
           // Fallback to direct src if fetch fails
           iframe.src = normalizeToHttpsS3(currentGame.file);
         }
-      };
+      }
+
+      document.getElementById("playBtn").onclick = startGame;
+      
+      // Check if we should autoplay (coming from "Continue Playing")
+      if (window.GameStateManager && window.GameStateManager.shouldAutoplay()) {
+        // Small delay to ensure DOM is ready, then auto-start the game
+        setTimeout(() => {
+          startGame();
+        }, 100);
+      }
 
       if (fsBtn) {
         fsBtn.onclick = () => {
@@ -613,6 +680,120 @@
     }
 
     initLoader();
+    
+    // Related Games Loader
+    async function loadRelatedGames() {
+      const currentGame = JSON.parse(sessionStorage.getItem("currentGame") || "null");
+      const allGames = JSON.parse(sessionStorage.getItem("gamesList") || "[]");
+      const grid = document.getElementById("relatedGamesGrid");
+      
+      if (!grid) return;
+      
+      // If games aren't in sessionStorage, fetch from JSON
+      let games = allGames;
+      if (games.length === 0) {
+        try {
+          const response = await fetch("game-info.json");
+          games = await response.json();
+        } catch (e) {
+          console.error("Failed to load games:", e);
+          return;
+        }
+      }
+      
+      // Filter out current game
+      const currentTitle = currentGame?.title || "";
+      const otherGames = games.filter(g => g.title !== currentTitle);
+      
+      // Shuffle and pick 50 games
+      const shuffled = otherGames.sort(() => Math.random() - 0.5);
+      const selectedGames = shuffled.slice(0, 49);
+      
+      // Render the games
+      selectedGames.forEach((game, index) => {
+        const card = document.createElement("div");
+        card.className = "related-game-card";
+        card.tabIndex = 0;
+        
+        card.onclick = () => {
+          const newGameData = JSON.stringify(game);
+          const currentGameData = sessionStorage.getItem("currentGame");
+          
+          console.log('Related game card clicked:', game.title);
+          console.log('Setting currentGame in sessionStorage:', newGameData);
+          
+          // Check if this is a different game than what's currently loaded
+          if (currentGameData !== newGameData) {
+            // Destroy the old game session completely when selecting a new game
+            if (typeof window.destroyGameSession === 'function') {
+              window.destroyGameSession();
+            } else if (window.GameStateManager) {
+              window.GameStateManager.clearState();
+              if (window.GameStateManager.clearDomState) {
+                window.GameStateManager.clearDomState();
+              }
+            }
+          }
+          
+          sessionStorage.setItem("currentGame", newGameData);
+          
+          // Verify it was saved
+          const saved = sessionStorage.getItem("currentGame");
+          console.log('Verified sessionStorage:', saved ? 'saved successfully' : 'FAILED TO SAVE');
+          
+          // keep your existing navigation behavior
+          if (typeof navigate === 'function') {
+            console.log('Using navigate function to /loader');
+            navigate('/loader');
+          } else {
+            // fallback: try location change if navigate not defined
+            console.log('navigate function not found, using location.href');
+            try { 
+              location.href = 'gameloader.html'; 
+            } catch (e) {
+              console.error('Navigation failed:', e);
+            }
+          }
+        };
+        
+        card.onkeydown = (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            card.click();
+          }
+        };
+        
+        const imgWrapper = document.createElement("div");
+        imgWrapper.className = "related-game-img-wrapper";
+        
+        const img = document.createElement("img");
+        img.src = game.thumbnail;
+        img.alt = game.title;
+        img.loading = "lazy";
+        
+        const overlay = document.createElement("div");
+        overlay.className = "related-game-overlay";
+        overlay.innerHTML = '<i class="fas fa-play"></i>';
+        
+        imgWrapper.appendChild(img);
+        imgWrapper.appendChild(overlay);
+        
+        const info = document.createElement("div");
+        info.className = "related-game-info";
+        
+        const title = document.createElement("span");
+        title.className = "related-game-title";
+        title.textContent = game.title;
+        
+        info.appendChild(title);
+        
+        card.appendChild(imgWrapper);
+        card.appendChild(info);
+        grid.appendChild(card);
+      });
+    }
+    
+    loadRelatedGames();
     })(); // Close IIFE
   </script>
 

@@ -22,6 +22,9 @@ function navigate(path) {
   }
 }
 
+// Expose navigate globally for dynamically loaded views
+window.navigate = navigate;
+
 document.addEventListener('click', e => {
   const link = e.target.closest('[data-route]');
   if (link) {
