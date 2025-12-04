@@ -667,6 +667,57 @@
   function clearThemeOptionSelection() {
     root.querySelectorAll('.theme-option.selected').forEach(b => { b.classList.remove('selected'); b.setAttribute('aria-pressed', 'false'); });
   }
+  
+  function createRipple(event, element) {
+    const ripple = document.createElement('span');
+    ripple.classList.add('theme-ripple');
+    
+    const rect = element.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height) * 2;
+    const x = event.clientX - rect.left - size / 2;
+    const y = event.clientY - rect.top - size / 2;
+    
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    
+    element.appendChild(ripple);
+    
+    setTimeout(() => {
+      ripple.remove();
+    }, 800);
+  }
+  
+  function createParticles(event) {
+    const colors = [
+      getComputedStyle(document.documentElement).getPropertyValue('--settings-accent').trim(),
+      getComputedStyle(document.documentElement).getPropertyValue('--settings-accent-deep').trim(),
+    ];
+    
+    const particleCount = 12;
+    for (let i = 0; i < particleCount; i++) {
+      const particle = document.createElement('div');
+      particle.classList.add('theme-particle');
+      
+      const angle = (Math.PI * 2 * i) / particleCount;
+      const velocity = 80 + Math.random() * 40;
+      const floatX = Math.cos(angle) * velocity;
+      const floatY = Math.sin(angle) * velocity - Math.random() * 30;
+      
+      particle.style.left = event.clientX + 'px';
+      particle.style.top = event.clientY + 'px';
+      particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+      particle.style.setProperty('--float-x', floatX + 'px');
+      particle.style.setProperty('--float-y', floatY + 'px');
+      
+      document.body.appendChild(particle);
+      
+      setTimeout(() => {
+        particle.remove();
+      }, 1200);
+    }
+  }
+  
   function applyTheme(themeId, emit = true) {
     if (!themeId) return;
     const cls = THEME_CLASS_MAP[themeId] || THEME_CLASS_MAP[DEFAULT_THEME_ID];
@@ -674,11 +725,51 @@
     document.documentElement.classList.remove(...Object.values(THEME_CLASS_MAP));
 
     document.documentElement.classList.add(cls);
+    
+    // Add a brief page flash effect for satisfying feedback
+    if (emit) {
+      const flash = document.createElement('div');
+      flash.style.cssText = `
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 999999;
+        background: radial-gradient(circle at 50% 50%, 
+          color-mix(in srgb, var(--settings-accent) 15%, transparent) 0%, 
+          transparent 70%);
+        opacity: 0;
+        animation: pageFlash 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      `;
+      
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes pageFlash {
+          0% { opacity: 0; }
+          30% { opacity: 1; }
+          100% { opacity: 0; }
+        }
+      `;
+      document.head.appendChild(style);
+      document.body.appendChild(flash);
+      
+      setTimeout(() => {
+        flash.remove();
+        style.remove();
+      }, 600);
+    }
+    
     try { localStorage.setItem(THEME_KEY, themeId); } catch (e) {}
     if (emit) document.dispatchEvent(new CustomEvent('settings:themeChanged', { detail: { theme: themeId } }));
   }
   root.querySelectorAll('.theme-option').forEach(btn => {
-    btn.addEventListener('click', () => { clearThemeOptionSelection(); btn.classList.add('selected'); btn.setAttribute('aria-pressed', 'true'); applyTheme(btn.dataset.value); });
+    btn.addEventListener('click', (e) => { 
+      createRipple(e, btn);
+      createParticles(e);
+      clearThemeOptionSelection(); 
+      btn.classList.add('selected'); 
+      btn.setAttribute('aria-pressed', 'true'); 
+      applyTheme(btn.dataset.value); 
+    });
   });
 
   function setAboutState(enabled, emitEvent = true) {
