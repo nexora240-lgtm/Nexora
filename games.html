@@ -74,16 +74,6 @@
     </div>
   </div>
 
-  <!-- Filter Tabs -->
-  <div class="filter-tabs">
-    <button class="filter-tab active" data-filter="all">
-      All Games
-    </button>
-    <button class="filter-tab" data-filter="favorites">
-      Favorites
-    </button>
-  </div>
-
   <!-- Horizontal Scrollable Sections -->
   <div class="scrollable-sections" id="scrollableSections">
     <!-- Recently Played Section -->
@@ -103,7 +93,7 @@
     </div>
 
     <!-- Most Popular Section -->
-    <div class="game-section" id="mostPopularSection">
+    <div class="game-section banner-section" id="mostPopularSection">
       <div class="section-header">
         <h2 class="section-title">Most Popular</h2>
         <button class="section-nav-btn section-nav-left" disabled>
@@ -114,34 +104,37 @@
         </button>
       </div>
       <div class="section-scroll-container">
-        <div class="section-games" id="mostPopularGames"></div>
-      </div>
-    </div>
-
-    <!-- Your Favorites Section -->
-    <div class="game-section" id="yourFavoritesSection" style="display: none;">
-      <div class="section-header">
-        <h2 class="section-title">Your Favorites</h2>
-        <button class="section-nav-btn section-nav-left" disabled>
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <button class="section-nav-btn section-nav-right">
-          <i class="fas fa-chevron-right"></i>
-        </button>
-      </div>
-      <div class="section-scroll-container">
-        <div class="section-games" id="yourFavoritesGames"></div>
+        <div class="section-games banner-cards" id="mostPopularGames"></div>
       </div>
     </div>
   </div>
 
   <div class="content-wrapper">
+    <h2 class="section-title" style="margin: 24px 0 16px; padding: 0 20px;">All Games</h2>
     <!-- Game Grid -->
     <div class="grid" id="gameGrid"></div>
   </div>
 
   <!-- Pagination -->
   <div class="pagination" id="pagination"></div>
+
+  <!-- Your Favorites Section -->
+  <div class="game-section" id="yourFavoritesSection" style="display: none; margin: 40px auto; max-width: 1200px; padding: 0 20px;">
+    <div class="section-header">
+      <h2 class="section-title">Your Favorites</h2>
+      <button class="section-nav-btn section-nav-left" disabled>
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="section-nav-btn section-nav-right">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+    <div class="section-scroll-container">
+      <div class="section-games" id="yourFavoritesGames"></div>
+    </div>
+  </div>
+
+  <div style="height: 40px;"></div>
 
   <!-- Game Suggestion Button -->
   <div class="suggestion-section">
@@ -216,6 +209,17 @@
             return acc;
           }, {});
         }
+        
+        // Helper to add timeout to fetch
+        const fetchWithTimeout = (url, options, timeout = 5000) => {
+          return Promise.race([
+            fetch(url, options),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Request timeout')), timeout)
+            )
+          ]);
+        };
+        
         try {
           const uncachedIds = gameIds.filter(id => typeof viewsCache[id] === 'undefined');
           if (!uncachedIds.length) {
@@ -235,11 +239,17 @@
           // Process all chunks in parallel
           await Promise.all(chunks.map(async (chunk) => {
             try {
-              const response = await fetch(`${_CONFIG.viewsApiUrl}/views/batch`, {
+              const response = await fetchWithTimeout(`${_CONFIG.viewsApiUrl}/views/batch`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ gameIds: chunk })
-              });
+              }, 5000);
+              
+              if (!response.ok) {
+                console.warn('Views API returned error:', response.status);
+                return;
+              }
+              
               const data = await response.json();
               // Handle both old format (views) and new format (stats)
               const statsMap = data.stats || data.views || {};
@@ -278,12 +288,22 @@
         if (!_CONFIG.viewsApiUrl || _CONFIG.viewsApiUrl.includes('YOUR-API-ID')) {
           return;
         }
+        
+        const fetchWithTimeout = (url, options, timeout = 5000) => {
+          return Promise.race([
+            fetch(url, options),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Request timeout')), timeout)
+            )
+          ]);
+        };
+        
         try {
-          const response = await fetch(`${_CONFIG.viewsApiUrl}/views/increment`, {
+          const response = await fetchWithTimeout(`${_CONFIG.viewsApiUrl}/views/increment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ gameId })
-          });
+          }, 5000);
           const data = await response.json();
           if (data.success) {
             viewsCache[gameId] = data.viewCount;
@@ -324,20 +344,47 @@
     // Favorites manager
     const FavoritesManager = {
       get() {
-        const saved = localStorage.getItem('nexora_favorites');
-        return saved ? JSON.parse(saved) : [];
+        try {
+          const saved = localStorage.getItem('nexora_favorites');
+          const parsed = saved ? JSON.parse(saved) : [];
+          if (!Array.isArray(parsed)) throw new Error('Favorites not an array');
+          // normalize to unique, trimmed strings
+          const clean = Array.from(new Set(parsed
+            .filter(item => typeof item === 'string')
+            .map(item => item.trim())
+            .filter(Boolean)
+          ));
+          return clean;
+        } catch (e) {
+          // Reset corrupt data so the favorites system keeps working
+          localStorage.removeItem('nexora_favorites');
+          return [];
+        }
       },
       set(favorites) {
-        localStorage.setItem('nexora_favorites', JSON.stringify(favorites));
+        const clean = Array.from(new Set((favorites || [])
+          .filter(item => typeof item === 'string')
+          .map(item => item.trim())
+          .filter(Boolean))
+        );
+        try {
+          localStorage.setItem('nexora_favorites', JSON.stringify(clean));
+        } catch (e) {
+          console.warn('Unable to persist favorites:', e);
+        }
         this.updateCount();
+        return clean;
       },
       toggle(gameTitle) {
+        const title = (gameTitle || '').trim();
+        if (!title) return false;
+
         const favorites = this.get();
-        const index = favorites.indexOf(gameTitle);
+        const index = favorites.indexOf(title);
         if (index > -1) {
           favorites.splice(index, 1);
         } else {
-          favorites.push(gameTitle);
+          favorites.push(title);
         }
         this.set(favorites);
         // Refresh sections when favorites change
@@ -347,7 +394,8 @@
         return index === -1; // return true if now favorited
       },
       isFavorited(gameTitle) {
-        return this.get().includes(gameTitle);
+        const title = (gameTitle || '').trim();
+        return title ? this.get().includes(title) : false;
       },
       updateCount() {
         const count = this.get().length;
@@ -467,24 +515,38 @@
     }
     
     function setupSectionNavigation(section) {
-      const scrollContainer = section.querySelector('.section-games');
+      const scrollContainer = section.querySelector('.section-scroll-container');
+      const gamesContainer = section.querySelector('.section-games');
       const leftBtn = section.querySelector('.section-nav-left');
       const rightBtn = section.querySelector('.section-nav-right');
       
-      if (!scrollContainer || !leftBtn || !rightBtn) return;
+      if (!scrollContainer || !gamesContainer || !leftBtn || !rightBtn) {
+        console.warn('setupSectionNavigation: Missing elements', { scrollContainer, gamesContainer, leftBtn, rightBtn });
+        return;
+      }
+      
+      // Remove old listeners by cloning buttons
+      const newLeftBtn = leftBtn.cloneNode(true);
+      const newRightBtn = rightBtn.cloneNode(true);
+      leftBtn.parentNode.replaceChild(newLeftBtn, leftBtn);
+      rightBtn.parentNode.replaceChild(newRightBtn, rightBtn);
       
       function updateButtons() {
         const { scrollLeft, scrollWidth, clientWidth } = scrollContainer;
-        leftBtn.disabled = scrollLeft <= 0;
-        rightBtn.disabled = scrollLeft + clientWidth >= scrollWidth - 1;
+        newLeftBtn.disabled = scrollLeft <= 0;
+        newRightBtn.disabled = scrollLeft + clientWidth >= scrollWidth - 1;
       }
       
-      leftBtn.onclick = () => {
+      newLeftBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         scrollContainer.scrollBy({ left: -600, behavior: 'smooth' });
         setTimeout(updateButtons, 300);
       };
       
-      rightBtn.onclick = () => {
+      newRightBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         scrollContainer.scrollBy({ left: 600, behavior: 'smooth' });
         setTimeout(updateButtons, 300);
       };
@@ -525,15 +587,18 @@
     // Make renderAllSections available globally for favorites updates
     window.renderAllSections = renderAllSections;
     
-    // Show loading placeholders immediately
-    renderScrollableSection('mostPopularGames', null, true);
+    // Render sections immediately with cached/default values
+    renderAllSections();
     
-    // Render sections after view counts are fetched
+    // Fetch view counts in background and update everything when ready
     ViewsAPI.fetchBatch(allGameIds).then(() => {
+      console.log('View counts loaded, updating sections and grid');
       renderAllSections();
+      // Re-render current page to update view counts in All Games
+      initGames(document.getElementById('searchInput').value);
     }).catch(err => {
-      console.error('Failed to load sections:', err);
-      renderAllSections(); // Render anyway with cached/default values
+      console.warn('Views API unavailable, using cached/default values:', err);
+      // Sections already rendered with defaults
     });
 
     // cursor-tracked highlight binding
@@ -748,7 +813,7 @@
         return { game: g, score: titleScore };
       })
       .filter(item => item.score !== -Infinity)
-      .sort((a, b) => b.score - a.sort);
+      .sort((a, b) => b.score - a.score);
 
       filteredGames = candidates;
 
@@ -864,17 +929,18 @@
             Object.assign(viewsCache, views);
             persistViewsCache();
             
-            // Update only the cards that needed fetching
+            // Update ALL cards on the current page with the new view counts
+            const cards = grid.querySelectorAll('.game-card');
             pageGames.forEach((cand, index) => {
-              if (missingIds.includes(cand.game.title)) {
-                const count = views[cand.game.title] || 0;
-                const cards = grid.querySelectorAll('.game-card');
-                if (cards[index]) {
-                  const viewCountEl = cards[index].querySelector('.view-count span');
-                  if (viewCountEl) {
-                    viewCountEl.textContent = ViewsAPI.formatCount(count);
-                    cards[index].querySelector('.view-count').style.opacity = count > 0 ? '1' : '0.5';
-                  }
+              const count = viewsCache[cand.game.title] || 0;
+              if (cards[index]) {
+                const viewCountEl = cards[index].querySelector('.view-count span');
+                const viewCountDiv = cards[index].querySelector('.view-count');
+                if (viewCountEl) {
+                  viewCountEl.textContent = ViewsAPI.formatCount(count);
+                }
+                if (viewCountDiv) {
+                  viewCountDiv.style.opacity = count > 0 ? '1' : '0.5';
                 }
               }
             });
