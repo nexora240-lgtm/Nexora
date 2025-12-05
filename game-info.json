@@ -1585,16 +1585,6 @@
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/cldoomgallery.html"
     },
     {
-        "title": "DOOM (PS1)",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/cldoomps.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/cldoomps.html"
-    },
-    {
-        "title": "DOOM (PS1 Alt)",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/cldoompsalt.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/cldoompsalt.html"
-    },
-    {
         "title": "Doomz.io",
         "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/cldoomzio.webp",
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/cldoomzio.html"
@@ -1820,11 +1810,6 @@
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clelectricman2.html"
     },
     {
-        "title": "Emulator",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clemulator.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clemulator.html"
-    },
-    {
         "title": "Enchain",
         "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clenchain.webp",
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clenchain.html"
@@ -1838,11 +1823,6 @@
         "title": "Endless War 5",
         "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clendlesswar5.webp",
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clendlesswar5.html"
-    },
-    {
-        "title": "Endless War 5 (Alt)",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clendlesswar5wow.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clendlesswar5wow.html"
     },
     {
         "title": "Endless War 7",
@@ -2045,11 +2025,6 @@
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clFIFA11.html"
     },
     {
-        "title": "FIFA 2000 (Alt)",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clFIFA2000(1).webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clFIFA2000(1).html"
-    },
-    {
         "title": "FIFA 2000",
         "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clfifa2000.webp",
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clfifa2000.html"
@@ -2118,21 +2093,6 @@
         "title": "Final Fantasy VII",
         "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clfinalfantasyVII.webp",
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clfinalfantasyVII.html"
-    },
-    {
-        "title": "Final Fantasy VII Disc 2",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clfinalfantasyVIId2.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clfinalfantasyVIId2.html"
-    },
-    {
-        "title": "Final Fantasy VII Disc 3",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clfinalfantasyVIId3.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clfinalfantasyVIId3.html"
-    },
-    {
-        "title": "Final Fantasy VII: The Other",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clfinalfantasyVIItheothertetrr.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clfinalfantasyVIItheothertetrr.html"
     },
     {
         "title": "Final Ninja",
@@ -2565,11 +2525,6 @@
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clgranny2.html"
     },
     {
-        "title": "Granny 2 (Alt)",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clgranny22.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clgranny22.html"
-    },
-    {
         "title": "Granny 3",
         "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clgranny3.webp",
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clgranny3.html"
@@ -2615,21 +2570,6 @@
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clgta2.html"
     },
     {
-        "title": "GTA 2 (Alt)",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clgta22.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clgta22.html"
-    },
-    {
-        "title": "GTA 2 Alt",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clgta2alt.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clgta2alt.html"
-    },
-    {
-        "title": "GTA Alt",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clgtaalt.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clgtaalt.html"
-    },
-    {
         "title": "GTA China",
         "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clgtachina.webp",
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clgtachina.html"
@@ -2663,11 +2603,6 @@
         "title": "Gun Mayhem 2",
         "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clgunmayhem2.webp",
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clgunmayhem2.html"
-    },
-    {
-        "title": "Gun Mayhem 2 (Goof)",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clgunmayhem2goof.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clgunmayhem2goof.html"
     },
     {
         "title": "Gun Mayhem Redux",
@@ -2930,11 +2865,6 @@
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clidleminertycoon.html"
     },
     {
-        "title": "Idle Minor",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clidleminorzamnshes12.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clidleminorzamnshes12.html"
-    },
-    {
         "title": "Impossible Quiz",
         "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/climpossiblequiz (1).webp",
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/climpossiblequiz (1).html"
@@ -3020,11 +2950,6 @@
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/cljacksmith.html"
     },
     {
-        "title": "Jacksmith (Encrypted)",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/cljacksmithencryptedorsmthn.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/cljacksmithencryptedorsmthn.html"
-    },
-    {
         "title": "Jailbreak",
         "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/cljailbreakobbbobob.webp",
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/cljailbreakobbbobob.html"
@@ -3038,11 +2963,6 @@
         "title": "Jelly Truck",
         "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/cljellytruck.webp",
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/cljellytruck.html"
-    },
-    {
-        "title": "Jelly Truck (Good)",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/cljellytruckgood.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/cljellytruckgood.html"
     },
     {
         "title": "Jet Force Gemini",
@@ -3068,16 +2988,6 @@
         "title": "Johnny Upgrade",
         "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/cljohnnyupgrade.webp",
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/cljohnnyupgrade.html"
-    },
-    {
-        "title": "Journey Downhill",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/cljourneydownhill.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/cljourneydownhill.html"
-    },
-    {
-        "title": "JUMP",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clJUMP.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clJUMP.html"
     },
     {
         "title": "Jumping Shell",
@@ -3133,11 +3043,6 @@
         "title": "Kingdom Hearts Re:coded",
         "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clkingdomheartsrecoded.webp",
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clkingdomheartsrecoded.html"
-    },
-    {
-        "title": "Kingdom Hearts Re:coded Alt",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clkingdomheartsrecodedalt.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clkingdomheartsrecodedalt.html"
     },
     {
         "title": "Kirby 64",
@@ -3373,16 +3278,6 @@
         "title": "Madalin Stunt Cars",
         "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clmadalinstuntcars.webp",
         "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clmadalinstuntcars.html"
-    },
-    {
-        "title": "Madalin Stunt Cars (Good)",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clmadalinstuntcarsgood.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clmadalinstuntcarsgood.html"
-    },
-    {
-        "title": "Madalin Stunt Cars Multiplayer (Fixed)",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/clmadalinstuntcarsmultiplayerfixed.webp",
-        "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/games/clmadalinstuntcarsmultiplayerfixed.html"
     },
     {
         "title": "Madden '93",
