@@ -64,6 +64,14 @@ html, body {
   min-height: 100vh;
   width: 100%;
   position: relative;
+  margin-left: 30px;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: margin-left;
+}
+
+.sidebar:hover ~ * .loader-page,
+body:has(.sidebar:hover) .loader-page {
+  margin-left: 125px;
 }
 
 .loader-wrapper {
@@ -733,5 +741,22 @@ html.performance-fast .loader-start {
   .related-games-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
+  }
+}
+
+/* Responsive adjustments for sidebar margin */
+@media (max-width: 720px) {
+  .loader-page {
+    margin-left: 28px;
+  }
+  .sidebar:hover ~ * .loader-page,
+  body:has(.sidebar:hover) .loader-page {
+    margin-left: 110px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-page {
+    transition: none !important;
   }
 }

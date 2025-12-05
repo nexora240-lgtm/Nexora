@@ -353,19 +353,14 @@ body {
 
 /* Content wrapper */
 .content-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 20px;
-  max-width: 1600px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px 0pxpx 20px;
+  padding: 0 20px;
   min-height: 100vh;
 }
 
 .content-wrapper .grid {
-  flex: 1;
-  max-width: 1200px;
+  width: 100%;
   padding-bottom: 80px;
 }
 
@@ -879,18 +874,22 @@ html.performance-fast body {
 
 .section-scroll-container {
   position: relative;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
   -webkit-overflow-scrolling: touch;
+}
+
+.section-scroll-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .section-games {
   display: flex;
   gap: 16px;
-  overflow-x: auto;
-  scroll-behavior: smooth;
   padding: 4px;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
 }
 
 .section-games::-webkit-scrollbar {
@@ -1003,6 +1002,32 @@ html.performance-fast body {
   50% { opacity: 0.7; }
 }
 
+/* Banner-style cards for Most Popular */
+.banner-cards .section-game-card {
+  flex: 0 0 400px;
+  width: 400px;
+  aspect-ratio: 16 / 9;
+}
+
+.banner-cards .section-game-card .game-thumbnail {
+  object-fit: cover;
+}
+
+.banner-cards .section-game-card .game-info {
+  padding: 16px 20px;
+  background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 70%, transparent 100%);
+}
+
+.banner-cards .section-game-card .game-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.banner-cards .section-game-card .game-stats {
+  font-size: 0.85rem;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .section-title {
@@ -1025,6 +1050,15 @@ html.performance-fast body {
   .scrollable-sections {
     padding: 0 12px 12px;
   }
+
+  .banner-cards .section-game-card {
+    flex: 0 0 280px;
+    width: 280px;
+  }
+
+  .banner-cards .section-game-card .game-name {
+    font-size: 0.95rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1039,5 +1073,18 @@ html.performance-fast body {
   
   .section-game-card .game-stats {
     font-size: 0.7rem;
+  }
+
+  .banner-cards .section-game-card {
+    flex: 0 0 240px;
+    width: 240px;
+  }
+
+  .banner-cards .section-game-card .game-name {
+    font-size: 0.85rem;
+  }
+
+  .banner-cards .section-game-card .game-stats {
+    font-size: 0.75rem;
   }
 }

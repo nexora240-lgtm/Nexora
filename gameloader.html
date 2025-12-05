@@ -253,28 +253,53 @@
       }
     }
 
-    // Favorites manager (same as in games.html)
+    // Favorites manager (kept in sync with games.html)
     const FavoritesManager = {
       get() {
-        const saved = localStorage.getItem('nexora_favorites');
-        return saved ? JSON.parse(saved) : [];
+        try {
+          const saved = localStorage.getItem('nexora_favorites');
+          const parsed = saved ? JSON.parse(saved) : [];
+          if (!Array.isArray(parsed)) throw new Error('Favorites not an array');
+          return Array.from(new Set(parsed
+            .filter(item => typeof item === 'string')
+            .map(item => item.trim())
+            .filter(Boolean)
+          ));
+        } catch (e) {
+          localStorage.removeItem('nexora_favorites');
+          return [];
+        }
       },
       set(favorites) {
-        localStorage.setItem('nexora_favorites', JSON.stringify(favorites));
+        const clean = Array.from(new Set((favorites || [])
+          .filter(item => typeof item === 'string')
+          .map(item => item.trim())
+          .filter(Boolean))
+        );
+        try {
+          localStorage.setItem('nexora_favorites', JSON.stringify(clean));
+        } catch (e) {
+          console.warn('Unable to persist favorites:', e);
+        }
+        return clean;
       },
       toggle(gameTitle) {
+        const title = (gameTitle || '').trim();
+        if (!title) return false;
+
         const favorites = this.get();
-        const index = favorites.indexOf(gameTitle);
+        const index = favorites.indexOf(title);
         if (index > -1) {
           favorites.splice(index, 1);
         } else {
-          favorites.push(gameTitle);
+          favorites.push(title);
         }
         this.set(favorites);
         return index === -1; // return true if now favorited
       },
       isFavorited(gameTitle) {
-        return this.get().includes(gameTitle);
+        const title = (gameTitle || '').trim();
+        return title ? this.get().includes(title) : false;
       }
     };
     

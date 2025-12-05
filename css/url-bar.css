@@ -2,7 +2,7 @@
 .url-bar {
   position: fixed;
   top: 20px;
-  left: calc(60px + (100vw - 60px) / 2);
+  left: calc(50% + 30px);
   transform: translateX(-50%) translateY(-8px);
   display: flex;
   align-items: center;
@@ -30,7 +30,7 @@
 /* Move URL bar when sidebar is expanded */
 .sidebar:hover ~ * .url-bar,
 body:has(.sidebar:hover) .url-bar {
-  left: calc(250px + (100vw - 250px) / 2);
+  left: calc(50% + 125px);
 }
 
 @keyframes slideDown {
@@ -82,7 +82,7 @@ body:has(.sidebar:hover) .url-bar {
   .url-bar {
     top: 12px;
     padding: 12px 30px;
-    left: calc(56px + (100vw - 56px) / 2);
+    left: calc(50% + 28px);
   }
   
   .url-bar-url {
@@ -92,7 +92,7 @@ body:has(.sidebar:hover) .url-bar {
   
   .sidebar:hover ~ * .url-bar,
   body:has(.sidebar:hover) .url-bar {
-    left: calc(220px + (100vw - 220px) / 2);
+    left: calc(50% + 110px);
   }
 }
 
