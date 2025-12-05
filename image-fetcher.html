@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Image Fetcher</title>
+    <title>Game Image Fetcher - Quick Select</title>
     <style>
         * {
             margin: 0;
@@ -15,11 +15,11 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1800px;
             margin: 0 auto;
             background: white;
             border-radius: 12px;
@@ -30,17 +30,39 @@
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 30px;
-            text-align: center;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 1.6em;
+        }
+
+        .keyboard-hints {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 6px;
+            flex-wrap: wrap;
+        }
+
+        .keyboard-hints kbd {
+            background: white;
+            color: #333;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-right: 3px;
         }
 
         .setup-section {
-            padding: 30px;
+            padding: 25px;
             background: #f8f9fa;
             border-bottom: 2px solid #e9ecef;
         }
@@ -50,19 +72,19 @@
         }
 
         .api-setup {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .api-setup label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
             color: #333;
         }
 
         .api-setup input {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border: 2px solid #ddd;
             border-radius: 6px;
             font-size: 14px;
@@ -76,11 +98,11 @@
 
         .instructions {
             background: #e7f3ff;
-            padding: 15px;
+            padding: 12px;
             border-radius: 6px;
-            margin-top: 15px;
-            font-size: 14px;
-            line-height: 1.6;
+            margin-top: 12px;
+            font-size: 13px;
+            line-height: 1.5;
         }
 
         .instructions a {
@@ -92,9 +114,9 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 12px 30px;
+            padding: 10px 25px;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
@@ -105,32 +127,28 @@
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
         .control-panel {
-            padding: 30px;
+            padding: 12px 25px;
             background: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 15px;
+            border-bottom: 2px solid #e9ecef;
         }
 
         .progress-info {
             flex: 1;
+            min-width: 250px;
         }
 
         .progress-bar-container {
             background: #e9ecef;
-            height: 24px;
-            border-radius: 12px;
+            height: 18px;
+            border-radius: 9px;
             overflow: hidden;
-            margin: 10px 0;
+            margin: 6px 0;
         }
 
         .progress-bar {
@@ -142,42 +160,39 @@
             justify-content: center;
             color: white;
             font-weight: 600;
-            font-size: 12px;
+            font-size: 10px;
         }
 
         .current-game {
-            padding: 30px;
+            padding: 12px 25px;
+            background: #f8f9fa;
             border-bottom: 2px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         .current-game h2 {
             color: #333;
-            margin-bottom: 15px;
-            font-size: 1.8em;
-        }
-
-        .search-query {
-            background: #f8f9fa;
-            padding: 10px 15px;
-            border-radius: 6px;
-            display: inline-block;
-            color: #666;
-            font-style: italic;
+            font-size: 1.3em;
+            flex-shrink: 0;
         }
 
         .search-edit {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
-            margin-top: 15px;
+            flex: 1;
+            min-width: 250px;
         }
 
         .search-edit input {
             flex: 1;
-            padding: 10px 15px;
+            padding: 8px 12px;
             border: 2px solid #ddd;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .search-edit input:focus {
@@ -189,61 +204,87 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s;
         }
 
         .btn-small:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-skip {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
         }
 
         .images-grid {
-            padding: 30px;
+            padding: 15px;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            max-height: calc(100vh - 220px);
+            overflow-y: auto;
         }
 
         .image-card {
             border: 3px solid #e9ecef;
-            border-radius: 12px;
+            border-radius: 8px;
             overflow: hidden;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.15s;
             background: white;
+            position: relative;
         }
 
         .image-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transform: scale(1.03);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
             border-color: #667eea;
+        }
+
+        .image-card.selected {
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.3);
+            transform: scale(1.02);
         }
 
         .image-card img {
             width: 100%;
-            height: 200px;
+            height: 140px;
             object-fit: cover;
             display: block;
         }
 
+        .image-card .number-badge {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background: rgba(0,0,0,0.75);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 13px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
         .image-card .info {
-            padding: 10px;
+            padding: 6px;
             text-align: center;
             background: #f8f9fa;
-            font-size: 12px;
+            font-size: 10px;
             color: #666;
         }
 
         .loading {
             text-align: center;
-            padding: 60px;
-            font-size: 1.2em;
+            padding: 50px;
+            font-size: 1.1em;
             color: #666;
+            grid-column: 1 / -1;
         }
 
         .loading::after {
@@ -260,41 +301,43 @@
         .error {
             background: #fee;
             color: #c33;
-            padding: 15px;
-            margin: 20px 30px;
+            padding: 12px;
+            margin: 15px 25px;
             border-radius: 6px;
             border: 2px solid #fcc;
+            font-size: 13px;
         }
 
         .controls {
             display: flex;
-            gap: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .stats {
             display: flex;
-            gap: 30px;
-            margin-bottom: 10px;
+            gap: 18px;
+            font-size: 12px;
         }
 
         .stat {
-            font-size: 14px;
             color: #666;
         }
 
         .stat strong {
             color: #333;
-            font-size: 18px;
+            font-size: 15px;
         }
 
         .success-message {
             background: #d4edda;
             color: #155724;
-            padding: 10px 15px;
-            margin: 10px 30px;
+            padding: 8px 12px;
+            margin: 0 25px 8px;
             border-radius: 6px;
             border: 2px solid #c3e6cb;
             animation: slideIn 0.3s;
+            font-size: 13px;
         }
 
         @keyframes slideIn {
@@ -307,29 +350,179 @@
                 transform: translateY(0);
             }
         }
-        
-        .training-info {
-            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-            color: white;
-            padding: 20px;
-            margin: 20px 30px;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 16px;
-            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
-        }
-        
-        .ai-mode-info {
+
+        .quick-select-hint {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
-            padding: 20px;
-            margin: 20px 30px;
-            border-radius: 8px;
+            padding: 8px 15px;
+            margin: 0 25px 8px;
+            border-radius: 6px;
             text-align: center;
             font-weight: 600;
-            font-size: 16px;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            font-size: 13px;
+        }
+
+        /* Preview modal */
+        .preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.92);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .preview-modal.active {
+            display: flex;
+        }
+
+        .preview-modal img {
+            max-width: 90%;
+            max-height: 75%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .preview-modal .preview-controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .preview-modal .preview-info {
+            color: white;
+            margin-top: 12px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .nav-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.95);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1001;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .nav-arrow:hover {
+            background: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .nav-arrow.left { left: 20px; }
+        .nav-arrow.right { right: 20px; }
+
+        .image-count-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .image-count-selector label {
+            color: #666;
+            font-weight: 600;
+        }
+
+        .image-count-selector select {
+            padding: 6px 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            background: white;
+        }
+
+        .image-count-selector select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .mode-selector {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+
+        .mode-selector input[type="checkbox"] {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+
+        .thumbnail-strip {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.95);
+            padding: 10px;
+            display: none;
+            z-index: 999;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .thumbnail-strip.active {
+            display: block;
+        }
+
+        .thumbnail-strip img {
+            height: 100px;
+            width: auto;
+            margin: 0 5px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.1s;
+        }
+
+        .thumbnail-strip img:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .thumbnail-strip img.current {
+            border-color: #28a745;
+        }
+
+        .turbo-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 30px 50px;
+            border-radius: 12px;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 2000;
+            display: none;
+        }
+
+        .turbo-overlay.active {
+            display: block;
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
         }
     </style>
 </head>
@@ -337,7 +530,14 @@
     <div class="container">
         <div class="header">
             <h1>🎮 Game Image Fetcher</h1>
-            <p>Automated image downloader for game-info.json</p>
+            <div class="keyboard-hints">
+                <span><kbd>1-9</kbd> Select</span>
+                <span><kbd>T</kbd> Turbo</span>
+                <span><kbd>A</kbd> Auto #1</span>
+                <span><kbd>P</kbd> Prev</span>
+                <span><kbd>S</kbd> Skip</span>
+                <span><kbd>Space</kbd> Preview</span>
+            </div>
         </div>
 
         <div class="setup-section" id="setupSection">
@@ -350,11 +550,10 @@
                 <input type="text" id="searchEngineId" placeholder="Enter your Search Engine ID">
             </div>
             <div class="instructions">
-                <strong>Setup Instructions:</strong><br>
-                1. Get API Key: <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a> → Create API Key → Enable "Custom Search API" and "Cloud Vision API"<br>
-                2. Get Search Engine ID: <a href="https://programmablesearchengine.google.com/" target="_blank">Programmable Search Engine</a> → Create → Enable "Image Search" → Get ID<br>
-                3. Enable <a href="https://console.cloud.google.com/apis/library/vision.googleapis.com" target="_blank">Cloud Vision API</a> for automatic AI image selection<br>
-                4. Enter both values above and click Start
+                <strong>Quick Setup:</strong><br>
+                1. <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a> → Create API Key → Enable "Custom Search API"<br>
+                2. <a href="https://programmablesearchengine.google.com/" target="_blank">Programmable Search Engine</a> → Create → Enable "Image Search" → Copy ID<br>
+                3. Enter both values and click Start
             </div>
             <button class="btn" onclick="startApp()">Start Fetching Images</button>
         </div>
@@ -368,18 +567,30 @@
                     <div class="stat">
                         Downloaded: <strong id="downloadCount">0</strong>
                     </div>
-                    <div class="stat" id="trainingStatus">
-                        Training: <strong id="trainingCount">0/100</strong>
-                    </div>
                 </div>
                 <div class="progress-bar-container">
                     <div class="progress-bar" id="progressBar" style="width: 0%">0%</div>
                 </div>
             </div>
+            <div class="image-count-selector">
+                <label for="imageCount">Show:</label>
+                <select id="imageCount" onchange="updateImageCount()">
+                    <option value="5">5 images</option>
+                    <option value="10" selected>10 images</option>
+                    <option value="15">15 images</option>
+                    <option value="20">20 images</option>
+                </select>
+            </div>
+            <div class="mode-selector">
+                <label>
+                    <input type="checkbox" id="turboMode" onchange="toggleTurboMode()"> 
+                    <strong style="color: #ff6b6b;">⚡ TURBO MODE</strong>
+                </label>
+            </div>
             <div class="controls">
-                <button class="btn" onclick="skipGame()">Skip Game</button>
-                <button class="btn" onclick="resetProgress()">Reset Progress</button>
-                <button class="btn" onclick="resetTraining()" id="resetTrainingBtn">Reset Training</button>
+                <button class="btn-small" onclick="previousGame()">← Previous (P)</button>
+                <button class="btn-small btn-skip" onclick="skipGame()">Skip (S)</button>
+                <button class="btn-small" onclick="resetProgress()">Reset</button>
             </div>
         </div>
 
@@ -388,14 +599,38 @@
 
         <div class="current-game" id="currentGameSection" style="display: none;">
             <h2 id="gameTitle"></h2>
-            <div class="search-query">Searching: <span id="searchQuery"></span></div>
             <div class="search-edit">
-                <input type="text" id="searchInput" placeholder="Edit search query...">
+                <input type="text" id="searchInput" placeholder="Edit search..." onkeydown="if(event.key==='Enter')updateSearch()">
                 <button class="btn-small" onclick="updateSearch()">Search</button>
             </div>
         </div>
 
+        <div class="quick-select-hint" id="quickSelectHint" style="display: none;">
+            💡 <strong>TURBO MODE:</strong> Press <strong>T</strong> to enable, <strong>A</strong> to auto-download #1, <strong>1-9</strong> for instant download | <strong>P</strong> prev, <strong>S</strong> skip
+        </div>
+
         <div class="images-grid" id="imagesGrid"></div>
+    </div>
+
+    <!-- Turbo Mode Overlay -->
+    <div class="turbo-overlay" id="turboOverlay">
+        ⚡ TURBO MODE ⚡<br>
+        <span style="font-size: 16px;">Press 1-9 or click to download instantly!</span>
+    </div>
+
+    <!-- Thumbnail Strip -->
+    <div class="thumbnail-strip" id="thumbnailStrip"></div>
+
+    <!-- Preview Modal -->
+    <div class="preview-modal" id="previewModal">
+        <button class="nav-arrow left" onclick="navigatePreview(-1)">←</button>
+        <button class="nav-arrow right" onclick="navigatePreview(1)">→</button>
+        <img id="previewImage" src="" alt="Preview">
+        <div class="preview-controls">
+            <button class="btn" onclick="downloadFromPreview()">Download (Enter)</button>
+            <button class="btn-small" onclick="closePreview()">Close (Esc)</button>
+        </div>
+        <div class="preview-info" id="previewInfo"></div>
     </div>
 
     <script>
@@ -403,23 +638,12 @@
         let currentIndex = 0;
         let apiKey = '';
         let searchEngineId = '';
-        let visionApiKey = '';
         let imageCounter = 1;
         let currentSearchQuery = '';
-        let cachedImages = []; // Cache images to avoid re-fetching on skip
-        let autoMode = false; // Whether to use AI auto-selection
-        let retryAttempt = 0; // Track search retry attempts
-        const MIN_ACCEPTABLE_SCORE = 60; // Minimum score to accept an image
-        const MAX_RETRY_ATTEMPTS = 2; // Max times to retry with different search
-        
-        // === TRAINING MODE VARIABLES ===
-        const TRAINING_THRESHOLD = 100; // Number of manual selections needed for training
-        let trainingData = []; // Store manual selection data
-        let isTrainingMode = true; // Start in training mode
-        let manualSelectionCount = 0; // Track manual selections
-        let learnedPatterns = null; // Store learned patterns from training
-        let skipTimer = null; // Auto-skip timer
-        const AUTO_SKIP_DELAY = 15000; // 15 seconds
+        let cachedImages = [];
+        let selectedImageIndex = 0;
+        let imageCount = 10;
+        let turboMode = false;
 
         // Load saved progress
         function loadProgress() {
@@ -428,25 +652,6 @@
                 const progress = JSON.parse(saved);
                 currentIndex = progress.currentIndex || 0;
                 imageCounter = progress.imageCounter || 1;
-                manualSelectionCount = progress.manualSelectionCount || 0;
-            }
-            
-            // Load training data
-            const savedTraining = localStorage.getItem('visionTrainingData');
-            if (savedTraining) {
-                trainingData = JSON.parse(savedTraining);
-            }
-            
-            // Load learned patterns
-            const savedPatterns = localStorage.getItem('learnedPatterns');
-            if (savedPatterns) {
-                learnedPatterns = JSON.parse(savedPatterns);
-            }
-            
-            // Check if we've completed training
-            if (manualSelectionCount >= TRAINING_THRESHOLD && learnedPatterns) {
-                isTrainingMode = false;
-                autoMode = true;
             }
         }
 
@@ -454,19 +659,8 @@
         function saveProgress() {
             localStorage.setItem('imageFetcherProgress', JSON.stringify({
                 currentIndex,
-                imageCounter,
-                manualSelectionCount
+                imageCounter
             }));
-            
-            // Save training data
-            if (trainingData.length > 0) {
-                localStorage.setItem('visionTrainingData', JSON.stringify(trainingData));
-            }
-            
-            // Save learned patterns
-            if (learnedPatterns) {
-                localStorage.setItem('learnedPatterns', JSON.stringify(learnedPatterns));
-            }
         }
 
         // Load game data
@@ -484,26 +678,16 @@
 
         // Start the app
         async function startApp() {
+            console.log('startApp called');
             apiKey = document.getElementById('apiKey').value.trim();
             searchEngineId = document.getElementById('searchEngineId').value.trim();
+
+            console.log('API Key:', apiKey ? 'present' : 'missing');
+            console.log('Search Engine ID:', searchEngineId ? 'present' : 'missing');
 
             if (!apiKey || !searchEngineId) {
                 alert('Please enter both API Key and Search Engine ID');
                 return;
-            }
-
-            // Use same API key for Vision API
-            visionApiKey = apiKey;
-            
-            // Check training status
-            if (manualSelectionCount < TRAINING_THRESHOLD) {
-                isTrainingMode = true;
-                autoMode = false;
-                alert(`Training Mode: You'll manually select ${TRAINING_THRESHOLD - manualSelectionCount} more images to train the AI. Progress: ${manualSelectionCount}/${TRAINING_THRESHOLD}`);
-            } else {
-                isTrainingMode = false;
-                autoMode = true;
-                alert('Training Complete! AI will now automatically select images based on your preferences.');
             }
 
             // Save API credentials
@@ -511,12 +695,16 @@
             localStorage.setItem('googleSearchEngineId', searchEngineId);
 
             // Hide setup, show control panel
+            console.log('Hiding setup section...');
             document.getElementById('setupSection').classList.add('hidden');
             document.getElementById('controlPanel').style.display = 'flex';
-            document.getElementById('currentGameSection').style.display = 'block';
+            document.getElementById('currentGameSection').style.display = 'flex';
+            document.getElementById('quickSelectHint').style.display = 'block';
 
             // Load data and progress
+            console.log('Loading game data...');
             const loaded = await loadGameData();
+            console.log('Game data loaded:', loaded);
             if (loaded) {
                 loadProgress();
                 loadCurrentGame();
@@ -527,319 +715,88 @@
         async function loadCurrentGame() {
             if (currentIndex >= games.length) {
                 showSuccess('🎉 All games completed!');
+                document.getElementById('quickSelectHint').style.display = 'none';
                 return;
             }
 
             const game = games[currentIndex];
             currentSearchQuery = game.title;
-            retryAttempt = 0; // Reset retry counter for new game
-            
-            // Clear any existing skip timer
-            clearSkipTimer();
+            selectedImageIndex = 0;
 
             // Update UI
-            document.getElementById('gameTitle').textContent = `Game #${currentIndex + 1}: ${game.title}`;
-            document.getElementById('searchQuery').textContent = currentSearchQuery;
+            document.getElementById('gameTitle').textContent = `#${currentIndex + 1}: ${game.title}`;
             document.getElementById('searchInput').value = currentSearchQuery;
             document.getElementById('currentIndex').textContent = currentIndex + 1;
             document.getElementById('downloadCount').textContent = imageCounter - 1;
             updateProgressBar();
-            updateTrainingUI();
 
             // Load images for current game
             loadImages();
-            
-            // Start auto-skip timer
-            startSkipTimer();
-        }
-        
-        // Update training UI
-        function updateTrainingUI() {
-            const trainingCount = document.getElementById('trainingCount');
-            const trainingStatus = document.getElementById('trainingStatus');
-            const resetTrainingBtn = document.getElementById('resetTrainingBtn');
-            
-            if (trainingCount) {
-                trainingCount.textContent = `${manualSelectionCount}/${TRAINING_THRESHOLD}`;
-            }
-            
-            if (trainingStatus) {
-                if (isTrainingMode) {
-                    trainingStatus.style.color = '#856404';
-                    trainingStatus.innerHTML = `🎓 Training: <strong>${manualSelectionCount}/${TRAINING_THRESHOLD}</strong>`;
-                } else {
-                    trainingStatus.style.color = '#155724';
-                    trainingStatus.innerHTML = `✅ AI Mode: <strong>Trained</strong>`;
-                }
-            }
-            
-            if (resetTrainingBtn) {
-                resetTrainingBtn.style.display = learnedPatterns ? 'block' : 'none';
-            }
-        }
-
-        // Analyze image with Google Cloud Vision API
-        async function analyzeImage(imageUrl) {
-            try {
-                const visionUrl = `https://vision.googleapis.com/v1/images:annotate?key=${visionApiKey}`;
-                const requestBody = {
-                    requests: [{
-                        image: { source: { imageUri: imageUrl } },
-                        features: [
-                            { type: 'LABEL_DETECTION', maxResults: 10 },
-                            { type: 'TEXT_DETECTION', maxResults: 5 },
-                            { type: 'SAFE_SEARCH_DETECTION' },
-                            { type: 'IMAGE_PROPERTIES' }
-                        ]
-                    }]
-                };
-
-                const response = await fetch(visionUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody)
-                });
-
-                if (!response.ok) return null;
-                const data = await response.json();
-                return data.responses[0];
-            } catch (error) {
-                console.error('Vision API error:', error);
-                return null;
-            }
-        }
-
-        // Score image based on Vision API analysis
-        function scoreImage(visionData, gameTitle) {
-            if (!visionData) return 0;
-            
-            let score = 0; // Start at 0 - must earn points
-            const gameTitleLower = gameTitle.toLowerCase();
-            const gameWords = gameTitleLower.split(/\s+/).filter(w => w.length > 2);
-            
-            // Use learned patterns if available (AI mode)
-            const useLearnedPatterns = !isTrainingMode && learnedPatterns;
-
-            // === TEXT DETECTION (CRITICAL - 60 points max) ===
-            let hasGameTitle = false;
-            if (visionData.textAnnotations && visionData.textAnnotations.length > 0) {
-                const detectedText = visionData.textAnnotations[0].description.toLowerCase();
-                let matchCount = 0;
-                
-                // Check for game title words in detected text
-                gameWords.forEach(word => {
-                    if (word.length > 3 && detectedText.includes(word)) {
-                        matchCount++;
-                        score += 20; // 20 points per matching word
-                    }
-                });
-                
-                // Bonus for matching multiple words from title
-                if (matchCount >= 2) {
-                    score += 30;
-                    hasGameTitle = true;
-                } else if (matchCount === 1) {
-                    score += 10;
-                    hasGameTitle = true;
-                }
-                
-                // Apply learned text preference
-                if (useLearnedPatterns) {
-                    // Bonus based on user's text preference
-                    const textBonus = (learnedPatterns.textPreference / 100) * 15;
-                    score += textBonus;
-                    
-                    // Check for common text elements from training
-                    learnedPatterns.commonTextElements.forEach(element => {
-                        if (detectedText.includes(element)) {
-                            score += 10;
-                        }
-                    });
-                }
-                
-                // Bonus for centered/prominent text (typical of thumbnails)
-                if (visionData.textAnnotations.length >= 3 && visionData.textAnnotations.length <= 15) {
-                    score += 15; // Sweet spot for thumbnails
-                }
-            } else {
-                // NO TEXT = Probably not a thumbnail (unless user prefers images without text)
-                if (useLearnedPatterns && learnedPatterns.textPreference < 30) {
-                    // User often selects images without text
-                    score += 10;
-                } else {
-                    score -= 60;
-                }
-            }
-
-            // === LABEL DETECTION (40 points max) ===
-            if (visionData.labelAnnotations) {
-                const labels = visionData.labelAnnotations.map(l => l.description.toLowerCase());
-                
-                if (useLearnedPatterns) {
-                    // Use learned label preferences
-                    labels.forEach(label => {
-                        if (learnedPatterns.labelWeights[label]) {
-                            // Weight based on how often user selected images with this label
-                            score += learnedPatterns.labelWeights[label] * 30;
-                        }
-                    });
-                    
-                    // Bonus for top learned labels
-                    const topLearnedLabels = learnedPatterns.topLabels.slice(0, 10);
-                    topLearnedLabels.forEach(topLabel => {
-                        if (labels.some(l => l.includes(topLabel) || topLabel.includes(l))) {
-                            score += 15;
-                        }
-                    });
-                } else {
-                    // Original scoring for training mode
-                    // EXCELLENT: Clear thumbnail indicators
-                    const excellentLabels = ['logo', 'brand', 'graphic design', 'font', 'advertising'];
-                    excellentLabels.forEach(label => {
-                        if (labels.some(l => l.includes(label))) score += 20;
-                    });
-                    
-                    // GOOD: Thumbnail-style indicators
-                    const goodLabels = ['text', 'banner', 'poster', 'graphics', 'illustration'];
-                    goodLabels.forEach(label => {
-                        if (labels.some(l => l.includes(label))) score += 10;
-                    });
-
-                    // TERRIBLE: Game UI/Screenshot indicators - instant disqualification
-                    const terribleLabels = [
-                        'screenshot', 'gameplay', 'screen', 'video game software',
-                        'user interface', 'display device', 'computer monitor',
-                        'gaming', 'pc game', 'action game', 'strategy game',
-                        'menu', 'hud', 'controller', 'joystick', 'console'
-                    ];
-                    terribleLabels.forEach(label => {
-                        if (labels.some(l => l.includes(label))) score -= 50; // Heavy penalty
-                    });
-                    
-                    // BAD: Website/generic content (not game thumbnails)
-                    const badLabels = ['website', 'web page', 'webpage', 'internet', 'browser'];
-                    badLabels.forEach(label => {
-                        if (labels.some(l => l.includes(label))) score -= 20;
-                    });
-                }
-            }
-
-            // === IMAGE PROPERTIES (20 points max) ===
-            if (visionData.imagePropertiesAnnotation) {
-                const colors = visionData.imagePropertiesAnnotation.dominantColors?.colors || [];
-                
-                if (useLearnedPatterns) {
-                    // Apply learned color preference
-                    const colorCount = colors.length;
-                    if (learnedPatterns.colorPreference === 'low' && colorCount <= 4) {
-                        score += 20;
-                    } else if (learnedPatterns.colorPreference === 'high' && colorCount >= 7) {
-                        score += 20;
-                    } else if (learnedPatterns.colorPreference === 'medium' && colorCount >= 4 && colorCount <= 8) {
-                        score += 20;
-                    } else {
-                        score += 5; // Partial credit
-                    }
-                } else {
-                    // Original color scoring for training mode
-                    // Thumbnails are usually vibrant with multiple colors
-                    if (colors.length >= 5 && colors.length <= 10) {
-                        score += 20; // Perfect color variety
-                    } else if (colors.length > 3) {
-                        score += 10; // Good variety
-                    } else if (colors.length <= 2) {
-                        score -= 15; // Too plain
-                    }
-                }
-                
-                // Check for vibrant colors (thumbnails are eye-catching)
-                const hasVibrantColor = colors.some(c => {
-                    const r = c.color?.red || 0;
-                    const g = c.color?.green || 0;
-                    const b = c.color?.blue || 0;
-                    const max = Math.max(r, g, b);
-                    const min = Math.min(r, g, b);
-                    return (max - min) > 100; // High saturation
-                });
-                if (hasVibrantColor) score += 10;
-            }
-
-            // === SAFE SEARCH ===
-            if (visionData.safeSearchAnnotation) {
-                const safe = visionData.safeSearchAnnotation;
-                if (safe.adult !== 'VERY_UNLIKELY' && safe.adult !== 'UNLIKELY') score -= 100;
-                if (safe.violence === 'VERY_LIKELY' || safe.violence === 'LIKELY') score -= 100;
-                if (safe.racy !== 'VERY_UNLIKELY' && safe.racy !== 'UNLIKELY') score -= 50;
-            }
-
-            // === FINAL BONUSES ===
-            // Massive bonus if we have game title + good thumbnail indicators
-            if (hasGameTitle && score > 40) {
-                score += 25;
-            }
-
-            return Math.max(0, Math.min(100, score));
         }
 
         // Display images in grid
         function displayImages(images) {
             const grid = document.getElementById('imagesGrid');
             grid.innerHTML = '';
-            
-            // Add training mode indicator
-            if (isTrainingMode) {
-                const trainingBanner = document.createElement('div');
-                trainingBanner.style.cssText = 'background: #fff3cd; color: #856404; padding: 15px; margin: 0 0 20px 0; border-radius: 8px; text-align: center; font-weight: 600; border: 2px solid #ffc107; grid-column: 1 / -1;';
-                trainingBanner.innerHTML = `🎓 TRAINING MODE: ${manualSelectionCount}/${TRAINING_THRESHOLD} images selected. Choose the best image to train the AI!`;
-                grid.appendChild(trainingBanner);
-            } else {
-                const aiBanner = document.createElement('div');
-                aiBanner.style.cssText = 'background: #d4edda; color: #155724; padding: 15px; margin: 0 0 20px 0; border-radius: 8px; text-align: center; font-weight: 600; border: 2px solid #28a745; grid-column: 1 / -1;';
-                aiBanner.innerHTML = `🤖 AI MODE: Google Vision is auto-selecting images based on ${manualSelectionCount} training examples`;
-                grid.appendChild(aiBanner);
-            }
 
             images.forEach((img, index) => {
                 const card = document.createElement('div');
                 card.className = 'image-card';
+                if (index === selectedImageIndex) card.classList.add('selected');
+                
+                const keyHint = index < 9 ? (index + 1) : 'click';
                 card.innerHTML = `
-                    <img src="${img.link}" alt="Game image ${index + 1}" onerror="this.parentElement.style.display='none'">
-                    <div class="info">${isTrainingMode ? '🎯 ' : ''}Click to download as #${currentIndex + 1}.webp</div>
+                    <div class="number-badge">${index + 1}</div>
+                    <img src="${img.link}" alt="Game image ${index + 1}" onerror="this.parentElement.style.display='none'" loading="lazy">
+                    <div class="info">Press ${keyHint}</div>
                 `;
-                card.onclick = () => {
-                    if (isTrainingMode) {
-                        recordTrainingSelection(img, index, images);
-                    }
-                    downloadImage(img.link);
-                };
+                
+                if (turboMode) {
+                    // In turbo mode, single click downloads immediately
+                    card.onclick = () => downloadImage(img.link);
+                } else {
+                    card.onclick = () => selectImage(index);
+                    card.ondblclick = () => openPreview(index);
+                }
                 grid.appendChild(card);
+            });
+            
+            if (turboMode) {
+                updateThumbnailStrip();
+            }
+        }
+
+        // Select an image (highlight it)
+        function selectImage(index) {
+            selectedImageIndex = index;
+            updateSelectedCard();
+        }
+
+        // Update selected card styling
+        function updateSelectedCard() {
+            document.querySelectorAll('.image-card').forEach((card, i) => {
+                card.classList.toggle('selected', i === selectedImageIndex);
             });
         }
 
         // Download and convert image to WebP
         async function downloadImage(imageUrl) {
-            // Clear skip timer when user makes a selection
-            clearSkipTimer();
-            
             try {
-                showSuccess(isTrainingMode ? '📚 Recording your choice and downloading...' : 'Downloading and converting...');
+                showSuccess('Downloading and converting to WebP...');
 
                 // Try multiple methods to fetch the image
                 let blob;
                 try {
-                    // First try: Direct fetch
                     const response = await fetch(imageUrl);
                     if (!response.ok) throw new Error('Direct fetch failed');
                     blob = await response.blob();
                 } catch (e1) {
                     try {
-                        // Second try: CORS proxy
                         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(imageUrl)}`;
                         const response = await fetch(proxyUrl);
                         if (!response.ok) throw new Error('Proxy fetch failed');
                         blob = await response.blob();
                     } catch (e2) {
-                        // Third try: Alternative CORS proxy
                         const proxyUrl2 = `https://api.allorigins.win/raw?url=${encodeURIComponent(imageUrl)}`;
                         const response = await fetch(proxyUrl2);
                         if (!response.ok) throw new Error('All fetch methods failed');
@@ -847,350 +804,121 @@
                     }
                 }
 
-                // Create an image element to convert to WebP
                 const img = new Image();
                 const objectUrl = URL.createObjectURL(blob);
 
                 img.onload = () => {
-                    // Create canvas for conversion
                     const canvas = document.createElement('canvas');
                     canvas.width = img.width;
                     canvas.height = img.height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0);
 
-                    // Convert to WebP
                     canvas.toBlob((webpBlob) => {
-                        // Download the file with game index number
                         const link = document.createElement('a');
                         link.href = URL.createObjectURL(webpBlob);
-                        link.download = `${currentIndex + 1}.webp`;
+                        // Extract filename from the file property (e.g., "cl2048.html" -> "cl2048")
+                        const fileUrl = games[currentIndex].file;
+                        const fileName = fileUrl.substring(fileUrl.lastIndexOf('/') + 1).replace('.html', '');
+                        link.download = `${fileName}.webp`;
                         link.click();
 
-                        let successMsg = `✓ Downloaded as ${currentIndex + 1}.webp`;
-                        if (isTrainingMode) {
-                            successMsg += ` - Training: ${manualSelectionCount}/${TRAINING_THRESHOLD}`;
-                        }
-                        successMsg += ' - Moving to next game...';
-                        showSuccess(successMsg);
+                        showSuccess(`✓ Downloaded as ${fileName}.webp - Next game loading...`);
                         
-                        // Update download count
                         imageCounter++;
                         document.getElementById('downloadCount').textContent = imageCounter - 1;
                         
-                        // Check if training is complete
-                        if (isTrainingMode && manualSelectionCount >= TRAINING_THRESHOLD) {
-                            completeTraining();
-                        }
-                        
                         saveProgress();
-
-                        // Clean up
                         URL.revokeObjectURL(objectUrl);
                         URL.revokeObjectURL(link.href);
 
-                        // Auto-advance to next game after delay
-                        // Longer delay in AI mode to prevent duplicate downloads
-                        const advanceDelay = isTrainingMode ? 1000 : 2500;
+                        // Ultra-quick advance in turbo mode
+                        const delay = turboMode ? 100 : 400;
                         setTimeout(() => {
                             currentIndex++;
                             saveProgress();
+                            closePreview();
                             loadCurrentGame();
-                        }, advanceDelay);
-                    }, 'image/webp', 0.9);
+                        }, delay);
+                    }, 'image/webp', 0.92);
                 };
 
                 img.onerror = () => {
                     URL.revokeObjectURL(objectUrl);
-                    showError('Failed to load image. Try another image or check if the URL is accessible.');
+                    showError('Failed to load image. Try another.');
                 };
 
                 img.src = objectUrl;
             } catch (error) {
-                showError('Download failed: ' + error.message + ' - Try another image or modify the search query.');
+                showError('Download failed: ' + error.message);
             }
         }
 
-        // Analyze image with Google Cloud Vision API
-        async function analyzeImage(imageUrl) {
-            try {
-                const visionUrl = `https://vision.googleapis.com/v1/images:annotate?key=${visionApiKey}`;
-                const requestBody = {
-                    requests: [{
-                        image: { source: { imageUri: imageUrl } },
-                        features: [
-                            { type: 'LABEL_DETECTION', maxResults: 10 },
-                            { type: 'TEXT_DETECTION', maxResults: 5 },
-                            { type: 'SAFE_SEARCH_DETECTION' },
-                            { type: 'IMAGE_PROPERTIES' }
-                        ]
-                    }]
-                };
+        // Open preview modal
+        function openPreview(index) {
+            if (!cachedImages[index]) return;
+            selectedImageIndex = index;
+            const modal = document.getElementById('previewModal');
+            const img = document.getElementById('previewImage');
+            const info = document.getElementById('previewInfo');
+            
+            img.src = cachedImages[index].link;
+            info.textContent = `Image ${index + 1} of ${cachedImages.length} | Press Enter to download, ← → to navigate, Esc to close`;
+            modal.classList.add('active');
+            updateSelectedCard();
+        }
 
-                const response = await fetch(visionUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody)
-                });
+        // Close preview modal
+        function closePreview() {
+            document.getElementById('previewModal').classList.remove('active');
+        }
 
-                if (!response.ok) return null;
-                const data = await response.json();
-                return data.responses[0];
-            } catch (error) {
-                console.error('Vision API error:', error);
-                return null;
+        // Navigate preview
+        function navigatePreview(direction) {
+            selectedImageIndex = (selectedImageIndex + direction + cachedImages.length) % cachedImages.length;
+            const img = document.getElementById('previewImage');
+            const info = document.getElementById('previewInfo');
+            
+            img.src = cachedImages[selectedImageIndex].link;
+            info.textContent = `Image ${selectedImageIndex + 1} of ${cachedImages.length} | Press Enter to download, ← → to navigate, Esc to close`;
+            updateSelectedCard();
+        }
+
+        // Download from preview
+        function downloadFromPreview() {
+            if (cachedImages[selectedImageIndex]) {
+                downloadImage(cachedImages[selectedImageIndex].link);
             }
         }
-        
-        // === TRAINING FUNCTIONS ===
-        
-        // Record user's manual selection for training
-        async function recordTrainingSelection(selectedImage, selectedIndex, allImages) {
-            if (!isTrainingMode) return;
-            
-            manualSelectionCount++;
-            showSuccess(`🎓 Recording selection ${manualSelectionCount}/${TRAINING_THRESHOLD}...`);
-            
-            // Analyze the selected image with Vision API
-            const visionData = await analyzeImage(selectedImage.link);
-            
-            if (visionData) {
-                const gameTitle = games[currentIndex].title;
-                
-                // Store training data
-                trainingData.push({
-                    gameTitle: gameTitle,
-                    searchQuery: currentSearchQuery,
-                    selectedIndex: selectedIndex,
-                    totalImages: allImages.length,
-                    imageUrl: selectedImage.link,
-                    visionData: visionData,
-                    timestamp: Date.now()
-                });
-                
-                console.log(`Training data recorded: ${manualSelectionCount}/${TRAINING_THRESHOLD}`, {
-                    game: gameTitle,
-                    labels: visionData.labelAnnotations?.map(l => l.description) || [],
-                    hasText: !!visionData.textAnnotations?.length
-                });
-            }
-            
-            saveProgress();
-        }
-        
-        // Complete training and generate learned patterns
-        function completeTraining() {
-            showSuccess('🎉 Training Complete! Analyzing your preferences...');
-            
-            // Analyze training data to learn patterns
-            learnedPatterns = analyzeTrainingData(trainingData);
-            
-            // Switch to auto mode
-            isTrainingMode = false;
-            autoMode = true;
-            
-            saveProgress();
-            
-            alert(`✅ Training Complete!\n\nThe AI has learned from your ${TRAINING_THRESHOLD} selections and will now automatically choose images based on your preferences.\n\nKey patterns learned:\n- Preferred labels: ${learnedPatterns.topLabels.slice(0, 5).join(', ')}\n- Text preference: ${learnedPatterns.textPreference}%\n- Color variety: ${learnedPatterns.colorPreference}`);
-        }
-        
-        // Analyze training data to extract patterns
-        function analyzeTrainingData(data) {
-            const patterns = {
-                topLabels: [],
-                labelWeights: {},
-                textPreference: 0,
-                colorPreference: 'medium',
-                textPatterns: [],
-                commonTextElements: []
-            };
-            
-            // Count label frequencies in selected images
-            const labelCounts = {};
-            let textCount = 0;
-            const colorVarietyCounts = [];
-            
-            data.forEach(entry => {
-                const vision = entry.visionData;
-                
-                // Analyze labels
-                if (vision.labelAnnotations) {
-                    vision.labelAnnotations.forEach(label => {
-                        const desc = label.description.toLowerCase();
-                        labelCounts[desc] = (labelCounts[desc] || 0) + label.score;
-                    });
-                }
-                
-                // Analyze text presence
-                if (vision.textAnnotations && vision.textAnnotations.length > 0) {
-                    textCount++;
-                    const textWords = vision.textAnnotations[0].description.toLowerCase().split(/\s+/);
-                    patterns.textPatterns.push(...textWords);
-                }
-                
-                // Analyze colors
-                if (vision.imagePropertiesAnnotation?.dominantColors?.colors) {
-                    colorVarietyCounts.push(vision.imagePropertiesAnnotation.dominantColors.colors.length);
-                }
-            });
-            
-            // Sort labels by frequency and score
-            patterns.topLabels = Object.entries(labelCounts)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 20)
-                .map(([label, score]) => label);
-            
-            // Calculate label weights (normalized scores)
-            patterns.topLabels.forEach(label => {
-                patterns.labelWeights[label] = labelCounts[label] / data.length;
-            });
-            
-            // Calculate text preference (percentage of selections with text)
-            patterns.textPreference = Math.round((textCount / data.length) * 100);
-            
-            // Calculate color preference
-            const avgColorVariety = colorVarietyCounts.reduce((a, b) => a + b, 0) / colorVarietyCounts.length;
-            if (avgColorVariety < 4) patterns.colorPreference = 'low';
-            else if (avgColorVariety > 7) patterns.colorPreference = 'high';
-            else patterns.colorPreference = 'medium';
-            
-            // Find common text elements
-            const textWordCounts = {};
-            patterns.textPatterns.forEach(word => {
-                if (word.length > 2) {
-                    textWordCounts[word] = (textWordCounts[word] || 0) + 1;
-                }
-            });
-            patterns.commonTextElements = Object.entries(textWordCounts)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 10)
-                .map(([word]) => word);
-            
-            console.log('Learned patterns:', patterns);
-            return patterns;
-        }
 
-        // Auto-select and download best image using Vision API
-        async function autoSelectBestImage(images) {
-            try {
-                const gameTitle = games[currentIndex].title;
-                showSuccess(`🤖 Analyzing ${images.length} images for: ${gameTitle}... (Attempt ${retryAttempt + 1}/${MAX_RETRY_ATTEMPTS + 1})`);
-
-                // Analyze all images in parallel
-                const analysisPromises = images.map(async (img, index) => {
-                    const visionData = await analyzeImage(img.link);
-                    const score = scoreImage(visionData, gameTitle);
-                    return { img, score, index };
-                });
-
-                const results = await Promise.all(analysisPromises);
-                
-                // Sort by score and get best image
-                results.sort((a, b) => b.score - a.score);
-                const bestImage = results[0];
-
-                // Check if score is acceptable
-                if (bestImage.score < MIN_ACCEPTABLE_SCORE && retryAttempt < MAX_RETRY_ATTEMPTS) {
-                    retryAttempt++;
-                    showSuccess(`⚠️ Best score (${bestImage.score}/100) is low. Trying different search (Attempt ${retryAttempt + 1}/${MAX_RETRY_ATTEMPTS + 1})...`);
-                    
-                    // Try alternative search queries focused on thumbnails/logos
-                    const gameTitle = games[currentIndex].title;
-                    const alternativeSearches = [
-                        `${gameTitle} unblocked`,
-                        `${gameTitle} html game`,
-                        `${gameTitle} unblocked html game`
-                    ];
-                    
-                    currentSearchQuery = alternativeSearches[retryAttempt - 1];
-                    document.getElementById('searchQuery').textContent = currentSearchQuery;
-                    document.getElementById('searchInput').value = currentSearchQuery;
-                    
-                    // Increase image count for better selection
-                    const newImageCount = 10 + (retryAttempt * 5); // 15, 20, etc.
-                    await loadImages(newImageCount);
-                    return; // Don't download yet, wait for new results
-                }
-
-                showSuccess(`✨ Best match found (score: ${bestImage.score}/100) - Downloading...`);
-                
-                // Highlight the selected image in the grid
-                const cards = document.querySelectorAll('.image-card');
-                if (cards[bestImage.index]) {
-                    cards[bestImage.index].style.border = '3px solid #4CAF50';
-                    cards[bestImage.index].querySelector('.info').innerHTML = 
-                        `✅ AI Selected (${bestImage.score}/100) - Downloading as #${currentIndex + 1}.webp`;
-                }
-
-                // Clear skip timer since AI found an image
-                clearSkipTimer();
-                
-                // Wait a moment to show selection, then download
-                setTimeout(() => {
-                    downloadImage(bestImage.img.link);
-                }, 1500);
-
-            } catch (error) {
-                showError('AI analysis failed: ' + error.message + ' - Click an image manually');
+        // Go to previous game
+        function previousGame() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                saveProgress();
+                closePreview();
+                loadCurrentGame();
+                clearMessages();
             }
         }
 
         // Skip to next game
         function skipGame() {
-            clearSkipTimer();
             currentIndex++;
             saveProgress();
+            closePreview();
             loadCurrentGame();
             clearMessages();
-        }
-        
-        // Start auto-skip timer
-        function startSkipTimer() {
-            skipTimer = setTimeout(() => {
-                showSuccess('⏱️ 15 seconds elapsed - Auto-skipping to next game...');
-                setTimeout(() => {
-                    skipGame();
-                }, 1000);
-            }, AUTO_SKIP_DELAY);
-        }
-        
-        // Clear skip timer
-        function clearSkipTimer() {
-            if (skipTimer) {
-                clearTimeout(skipTimer);
-                skipTimer = null;
-            }
         }
 
         // Reset progress
         function resetProgress() {
-            if (confirm('Are you sure you want to reset progress? This will start from the beginning.')) {
+            if (confirm('Reset all progress and start from the beginning?')) {
                 currentIndex = 0;
                 imageCounter = 1;
                 saveProgress();
                 loadCurrentGame();
                 clearMessages();
-            }
-        }
-        
-        // Reset training data
-        function resetTraining() {
-            if (confirm('Are you sure you want to reset training data? You will need to manually select 100 images again.')) {
-                manualSelectionCount = 0;
-                trainingData = [];
-                learnedPatterns = null;
-                isTrainingMode = true;
-                autoMode = false;
-                
-                // Clear storage
-                localStorage.removeItem('visionTrainingData');
-                localStorage.removeItem('learnedPatterns');
-                
-                saveProgress();
-                updateTrainingUI();
-                
-                alert('Training data reset. You are now in training mode again.');
-                loadCurrentGame();
             }
         }
 
@@ -1200,6 +928,60 @@
             const bar = document.getElementById('progressBar');
             bar.style.width = percent + '%';
             bar.textContent = percent + '%';
+        }
+
+        // Update image count
+        function updateImageCount() {
+            imageCount = parseInt(document.getElementById('imageCount').value);
+            loadImages();
+        }
+
+        // Toggle turbo mode
+        function toggleTurboMode() {
+            turboMode = document.getElementById('turboMode').checked;
+            const overlay = document.getElementById('turboOverlay');
+            const strip = document.getElementById('thumbnailStrip');
+            
+            if (turboMode) {
+                overlay.classList.add('active');
+                strip.classList.add('active');
+                updateThumbnailStrip();
+                setTimeout(() => overlay.classList.remove('active'), 2000);
+            } else {
+                overlay.classList.remove('active');
+                strip.classList.remove('active');
+            }
+        }
+
+        // Update thumbnail strip
+        function updateThumbnailStrip() {
+            if (!turboMode) return;
+            const strip = document.getElementById('thumbnailStrip');
+            strip.innerHTML = '';
+            
+            // Show upcoming 10 games
+            for (let i = currentIndex; i < Math.min(currentIndex + 10, games.length); i++) {
+                const img = document.createElement('img');
+                img.src = cachedImages.length > 0 && i === currentIndex ? cachedImages[0].link : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23333" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" fill="white" text-anchor="middle" dy=".3em"%3E' + (i + 1) + '%3C/text%3E%3C/svg%3E';
+                img.title = games[i].title;
+                img.className = i === currentIndex ? 'current' : '';
+                img.onclick = () => jumpToGame(i);
+                strip.appendChild(img);
+            }
+        }
+
+        // Jump to specific game
+        function jumpToGame(index) {
+            currentIndex = index;
+            saveProgress();
+            loadCurrentGame();
+        }
+
+        // Auto-download first image
+        function autoDownloadFirst() {
+            if (cachedImages.length > 0) {
+                downloadImage(cachedImages[0].link);
+            }
         }
 
         // Show error message
@@ -1213,7 +995,7 @@
         function showSuccess(message) {
             const div = document.getElementById('successMessage');
             div.innerHTML = `<div class="success-message">${message}</div>`;
-            setTimeout(() => div.innerHTML = '', 3000);
+            setTimeout(() => div.innerHTML = '', 2500);
         }
 
         // Clear messages
@@ -1229,12 +1011,11 @@
                 alert('Please enter a search query');
                 return;
             }
-            document.getElementById('searchQuery').textContent = currentSearchQuery;
             loadImages();
         }
 
         // Load images with current search query
-        async function loadImages(imageCount = 10) {
+        async function loadImages() {
             const grid = document.getElementById('imagesGrid');
             grid.innerHTML = '<div class="loading">Fetching images</div>';
 
@@ -1257,34 +1038,112 @@
                     }
 
                     if (!data.items || data.items.length === 0) {
-                        grid.innerHTML = '<div class="error">No images found for this search</div>';
+                        grid.innerHTML = '<div class="error">No images found</div>';
                         return;
                     }
 
-                    cachedImages = data.items; // Cache the images
+                    cachedImages = data.items;
+                    selectedImageIndex = 0;
                     displayImages(data.items);
-                    
-                    // Auto-select best image if Vision API is enabled AND not in training mode
-                    if (autoMode && visionApiKey && !isTrainingMode) {
-                        await autoSelectBestImage(data.items);
-                    } else if (isTrainingMode) {
-                        showSuccess(`🎓 Training Mode: Select your preferred image (${manualSelectionCount}/${TRAINING_THRESHOLD})`);
-                    }
-                    
-                    return; // Success, exit retry loop
+                    return;
                 } catch (error) {
                     lastError = error;
                     if (attempt < maxRetries) {
-                        grid.innerHTML = `<div class="loading">Retry attempt ${attempt}/${maxRetries}</div>`;
-                        await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+                        grid.innerHTML = `<div class="loading">Retry ${attempt}/${maxRetries}</div>`;
+                        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
                     }
                 }
             }
 
-            // All retries failed
-            showError('API Error: ' + lastError.message + ' (after ' + maxRetries + ' attempts)');
-            grid.innerHTML = '<div class="error">Failed to fetch images after multiple attempts. Check your API credentials or try again later.</div>';
+            showError('API Error: ' + lastError.message);
+            grid.innerHTML = '<div class="error">Failed to fetch images. Check API credentials.</div>';
         }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ignore if typing in input
+            if (e.target.tagName === 'INPUT') return;
+
+            const modal = document.getElementById('previewModal');
+            const isPreviewOpen = modal.classList.contains('active');
+
+            // Number keys 1-9 for quick select and download
+            if (e.key >= '1' && e.key <= '9') {
+                const index = parseInt(e.key) - 1;
+                if (cachedImages[index]) {
+                    e.preventDefault();
+                    downloadImage(cachedImages[index].link);
+                }
+                return;
+            }
+
+            switch(e.key.toLowerCase()) {
+                case 't':
+                    e.preventDefault();
+                    document.getElementById('turboMode').checked = !turboMode;
+                    toggleTurboMode();
+                    break;
+                case 'a':
+                    e.preventDefault();
+                    autoDownloadFirst();
+                    break;
+                case 'p':
+                    e.preventDefault();
+                    previousGame();
+                    break;
+                case 's':
+                    e.preventDefault();
+                    skipGame();
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    if (isPreviewOpen) {
+                        closePreview();
+                    } else if (cachedImages.length > 0) {
+                        openPreview(selectedImageIndex);
+                    }
+                    break;
+                case 'escape':
+                    closePreview();
+                    break;
+                case 'enter':
+                    e.preventDefault();
+                    if (isPreviewOpen) {
+                        downloadFromPreview();
+                    } else if (cachedImages[selectedImageIndex]) {
+                        downloadImage(cachedImages[selectedImageIndex].link);
+                    }
+                    break;
+                case 'arrowleft':
+                    e.preventDefault();
+                    if (isPreviewOpen) {
+                        navigatePreview(-1);
+                    } else if (selectedImageIndex > 0) {
+                        selectImage(selectedImageIndex - 1);
+                    }
+                    break;
+                case 'arrowright':
+                    e.preventDefault();
+                    if (isPreviewOpen) {
+                        navigatePreview(1);
+                    } else if (selectedImageIndex < cachedImages.length - 1) {
+                        selectImage(selectedImageIndex + 1);
+                    }
+                    break;
+                case 'arrowup':
+                    e.preventDefault();
+                    if (!isPreviewOpen && selectedImageIndex >= 5) {
+                        selectImage(selectedImageIndex - 5);
+                    }
+                    break;
+                case 'arrowdown':
+                    e.preventDefault();
+                    if (!isPreviewOpen && selectedImageIndex < cachedImages.length - 5) {
+                        selectImage(selectedImageIndex + 5);
+                    }
+                    break;
+            }
+        });
 
         // Load saved API credentials on page load
         window.onload = () => {
