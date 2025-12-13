@@ -760,6 +760,11 @@
             }
           }
           
+          // Clear autoplay flag - only Continue button should trigger autoplay
+          if (window.GameStateManager) {
+            window.GameStateManager.setAutoplay(false);
+          }
+          
           sessionStorage.setItem("currentGame", newGameData);
           
           // Verify it was saved

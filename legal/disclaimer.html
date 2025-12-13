@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Disclaimer - Nexora</title>
+  
+  <link rel="stylesheet" href="/css/_tokens.css" />
+  
+  <script>
+    (function () {
+      try {
+        var THEME_KEY = 'settings.theme';
+        var SCHEME_KEY = 'settings.colorScheme';
+        var MAP = {
+          'midnight-amber': 'theme-midnight-amber',
+          'midnight-blueberry': 'theme-midnight-blueberry',
+          'midnight-grape': 'theme-midnight-grape'
+        };
+        var savedTheme = null;
+        var savedScheme = null;
+        try {
+          savedTheme = localStorage.getItem(THEME_KEY);
+          savedScheme = localStorage.getItem(SCHEME_KEY);
+        } catch (e) { savedTheme = null; savedScheme = null; }
+        var doc = document.documentElement;
+        if (savedScheme === 'light') {
+          doc.classList.add('light-scheme');
+          doc.classList.remove('theme-midnight-amber','theme-midnight-blueberry','theme-midnight-grape');
+        } else {
+          var cls = (savedTheme && MAP[savedTheme]) ? MAP[savedTheme] : null;
+          if (!cls) {
+            if (!doc.classList.contains('theme-midnight-amber') &&
+                !doc.classList.contains('theme-midnight-blueberry') &&
+                !doc.classList.contains('theme-midnight-grape') &&
+                !doc.classList.contains('light-scheme')) {
+              cls = 'theme-midnight-amber';
+            }
+          }
+          if (cls) {
+            doc.classList.remove('light-scheme','theme-midnight-amber','theme-midnight-blueberry','theme-midnight-grape');
+            doc.classList.add(cls);
+          } else {
+            doc.classList.remove('light-scheme');
+          }
+        }
+      } catch (err) {}
+    })();
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--page-bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .disclaimer-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 60px 24px 100px;
+    }
+
+    .disclaimer-header {
+      text-align: center;
+      margin-bottom: 60px;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    .disclaimer-header h1 {
+      font-size: 3rem;
+      margin: 0 0 1rem 0;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+    }
+
+    .disclaimer-header .subtitle {
+      font-size: 1.1rem;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .disclaimer-content {
+      background: var(--surface);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius);
+      padding: 50px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      animation: fadeIn 0.8s ease-out 0.2s backwards;
+    }
+
+    @media (max-width: 768px) {
+      .disclaimer-content {
+        padding: 30px 20px;
+      }
+    }
+
+    section {
+      margin-bottom: 2.5rem;
+    }
+
+    section:last-child {
+      margin-bottom: 0;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: var(--text);
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      color: var(--text);
+      font-weight: 600;
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid var(--primary);
+      padding-left: 1rem;
+    }
+
+    section:first-of-type h2 {
+      margin-top: 0;
+    }
+
+    p {
+      color: var(--text);
+      font-size: 1rem;
+      line-height: 1.7;
+      margin-bottom: 1rem;
+    }
+
+    ul {
+      margin: 1rem 0;
+      padding-left: 2rem;
+      list-style-type: disc;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="disclaimer-container">
+    <div class="disclaimer-header">
+      <h1>Disclaimer</h1>
+      <p class="subtitle">Important legal information and terms of use</p>
+    </div>
+
+    <div class="disclaimer-content">
+
+    <section>
+      <h2>General Information</h2>
+      <p>The content and services provided on this website are offered for informational and entertainment purposes only. By accessing or using this website, you acknowledge and agree that you do so at your own risk. The website owner, administrators, and affiliates make no representations or warranties of any kind, express or implied, regarding the accuracy, reliability, availability, or completeness of any content or services provided.</p>
+    </section>
+
+    <section>
+      <h2>Limitation of Liability</h2>
+      <p>Under no circumstances shall the website owner, operators, or affiliates be held responsible or liable for any direct, indirect, incidental, consequential, or special damages arising from or related to the use of, or inability to use, this website. This includes but is not limited to damages resulting from loss of data, service interruptions, device damage, or any other technical or non-technical issues.</p>
+      <p>Users are solely responsible for how they access, use, or interact with the website and its content. The website owner assumes no responsibility for user behavior, including but not limited to actions taken based on information found on this site or the manner in which the site is accessed (e.g., on school, workplace, or restricted networks).</p>
+    </section>
+
+    <section>
+      <h2>User Responsibility</h2>
+      <p>It is the responsibility of each user to ensure that their use of this website complies with all applicable local, state, federal, institutional, and international laws, rules, and policies. This includes, but is not limited to, rules enforced by schools, workplaces, internet service providers, or network administrators.</p>
+      <p>The website owner does not encourage or endorse bypassing network restrictions, content filters, or administrative policies. Any such actions are performed solely at the discretion and risk of the user.</p>
+    </section>
+
+    <section>
+      <h2>Third-Party Content and External Links</h2>
+      <p>This website may include links to third-party websites, services, or content. These are provided for convenience only. The website owner does not control, endorse, or assume responsibility for the content, policies, or practices of any third-party websites or services.</p>
+    </section>
+
+    <section>
+      <h2>Games and Interactive Content</h2>
+      <p>All games made available through this website are either:</p>
+      <ul>
+        <li>Freely accessible web-based content, or</li>
+        <li>Embedded or linked content hosted on third-party platforms.</li>
+      </ul>
+      <p>The website does not claim ownership over third-party games unless explicitly stated. Any trademarks, logos, or copyrighted materials belong to their respective owners.</p>
+    </section>
+
+    <section>
+      <h2>Movies and Media Information (TMDB Usage)</h2>
+      <p>This website may display movie-related information, including but not limited to titles, descriptions, posters, ratings, and metadata. Such information is provided through the use of The Movie Database (TMDB) API.</p>
+      <ul>
+        <li>This website does not host, store, or distribute movie files.</li>
+        <li>All movie-related data is retrieved dynamically from third-party sources.</li>
+        <li>Any streaming or playback functionality, if present, is provided via external services not controlled or operated by this website.</li>
+        <li>This product uses the TMDB API but is not endorsed or certified by TMDB.</li>
+      </ul>
+      <p>All trademarks, images, and content related to movies remain the property of their respective copyright holders.</p>
+    </section>
+
+    <section>
+      <h2>Copyright and Fair Use</h2>
+      <p>The website respects intellectual property rights and makes reasonable efforts to comply with applicable copyright laws. If you believe that any content on this website infringes upon your copyright, please contact the website administrator with sufficient detail so the matter can be reviewed and addressed appropriately.</p>
+    </section>
+
+    <section>
+      <h2>Changes to This Disclaimer</h2>
+      <p>This disclaimer may be updated, modified, or replaced at any time without prior notice. Continued use of the website after changes are posted constitutes acceptance of the revised disclaimer.</p>
+    </section>
+  </div>
+</body>
+</html>
