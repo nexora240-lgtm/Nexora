@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>DMCA & Copyright Policy - Nexora</title>
+    <link rel="stylesheet" href="/css/_tokens.css">
+    <script>
+        (function () {
+            try {
+                var THEME_KEY = 'settings.theme';
+                var SCHEME_KEY = 'settings.colorScheme';
+                var MAP = {
+                    'midnight-amber': 'theme-midnight-amber',
+                    'midnight-blueberry': 'theme-midnight-blueberry',
+                    'midnight-grape': 'theme-midnight-grape'
+                };
+                var savedTheme = null;
+                var savedScheme = null;
+                try {
+                    savedTheme = localStorage.getItem(THEME_KEY);
+                    savedScheme = localStorage.getItem(SCHEME_KEY);
+                } catch (e) { savedTheme = null; savedScheme = null; }
+                var doc = document.documentElement;
+                if (savedScheme === 'light') {
+                    doc.classList.add('light-scheme');
+                    doc.classList.remove('theme-midnight-amber','theme-midnight-blueberry','theme-midnight-grape');
+                } else {
+                    var cls = (savedTheme && MAP[savedTheme]) ? MAP[savedTheme] : null;
+                    if (!cls) {
+                        if (!doc.classList.contains('theme-midnight-amber') &&
+                            !doc.classList.contains('theme-midnight-blueberry') &&
+                            !doc.classList.contains('theme-midnight-grape') &&
+                            !doc.classList.contains('light-scheme')) {
+                            cls = 'theme-midnight-amber';
+                        }
+                    }
+                    if (cls) {
+                        doc.classList.remove('light-scheme','theme-midnight-amber','theme-midnight-blueberry','theme-midnight-grape');
+                        doc.classList.add(cls);
+                    } else {
+                        doc.classList.remove('light-scheme');
+                    }
+                }
+            } catch (err) {}
+        })();
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--page-bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 50px 20px;
+            min-height: 100vh;
+        }
+
+        .dmca-container {
+            max-width: 900px;
+            margin: 0 auto;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .dmca-header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeIn 0.8s ease 0.2s backwards;
+        }
+
+        .dmca-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .dmca-header p {
+            font-size: 1.1rem;
+            color: var(--muted);
+        }
+
+        .dmca-content {
+            background: var(--surface);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: var(--radius);
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .dmca-content h2 {
+            font-size: 1.8rem;
+            color: var(--text);
+            margin-top: 32px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.06);
+            border-left: 4px solid var(--primary);
+            padding-left: 16px;
+        }
+
+        .dmca-content h2:first-child {
+            margin-top: 0;
+        }
+
+        .dmca-content h3 {
+            font-size: 1.4rem;
+            color: var(--text);
+            margin-top: 28px;
+            margin-bottom: 14px;
+            font-weight: 600;
+        }
+
+        .dmca-content p {
+            margin-bottom: 16px;
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .dmca-content strong {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .dmca-content ul,
+        .dmca-content ol {
+            margin-left: 24px;
+            margin-bottom: 16px;
+        }
+
+        .dmca-content li {
+            margin-bottom: 12px;
+            color: var(--text);
+            padding-left: 8px;
+        }
+
+        .dmca-content a {
+            color: var(--primary);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .dmca-content a:hover {
+            color: var(--primary-deep);
+            border-bottom-color: var(--primary);
+        }
+
+        .dmca-content hr {
+            border: none;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.06);
+            margin: 32px 0;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 30px 15px;
+            }
+
+            .dmca-header h1 {
+                font-size: 2rem;
+            }
+
+            .dmca-content {
+                padding: 24px;
+            }
+
+            .dmca-content h2 {
+                font-size: 1.5rem;
+            }
+
+            .dmca-content h3 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dmca-container">
+        <div class="dmca-header">
+            <h1>DMCA & Copyright Policy</h1>
+            <p>Copyright infringement procedures and takedown requests</p>
+        </div>
+
+        <div class="dmca-content">
+            <h2>Copyright Infringement Notice</h2>
+            <p>This website respects the intellectual property rights of others and expects its users and content providers to do the same. In accordance with the <strong>Digital Millennium Copyright Act (DMCA), 17 U.S.C. § 512</strong>, we will respond promptly to valid notices of alleged copyright infringement.</p>
+            <p>This policy applies to all content accessible through this website, including but not limited to games, media information, images, and other third-party materials.</p>
+
+            <hr>
+
+            <h2>Third-Party Content and Content Providers</h2>
+            <p>This website does <strong>not claim ownership</strong> of third-party content made available through the platform.</p>
+            <ul>
+                <li><strong>Games available on this website are provided through a third-party content provider known as <em>Ultimate Game Stash (UGS)</em>.</strong></li>
+                <li>Movie-related information, where applicable, is obtained via third-party databases and APIs.</li>
+                <li>This website does <strong>not host or store copyrighted game files, executable files, or movie files</strong> unless explicitly stated.</li>
+            </ul>
+            <p>All trademarks, logos, and copyrighted materials remain the property of their respective owners.</p>
+
+            <hr>
+
+            <h2>Routing of Copyright Claims (Important)</h2>
+            <p>Because the majority of interactive game content on this website is supplied and managed by <strong>Ultimate Game Stash (UGS)</strong>, certain copyright claims may be more appropriately directed to the original content provider.</p>
+            <ul>
+                <li>If your copyright claim concerns <strong>game ownership, licensing, distribution rights, or embedded game content</strong>, you acknowledge that <strong>Ultimate Game Stash (UGS)</strong> is the primary content source.</li>
+                <li>Upon receipt of a valid DMCA notice relating to UGS-provided content, this website may, at its discretion:
+                    <ul>
+                        <li>Forward the notice to Ultimate Game Stash for review and resolution, and/or</li>
+                        <li>Temporarily disable access to the material pending clarification.</li>
+                    </ul>
+                </li>
+            </ul>
+            <p>Submission of a DMCA notice to this website <strong>does not guarantee permanent removal</strong> of content where the material is controlled or licensed by a third-party provider.</p>
+
+            <hr>
+
+            <h2>Filing a DMCA Takedown Notice</h2>
+            <p>If you believe that copyrighted material available on this website infringes your copyright, you may submit a DMCA takedown notice by providing <strong>all of the following information</strong> in writing:</p>
+            <ol>
+                <li>A description of the copyrighted work you claim has been infringed.</li>
+                <li>The exact URL(s) or sufficient information identifying the allegedly infringing material.</li>
+                <li>Your full name, mailing address, telephone number, and email address.</li>
+                <li>A statement that you have a <strong>good-faith belief</strong> that the use of the material is not authorized by the copyright owner, its agent, or the law.</li>
+                <li>A statement that the information in the notice is <strong>accurate</strong>, and <strong>under penalty of perjury</strong>, that you are the copyright owner or authorized to act on the owner's behalf.</li>
+                <li>Your physical or electronic signature.</li>
+            </ol>
+            <p>Incomplete or improperly formatted notices may not be processed.</p>
+
+            <hr>
+
+            <h2>Designated DMCA Contact</h2>
+            <p>All DMCA notices, copyright complaints, and related inquiries should be sent to:</p>
+            <p><strong>Email:</strong> <a href="mailto:nexora.unblocked@gmail.com">nexora.unblocked@gmail.com</a></p>
+            <p>Please allow a reasonable amount of time for review and response.</p>
+
+            <hr>
+
+            <h2>Counter-Notification Procedure</h2>
+            <p>If you believe that material was removed or disabled as a result of mistake or misidentification, you may submit a counter-notification including:</p>
+            <ol>
+                <li>Identification of the material that was removed and its original location.</li>
+                <li>A statement under penalty of perjury that you have a good-faith belief the material was removed due to error or misidentification.</li>
+                <li>Your name, address, telephone number, and email address.</li>
+                <li>A statement consenting to the jurisdiction of the federal district court in your judicial district (or, if outside the United States, the jurisdiction of any district in which the service provider may be found).</li>
+                <li>Your physical or electronic signature.</li>
+            </ol>
+            <p>Upon receipt of a valid counter-notification, we may restore the content unless the original complainant files a court action within the time period required by law.</p>
+
+            <hr>
+
+            <h2>Repeat Infringer Policy</h2>
+            <p>In accordance with the DMCA, this website reserves the right to terminate or restrict access to users or content sources that are determined, at our sole discretion, to be repeat infringers.</p>
+
+            <hr>
+
+            <h2>No Legal Advice</h2>
+            <p>This policy is provided for informational purposes only and does not constitute legal advice. Rights holders and users are encouraged to consult qualified legal counsel regarding copyright matters.</p>
+
+            <hr>
+
+            <h2>Policy Updates</h2>
+            <p>This DMCA & Copyright Policy may be updated or modified at any time without prior notice. Continued use of the website constitutes acceptance of the current version.</p>
+        </div>
+    </div>
+</body>
+</html>
