@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    if (window.location.pathname.endsWith('/proxy.html')) {
+      const params = window.location.search;
+      window.location.replace('/?route=/proxy' + (params ? '&' + params.substring(1) : ''));
+    }
+  </script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7925754855607435"
      crossorigin="anonymous"></script>
   <meta charset="UTF-8" />

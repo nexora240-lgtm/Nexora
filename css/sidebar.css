@@ -1,6 +1,5 @@
 .sidebar,
-.page-frame,
-body {
+.page-frame {
   --sb-page-bg: var(--page-bg, #0a0605);
   --sb-sidebar-bg: linear-gradient(to bottom, 
     color-mix(in srgb, var(--primary-accent, #992f05) 8%, transparent),
@@ -27,7 +26,7 @@ body {
 body {
   margin: 0;
   font-family: Poppins, Arial, sans-serif;
-  color: var(--sb-text);
+  color: var(--text);
 }
 
 .page-frame {
@@ -209,7 +208,7 @@ body {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
-  padding-bottom: 16px; 
+  padding-bottom: 0; 
   position: relative;
   z-index: 1;
   overflow-y: auto;
@@ -218,6 +217,8 @@ body {
 
 .sidebar a.settings {
   margin-top: auto;
+  flex-shrink: 0;
+  margin-bottom: 10px;
 }
 
 .sidebar:hover {
@@ -254,8 +255,12 @@ body {
   padding: 10px;
   white-space: nowrap;
   overflow: hidden;
+  width: 100%;
   height: 76px;
+  min-height: 76px;
+  max-height: 76px;
   flex-shrink: 0;
+  box-sizing: border-box;
   transition: gap 0.3s ease;
 }
 

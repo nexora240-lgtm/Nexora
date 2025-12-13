@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    if (window.location.pathname.endsWith('/gameloader.html')) {
+      const params = window.location.search;
+      window.location.replace('/?route=/loader' + (params ? '&' + params.substring(1) : ''));
+    }
+  </script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7925754855607435"
      crossorigin="anonymous"></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-H5VGHQJKD8"></script>

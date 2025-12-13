@@ -46,8 +46,19 @@ window.onpopstate = () => {
   (routes[path] || renderHome)();
 };
 
-const initialPath = location.pathname;
-(routes[initialPath] || renderHome)();
+const urlParams = new URLSearchParams(window.location.search);
+const redirectRoute = urlParams.get('route');
+
+if (redirectRoute) {
+  urlParams.delete('route');
+  const remainingParams = urlParams.toString();
+  const newUrl = redirectRoute + (remainingParams ? '?' + remainingParams : '');
+  window.history.replaceState({}, '', newUrl);
+  (routes[redirectRoute] || renderHome)();
+} else {
+  const initialPath = location.pathname;
+  (routes[initialPath] || renderHome)();
+}
 
 function renderHome()        { loadView('home.html'); }
 function renderMovies()      { loadView('movies.html'); }
