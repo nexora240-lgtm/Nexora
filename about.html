@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7925754855607435"
+     crossorigin="anonymous"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-H5VGHQJKD8"></script>
+  <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-H5VGHQJKD8');
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>About - Nexora</title>
+  <meta name="description" content="Learn about Nexora - a feature-rich platform offering games, tools, and educational resources for students and creators." />
+
+  <link rel="stylesheet" href="/css/_tokens.css" />
+
+  <script>
+    (function () {
+      try {
+        var THEME_KEY = 'settings.theme';
+        var SCHEME_KEY = 'settings.colorScheme';
+        var MAP = {
+          'midnight-amber': 'theme-midnight-amber',
+          'midnight-blueberry': 'theme-midnight-blueberry',
+          'midnight-grape': 'theme-midnight-grape'
+        };
+        var savedTheme = null;
+        var savedScheme = null;
+        try {
+          savedTheme = localStorage.getItem(THEME_KEY);
+          savedScheme = localStorage.getItem(SCHEME_KEY);
+        } catch (e) { savedTheme = null; savedScheme = null; }
+        var doc = document.documentElement;
+        if (savedScheme === 'light') {
+          doc.classList.add('light-scheme');
+          doc.classList.remove('theme-midnight-amber','theme-midnight-blueberry','theme-midnight-grape');
+        } else {
+          var cls = (savedTheme && MAP[savedTheme]) ? MAP[savedTheme] : null;
+          if (!cls) {
+            if (!doc.classList.contains('theme-midnight-amber') &&
+                !doc.classList.contains('theme-midnight-blueberry') &&
+                !doc.classList.contains('theme-midnight-grape') &&
+                !doc.classList.contains('light-scheme')) {
+              cls = 'theme-midnight-amber';
+            }
+          }
+          if (cls) {
+            doc.classList.remove('light-scheme','theme-midnight-amber','theme-midnight-blueberry','theme-midnight-grape');
+            doc.classList.add(cls);
+          } else {
+            doc.classList.remove('light-scheme');
+          }
+        }
+      } catch (err) {}
+    })();
+  </script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: 'Poppins', Arial, sans-serif;
+      background: var(--page-bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .about-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 24px;
+    }
+
+    .hero-section {
+      text-align: center;
+      margin-bottom: 80px;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    .hero-section h1 {
+      font-size: 3.5rem;
+      margin: 0 0 1rem 0;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+      animation: slideInLeft 0.8s ease-out;
+    }
+
+    .hero-section .tagline {
+      font-size: 1.5rem;
+      color: var(--muted);
+      margin: 0 0 2rem 0;
+      font-weight: 400;
+      animation: slideInRight 0.8s ease-out 0.2s backwards;
+    }
+
+    .hero-section .description {
+      font-size: 1.1rem;
+      color: var(--text);
+      max-width: 800px;
+      margin: 0 auto;
+      animation: fadeIn 0.8s ease-out 0.4s backwards;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-bottom: 80px;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius);
+      padding: 30px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      animation: fadeInUp 0.6s ease-out backwards;
+    }
+
+    .feature-card:nth-child(1) { animation-delay: 0.1s; }
+    .feature-card:nth-child(2) { animation-delay: 0.2s; }
+    .feature-card:nth-child(3) { animation-delay: 0.3s; }
+    .feature-card:nth-child(4) { animation-delay: 0.4s; }
+    .feature-card:nth-child(5) { animation-delay: 0.5s; }
+    .feature-card:nth-child(6) { animation-delay: 0.6s; }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 24px var(--primary-shadow);
+    }
+
+    .feature-icon {
+      width: 60px;
+      height: 60px;
+      background: var(--accent-gradient);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+      color: var(--on-primary);
+    }
+
+    .feature-card h3 {
+      margin: 0 0 12px 0;
+      font-size: 1.4rem;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .feature-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .mission-section {
+      background: var(--surface);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius);
+      padding: 50px;
+      margin-bottom: 80px;
+      text-align: center;
+      animation: fadeIn 0.8s ease-out 0.8s backwards;
+    }
+
+    .mission-section h2 {
+      font-size: 2.5rem;
+      margin: 0 0 1.5rem 0;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+    }
+
+    .mission-section p {
+      font-size: 1.2rem;
+      color: var(--text);
+      max-width: 800px;
+      margin: 0 auto 1.5rem auto;
+      line-height: 1.8;
+    }
+
+    .stats-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      margin-bottom: 80px;
+    }
+
+    .stat-card {
+      text-align: center;
+      padding: 30px;
+      background: var(--surface);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius);
+      animation: fadeInUp 0.6s ease-out backwards;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.2s; }
+    .stat-card:nth-child(2) { animation-delay: 0.3s; }
+    .stat-card:nth-child(3) { animation-delay: 0.4s; }
+    .stat-card:nth-child(4) { animation-delay: 0.5s; }
+
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 700;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0 0 8px 0;
+    }
+
+    .stat-label {
+      font-size: 1rem;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .team-section {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .team-section h2 {
+      font-size: 2.5rem;
+      margin: 0 0 1rem 0;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .team-section p {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 700px;
+      margin: 0 auto 2rem auto;
+    }
+
+    .contact-section {
+      background: var(--surface);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius);
+      padding: 50px;
+      text-align: center;
+      animation: fadeIn 0.8s ease-out 1s backwards;
+    }
+
+    .contact-section h2 {
+      font-size: 2rem;
+      margin: 0 0 1rem 0;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .contact-section p {
+      font-size: 1.1rem;
+      color: var(--muted);
+      margin: 0 0 2rem 0;
+    }
+
+    .contact-links {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .contact-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      background: var(--accent-gradient);
+      color: var(--on-primary);
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 12px var(--primary-shadow);
+    }
+
+    .contact-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px var(--primary-shadow);
+    }
+
+    .contact-btn i {
+      font-size: 1.2rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from { 
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInLeft {
+      from { 
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from { 
+        opacity: 0;
+        transform: translateX(30px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hero-section h1 {
+        font-size: 2.5rem;
+      }
+
+      .hero-section .tagline {
+        font-size: 1.2rem;
+      }
+
+      .mission-section,
+      .contact-section {
+        padding: 30px 24px;
+      }
+
+      .mission-section h2,
+      .team-section h2 {
+        font-size: 2rem;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-section {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="about-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <h1>About Nexora</h1>
+      <p class="tagline">Empowering creativity, learning, and exploration.</p>
+      <p class="description">
+        Nexora is a comprehensive digital platform designed to provide students, creators, and curious minds 
+        with a suite of powerful tools and resources. From entertainment to productivity, we bring everything 
+        you need into one seamless experience.
+      </p>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-gamepad"></i>
+        </div>
+        <h3>Gaming Hub</h3>
+        <p>Access a vast collection of games across multiple genres. Play instantly in your browser with no downloads required.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-globe"></i>
+        </div>
+        <h3>Web Proxy</h3>
+        <p>Browse the internet freely and securely with our advanced proxy technology, ensuring your privacy and accessibility.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-film"></i>
+        </div>
+        <h3>Streaming</h3>
+        <p>Watch your favorite movies and TV shows with our curated streaming platform featuring the latest and classic content.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-robot"></i>
+        </div>
+        <h3>AI Assistant</h3>
+        <p>Get instant help with homework, research, and creative projects using our intelligent AI-powered chatbot.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-comments"></i>
+        </div>
+        <h3>Circles</h3>
+        <p>Connect with others in our community chatrooms. Share ideas, collaborate, and make new friends.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fas fa-palette"></i>
+        </div>
+        <h3>Customization</h3>
+        <p>Personalize your experience with multiple themes, color schemes, and performance settings tailored to your preferences.</p>
+      </div>
+    </div>
+
+    <!-- Mission Section -->
+    <div class="mission-section">
+      <h2>Our Mission</h2>
+      <p>
+        At Nexora, we believe in breaking down barriers to access quality tools and entertainment. 
+        Our mission is to create an inclusive digital space where everyone can learn, play, and grow 
+        without limitations. We're committed to providing a safe, feature-rich platform that adapts 
+        to your needs.
+      </p>
+      <p>
+        Founded in 2025, Nexora started as a passion project to help students access educational 
+        resources and has evolved into a comprehensive platform serving thousands of users daily.
+      </p>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="stats-section">
+      <div class="stat-card">
+        <div class="stat-number">1000+</div>
+        <div class="stat-label">Games Available</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-number">5K+</div>
+        <div class="stat-label">Daily Active Users</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-number">24/7</div>
+        <div class="stat-label">Always Available</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Free to Use</div>
+      </div>
+    </div>
+
+    <!-- Team Section -->
+    <div class="team-section">
+      <h2>Built With Passion</h2>
+      <p>
+        Nexora is developed and maintained by a dedicated team committed to delivering 
+        the best possible experience. We continuously update our platform with new features, 
+        improvements, and content based on community feedback.
+      </p>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="contact-section">
+      <h2>Get in Touch</h2>
+      <p>Have questions, feedback, or suggestions? We'd love to hear from you!</p>
+      <div class="contact-links">
+        <a href="mailto:nexora.unblocked@gmail.com" class="contact-btn">
+          <i class="fas fa-envelope"></i>
+          Email Us
+        </a>
+        <a href="/settings" class="contact-btn">
+          <i class="fas fa-cog"></i>
+          Settings
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window._nexoraTheme = {
+      setTheme: function (id) {
+        var map = {
+          'midnight-amber': 'theme-midnight-amber',
+          'midnight-blueberry': 'theme-midnight-blueberry',
+          'midnight-grape': 'theme-midnight-grape'
+        };
+        if (!map[id]) return;
+        document.documentElement.classList.remove('light-scheme','theme-midnight-amber','theme-midnight-blueberry','theme-midnight-grape');
+        document.documentElement.classList.add(map[id]);
+        try { localStorage.setItem('settings.theme', id); } catch (e) {}
+        document.dispatchEvent(new CustomEvent('settings:themeChanged', { detail: { theme: id } }));
+      },
+      setScheme: function (scheme) {
+        if (scheme === 'light') {
+          document.documentElement.classList.add('light-scheme');
+          const savedTheme = localStorage.getItem('settings.theme') || 'midnight-amber';
+          const themeClass = 'theme-' + savedTheme;
+          document.documentElement.classList.remove('theme-midnight-amber','theme-midnight-blueberry','theme-midnight-grape');
+          document.documentElement.classList.add(themeClass);
+          try { localStorage.setItem('settings.colorScheme', 'light'); } catch(e){}
+        } else {
+          document.documentElement.classList.remove('light-scheme');
+          const savedTheme = localStorage.getItem('settings.theme') || 'midnight-amber';
+          const themeClass = 'theme-' + savedTheme;
+          document.documentElement.classList.remove('theme-midnight-amber','theme-midnight-blueberry','theme-midnight-grape');
+          document.documentElement.classList.add(themeClass);
+          try { localStorage.setItem('settings.colorScheme', 'dark'); } catch(e){}
+        }
+        document.dispatchEvent(new CustomEvent('settings:colorSchemeChanged', { detail: { scheme: scheme } }));
+      }
+    };
+  </script>
+</body>
+</html>
