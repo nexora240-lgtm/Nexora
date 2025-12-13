@@ -454,8 +454,29 @@
       `;
       
       card.onclick = () => {
-        sessionStorage.setItem('currentGame', JSON.stringify(game));
+        const newGameData = JSON.stringify(game);
+        const currentGameData = sessionStorage.getItem("currentGame");
+
+        // Check if this is a different game than what's currently loaded
+        if (currentGameData !== newGameData) {
+          if (typeof window.destroyGameSession === 'function') {
+            window.destroyGameSession();
+          } else if (window.GameStateManager) {
+            window.GameStateManager.clearState();
+            if (window.GameStateManager.clearDomState) {
+              window.GameStateManager.clearDomState();
+            }
+          }
+        }
+
+        sessionStorage.setItem('currentGame', newGameData);
         RecentlyPlayedManager.add(game.title);
+        
+        // Clear autoplay flag - only Continue button should trigger autoplay
+        if (window.GameStateManager) {
+          window.GameStateManager.setAutoplay(false);
+        }
+        
         if (typeof navigate === 'function') {
           navigate('/loader');
         } else {
@@ -853,6 +874,11 @@
                 window.GameStateManager.clearDomState();
               }
             }
+          }
+          
+          // Clear autoplay flag - only Continue button should trigger autoplay
+          if (window.GameStateManager) {
+            window.GameStateManager.setAutoplay(false);
           }
           
           sessionStorage.setItem("currentGame", newGameData);
