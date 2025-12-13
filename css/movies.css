@@ -6,7 +6,6 @@
   box-sizing: border-box;
 }
 
-:root,
 .netflix-container {
   /* Use theme tokens from theme-tokens.css */
   --surface: var(--panel);
@@ -32,21 +31,18 @@
   --glow-size: 300px;
   --glow-size-hover: 400px;
   --glow-strength: 0.35;
-}
 
-body {
   background: var(--bg-black);
   color: var(--text-primary);
   font-family: 'Netflix Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   overflow-x: hidden;
   line-height: 1.6;
-}
-
-.netflix-container {
   width: 100%;
   min-height: 100vh;
-  background: transparent;
 }
+
+/* Remove body styles that were causing issues */
+/* body { ... } removed */
 
 /* ===== HERO SECTION ===== */
 .hero-section {

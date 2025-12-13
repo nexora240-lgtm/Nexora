@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Redirecting...</title>
+  <script>
+    const route = '/chatroom';
+    const params = window.location.search;
+    window.location.replace('/?route=' + route + (params ? '&' + params.substring(1) : ''));
+  </script>
+</head>
+<body>
+  <p>Redirecting to <a href="/">Nexora</a>...</p>
+</body>
+</html>
