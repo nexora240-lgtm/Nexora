@@ -22,9 +22,6 @@
   <link rel="stylesheet" href="css/theme-tokens.css" />
   <link rel="stylesheet" href="css/gameloader.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Fluid Player for VAST pre-roll ads -->
-  <link rel="stylesheet" href="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.css" />
-  <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
   <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/nexora-amber.png">
   <script src="config.js"></script>
   <style>
@@ -120,49 +117,6 @@
       color: rgba(255, 255, 255, 0.8);
       min-width: 20px;
       text-align: center;
-    }
-    
-    /* Pre-roll Ad Container Styles */
-    .ad-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #000;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--g-radius, 14px);
-      overflow: hidden;
-    }
-    .ad-container video {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: #000;
-    }
-    .ad-loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #fff;
-      font-size: 1.2em;
-      text-align: center;
-    }
-    .ad-loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(255,255,255,0.3);
-      border-top-color: var(--g-accent, #d4550a);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 12px;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
     }
   </style>
   <style>
@@ -656,38 +610,13 @@
 
       // Function to start the game (used by both Play Now button and autoplay)
       async function startGame() {
-        console.log('[GAME DEBUG] ========================================');
-        console.log('[GAME DEBUG] startGame() called');
-        console.log('[GAME DEBUG] Current game:', currentGame?.title);
-        console.log('[GAME DEBUG] Game file:', currentGame?.file);
-        console.log('[GAME DEBUG] ========================================');
-        
         // Increment view count when game starts
-        console.log('[GAME DEBUG] Incrementing view count...');
         incrementView(currentGame.title);
         
         // Save game state for "Continue Playing" feature
         if (window.GameStateManager) {
-          console.log('[GAME DEBUG] Saving game state via GameStateManager');
           window.GameStateManager.saveState(currentGame);
-        } else {
-          console.log('[GAME DEBUG] GameStateManager not available');
         }
-        
-        // Show pre-roll ad before starting the game
-        console.log('[GAME DEBUG] Starting pre-roll ad sequence...');
-        await showPreRollAd(container, () => {
-          console.log('[GAME DEBUG] Pre-roll ad callback executed, loading game iframe');
-          loadGameIframe();
-        });
-        console.log('[GAME DEBUG] showPreRollAd promise resolved');
-      }
-      
-      // Function to actually load the game iframe (called after ad completes)
-      async function loadGameIframe() {
-        console.log('[GAME DEBUG] ----------------------------------------');
-        console.log('[GAME DEBUG] loadGameIframe() called');
-        console.log('[GAME DEBUG] Creating iframe element...');
         
         const iframe = document.createElement("iframe");
         iframe.setAttribute("allowfullscreen", "");
@@ -696,18 +625,13 @@
         iframe.className = "game-iframe";
         container.innerHTML = "";
         container.appendChild(iframe);
-        console.log('[GAME DEBUG] Iframe appended to container');
 
         container.classList.add('is-playing');
-        console.log('[GAME DEBUG] Added is-playing class to container');
 
         // Fetch the HTML content and create a blob URL for better compatibility
-        console.log('[GAME DEBUG] Fetching game file:', currentGame.file);
         try {
           const response = await fetch(currentGame.file);
-          console.log('[GAME DEBUG] Fetch response status:', response.status);
           let htmlContent = await response.text();
-          console.log('[GAME DEBUG] HTML content length:', htmlContent.length, 'characters');
           
           // Inject audio tracking script to enable pause/resume when hidden
           const audioTrackingScript = '<scr' + 'ipt>' +
@@ -753,403 +677,18 @@
           // Create blob URL with proper MIME type
           const blob = new Blob([htmlContent], { type: 'text/html' });
           const blobUrl = URL.createObjectURL(blob);
-          console.log('[GAME DEBUG] Blob URL created:', blobUrl);
           
           iframe.src = blobUrl;
-          console.log('[GAME DEBUG] Iframe src set to blob URL');
           
           // Clean up blob URL when iframe is removed
           iframe.addEventListener('load', () => {
             // Keep the blob URL alive while iframe is active
-            console.log('[GAME DEBUG] Iframe loaded successfully');
           });
         } catch (error) {
-          console.error('[GAME DEBUG] Error loading game:', error);
-          console.error('[GAME DEBUG] Falling back to direct src');
+          console.error('Error loading game:', error);
           // Fallback to direct src if fetch fails
           iframe.src = normalizeToHttpsS3(currentGame.file);
-          console.log('[GAME DEBUG] Iframe src set to:', iframe.src);
         }
-        console.log('[GAME DEBUG] loadGameIframe() complete');
-        console.log('[GAME DEBUG] ----------------------------------------');
-      }
-      
-      // Pre-roll ad function using Fluid Player
-      function showPreRollAd(container, onComplete) {
-        console.log('[AD DEBUG] ========================================');
-        console.log('[AD DEBUG] showPreRollAd() called');
-        console.log('[AD DEBUG] Container element:', container);
-        console.log('[AD DEBUG] onComplete callback:', typeof onComplete);
-        console.log('[AD DEBUG] Current hostname:', window.location.hostname);
-        console.log('[AD DEBUG] Fluid Player available:', typeof fluidPlayer !== 'undefined');
-        console.log('[AD DEBUG] ========================================');
-        
-        // Check if we're on localhost - VAST ads typically don't work on localhost due to CORS
-        const isLocalhost = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1' ||
-                           window.location.hostname.startsWith('192.168.');
-        
-        if (isLocalhost) {
-          console.log('[AD DEBUG] Running on localhost - skipping ad (VAST requires production domain)');
-          console.log('[AD DEBUG] Ads will work when deployed to production');
-          if (onComplete) onComplete();
-          return Promise.resolve();
-        }
-        
-        return new Promise((resolve) => {
-          console.log('[AD DEBUG] Promise created, starting ad setup...');
-          
-          // Create ad container
-          const adContainer = document.createElement('div');
-          adContainer.className = 'ad-container';
-          adContainer.id = 'preroll-ad-container';
-          console.log('[AD DEBUG] Ad container created:', adContainer);
-          
-          // Create loading indicator
-          adContainer.innerHTML = `
-            <div class="ad-loading">
-              <div class="ad-loading-spinner"></div>
-              <div>Loading ad...</div>
-            </div>
-          `;
-          console.log('[AD DEBUG] Loading indicator HTML set');
-          
-          // Replace game thumbnail with ad container
-          container.innerHTML = '';
-          container.appendChild(adContainer);
-          console.log('[AD DEBUG] Ad container appended to game container');
-          
-          // Track if ad has finished to prevent double-calls
-          let adFinished = false;
-          
-          // Function to cleanup and proceed to game
-          function finishAd(reason) {
-            console.log('[AD DEBUG] ----------------------------------------');
-            console.log('[AD DEBUG] finishAd() called');
-            console.log('[AD DEBUG] Reason:', reason || 'unknown');
-            console.log('[AD DEBUG] adFinished flag:', adFinished);
-            
-            if (adFinished) {
-              console.log('[AD DEBUG] Ad already finished, ignoring duplicate call');
-              return;
-            }
-            adFinished = true;
-            
-            console.log('[AD DEBUG] Cleaning up ad container...');
-            if (adContainer && adContainer.parentNode) {
-              adContainer.remove();
-              console.log('[AD DEBUG] Ad container removed from DOM');
-            } else {
-              console.log('[AD DEBUG] Ad container already removed or not in DOM');
-            }
-            
-            console.log('[AD DEBUG] Calling onComplete callback...');
-            if (onComplete) onComplete();
-            console.log('[AD DEBUG] Resolving promise...');
-            resolve();
-            console.log('[AD DEBUG] Ad sequence complete, game should load now');
-            console.log('[AD DEBUG] ----------------------------------------');
-          }
-          
-          // Function to load Fluid Player dynamically
-          function loadFluidPlayer() {
-            return new Promise((resolveLoad, rejectLoad) => {
-              // Check if already loaded
-              if (typeof fluidPlayer !== 'undefined') {
-                console.log('[AD DEBUG] Fluid Player already loaded');
-                resolveLoad();
-                return;
-              }
-              
-              console.log('[AD DEBUG] Loading Fluid Player CSS...');
-              // Load CSS
-              if (!document.querySelector('link[href*="fluidplayer"]')) {
-                const css = document.createElement('link');
-                css.rel = 'stylesheet';
-                css.href = 'https://cdn.fluidplayer.com/v3/current/fluidplayer.min.css';
-                document.head.appendChild(css);
-                console.log('[AD DEBUG] Fluid Player CSS link added to head');
-              } else {
-                console.log('[AD DEBUG] Fluid Player CSS already in document');
-              }
-              
-              console.log('[AD DEBUG] Loading Fluid Player JS...');
-              // Load JS
-              const script = document.createElement('script');
-              script.src = 'https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js';
-              script.onload = () => {
-                console.log('[AD DEBUG] Fluid Player JS loaded successfully');
-                console.log('[AD DEBUG] fluidPlayer function available:', typeof fluidPlayer !== 'undefined');
-                resolveLoad();
-              };
-              script.onerror = (e) => {
-                console.error('[AD DEBUG] Failed to load Fluid Player JS:', e);
-                rejectLoad(new Error('Failed to load Fluid Player'));
-              };
-              document.head.appendChild(script);
-              console.log('[AD DEBUG] Fluid Player script tag added to head');
-            });
-          }
-          
-          // Load Fluid Player first, then initialize
-          loadFluidPlayer().then(() => {
-            console.log('[AD DEBUG] Fluid Player loaded, initializing player...');
-            initializePlayer();
-          }).catch((error) => {
-            console.error('[AD DEBUG] Failed to load Fluid Player:', error);
-            finishAd('failed to load Fluid Player');
-          });
-          
-          function initializePlayer() {
-            // Create video element for Fluid Player
-            const video = document.createElement('video');
-            video.id = 'preroll-video-' + Date.now(); // Unique ID to avoid conflicts
-            video.style.width = '100%';
-            video.style.height = '100%';
-            video.setAttribute('playsinline', '');
-            video.setAttribute('webkit-playsinline', '');
-            console.log('[AD DEBUG] Video element created:', video);
-            console.log('[AD DEBUG] Video element ID:', video.id);
-            
-            // Use Fluid Player's recommended blank video (longer duration to allow VAST to load)
-            video.src = 'https://cdn.fluidplayer.com/static/blank.mp4';
-            adContainer.appendChild(video);
-            console.log('[AD DEBUG] Video element appended to ad container');
-            console.log('[AD DEBUG] Video source set to Fluid Player blank video');
-          
-            // Initialize Fluid Player with VAST pre-roll
-            console.log('[AD DEBUG] Attempting to initialize Fluid Player...');
-            
-            // First, let's test if the VAST tag is accessible
-            const vastUrl = 'https://s.magsrv.com/v1/vast.php?idzone=5798998';
-            console.log('[AD DEBUG] Testing VAST Tag URL:', vastUrl);
-            console.log('[AD DEBUG] Skip offset: 10 seconds');
-            
-            // Quick VAST accessibility test
-            fetch(vastUrl, { method: 'GET', mode: 'cors' })
-              .then(response => {
-                console.log('[AD DEBUG] VAST fetch test - Status:', response.status);
-                console.log('[AD DEBUG] VAST fetch test - OK:', response.ok);
-                return response.text();
-              })
-              .then(text => {
-                console.log('[AD DEBUG] VAST response length:', text.length);
-                console.log('[AD DEBUG] VAST response preview:', text.substring(0, 500));
-                // Check if it's an empty VAST (no ad)
-                if (text.includes('<VAST') && (text.includes('version="2.0"/>') || text.includes('version="3.0"/>') || !text.includes('<Ad'))) {
-                  console.warn('[AD DEBUG] VAST response appears to be empty (no ads available)');
-                }
-              })
-              .catch(err => {
-                console.error('[AD DEBUG] VAST fetch test failed:', err);
-                console.error('[AD DEBUG] This might indicate CORS issues or network problems');
-              });
-            
-            try {
-              
-              const playerConfig = {
-                layoutControls: {
-                  fillToContainer: true,
-                  autoPlay: true,
-                  mute: false,
-                  allowTheatre: false,
-                  playPauseAnimation: false,
-                  playbackRateEnabled: false,
-                  primaryColor: '#d4550a',
-                  controlBar: {
-                    autoHide: true,
-                    autoHideTimeout: 3,
-                    animated: true
-                  }
-                },
-                vastOptions: {
-                  adList: [
-                    {
-                      roll: 'preRoll',
-                      vastTag: 'https://s.magsrv.com/v1/vast.php?idzone=5798998',
-                      adClickable: true,
-                      adText: 'Advertisement',
-                      adTextPosition: 'top left',
-                      skipoffset: 10
-                    }
-                  ],
-                  skipButtonCaption: 'Skip ad in advancement_time_advancement_time_advancement_time sec',
-                  skipButtonClickCaption: 'Skip Ad',
-                  vastTimeout: 10000,
-                  showPlayButton: true,
-                  maxAllowedVastTagRedirects: 3,
-                  allowVPAID: true,
-                  showProgressbarMarkers: false,
-                  adCTAText: false,
-                  adCTATextPosition: ''
-                }
-              };
-              
-              console.log('[AD DEBUG] Fluid Player config:', JSON.stringify(playerConfig, null, 2));
-              
-              const player = fluidPlayer(video.id, playerConfig);
-              console.log('[AD DEBUG] Fluid Player initialized successfully');
-              console.log('[AD DEBUG] Player object:', player);
-              console.log('[AD DEBUG] Player type:', typeof player);
-              
-              // Hide loading indicator
-              const loadingEl = adContainer.querySelector('.ad-loading');
-              if (loadingEl) {
-                loadingEl.style.display = 'none';
-                console.log('[AD DEBUG] Loading indicator hidden');
-              }
-              
-              // Track ad state
-              let adStarted = false;
-              let adVideoLoaded = false;
-              let lastDuration = 0;
-              let vastFailed = false;
-              
-              // Listen for standard video/player events
-              console.log('[AD DEBUG] Registering event listeners...');
-              
-              player.on('play', () => {
-                console.log('[AD DEBUG] Fluid Player event: play');
-                console.log('[AD DEBUG] Current video duration:', video.duration);
-                // If duration is > 1 second, it's likely the ad video
-                if (video.duration > 1 && !adVideoLoaded) {
-                  adVideoLoaded = true;
-                  adStarted = true;
-                  console.log('[AD DEBUG] Ad video detected and playing!');
-                }
-              });
-              
-              player.on('pause', () => {
-                console.log('[AD DEBUG] Fluid Player event: pause');
-              });
-              
-              player.on('ended', () => {
-                console.log('[AD DEBUG] Fluid Player event: ended');
-                console.log('[AD DEBUG] Video duration at end:', video.duration);
-                // If VAST failed, just proceed to game
-                if (vastFailed) {
-                  console.log('[AD DEBUG] VAST failed earlier, proceeding to game');
-                  finishAd('vast failed - blank video ended');
-                  return;
-                }
-                // If an ad was playing (duration > 1s), finish the ad sequence
-                if (adStarted || video.duration > 1) {
-                  console.log('[AD DEBUG] Ad sequence completed');
-                  finishAd('player ended event');
-                }
-              });
-              
-              // Monitor video duration changes to detect when ad loads
-              video.addEventListener('durationchange', () => {
-                console.log('[AD DEBUG] Video duration changed:', lastDuration, '->', video.duration);
-                if (video.duration > 1 && lastDuration <= 1) {
-                  console.log('[AD DEBUG] Ad video has loaded (duration > 1s)');
-                  adVideoLoaded = true;
-                }
-                lastDuration = video.duration;
-              });
-              
-              video.addEventListener('ended', () => {
-                console.log('[AD DEBUG] Video ended event, duration was:', video.duration);
-                // If video duration is very short (the blank video), VAST probably failed
-                if (video.duration < 1) {
-                  console.log('[AD DEBUG] Blank video ended (VAST likely failed or no ad fill), proceeding to game');
-                  vastFailed = true;
-                  finishAd('blank video ended - no ad loaded');
-                  return;
-                }
-                if (adVideoLoaded || video.duration > 1) {
-                  console.log('[AD DEBUG] Ad finished playing');
-                  finishAd('video ended');
-                }
-              });
-              
-              // Handle errors - but don't immediately fail, VAST might still load
-              video.addEventListener('error', (e) => {
-                console.warn('[AD DEBUG] Video error event (this is often normal when VAST takes over):', e);
-                console.warn('[AD DEBUG] Video error code:', video.error?.code);
-                console.warn('[AD DEBUG] Video error message:', video.error?.message);
-                // Mark VAST as failed
-                vastFailed = true;
-                // If no ad video loaded and we got an error, proceed to game
-                if (!adVideoLoaded && !adStarted) {
-                  console.log('[AD DEBUG] No ad loaded and video error, proceeding to game');
-                  finishAd('video error - no ad');
-                }
-              });
-              
-              // Also add a quick check - if after 3 seconds we still have the blank video, VAST failed
-              setTimeout(() => {
-                if (!adFinished && !adVideoLoaded && video.duration < 1) {
-                  console.log('[AD DEBUG] Quick check: No ad loaded after 3 seconds, VAST likely failed');
-                  vastFailed = true;
-                  finishAd('no ad after 3 seconds');
-                }
-              }, 3000);
-              
-              // Watch for skip button using MutationObserver
-              const observer = new MutationObserver((mutations) => {
-                // Look for any skip button that might appear
-                const skipBtns = adContainer.querySelectorAll('[class*="skip"], .fluid_ad_skip_button');
-                skipBtns.forEach(skipBtn => {
-                  if (!skipBtn._clickHandlerAdded) {
-                    skipBtn._clickHandlerAdded = true;
-                    console.log('[AD DEBUG] Skip button found:', skipBtn.className);
-                    skipBtn.addEventListener('click', () => {
-                      console.log('[AD DEBUG] Skip button clicked');
-                      setTimeout(() => finishAd('skip button clicked'), 200);
-                    });
-                  }
-                });
-              });
-              observer.observe(adContainer, { childList: true, subtree: true });
-              
-              // Check periodically if we're still in ad mode
-              const stateChecker = setInterval(() => {
-                if (adFinished) {
-                  clearInterval(stateChecker);
-                  observer.disconnect();
-                  return;
-                }
-                
-                // Log current state periodically
-                if (video.currentTime > 0) {
-                  console.log('[AD DEBUG] State check - time:', video.currentTime.toFixed(1), 'duration:', video.duration.toFixed(1), 'adStarted:', adStarted);
-                }
-                
-                // If video ended but we didn't catch the event
-                if (video.ended && (adStarted || video.duration > 1)) {
-                  console.log('[AD DEBUG] Detected video ended via state check');
-                  clearInterval(stateChecker);
-                  observer.disconnect();
-                  finishAd('state check - video ended');
-                }
-              }, 1000);
-              
-              console.log('[AD DEBUG] All event listeners registered');
-              
-              // Fallback timeout - give enough time for ad to play
-              console.log('[AD DEBUG] Setting 30 second fallback timeout...');
-              setTimeout(() => {
-                console.log('[AD DEBUG] Fallback timeout triggered (30s)');
-                if (!adFinished) {
-                  console.warn('[AD DEBUG] Ad timeout - proceeding to game after 30 seconds');
-                  clearInterval(stateChecker);
-                  observer.disconnect();
-                  finishAd('timeout fallback 30s');
-                }
-              }, 30000);
-              
-            } catch (error) {
-              console.error('[AD DEBUG] !!!! CRITICAL ERROR !!!!');
-              console.error('[AD DEBUG] Fluid Player initialization error:', error);
-              console.error('[AD DEBUG] Error name:', error.name);
-              console.error('[AD DEBUG] Error message:', error.message);
-              console.error('[AD DEBUG] Error stack:', error.stack);
-              finishAd('initialization error');
-            }
-          }
-        });
       }
 
       document.getElementById("playBtn").onclick = startGame;
