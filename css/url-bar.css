@@ -141,3 +141,8 @@ body:has(.sidebar:hover) .url-bar {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* Hide URL bar on proxy page (has its own address bar) */
+body.view-proxy .url-bar {
+  display: none;
+}
