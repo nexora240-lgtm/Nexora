@@ -17,6 +17,10 @@ jobs:
           - noterplusfire06
           - noterplusfire21
           - noterplusfire18
+          - noterplusfire25
+          - noterplusfire30
+          - noterplusfire32
+          - noterplusfire36
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
