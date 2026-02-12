@@ -17,17 +17,17 @@
         ]
       }
     },
-    "noterplusfire21": {
-      "hosting": {
-        "main": [
-          "noterplusfire21"
-        ]
-      }
-    },
     "noterplusfire18": {
       "hosting": {
         "main": [
           "noterplusfire18"
+        ]
+      }
+    },
+    "noterplusfire21": {
+      "hosting": {
+        "main": [
+          "noterplusfire21"
         ]
       }
     },
@@ -56,6 +56,13 @@
       "hosting": {
         "main": [
           "noterplusfire36"
+        ]
+      }
+    },
+    "noterplusfire11": {
+      "hosting": {
+        "main": [
+          "noterplusfire11"
         ]
       }
     }

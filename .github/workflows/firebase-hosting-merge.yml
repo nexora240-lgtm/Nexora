@@ -13,14 +13,14 @@ jobs:
       fail-fast: false
       matrix:
         projectId:
-          - noterplusfire02
-          - noterplusfire06
-          - noterplusfire21
           - noterplusfire18
+          - noterplusfire21
           - noterplusfire25
           - noterplusfire30
           - noterplusfire32
           - noterplusfire36
+          - noterplusfire11
+          - noterplusfire06
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
