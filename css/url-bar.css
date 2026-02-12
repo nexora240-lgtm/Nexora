@@ -146,3 +146,8 @@ body:has(.sidebar:hover) .url-bar {
 body.view-proxy .url-bar {
   display: none;
 }
+
+/* Hide URL bar on movies page */
+body.view-movies .url-bar {
+  display: none;
+}
