@@ -19,7 +19,7 @@ jobs:
           - noterplusfire30
           - noterplusfire32
           - noterplusfire36
-          - noterplusfire11
+          - noterplusfire02
           - noterplusfire06
     steps:
       - name: Checkout repository
