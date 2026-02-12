@@ -30,6 +30,34 @@
           "noterplusfire18"
         ]
       }
+    },
+    "noterplusfire25": {
+      "hosting": {
+        "main": [
+          "noterplusfire25"
+        ]
+      }
+    },
+    "noterplusfire30": {
+      "hosting": {
+        "main": [
+          "noterplusfire30"
+        ]
+      }
+    },
+    "noterplusfire32": {
+      "hosting": {
+        "main": [
+          "noterplusfire32"
+        ]
+      }
+    },
+    "noterplusfire36": {
+      "hosting": {
+        "main": [
+          "noterplusfire36"
+        ]
+      }
     }
   }
 }
