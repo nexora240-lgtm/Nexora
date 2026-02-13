@@ -22,6 +22,7 @@
   <title>Settings</title>
   <link rel="stylesheet" href="/css/_tokens.css" />
   <link rel="stylesheet" href="/css/settings.css" />
+  <link rel="stylesheet" href="/css/auth.css" />
   <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/nexora-amber.png">
 </head>
 <body>
@@ -354,6 +355,68 @@
 
         <section id="misc" class="panel" role="tabpanel" hidden>
           <div class="section">
+            <h2>Account</h2>
+            <p class="description">Manage your Nexora account and sync your data across devices.</p>
+
+            <div id="profileSection" class="profile-section">
+              <!-- Profile content will be injected by auth.js -->
+              <div id="profileLoggedOut" class="profile-login-prompt">
+                <p>Sign in to sync your settings, preferences, and data across all your devices.</p>
+                <button class="profile-btn profile-btn-primary" id="openAuthBtn">Sign In / Create Account</button>
+              </div>
+
+              <div id="profileLoggedIn" style="display: none;">
+                <div class="profile-header">
+                  <div class="profile-avatar" id="profileAvatar">?</div>
+                  <div class="profile-info">
+                    <h3 class="profile-username" id="profileUsername">Username</h3>
+                    <div class="profile-status">Signed in</div>
+                  </div>
+                </div>
+
+                <div class="profile-actions">
+                  <div class="profile-action-row">
+                    <div>
+                      <div class="profile-action-label">Change Username</div>
+                      <div class="profile-action-desc">Update your display name</div>
+                    </div>
+                    <button class="profile-btn profile-btn-outline" id="changeUsernameBtn">Change</button>
+                  </div>
+
+                  <div class="profile-action-row">
+                    <div>
+                      <div class="profile-action-label">Change Password</div>
+                      <div class="profile-action-desc">Update your account password</div>
+                    </div>
+                    <button class="profile-btn profile-btn-outline" id="changePasswordBtn">Change</button>
+                  </div>
+
+                  <div class="profile-action-row">
+                    <div>
+                      <div class="profile-action-label">Sync Data</div>
+                      <div class="profile-action-desc">Manually sync your settings</div>
+                    </div>
+                    <button class="profile-btn profile-btn-outline" id="syncDataBtn">Sync Now</button>
+                  </div>
+
+                  <div class="profile-action-row">
+                    <div>
+                      <div class="profile-action-label">Sign Out</div>
+                      <div class="profile-action-desc">Log out of your account</div>
+                    </div>
+                    <button class="profile-btn profile-btn-danger" id="logoutBtn">Sign Out</button>
+                  </div>
+                </div>
+
+                <div class="sync-status" id="syncStatus">
+                  <svg class="sync-status-icon" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+                  <span id="syncStatusText">Data synced</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="height:16px;"></div>
+
             <h2>Misc</h2>
             <p class="description">Utility links and tools related to this project.</p>
 
@@ -463,7 +526,258 @@
     </div>
   </div>
 
+  <!-- Auth Modal -->
+  <div class="auth-modal-overlay" id="authModal">
+    <div class="auth-modal">
+      <div class="auth-modal-header">
+        <h2 class="auth-modal-title" id="authModalTitle">Sign In</h2>
+        <button class="auth-modal-close" id="authModalClose" aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <form class="auth-form" id="authForm">
+        <div class="auth-error" id="authError"></div>
+        <div class="auth-success" id="authSuccess"></div>
+
+        <div class="auth-field">
+          <label for="authUsername">Username</label>
+          <input type="text" id="authUsername" name="username" placeholder="Enter username" autocomplete="username" required>
+        </div>
+
+        <div class="auth-field" id="currentPasswordField" style="display: none;">
+          <label for="authCurrentPassword">Current Password</label>
+          <input type="password" id="authCurrentPassword" name="currentPassword" placeholder="Enter current password" autocomplete="current-password">
+        </div>
+
+        <div class="auth-field">
+          <label for="authPassword" id="authPasswordLabel">Password</label>
+          <input type="password" id="authPassword" name="password" placeholder="Enter password" autocomplete="current-password" required>
+        </div>
+
+        <div class="auth-field" id="confirmPasswordField" style="display: none;">
+          <label for="authConfirmPassword">Confirm Password</label>
+          <input type="password" id="authConfirmPassword" name="confirmPassword" placeholder="Confirm password" autocomplete="new-password">
+        </div>
+
+        <button type="submit" class="auth-btn auth-btn-primary" id="authSubmitBtn">Sign In</button>
+      </form>
+
+      <div class="auth-divider" id="authDivider">or</div>
+
+      <div class="auth-switch" id="authSwitch">
+        Don't have an account? <a id="authSwitchLink">Create one</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/config.js"></script>
+  <script src="/js/auth.js"></script>
   <script src="/js/settings.js"></script>
+  <script>
+    // Auth modal and profile UI logic
+    (function() {
+      const modal = document.getElementById('authModal');
+      const modalTitle = document.getElementById('authModalTitle');
+      const authForm = document.getElementById('authForm');
+      const authError = document.getElementById('authError');
+      const authSuccess = document.getElementById('authSuccess');
+      const authUsername = document.getElementById('authUsername');
+      const authPassword = document.getElementById('authPassword');
+      const authCurrentPassword = document.getElementById('authCurrentPassword');
+      const authConfirmPassword = document.getElementById('authConfirmPassword');
+      const authPasswordLabel = document.getElementById('authPasswordLabel');
+      const currentPasswordField = document.getElementById('currentPasswordField');
+      const confirmPasswordField = document.getElementById('confirmPasswordField');
+      const authSubmitBtn = document.getElementById('authSubmitBtn');
+      const authSwitch = document.getElementById('authSwitch');
+      const authSwitchLink = document.getElementById('authSwitchLink');
+      const authDivider = document.getElementById('authDivider');
+      const authModalClose = document.getElementById('authModalClose');
+
+      const profileLoggedOut = document.getElementById('profileLoggedOut');
+      const profileLoggedIn = document.getElementById('profileLoggedIn');
+      const profileAvatar = document.getElementById('profileAvatar');
+      const profileUsername = document.getElementById('profileUsername');
+      const openAuthBtn = document.getElementById('openAuthBtn');
+      const changeUsernameBtn = document.getElementById('changeUsernameBtn');
+      const changePasswordBtn = document.getElementById('changePasswordBtn');
+      const syncDataBtn = document.getElementById('syncDataBtn');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const syncStatus = document.getElementById('syncStatus');
+      const syncStatusText = document.getElementById('syncStatusText');
+
+      let authMode = 'login'; // 'login', 'register', 'changePassword', 'changeUsername'
+
+      function openModal(mode) {
+        authMode = mode;
+        authError.textContent = '';
+        authError.classList.remove('show');
+        authSuccess.textContent = '';
+        authSuccess.classList.remove('show');
+        authForm.reset();
+
+        currentPasswordField.style.display = 'none';
+        confirmPasswordField.style.display = 'none';
+        authUsername.closest('.auth-field').style.display = 'block';
+        authPassword.closest('.auth-field').style.display = 'block';
+        authSwitch.style.display = 'block';
+        authDivider.style.display = 'flex';
+        authUsername.disabled = false;
+
+        if (mode === 'login') {
+          modalTitle.textContent = 'Sign In';
+          authPasswordLabel.textContent = 'Password';
+          authPassword.placeholder = 'Enter password';
+          authPassword.autocomplete = 'current-password';
+          authSubmitBtn.textContent = 'Sign In';
+          authSwitchLink.textContent = 'Create one';
+          authSwitch.innerHTML = "Don't have an account? <a id='authSwitchLink'>Create one</a>";
+        } else if (mode === 'register') {
+          modalTitle.textContent = 'Create Account';
+          authPasswordLabel.textContent = 'Password';
+          authPassword.placeholder = 'Create a password (min 6 characters)';
+          authPassword.autocomplete = 'new-password';
+          confirmPasswordField.style.display = 'block';
+          authSubmitBtn.textContent = 'Create Account';
+          authSwitch.innerHTML = "Already have an account? <a id='authSwitchLink'>Sign in</a>";
+        } else if (mode === 'changePassword') {
+          modalTitle.textContent = 'Change Password';
+          authUsername.closest('.auth-field').style.display = 'none';
+          currentPasswordField.style.display = 'block';
+          authPasswordLabel.textContent = 'New Password';
+          authPassword.placeholder = 'Enter new password';
+          authPassword.autocomplete = 'new-password';
+          confirmPasswordField.style.display = 'block';
+          authSubmitBtn.textContent = 'Change Password';
+          authSwitch.style.display = 'none';
+          authDivider.style.display = 'none';
+        } else if (mode === 'changeUsername') {
+          modalTitle.textContent = 'Change Username';
+          const session = NexoraAuth.getSession();
+          authUsername.value = session?.displayName || '';
+          authPassword.closest('.auth-field').style.display = 'none';
+          authSubmitBtn.textContent = 'Change Username';
+          authSwitch.style.display = 'none';
+          authDivider.style.display = 'none';
+        }
+
+        // Rebind switch link
+        const newSwitchLink = document.getElementById('authSwitchLink');
+        if (newSwitchLink) {
+          newSwitchLink.addEventListener('click', () => {
+            openModal(authMode === 'login' ? 'register' : 'login');
+          });
+        }
+
+        modal.classList.add('active');
+      }
+
+      function closeModal() {
+        modal.classList.remove('active');
+      }
+
+      function showError(msg) {
+        authError.textContent = msg;
+        authError.classList.add('show');
+        authSuccess.classList.remove('show');
+      }
+
+      function showSuccess(msg) {
+        authSuccess.textContent = msg;
+        authSuccess.classList.add('show');
+        authError.classList.remove('show');
+      }
+
+      function updateProfileUI(session) {
+        if (session) {
+          profileLoggedOut.style.display = 'none';
+          profileLoggedIn.style.display = 'block';
+          profileUsername.textContent = session.displayName || session.username;
+          profileAvatar.textContent = (session.displayName || session.username).charAt(0).toUpperCase();
+        } else {
+          profileLoggedOut.style.display = 'block';
+          profileLoggedIn.style.display = 'none';
+        }
+      }
+
+      async function setSyncStatus(status, text) {
+        syncStatus.className = 'sync-status ' + status;
+        syncStatusText.textContent = text;
+      }
+
+      // Form submission
+      authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        authSubmitBtn.disabled = true;
+
+        try {
+          if (authMode === 'login') {
+            await NexoraAuth.login(authUsername.value, authPassword.value);
+            showSuccess('Logged in! Applying your saved settings...');
+            // Page will reload automatically if cloud data exists
+          } else if (authMode === 'register') {
+            if (authPassword.value !== authConfirmPassword.value) {
+              throw new Error('Passwords do not match');
+            }
+            await NexoraAuth.register(authUsername.value, authPassword.value);
+            showSuccess('Account created successfully!');
+            setTimeout(closeModal, 1000);
+          } else if (authMode === 'changePassword') {
+            if (authPassword.value !== authConfirmPassword.value) {
+              throw new Error('Passwords do not match');
+            }
+            await NexoraAuth.changePassword(authCurrentPassword.value, authPassword.value);
+            showSuccess('Password changed successfully!');
+            setTimeout(closeModal, 1000);
+          } else if (authMode === 'changeUsername') {
+            await NexoraAuth.changeUsername(authUsername.value);
+            showSuccess('Username changed successfully!');
+            setTimeout(closeModal, 1000);
+          }
+        } catch (err) {
+          showError(err.message || 'An error occurred');
+        }
+
+        authSubmitBtn.disabled = false;
+      });
+
+      // Event listeners
+      openAuthBtn?.addEventListener('click', () => openModal('login'));
+      changeUsernameBtn?.addEventListener('click', () => openModal('changeUsername'));
+      changePasswordBtn?.addEventListener('click', () => openModal('changePassword'));
+      authModalClose?.addEventListener('click', closeModal);
+      modal?.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      syncDataBtn?.addEventListener('click', async () => {
+        setSyncStatus('syncing', 'Syncing...');
+        try {
+          await NexoraAuth.sync();
+          setSyncStatus('synced', 'Data synced successfully');
+        } catch (err) {
+          setSyncStatus('error', 'Sync failed');
+        }
+      });
+
+      logoutBtn?.addEventListener('click', async () => {
+        await NexoraAuth.logout();
+      });
+
+      // Listen for auth changes
+      if (typeof NexoraAuth !== 'undefined') {
+        NexoraAuth.onAuthChange(updateProfileUI);
+      }
+
+      // Listen for data sync events
+      window.addEventListener('nexora:datasynced', () => {
+        setSyncStatus('synced', 'Data synced');
+      });
+    })();
+  </script>
   <script
     type="text/javascript"
     src="https://pl28203657.effectivegatecpm.com/20/0c/22/200c228c3e54f168aababb866607dcd7.js"

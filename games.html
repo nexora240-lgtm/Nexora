@@ -161,6 +161,10 @@
     
     const GAMES_PER_PAGE = 100;
     const VIEWS_CACHE_STORAGE_KEY = 'nexora_viewsCache';
+    const STATS_CACHE_KEY = 'nexora_allStatsCache';
+    const STATS_TIMESTAMP_KEY = 'nexora_statsTimestamp';
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+    
     let currentPage = 1;
     let allGames = [];
     let filteredGames = [];
@@ -173,10 +177,35 @@
         return {};
       }
     })();
+    
+    // All stats cache: { gameId: { viewCount, likeCount, dislikeCount } }
+    let allStatsCache = (() => {
+      try {
+        const timestamp = sessionStorage.getItem(STATS_TIMESTAMP_KEY);
+        const age = Date.now() - (parseInt(timestamp) || 0);
+        if (age > CACHE_DURATION) {
+          sessionStorage.removeItem(STATS_CACHE_KEY);
+          return null;
+        }
+        const stored = sessionStorage.getItem(STATS_CACHE_KEY);
+        return stored ? JSON.parse(stored) : null;
+      } catch (e) {
+        return null;
+      }
+    })();
 
     function persistViewsCache() {
       try {
         sessionStorage.setItem(VIEWS_CACHE_STORAGE_KEY, JSON.stringify(viewsCache));
+      } catch (e) {
+        /* ignore */
+      }
+    }
+    
+    function persistStatsCache() {
+      try {
+        sessionStorage.setItem(STATS_CACHE_KEY, JSON.stringify(allStatsCache));
+        sessionStorage.setItem(STATS_TIMESTAMP_KEY, Date.now().toString());
       } catch (e) {
         /* ignore */
       }
@@ -207,23 +236,103 @@
     
     // Views API utilities
     const ViewsAPI = {
-      async fetchBatch(gameIds) {
+      // Fetch ALL stats in one request
+      async fetchAll() {
         if (!_CONFIG.viewsApiUrl || _CONFIG.viewsApiUrl.includes('YOUR-API-ID')) {
-          console.warn('Views API not configured');
-          return gameIds.reduce((acc, id) => {
-            acc[id] = viewsCache[id] || 0;
-            return acc;
-          }, {});
+          return allStatsCache || {};
         }
         
-        // Helper to add timeout to fetch
-        const fetchWithTimeout = (url, options, timeout = 5000) => {
+        // Return cached data if valid
+        if (allStatsCache) {
+          console.log('Using cached all stats');
+          return allStatsCache;
+        }
+        
+        const fetchWithTimeout = (url, options, timeout = 15000) => {
           return Promise.race([
             fetch(url, options),
             new Promise((_, reject) => 
               setTimeout(() => reject(new Error('Request timeout')), timeout)
             )
           ]);
+        };
+        
+        try {
+          console.log('Fetching all stats from API...');
+          const response = await fetchWithTimeout(`${_CONFIG.viewsApiUrl}/stats/all`, {}, 15000);
+          
+          if (!response.ok) {
+            console.warn('Failed to fetch all stats:', response.status);
+            return allStatsCache || {};
+          }
+          
+          const data = await response.json();
+          allStatsCache = data.stats || {};
+          
+          // Also update legacy viewsCache
+          for (const gameId in allStatsCache) {
+            const stat = allStatsCache[gameId];
+            viewsCache[gameId] = typeof stat === 'object' ? stat.viewCount : stat;
+          }
+          
+          persistStatsCache();
+          persistViewsCache();
+          
+          console.log(`Loaded stats for ${Object.keys(allStatsCache).length} games`);
+          return allStatsCache;
+        } catch (error) {
+          console.error('Failed to fetch all stats:', error);
+          return allStatsCache || {};
+        }
+      },
+      
+      async fetchBatch(gameIds) {
+        if (!_CONFIG.viewsApiUrl || _CONFIG.viewsApiUrl.includes('YOUR-API-ID')) {
+          return gameIds.reduce((acc, id) => {
+            acc[id] = viewsCache[id] || 0;
+            return acc;
+          }, {});
+        }
+        
+        // If we have allStatsCache, use it
+        if (allStatsCache) {
+          const result = {};
+          gameIds.forEach(id => {
+            const stat = allStatsCache[id];
+            result[id] = stat?.viewCount || viewsCache[id] || 0;
+          });
+          return result;
+        }
+        
+        // Helper to add timeout to fetch
+        const fetchWithTimeout = (url, options, timeout = 8000) => {
+          return Promise.race([
+            fetch(url, options),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Request timeout')), timeout)
+            )
+          ]);
+        };
+        
+        // Helper to delay between batches
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        
+        // Retry with exponential backoff
+        const fetchWithRetry = async (url, options, maxRetries = 2) => {
+          for (let i = 0; i < maxRetries; i++) {
+            try {
+              const response = await fetchWithTimeout(url, options, 8000);
+              if (response.status === 503 && i < maxRetries - 1) {
+                // Wait before retry: 500ms, 1000ms, 2000ms
+                await delay(500 * Math.pow(2, i));
+                continue;
+              }
+              return response;
+            } catch (error) {
+              if (i === maxRetries - 1) throw error;
+              await delay(500 * Math.pow(2, i));
+            }
+          }
         };
         
         try {
@@ -235,31 +344,29 @@
             }, {});
           }
 
-          // Batch requests into chunks to avoid API limits
-          const BATCH_SIZE = 100;
+          // Smaller batch size to reduce server load
+          const BATCH_SIZE = 50;
           const chunks = [];
           for (let i = 0; i < uncachedIds.length; i += BATCH_SIZE) {
             chunks.push(uncachedIds.slice(i, i + BATCH_SIZE));
           }
 
-          // Process all chunks in parallel
-          await Promise.all(chunks.map(async (chunk) => {
+          // Process chunks SEQUENTIALLY with delays to avoid overwhelming API
+          for (let i = 0; i < chunks.length; i++) {
             try {
-              const response = await fetchWithTimeout(`${_CONFIG.viewsApiUrl}/views/batch`, {
+              const response = await fetchWithRetry(`${_CONFIG.viewsApiUrl}/views/batch`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ gameIds: chunk })
-              }, 5000);
+                body: JSON.stringify({ gameIds: chunks[i] })
+              });
               
               if (!response.ok) {
                 console.warn('Views API returned error:', response.status);
-                return;
+                continue;
               }
               
               const data = await response.json();
-              // Handle both old format (views) and new format (stats)
               const statsMap = data.stats || data.views || {};
-              // Convert stats format to simple view counts
               const viewsOnly = {};
               for (const gameId in statsMap) {
                 viewsOnly[gameId] = typeof statsMap[gameId] === 'object' 
@@ -267,19 +374,20 @@
                   : statsMap[gameId];
               }
               Object.assign(viewsCache, viewsOnly);
+              persistViewsCache();
+              
+              // Small delay between successful batches (except last one)
+              if (i < chunks.length - 1) {
+                await delay(200);
+              }
             } catch (chunkError) {
               console.error('Failed to fetch chunk:', chunkError);
+              // Continue with next chunk even if this one fails
             }
-          }));
-
-          persistViewsCache();
+          }
 
           return gameIds.reduce((acc, id) => {
-            if (typeof viewsCache[id] !== 'undefined') {
-              acc[id] = viewsCache[id];
-            } else {
-              acc[id] = 0;
-            }
+            acc[id] = viewsCache[id] !== undefined ? viewsCache[id] : 0;
             return acc;
           }, {});
         } catch (error) {
@@ -295,7 +403,7 @@
           return;
         }
         
-        const fetchWithTimeout = (url, options, timeout = 5000) => {
+        const fetchWithTimeout = (url, options, timeout = 8000) => {
           return Promise.race([
             fetch(url, options),
             new Promise((_, reject) => 
@@ -309,7 +417,13 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ gameId })
-          }, 5000);
+          }, 8000);
+          
+          if (!response.ok) {
+            console.warn('Failed to increment view:', response.status);
+            return;
+          }
+          
           const data = await response.json();
           if (data.success) {
             viewsCache[gameId] = data.viewCount;
@@ -317,6 +431,7 @@
           }
         } catch (error) {
           console.error('Failed to increment view:', error);
+          // Silently fail - don't block UI
         }
       },
       formatCount(count) {
@@ -617,9 +732,9 @@
     // Render sections immediately with cached/default values
     renderAllSections();
     
-    // Fetch view counts in background and update everything when ready
-    ViewsAPI.fetchBatch(allGameIds).then(() => {
-      console.log('View counts loaded, updating sections and grid');
+    // Fetch ALL stats in one request (background, cached for 5 min)
+    ViewsAPI.fetchAll().then(() => {
+      console.log('All stats loaded, updating sections and grid');
       renderAllSections();
       // Re-render current page to update view counts in All Games
       initGames(document.getElementById('searchInput').value);

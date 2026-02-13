@@ -777,56 +777,8 @@
 
     closeCookieConsentModal();
 
-    try {
-      const aboutBlankEnabled = localStorage.getItem(ABOUT_KEY);
-      if (aboutBlankEnabled === 'true' && selectedDisguise) {
-
-        setTimeout(() => {
-
-          if (!localStorage.getItem(FIRST_VISIT_KEY)) {
-            
-            localStorage.setItem(FIRST_VISIT_KEY, 'true');
-          }
-
-          const win = window.open('about:blank', '_blank');
-          if (win) {
-            try {
-              const doc = win.document;
-              doc.open();
-              doc.write('<!DOCTYPE html><html><head><title>Loading...</title></head><body style="margin:0;padding:0;overflow:hidden;"></body></html>');
-              doc.close();
-
-              const iframe = doc.createElement('iframe');
-              iframe.style.width = '100%';
-              iframe.style.height = '100%';
-              iframe.style.border = 'none';
-              iframe.style.margin = '0';
-              iframe.style.padding = '0';
-              iframe.style.position = 'absolute';
-              iframe.style.top = '0';
-              iframe.style.left = '0';
-              iframe.src = window.location.origin;
-              iframe.setAttribute('loading', 'eager');
-              iframe.setAttribute('referrerpolicy', 'no-referrer');
-              doc.body.style.margin = '0';
-              doc.body.style.padding = '0';
-              doc.body.style.overflow = 'hidden';
-              doc.body.appendChild(iframe);
-
-              window._aboutWin = win;
-
-              setTimeout(() => {
-                redirectToDisguiseSite();
-              }, 500);
-            } catch (err) {
-              
-            }
-          }
-        }, 400);
-      }
-    } catch (e) {
-      
-    }
+    // Show account creation prompt after setup
+    setTimeout(() => showAccountPromptModal(true), 300);
   }
 
   function closeCookieConsentModal() {
@@ -858,14 +810,541 @@
     }
   }
 
+  // =============================================
+  // WELCOME CHOICE MODAL (Login vs New Setup)
+  // =============================================
+
+  function createWelcomeChoiceModal() {
+    const overlay = document.createElement('div');
+    overlay.id = 'first-time-overlay';
+
+    const modal = document.createElement('div');
+    modal.id = 'welcome-choice-modal';
+    modal.className = 'ftm-modal';
+
+    modal.addEventListener('mousemove', (e) => {
+      const rect = modal.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      modal.style.setProperty('--x', x + '%');
+      modal.style.setProperty('--y', y + '%');
+    });
+
+    modal.addEventListener('mouseleave', () => {
+      modal.style.setProperty('--x', '50%');
+      modal.style.setProperty('--y', '50%');
+    });
+
+    const header = document.createElement('div');
+    header.innerHTML = `
+      <h2>Welcome to Nexora!</h2>
+      <p class="subtitle">
+        Already have an account? Log in to sync your settings. New here? Start fresh with a quick setup.
+      </p>
+    `;
+
+    const optionsContainer = document.createElement('div');
+    optionsContainer.className = 'welcome-options';
+
+    const loginOption = document.createElement('div');
+    loginOption.className = 'welcome-option';
+    loginOption.innerHTML = `
+      <div class="option-header">
+        <div class="icon-wrapper">👤</div>
+        <h3 class="option-title">Log In</h3>
+      </div>
+      <p class="option-description">
+        Sign in to your existing account to sync your settings, favorites, and progress across all devices.
+      </p>
+    `;
+
+    const newSetupOption = document.createElement('div');
+    newSetupOption.className = 'welcome-option';
+    newSetupOption.innerHTML = `
+      <div class="option-header">
+        <div class="icon-wrapper">✨</div>
+        <h3 class="option-title">New Setup</h3>
+      </div>
+      <p class="option-description">
+        First time here? Let's set up your disguise, privacy settings, and preferences.
+      </p>
+    `;
+
+    loginOption.addEventListener('click', () => {
+      closeWelcomeChoiceModal();
+      setTimeout(() => showLoginFormModal(), 300);
+    });
+
+    newSetupOption.addEventListener('click', () => {
+      closeWelcomeChoiceModal();
+      setTimeout(() => showFirstTimeModal(), 300);
+    });
+
+    optionsContainer.appendChild(loginOption);
+    optionsContainer.appendChild(newSetupOption);
+
+    modal.appendChild(header);
+    modal.appendChild(optionsContainer);
+    overlay.appendChild(modal);
+
+    return overlay;
+  }
+
+  function closeWelcomeChoiceModal() {
+    const overlay = document.getElementById('first-time-overlay');
+    if (overlay) {
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.remove();
+      }, 300);
+    }
+  }
+
+  function showWelcomeChoiceModal() {
+    const modal = createWelcomeChoiceModal();
+    document.body.appendChild(modal);
+  }
+
+  // =============================================
+  // LOGIN FORM MODAL
+  // =============================================
+
+  function createLoginFormModal() {
+    const overlay = document.createElement('div');
+    overlay.id = 'first-time-overlay';
+
+    const modal = document.createElement('div');
+    modal.id = 'login-form-modal';
+    modal.className = 'ftm-modal';
+
+    modal.addEventListener('mousemove', (e) => {
+      const rect = modal.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      modal.style.setProperty('--x', x + '%');
+      modal.style.setProperty('--y', y + '%');
+    });
+
+    modal.addEventListener('mouseleave', () => {
+      modal.style.setProperty('--x', '50%');
+      modal.style.setProperty('--y', '50%');
+    });
+
+    const header = document.createElement('div');
+    header.innerHTML = `
+      <h2>Log In 👤</h2>
+      <p class="subtitle">
+        Sign in to sync your settings, favorites, and progress across all devices.
+      </p>
+    `;
+
+    const formContainer = document.createElement('div');
+    formContainer.className = 'auth-form-container';
+    formContainer.innerHTML = `
+      <div class="auth-input-group">
+        <label for="login-username-input">Username</label>
+        <input 
+          id="login-username-input" 
+          type="text" 
+          placeholder="Enter your username"
+          autocomplete="username"
+        />
+      </div>
+      <div class="auth-input-group">
+        <label for="login-password-input">Password</label>
+        <input 
+          id="login-password-input" 
+          type="password" 
+          placeholder="Enter your password"
+          autocomplete="current-password"
+        />
+      </div>
+      <div id="login-error-message" class="auth-error-message" style="display: none;"></div>
+    `;
+
+    const actions = document.createElement('div');
+    actions.className = 'modal-actions';
+
+    const backBtn = document.createElement('button');
+    backBtn.className = 'btn-skip';
+    backBtn.textContent = 'Back';
+    backBtn.addEventListener('click', () => {
+      closeLoginFormModal();
+      setTimeout(() => showWelcomeChoiceModal(), 300);
+    });
+
+    const loginBtn = document.createElement('button');
+    loginBtn.className = 'btn-continue';
+    loginBtn.textContent = 'Log In';
+    loginBtn.addEventListener('click', async () => {
+      const username = document.getElementById('login-username-input').value.trim();
+      const password = document.getElementById('login-password-input').value;
+      const errorEl = document.getElementById('login-error-message');
+      
+      if (!username || !password) {
+        errorEl.textContent = 'Please enter username and password';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Logging in...';
+
+      try {
+        if (window.NexoraAuth) {
+          await window.NexoraAuth.login(username, password, true);
+          // If we get here, login succeeded - page will reload
+        } else {
+          throw new Error('Auth service not available');
+        }
+      } catch (e) {
+        errorEl.textContent = e.message || 'Login failed';
+        errorEl.style.display = 'block';
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Log In';
+      }
+    });
+
+    actions.appendChild(backBtn);
+    actions.appendChild(loginBtn);
+
+    modal.appendChild(header);
+    modal.appendChild(formContainer);
+    modal.appendChild(actions);
+    overlay.appendChild(modal);
+
+    return overlay;
+  }
+
+  function closeLoginFormModal() {
+    const overlay = document.getElementById('first-time-overlay');
+    if (overlay) {
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.remove();
+      }, 300);
+    }
+  }
+
+  function showLoginFormModal() {
+    const modal = createLoginFormModal();
+    document.body.appendChild(modal);
+  }
+
+  // =============================================
+  // ACCOUNT CREATION MODAL (shown after setup)
+  // =============================================
+
+  function createAccountPromptModal(isAfterSetup = false) {
+    const overlay = document.createElement('div');
+    overlay.id = 'first-time-overlay';
+
+    const modal = document.createElement('div');
+    modal.id = 'account-prompt-modal';
+    modal.className = 'ftm-modal';
+
+    modal.addEventListener('mousemove', (e) => {
+      const rect = modal.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      modal.style.setProperty('--x', x + '%');
+      modal.style.setProperty('--y', y + '%');
+    });
+
+    modal.addEventListener('mouseleave', () => {
+      modal.style.setProperty('--x', '50%');
+      modal.style.setProperty('--y', '50%');
+    });
+
+    const header = document.createElement('div');
+    header.innerHTML = `
+      <h2>Save Your Progress 🔐</h2>
+      <p class="subtitle">
+        ${isAfterSetup 
+          ? 'Create an account to save your settings and sync them across all your devices.' 
+          : 'Create an account to save your settings, favorites, and game progress across all devices.'}
+      </p>
+    `;
+
+    const formContainer = document.createElement('div');
+    formContainer.className = 'auth-form-container';
+
+    // Toggle between Create and Login
+    const toggleContainer = document.createElement('div');
+    toggleContainer.className = 'auth-toggle-container';
+    toggleContainer.innerHTML = `
+      <button class="auth-toggle-btn active" data-mode="register">Create Account</button>
+      <button class="auth-toggle-btn" data-mode="login">Log In</button>
+    `;
+
+    const registerForm = document.createElement('div');
+    registerForm.id = 'register-form-section';
+    registerForm.innerHTML = `
+      <div class="auth-input-group">
+        <label for="register-username-input">Username</label>
+        <input 
+          id="register-username-input" 
+          type="text" 
+          placeholder="Choose a username (min 3 characters)"
+          autocomplete="username"
+        />
+      </div>
+      <div class="auth-input-group">
+        <label for="register-password-input">Password</label>
+        <input 
+          id="register-password-input" 
+          type="password" 
+          placeholder="Choose a password (min 6 characters)"
+          autocomplete="new-password"
+        />
+      </div>
+      <div class="auth-input-group">
+        <label for="register-confirm-input">Confirm Password</label>
+        <input 
+          id="register-confirm-input" 
+          type="password" 
+          placeholder="Confirm your password"
+          autocomplete="new-password"
+        />
+      </div>
+    `;
+
+    const loginForm = document.createElement('div');
+    loginForm.id = 'login-form-section';
+    loginForm.style.display = 'none';
+    loginForm.innerHTML = `
+      <div class="auth-input-group">
+        <label for="prompt-login-username">Username</label>
+        <input 
+          id="prompt-login-username" 
+          type="text" 
+          placeholder="Enter your username"
+          autocomplete="username"
+        />
+      </div>
+      <div class="auth-input-group">
+        <label for="prompt-login-password">Password</label>
+        <input 
+          id="prompt-login-password" 
+          type="password" 
+          placeholder="Enter your password"
+          autocomplete="current-password"
+        />
+      </div>
+    `;
+
+    const errorMessage = document.createElement('div');
+    errorMessage.id = 'account-prompt-error';
+    errorMessage.className = 'auth-error-message';
+    errorMessage.style.display = 'none';
+
+    formContainer.appendChild(toggleContainer);
+    formContainer.appendChild(registerForm);
+    formContainer.appendChild(loginForm);
+    formContainer.appendChild(errorMessage);
+
+    // Toggle functionality
+    setTimeout(() => {
+      const toggleBtns = toggleContainer.querySelectorAll('.auth-toggle-btn');
+      toggleBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          toggleBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const mode = btn.dataset.mode;
+          registerForm.style.display = mode === 'register' ? 'block' : 'none';
+          loginForm.style.display = mode === 'login' ? 'block' : 'none';
+          submitBtn.textContent = mode === 'register' ? 'Create Account' : 'Log In';
+          errorMessage.style.display = 'none';
+        });
+      });
+    }, 0);
+
+    const actions = document.createElement('div');
+    actions.className = 'modal-actions';
+
+    const skipBtn = document.createElement('button');
+    skipBtn.className = 'btn-skip';
+    skipBtn.textContent = 'Skip for Now';
+    skipBtn.addEventListener('click', () => {
+      // Mark that user skipped account creation
+      try { localStorage.setItem('nexora.skippedAccountPrompt', Date.now().toString()); } catch(e) {}
+      closeAccountPromptModal();
+      
+      // If this is after setup, trigger the about:blank flow if needed
+      if (isAfterSetup) {
+        handlePostSetupAboutBlank();
+      }
+    });
+
+    const submitBtn = document.createElement('button');
+    submitBtn.className = 'btn-continue';
+    submitBtn.textContent = 'Create Account';
+    submitBtn.addEventListener('click', async () => {
+      const isRegister = registerForm.style.display !== 'none';
+      const errorEl = document.getElementById('account-prompt-error');
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = isRegister ? 'Creating...' : 'Logging in...';
+      
+      try {
+        if (!window.NexoraAuth) {
+          throw new Error('Auth service not available');
+        }
+
+        if (isRegister) {
+          const username = document.getElementById('register-username-input').value.trim();
+          const password = document.getElementById('register-password-input').value;
+          const confirm = document.getElementById('register-confirm-input').value;
+
+          if (!username || username.length < 3) {
+            throw new Error('Username must be at least 3 characters');
+          }
+          if (!password || password.length < 6) {
+            throw new Error('Password must be at least 6 characters');
+          }
+          if (password !== confirm) {
+            throw new Error('Passwords do not match');
+          }
+
+          await window.NexoraAuth.register(username, password, false);
+          closeAccountPromptModal();
+          
+          // If after setup, handle the about:blank flow
+          if (isAfterSetup) {
+            handlePostSetupAboutBlank();
+          }
+        } else {
+          const username = document.getElementById('prompt-login-username').value.trim();
+          const password = document.getElementById('prompt-login-password').value;
+
+          if (!username || !password) {
+            throw new Error('Please enter username and password');
+          }
+
+          await window.NexoraAuth.login(username, password, true);
+          // Page will reload
+        }
+      } catch (e) {
+        errorEl.textContent = e.message || 'An error occurred';
+        errorEl.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = isRegister ? 'Create Account' : 'Log In';
+      }
+    });
+
+    actions.appendChild(skipBtn);
+    actions.appendChild(submitBtn);
+
+    modal.appendChild(header);
+    modal.appendChild(formContainer);
+    modal.appendChild(actions);
+    overlay.appendChild(modal);
+
+    return overlay;
+  }
+
+  function closeAccountPromptModal() {
+    const overlay = document.getElementById('first-time-overlay');
+    if (overlay) {
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.remove();
+      }, 300);
+    }
+  }
+
+  function showAccountPromptModal(isAfterSetup = false) {
+    const modal = createAccountPromptModal(isAfterSetup);
+    document.body.appendChild(modal);
+  }
+
+  function handlePostSetupAboutBlank() {
+    try {
+      const aboutBlankEnabled = localStorage.getItem(ABOUT_KEY);
+      if (aboutBlankEnabled === 'true' && selectedDisguise) {
+        setTimeout(() => {
+          const win = window.open('about:blank', '_blank');
+          if (win) {
+            try {
+              const doc = win.document;
+              doc.open();
+              doc.write('<!DOCTYPE html><html><head><title>Loading...</title></head><body style="margin:0;padding:0;overflow:hidden;"></body></html>');
+              doc.close();
+
+              const iframe = doc.createElement('iframe');
+              iframe.style.width = '100%';
+              iframe.style.height = '100%';
+              iframe.style.border = 'none';
+              iframe.style.margin = '0';
+              iframe.style.padding = '0';
+              iframe.style.position = 'absolute';
+              iframe.style.top = '0';
+              iframe.style.left = '0';
+              iframe.src = window.location.origin;
+              iframe.setAttribute('loading', 'eager');
+              iframe.setAttribute('referrerpolicy', 'no-referrer');
+              doc.body.style.margin = '0';
+              doc.body.style.padding = '0';
+              doc.body.style.overflow = 'hidden';
+              doc.body.appendChild(iframe);
+
+              window._aboutWin = win;
+
+              setTimeout(() => {
+                redirectToDisguiseSite();
+              }, 500);
+            } catch (err) {}
+          }
+        }, 400);
+      }
+    } catch (e) {}
+  }
+
+  // =============================================
+  // CHECK IF USER HAS ACCOUNT
+  // =============================================
+
+  function hasAccount() {
+    try {
+      const credentials = localStorage.getItem('nexora.auth.credentials');
+      return credentials !== null;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function hasSkippedRecently() {
+    try {
+      const skippedTime = localStorage.getItem('nexora.skippedAccountPrompt');
+      if (!skippedTime) return false;
+      
+      // Check if skipped within the last 24 hours
+      const hoursSinceSkip = (Date.now() - parseInt(skippedTime)) / (1000 * 60 * 60);
+      return hoursSinceSkip < 24;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function init() {
 
     if (window.self !== window.top) {
       return;
     }
     
+    // If user has an account (logged in), they don't need the first-time flow
+    if (hasAccount()) {
+      // Mark as visited so they don't see the flow again if they log out
+      markAsVisited();
+      return;
+    }
+    
     if (isFirstVisit()) {
-      showFirstTimeModal();
+      // First time visitor - show welcome choice (Login vs New Setup)
+      showWelcomeChoiceModal();
+    } else if (!hasAccount()) {
+      // Not first visit, but no account - always prompt to create account
+      showAccountPromptModal(false);
     }
   }
 
@@ -877,6 +1356,9 @@
 
   window.NexoraFirstTime = {
     showModal: showFirstTimeModal,
-    isFirstVisit: isFirstVisit
+    showWelcomeChoiceModal: showWelcomeChoiceModal,
+    showAccountPromptModal: showAccountPromptModal,
+    isFirstVisit: isFirstVisit,
+    hasAccount: hasAccount
   };
 })();

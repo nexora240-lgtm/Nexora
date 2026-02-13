@@ -331,6 +331,64 @@
       }
     };
     
+    // Stats cache to avoid redundant API calls
+    // Try to load from shared sessionStorage first (populated by games.html)
+    const STATS_CACHE_KEY = 'nexora_allStatsCache';
+    const STATS_TIMESTAMP_KEY = 'nexora_statsTimestamp';
+    
+    const statsCache = {
+      data: {},
+      timestamps: {},
+      CACHE_DURATION: 60000, // 1 minute cache
+      
+      // Load shared stats if available
+      loadSharedStats() {
+        try {
+          const shared = sessionStorage.getItem(STATS_CACHE_KEY);
+          if (shared) {
+            const allStats = JSON.parse(shared);
+            console.log(`Loaded ${Object.keys(allStats).length} stats from shared cache`);
+            // Import all shared stats
+            for (const gameId in allStats) {
+              this.data[gameId] = allStats[gameId];
+              this.timestamps[gameId] = Date.now();
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to load shared stats:', e);
+        }
+      },
+      
+      set(gameId, stats) {
+        this.data[gameId] = stats;
+        this.timestamps[gameId] = Date.now();
+      },
+      
+      get(gameId) {
+        if (!this.data[gameId]) return null;
+        const age = Date.now() - (this.timestamps[gameId] || 0);
+        if (age > this.CACHE_DURATION) {
+          delete this.data[gameId];
+          delete this.timestamps[gameId];
+          return null;
+        }
+        return this.data[gameId];
+      }
+    };
+    
+    // Load shared stats on init
+    statsCache.loadSharedStats();
+    
+    // Helper to add timeout to fetch requests
+    function fetchWithTimeout(url, options, timeout = 8000) {
+      return Promise.race([
+        fetch(url, options),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Request timeout')), timeout)
+        )
+      ]);
+    }
+    
     // View utilities
     function formatViewCount(count) {
       if (count >= 1000000) {
@@ -346,122 +404,110 @@
       if (!_CONFIG.viewsApiUrl || _CONFIG.viewsApiUrl.includes('YOUR-API-ID')) {
         return;
       }
+      
+      // Check cache first
+      const cached = statsCache.get(gameId);
+      if (cached) {
+        updateStatsDisplay(cached);
+        return;
+      }
+      
       try {
-        const response = await fetch(`${_CONFIG.viewsApiUrl}/views/${encodeURIComponent(gameId)}`);
+        const response = await fetchWithTimeout(
+          `${_CONFIG.viewsApiUrl}/views/${encodeURIComponent(gameId)}`
+        );
         const data = await response.json();
-        const viewCountEl = document.querySelector('#viewCount span');
-        const likeCountEl = document.getElementById('likeCount');
-        const dislikeCountEl = document.getElementById('dislikeCount');
         
-        if (viewCountEl && data.viewCount !== undefined) {
-          viewCountEl.textContent = formatViewCount(data.viewCount);
-        }
-        if (likeCountEl && data.likeCount !== undefined) {
-          likeCountEl.textContent = formatViewCount(data.likeCount);
-        }
-        if (dislikeCountEl && data.dislikeCount !== undefined) {
-          dislikeCountEl.textContent = formatViewCount(data.dislikeCount);
-        }
+        // Cache the result
+        statsCache.set(gameId, data);
+        updateStatsDisplay(data);
       } catch (error) {
         console.error('Failed to fetch views:', error);
+        // Silently fail - don't block UI
+      }
+    }
+    
+    function updateStatsDisplay(data) {
+      const viewCountEl = document.querySelector('#viewCount span');
+      const likeCountEl = document.getElementById('likeCount');
+      const dislikeCountEl = document.getElementById('dislikeCount');
+      
+      if (viewCountEl && data.viewCount !== undefined) {
+        viewCountEl.textContent = formatViewCount(data.viewCount);
+      }
+      if (likeCountEl && data.likeCount !== undefined) {
+        likeCountEl.textContent = formatViewCount(data.likeCount);
+      }
+      if (dislikeCountEl && data.dislikeCount !== undefined) {
+        dislikeCountEl.textContent = formatViewCount(data.dislikeCount);
       }
     }
     
     async function incrementLike(gameId, previousVote = null) {
-      console.log('incrementLike called for:', gameId);
-      console.log('API URL:', _CONFIG.viewsApiUrl);
-      
       if (!_CONFIG.viewsApiUrl || _CONFIG.viewsApiUrl.includes('YOUR-API-ID')) {
-        console.warn('API not configured, skipping like increment');
         return;
       }
       
-      const url = `${_CONFIG.viewsApiUrl}/likes/increment`;
-      console.log('Fetching:', url);
-      
       try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ gameId, previousVote })
-        });
+        const response = await fetchWithTimeout(
+          `${_CONFIG.viewsApiUrl}/likes/increment`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ gameId, previousVote })
+          }
+        );
         
-        console.log('Response status:', response.status);
         const data = await response.json();
-        console.log('Response data:', data);
-        console.log('data.likeCount:', data.likeCount, 'type:', typeof data.likeCount);
-        console.log('data.dislikeCount:', data.dislikeCount, 'type:', typeof data.dislikeCount);
         
         if (data.success) {
-          const likeCountEl = document.getElementById('likeCount');
-          const dislikeCountEl = document.getElementById('dislikeCount');
-          console.log('likeCountEl:', likeCountEl);
-          console.log('dislikeCountEl:', dislikeCountEl);
+          // Update cache
+          statsCache.set(gameId, {
+            viewCount: data.viewCount,
+            likeCount: data.likeCount,
+            dislikeCount: data.dislikeCount
+          });
           
-          if (likeCountEl && data.likeCount !== undefined) {
-            const formatted = formatViewCount(data.likeCount);
-            console.log('Formatted like count:', formatted);
-            likeCountEl.textContent = formatted;
-            console.log('Like count element text is now:', likeCountEl.textContent);
-          }
-          if (dislikeCountEl && data.dislikeCount !== undefined) {
-            const formatted = formatViewCount(data.dislikeCount);
-            console.log('Formatted dislike count:', formatted);
-            dislikeCountEl.textContent = formatted;
-            console.log('Dislike count element text is now:', dislikeCountEl.textContent);
-          }
+          // Update display
+          updateStatsDisplay(data);
         }
       } catch (error) {
         console.error('Failed to increment like:', error);
+        // Silently fail - don't block UI
       }
     }
     
     async function incrementDislike(gameId, previousVote = null) {
-      console.log('incrementDislike called for:', gameId);
-      console.log('API URL:', _CONFIG.viewsApiUrl);
-      
       if (!_CONFIG.viewsApiUrl || _CONFIG.viewsApiUrl.includes('YOUR-API-ID')) {
-        console.warn('API not configured, skipping dislike increment');
         return;
       }
       
-      const url = `${_CONFIG.viewsApiUrl}/dislikes/increment`;
-      console.log('Fetching:', url);
-      
       try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ gameId, previousVote })
-        });
+        const response = await fetchWithTimeout(
+          `${_CONFIG.viewsApiUrl}/dislikes/increment`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ gameId, previousVote })
+          }
+        );
         
-        console.log('Response status:', response.status);
         const data = await response.json();
-        console.log('Response data:', data);
-        console.log('data.likeCount:', data.likeCount, 'type:', typeof data.likeCount);
-        console.log('data.dislikeCount:', data.dislikeCount, 'type:', typeof data.dislikeCount);
         
         if (data.success) {
-          const likeCountEl = document.getElementById('likeCount');
-          const dislikeCountEl = document.getElementById('dislikeCount');
-          console.log('likeCountEl:', likeCountEl);
-          console.log('dislikeCountEl:', dislikeCountEl);
+          // Update cache
+          statsCache.set(gameId, {
+            viewCount: data.viewCount,
+            likeCount: data.likeCount,
+            dislikeCount: data.dislikeCount
+          });
           
-          if (likeCountEl && data.likeCount !== undefined) {
-            const formatted = formatViewCount(data.likeCount);
-            console.log('Formatted like count:', formatted);
-            likeCountEl.textContent = formatted;
-            console.log('Like count element text is now:', likeCountEl.textContent);
-          }
-          if (dislikeCountEl && data.dislikeCount !== undefined) {
-            const formatted = formatViewCount(data.dislikeCount);
-            console.log('Formatted dislike count:', formatted);
-            dislikeCountEl.textContent = formatted;
-            console.log('Dislike count element text is now:', dislikeCountEl.textContent);
-          }
+          // Update display
+          updateStatsDisplay(data);
         }
       } catch (error) {
         console.error('Failed to increment dislike:', error);
+        // Silently fail - don't block UI
       }
     }
     
@@ -469,21 +515,33 @@
       if (!_CONFIG.viewsApiUrl || _CONFIG.viewsApiUrl.includes('YOUR-API-ID')) {
         return;
       }
+      
       try {
-        const response = await fetch(`${_CONFIG.viewsApiUrl}/views/increment`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ gameId })
-        });
-        const data = await response.json();
-        if (data.success) {
-          const viewCountEl = document.querySelector('#viewCount span');
-          if (viewCountEl) {
-            viewCountEl.textContent = formatViewCount(data.viewCount);
+        const response = await fetchWithTimeout(
+          `${_CONFIG.viewsApiUrl}/views/increment`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ gameId })
           }
+        );
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Update cache with all stats
+          statsCache.set(gameId, {
+            viewCount: data.viewCount,
+            likeCount: data.likeCount !== undefined ? data.likeCount : 0,
+            dislikeCount: data.dislikeCount !== undefined ? data.dislikeCount : 0
+          });
+          
+          // Update display
+          updateStatsDisplay(data);
         }
       } catch (error) {
         console.error('Failed to increment view:', error);
+        // Silently fail - don't block UI
       }
     }
     
@@ -539,22 +597,17 @@
       // Like button handler
       if (likeBtn) {
         likeBtn.onclick = () => {
-          console.log('Like button clicked for game:', currentGame.title);
           const currentVote = VoteManager.getVote(currentGame.title);
-          console.log('Current vote:', currentVote);
           const previousVote = currentVote;
           
           if (currentVote === 'like') {
-            console.log('Already liked, ignoring');
             return;
           } else if (currentVote === 'dislike') {
-            console.log('Switching from dislike to like');
             if (dislikeBtn) dislikeBtn.classList.remove('active');
           }
           
           likeBtn.classList.add('active');
           VoteManager.setVote(currentGame.title, 'like');
-          console.log('Calling incrementLike...');
           incrementLike(currentGame.title, previousVote);
         };
       }
@@ -562,27 +615,23 @@
       // Dislike button handler
       if (dislikeBtn) {
         dislikeBtn.onclick = () => {
-          console.log('Dislike button clicked for game:', currentGame.title);
           const currentVote = VoteManager.getVote(currentGame.title);
-          console.log('Current vote:', currentVote);
           const previousVote = currentVote;
           
           if (currentVote === 'dislike') {
-            console.log('Already disliked, ignoring');
             return;
           } else if (currentVote === 'like') {
-            console.log('Switching from like to dislike');
             if (likeBtn) likeBtn.classList.remove('active');
           }
           
           dislikeBtn.classList.add('active');
           VoteManager.setVote(currentGame.title, 'dislike');
-          console.log('Calling incrementDislike...');
           incrementDislike(currentGame.title, previousVote);
         };
       }
       
-      // Fetch initial view count
+      // Fetch initial stats asynchronously (non-blocking, with short timeout)
+      // This runs in the background and won't block page rendering
       fetchAndDisplayViews(currentGame.title);
 
       const primaryBg = currentGame.thumbnail ? `url("${currentGame.thumbnail}")` : 'none';
