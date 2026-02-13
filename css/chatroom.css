@@ -580,6 +580,7 @@
     font-size: 18px;
     font-weight: 700;
     color: var(--orange);
+    pointer-events: none;
 }
 
 .nexora-chatroom .choice-button-desc {
@@ -587,6 +588,7 @@
     font-weight: 400;
     color: var(--muted);
     opacity: 0.85;
+    pointer-events: none;
 }
 
 
@@ -639,6 +641,7 @@
 .nexora-chatroom .choice-button > * {
     position: relative;
     z-index: 1;
+    pointer-events: none;
 }
 
 
@@ -835,6 +838,7 @@
 .nexora-chatroom button > * {
     position: relative;
     z-index: 2;
+    pointer-events: none;
 }
 
 .nexora-chatroom button:focus {

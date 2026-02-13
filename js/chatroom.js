@@ -16,7 +16,7 @@
     let isPendingApproval = false; // Track if current user is waiting for approval
     let myConnectionId = null; // Store our WebSocket connection ID
     let presenceAnnouncedTo = new Set(); // Track users we've already announced presence to
-    const PUBLIC_ROOM_CODE = '000000'; // Special room code for public chat (using 6-digit format)
+    const PUBLIC_ROOM_CODE = '000000'; // Special room code for public chat - using 6-digit format required by server
     const APPROVAL_TIMEOUT = 60000; // 60 seconds for host to respond
 
     const CHATROOM_STATE_KEY = 'nexora_circle_state';
