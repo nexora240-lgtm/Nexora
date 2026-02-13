@@ -38,15 +38,114 @@
         return '';
     }
 
+    /**
+     * Get the username to use - prioritizes logged-in account username
+     */
+    function getDefaultUsername() {
+        // Check if user is logged in with an account
+        if (window.NexoraAuth && window.NexoraAuth.isLoggedIn()) {
+            const session = window.NexoraAuth.getSession();
+            if (session && session.username) {
+                return session.username;
+            }
+        }
+        // Fall back to saved username from cookie
+        return getUsernameFromCookie();
+    }
+
+    /**
+     * Check if current username is from logged-in account
+     */
+    function isUsingAccountUsername() {
+        return window.NexoraAuth && window.NexoraAuth.isLoggedIn();
+    }
+
+    /**
+     * Check if user has dismissed the account prompt
+     */
+    function hasUserDismissedAccountPrompt() {
+        return localStorage.getItem('nexora_circle_dismissed_account_prompt') === 'true';
+    }
+
+    /**
+     * Show account creation prompt modal for guest users
+     */
+    function showAccountPrompt() {
+        // Don't show if user is logged in or has dismissed it
+        if (isUsingAccountUsername() || hasUserDismissedAccountPrompt()) {
+            return;
+        }
+        
+        const modal = document.getElementById('accountPromptModal');
+        if (modal) {
+            // Ensure modal is visible even in iframe/about:blank context
+            modal.style.display = 'flex';
+            modal.style.position = 'fixed';
+            modal.style.inset = '0';
+            modal.style.zIndex = '999999';
+            
+            // If we're in an iframe, ensure the modal covers the entire viewport
+            if (window.self !== window.top) {
+                modal.style.width = '100vw';
+                modal.style.height = '100vh';
+            }
+        }
+    }
+
     function loadSavedUsername() {
-        const savedUsername = getUsernameFromCookie();
-        if (savedUsername) {
+        const defaultUsername = getDefaultUsername();
+        const isFromAccount = isUsingAccountUsername();
+        
+        // Show account prompt for guest users (only once when they first interact)
+        if (!isFromAccount && !hasUserDismissedAccountPrompt()) {
+            // Show prompt after a short delay to not interrupt user flow
+            // Use longer delay if in iframe to ensure everything is loaded
+            const delay = (window.self !== window.top) ? 2500 : 1500;
+            setTimeout(showAccountPrompt, delay);
+        }
+        
+        if (defaultUsername) {
             const joinInput = document.getElementById('joinUsernameInput');
             const createInput = document.getElementById('createUsernameInput');
             const publicInput = document.getElementById('publicUsernameInput');
-            if (joinInput) joinInput.value = savedUsername;
-            if (createInput) createInput.value = savedUsername;
-            if (publicInput) publicInput.value = savedUsername;
+            
+            // Set the username value
+            if (joinInput) {
+                joinInput.value = defaultUsername;
+                if (isFromAccount) {
+                    joinInput.readOnly = true;
+                    joinInput.placeholder = 'Using account username';
+                    joinInput.style.opacity = '0.7';
+                } else {
+                    joinInput.readOnly = false;
+                    joinInput.placeholder = 'Enter your username';
+                    joinInput.style.opacity = '1';
+                }
+            }
+            if (createInput) {
+                createInput.value = defaultUsername;
+                if (isFromAccount) {
+                    createInput.readOnly = true;
+                    createInput.placeholder = 'Using account username';
+                    createInput.style.opacity = '0.7';
+                } else {
+                    createInput.readOnly = false;
+                    createInput.placeholder = 'Enter your username';
+                    createInput.style.opacity = '1';
+                }
+            }
+            if (publicInput) {
+                publicInput.value = defaultUsername;
+                if (isFromAccount) {
+                    publicInput.readOnly = true;
+                    publicInput.placeholder = 'Using account username';
+                    publicInput.style.opacity = '0.7';
+                } else {
+                    publicInput.readOnly = false;
+                    publicInput.placeholder = 'Enter your username';
+                    publicInput.style.opacity = '1';
+                }
+            }
         }
     }
 
@@ -224,7 +323,14 @@ function getUniqueUsername(baseUsername, existingUsers) {
 }
 
 function joinPublicChatWithUsername() {
-    const username = document.getElementById('publicUsernameInput').value.trim();
+    // Use account username if logged in, otherwise use input value
+    let username;
+    if (isUsingAccountUsername()) {
+        username = getDefaultUsername();
+    } else {
+        username = document.getElementById('publicUsernameInput').value.trim();
+    }
+    
     if (!username) {
         alert('Please enter a username');
         return;
@@ -233,13 +339,24 @@ function joinPublicChatWithUsername() {
     currentUsername = username;
     currentRoomCode = PUBLIC_ROOM_CODE;
     roomOwner = ''; // No owner in public chat
-    saveUsernameToCookie(username);
+    
+    // Only save to cookie if not using account username
+    if (!isUsingAccountUsername()) {
+        saveUsernameToCookie(username);
+    }
     
     connectWebSocket();
 }
 
 function createRoom() {
-    const username = document.getElementById('createUsernameInput').value.trim();
+    // Use account username if logged in, otherwise use input value
+    let username;
+    if (isUsingAccountUsername()) {
+        username = getDefaultUsername();
+    } else {
+        username = document.getElementById('createUsernameInput').value.trim();
+    }
+    
     if (!username) {
         alert('Please enter a username');
         return;
@@ -251,13 +368,23 @@ function createRoom() {
 
     sessionStorage.setItem(`circle_owner_${currentRoomCode}`, username);
     
-    saveUsernameToCookie(username);
+    // Only save to cookie if not using account username
+    if (!isUsingAccountUsername()) {
+        saveUsernameToCookie(username);
+    }
     
     connectWebSocket(true); // Pass true to indicate room creation
 }
 
 function joinRoom() {
-    const username = document.getElementById('joinUsernameInput').value.trim();
+    // Use account username if logged in, otherwise use input value
+    let username;
+    if (isUsingAccountUsername()) {
+        username = getDefaultUsername();
+    } else {
+        username = document.getElementById('joinUsernameInput').value.trim();
+    }
+    
     const roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
     
     if (!username || !roomCode) {
@@ -267,7 +394,11 @@ function joinRoom() {
 
     currentUsername = username;
     currentRoomCode = roomCode;
-    saveUsernameToCookie(username);
+    
+    // Only save to cookie if not using account username
+    if (!isUsingAccountUsername()) {
+        saveUsernameToCookie(username);
+    }
     
     connectWebSocket(false, false, true); // Pass true for isJoining to validate room exists
 }
@@ -1172,6 +1303,43 @@ function cancelJoinRequest() {
     document.getElementById('chatScreen').classList.remove('active');
 }
 
+function redirectToCreateAccount() {
+    const modal = document.getElementById('accountPromptModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    
+    // Save current state before redirecting
+    saveChatroomState();
+    
+    // If in iframe (about:blank context), redirect the top window
+    if (window.self !== window.top) {
+        try {
+            window.top.location.href = '/?route=/settings';
+        } catch (e) {
+            // Fallback if cross-origin prevents access to top
+            window.location.href = '/?route=/settings';
+        }
+    } else {
+        // Normal redirect
+        window.location.href = '/?route=/settings';
+    }
+}
+
+function continueAsGuest() {
+    const modal = document.getElementById('accountPromptModal');
+    const checkbox = document.getElementById('dontShowAgainCheckbox');
+    
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    
+    // Save preference if checkbox is checked
+    if (checkbox && checkbox.checked) {
+        localStorage.setItem('nexora_circle_dismissed_account_prompt', 'true');
+    }
+}
+
 (function() {
     function setupChoiceButtonTracking() {
         const choiceButtons = document.querySelectorAll('.nexora-chatroom .choice-button');
@@ -1231,6 +1399,8 @@ function cancelJoinRequest() {
     window.approveUser = approveUser;
     window.denyUser = denyUser;
     window.cancelJoinRequest = cancelJoinRequest;
+    window.redirectToCreateAccount = redirectToCreateAccount;
+    window.continueAsGuest = continueAsGuest;
 
     setTimeout(loadSavedUsername, 100);
 
