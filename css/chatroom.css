@@ -1748,3 +1748,163 @@
         inset 2px 2px 6px rgba(255, 255, 255, 0.02);
 }
 
+
+/* Account Prompt Modal */
+.nexora-chatroom .account-prompt-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.90);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    animation: overlayFadeIn 0.3s ease-out;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.nexora-chatroom .account-prompt-content {
+    background: linear-gradient(to bottom, 
+        color-mix(in srgb, var(--orange, #d4550a) 3%, transparent),
+        color-mix(in srgb, var(--panel, #1a100d) 12%, transparent) 50%,
+        color-mix(in srgb, var(--orange-deep, #992f05) 4%, transparent));
+    background-color: color-mix(in srgb, var(--panel) 40%, transparent);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 
+        0 16px 64px rgba(0, 0, 0, 0.5),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.nexora-chatroom .account-prompt-content h3 {
+    font-size: 24px;
+    font-weight: 700;
+    background: var(--accent-gradient, linear-gradient(90deg, var(--orange-deep), var(--orange)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+}
+
+.nexora-chatroom .account-prompt-content p {
+    color: var(--text);
+    font-size: 15px;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.nexora-chatroom .account-prompt-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px 0;
+}
+
+.nexora-chatroom .account-prompt-content ul li {
+    color: var(--muted);
+    font-size: 14px;
+    padding: 8px 0;
+    line-height: 1.4;
+}
+
+.nexora-chatroom .account-prompt-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.nexora-chatroom .create-account-button,
+.nexora-chatroom .continue-guest-button {
+    flex: 1;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    font-family: inherit;
+    border: none;
+}
+
+.nexora-chatroom .create-account-button {
+    background: linear-gradient(135deg, var(--orange-deep), var(--orange));
+    color: var(--send-icon);
+    box-shadow: 
+        0 4px 12px var(--orange-shadow),
+        inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+.nexora-chatroom .create-account-button:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 
+        0 6px 20px var(--orange-shadow),
+        inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+.nexora-chatroom .create-account-button:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.nexora-chatroom .continue-guest-button {
+    background: color-mix(in srgb, var(--panel-2) 40%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--text);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+        -2px -2px 6px rgba(255, 255, 255, 0.03),
+        2px 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.nexora-chatroom .continue-guest-button:hover {
+    background: color-mix(in srgb, var(--panel-2) 60%, transparent);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 
+        -1px -1px 4px rgba(255, 255, 255, 0.04),
+        1px 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.nexora-chatroom .continue-guest-button:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.nexora-chatroom .dont-show-again {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+}
+
+.nexora-chatroom .dont-show-again input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--orange);
+}
+
+.nexora-chatroom .dont-show-again span {
+    cursor: pointer;
+}
