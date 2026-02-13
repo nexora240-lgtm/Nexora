@@ -479,5 +479,63 @@
       isSettingPanicKey = !!value;
     }
   };
+
+  // =============================================
+  // ANTI-INSPECT PROTECTION
+  // =============================================
+
+  // Disable on localhost for development
+  const isLocalhost = window.location.hostname === '127.0.0.1' || 
+                      window.location.hostname === 'localhost';
+
+  if (!isLocalhost) {
+    // Disable right-click context menu
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      return false;
+    });
+
+    // Disable keyboard shortcuts for dev tools
+    document.addEventListener('keydown', function(e) {
+      // Skip if setting panic key
+      if (isSettingPanicKey) return;
+      
+      // F12
+      if (e.key === 'F12' || e.keyCode === 123) {
+        e.preventDefault();
+        return false;
+      }
+      
+      // Ctrl+Shift+I (Inspect)
+      if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.keyCode === 73)) {
+        e.preventDefault();
+        return false;
+      }
+      
+      // Ctrl+Shift+J (Console)
+      if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j' || e.keyCode === 74)) {
+        e.preventDefault();
+        return false;
+      }
+      
+      // Ctrl+Shift+C (Element picker)
+      if (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c' || e.keyCode === 67)) {
+        e.preventDefault();
+        return false;
+      }
+      
+      // Ctrl+U (View source)
+      if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.keyCode === 85)) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    // Disable drag (prevents dragging images/links to inspect)
+    document.addEventListener('dragstart', function(e) {
+      e.preventDefault();
+      return false;
+    });
+  }
 })();
 
