@@ -72,6 +72,44 @@ const searchEngineUrl = "https://duckduckgo.com/?q=%s";
 
 const MAX_TABS = 14;
 
+// Tab sizing constants (matching mainstream browsers)
+const TAB_MAX_WIDTH = 240;
+const TAB_MIN_WIDTH = 48;
+const TAB_NARROW_THRESHOLD = 100;
+
+function updateTabSizes() {
+  const tabBar = document.getElementById('tab-bar');
+  if (!tabBar) return;
+  
+  const tabs = tabBar.querySelectorAll('.tab');
+  const newTabBtn = tabBar.querySelector('.new-tab-btn');
+  const tabCount = tabs.length;
+  
+  if (tabCount === 0) return;
+  
+  // Calculate available width
+  const tabBarWidth = tabBar.offsetWidth;
+  const newTabBtnWidth = newTabBtn ? newTabBtn.offsetWidth + 4 : 0; // +4 for gap
+  const padding = 16; // 8px padding on each side
+  const availableWidth = tabBarWidth - newTabBtnWidth - padding;
+  
+  // Calculate tab width
+  const idealWidth = availableWidth / tabCount;
+  let tabWidth = Math.max(TAB_MIN_WIDTH, Math.min(TAB_MAX_WIDTH, idealWidth));
+  
+  // Apply width to all tabs
+  tabs.forEach(tab => {
+    tab.style.width = `${tabWidth}px`;
+    
+    // Hide title text when tabs get too narrow
+    if (tabWidth < TAB_NARROW_THRESHOLD) {
+      tab.classList.add('tab-narrow');
+    } else {
+      tab.classList.remove('tab-narrow');
+    }
+  });
+}
+
 function updateNewTabButtonState() {
   const tabBar = document.getElementById('tab-bar');
   if (!tabBar) return;
@@ -87,6 +125,9 @@ function updateNewTabButtonState() {
   } else {
     newTabBtn.classList.remove('new-tab-btn-disabled');
   }
+  
+  // Update tab sizes when tab count changes
+  updateTabSizes();
 }
 
 // Helper to get favicon
@@ -183,6 +224,9 @@ function closeTab(tabId) {
 
   // Update new-tab button state after closing
   updateNewTabButtonState();
+  
+  // Small delay to allow DOM to update before recalculating sizes
+  setTimeout(updateTabSizes, 50);
 }
 
 // Create new tab
@@ -245,6 +289,9 @@ function createNewTab() {
 
   // Update new-tab button state after creating
   updateNewTabButtonState();
+  
+  // Small delay to allow DOM to update before recalculating sizes
+  setTimeout(updateTabSizes, 50);
 }
 
 // Open proxy page
@@ -499,6 +546,9 @@ function showTopBars() {
   
   // Add class to body to indicate top bars are visible
   document.body.classList.add('has-top-bars');
+  
+  // Update tab sizes when bars become visible
+  setTimeout(updateTabSizes, 50);
 }
 
 // Handle welcome screen search
@@ -522,3 +572,10 @@ function showLoading() {
 function hideLoading() {
   document.getElementById('loading-indicator').classList.remove('loading');
 }
+
+// Handle window resize to update tab sizes
+let resizeTimeout;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(updateTabSizes, 100);
+});

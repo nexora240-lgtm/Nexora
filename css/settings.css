@@ -1,8 +1,6 @@
 .settings-root {
   isolation: isolate;
   display: block;
-  max-height: 100vh;
-  overflow: auto;
   box-sizing: border-box;
   font-family: 'Poppins', Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
   color: var(--text);
