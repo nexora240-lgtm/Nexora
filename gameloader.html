@@ -17,8 +17,7 @@
 
   gtag('config', 'G-H5VGHQJKD8');
   </script>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8" />  <meta name="referrer" content="no-referrer-when-downgrade" />  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="css/theme-tokens.css" />
   <link rel="stylesheet" href="css/gameloader.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -139,6 +138,93 @@
       min-width: 0;
       display: flex;
       flex-direction: column;
+    }
+
+    /* VAST Video Ad Overlay */
+    .vast-ad-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .vast-ad-overlay video {
+      max-width: 100%;
+      max-height: calc(100% - 60px);
+      width: auto;
+      height: auto;
+    }
+    .vast-ad-controls {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .vast-ad-skip-btn {
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #000;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .vast-ad-skip-btn:disabled {
+      background: rgba(255, 255, 255, 0.3);
+      color: rgba(255, 255, 255, 0.7);
+      cursor: not-allowed;
+    }
+    .vast-ad-skip-btn:not(:disabled):hover {
+      background: #fff;
+      transform: scale(1.05);
+    }
+    .vast-ad-timer {
+      color: #fff;
+      font-size: 13px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 8px 14px;
+      border-radius: 4px;
+    }
+    .vast-ad-label {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: #fff;
+      font-size: 12px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 6px 12px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .vast-ad-loading {
+      color: #fff;
+      font-size: 18px;
+      text-align: center;
+    }
+    .vast-ad-loading .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
@@ -740,13 +826,163 @@
         }
       }
 
-      document.getElementById("playBtn").onclick = startGame;
+      // VAST Ad Player
+      const VAST_AD_URL = 'https://fantasticcommunity.com/dhmtF.zadSGPNqv/ZtGXUJ/zeumO9luFZOUBlrkgPmT-YT4iMtDEA/xwONDPk/tmN/jegXwrMQDSE/5zMtwI';
+      const SKIP_DELAY = 5; // seconds before skip button enabled
+      
+      async function parseVAST(xmlUrl) {
+        try {
+          const response = await fetch(xmlUrl);
+          const text = await response.text();
+          const parser = new DOMParser();
+          const xml = parser.parseFromString(text, 'text/xml');
+          
+          // Find first Linear ad with MediaFiles
+          const ads = xml.querySelectorAll('Ad');
+          for (const ad of ads) {
+            const linear = ad.querySelector('Linear');
+            if (!linear) continue;
+            
+            const mediaFiles = linear.querySelectorAll('MediaFile');
+            for (const mf of mediaFiles) {
+              const type = mf.getAttribute('type') || '';
+              // Prefer MP4 video
+              if (type.includes('mp4') || type.includes('video')) {
+                const url = mf.textContent.trim();
+                if (url) {
+                  // Get tracking URLs
+                  const impressions = [];
+                  ad.querySelectorAll('Impression').forEach(imp => {
+                    const impUrl = imp.textContent.trim();
+                    if (impUrl) impressions.push(impUrl);
+                  });
+                  
+                  return { videoUrl: url, impressions };
+                }
+              }
+            }
+            // Fallback to any MediaFile
+            for (const mf of mediaFiles) {
+              const url = mf.textContent.trim();
+              if (url) {
+                return { videoUrl: url, impressions: [] };
+              }
+            }
+          }
+          return null;
+        } catch (e) {
+          console.error('VAST parse error:', e);
+          return null;
+        }
+      }
+      
+      function showVASTAd(onComplete) {
+        const overlay = document.createElement('div');
+        overlay.className = 'vast-ad-overlay';
+        overlay.innerHTML = `
+          <div class="vast-ad-loading">
+            <div class="spinner"></div>
+            <div>Loading ad...</div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+        
+        parseVAST(VAST_AD_URL).then(adData => {
+          if (!adData || !adData.videoUrl) {
+            console.log('No VAST ad available, starting game');
+            overlay.remove();
+            onComplete();
+            return;
+          }
+          
+          // Fire impression pixels
+          adData.impressions.forEach(url => {
+            const img = new Image();
+            img.src = url;
+          });
+          
+          // Create video player
+          overlay.innerHTML = `
+            <span class="vast-ad-label">Advertisement</span>
+            <video id="vastAdVideo" playsinline></video>
+            <div class="vast-ad-controls">
+              <span class="vast-ad-timer">Ad: <span id="adTimeLeft">--</span>s</span>
+              <button class="vast-ad-skip-btn" id="skipAdBtn" disabled>Skip in ${SKIP_DELAY}s</button>
+            </div>
+          `;
+          
+          const video = overlay.querySelector('#vastAdVideo');
+          const skipBtn = overlay.querySelector('#skipAdBtn');
+          const timeLeft = overlay.querySelector('#adTimeLeft');
+          let skipCountdown = SKIP_DELAY;
+          let skipTimer = null;
+          
+          video.src = adData.videoUrl;
+          video.muted = false;
+          video.play().catch(() => {
+            // Autoplay blocked, try muted
+            video.muted = true;
+            video.play();
+          });
+          
+          // Skip countdown
+          skipTimer = setInterval(() => {
+            skipCountdown--;
+            if (skipCountdown <= 0) {
+              clearInterval(skipTimer);
+              skipBtn.disabled = false;
+              skipBtn.textContent = 'Skip Ad';
+            } else {
+              skipBtn.textContent = `Skip in ${skipCountdown}s`;
+            }
+          }, 1000);
+          
+          // Update time remaining
+          video.addEventListener('timeupdate', () => {
+            const remaining = Math.ceil(video.duration - video.currentTime);
+            if (!isNaN(remaining)) {
+              timeLeft.textContent = remaining;
+            }
+          });
+          
+          // Ad ended
+          video.addEventListener('ended', () => {
+            clearInterval(skipTimer);
+            overlay.remove();
+            onComplete();
+          });
+          
+          // Skip button
+          skipBtn.onclick = () => {
+            clearInterval(skipTimer);
+            video.pause();
+            overlay.remove();
+            onComplete();
+          };
+          
+          // Error handling
+          video.addEventListener('error', () => {
+            console.error('Ad video error');
+            clearInterval(skipTimer);
+            overlay.remove();
+            onComplete();
+          });
+        });
+      }
+      
+      function startGameWithAd() {
+        showVASTAd(() => {
+          startGame();
+        });
+      }
+
+      document.getElementById("playBtn").onclick = startGameWithAd;
       
       // Check if we should autoplay (coming from "Continue Playing")
       if (window.GameStateManager && window.GameStateManager.shouldAutoplay()) {
         // Small delay to ensure DOM is ready, then auto-start the game
         setTimeout(() => {
-          startGame();
+          startGameWithAd();
         }, 100);
       }
 
