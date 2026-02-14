@@ -93,7 +93,7 @@
       backdrop-filter: blur(20px) saturate(160%);
       -webkit-backdrop-filter: blur(20px) saturate(160%);
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      display: flex;
+      display: none;
       align-items: flex-end;
       padding: 8px 8px 0 8px;
       gap: 4px;
@@ -106,6 +106,10 @@
       border-radius: 12px 12px 0 0;
       margin: 0;
       animation: slideDown calc(0.5s / var(--animation-speed)) ease-out;
+    }
+
+    .tab-bar.visible {
+      display: flex;
     }
 
     @keyframes slideDown {
@@ -289,7 +293,7 @@
       -webkit-backdrop-filter: blur(20px) saturate(160%);
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       padding: 12px;
-      display: flex;
+      display: none;
       align-items: center;
       gap: 8px;
       box-shadow: 
@@ -297,6 +301,10 @@
         inset 0 0 0 1px rgba(255, 255, 255, 0.03);
       margin: 0;
       animation: slideInLeft calc(0.5s / var(--animation-speed)) ease-out calc(0.1s / var(--animation-speed)) backwards;
+    }
+
+    .nav-bar.visible {
+      display: flex;
     }
 
     @keyframes slideInLeft {
@@ -488,6 +496,16 @@
       border-radius: 0 0 12px 12px;
       margin: 0;
       min-height: 0;
+    }
+
+    /* When top bars are hidden, content area should fill the full viewport */
+    body:not(.has-top-bars) .content-area {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      border-radius: 12px;
     }
 
     .proxy-frame {

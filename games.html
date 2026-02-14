@@ -647,8 +647,10 @@
       section.style.display = 'block';
       container.innerHTML = '';
       
-      games.forEach(game => {
+      games.forEach((game, index) => {
         const card = renderSectionCard(game);
+        // Add sequential animation delay (60ms per card)
+        card.style.animationDelay = `${index * 0.06}s`;
         container.appendChild(card);
       });
       

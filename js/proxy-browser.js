@@ -56,7 +56,7 @@ async function initProxyBrowser() {
     alert('Failed to initialize proxy. Please refresh the page.');
   }
 
-  createNewTab();
+  // Don't create tab initially - wait for user to search
 }
 
 if (document.readyState === 'loading') {
@@ -249,6 +249,9 @@ function createNewTab() {
 
 // Open proxy page
 async function openProxyPage(url) {
+  // Show top bars when opening a proxy page
+  showTopBars();
+  
   // Wait for service worker to be ready
   if (!swReady) {
     console.log('Waiting for service worker...');
@@ -482,12 +485,29 @@ window.addEventListener('message', function(event) {
   }
 });
 
+// Show the top bars (tab bar and nav bar)
+function showTopBars() {
+  const tabBar = document.getElementById('tab-bar');
+  const navBar = document.querySelector('.nav-bar');
+  
+  if (tabBar && !tabBar.classList.contains('visible')) {
+    tabBar.classList.add('visible');
+  }
+  if (navBar && !navBar.classList.contains('visible')) {
+    navBar.classList.add('visible');
+  }
+  
+  // Add class to body to indicate top bars are visible
+  document.body.classList.add('has-top-bars');
+}
+
 // Handle welcome screen search
 function handleWelcomeSearch(event) {
   event.preventDefault();
   const input = document.getElementById('welcome-search-input').value.trim();
   if (input) {
     const url = search(input, searchEngineUrl);
+    showTopBars();
     openProxyPage(url);
     document.getElementById('welcome-search-input').value = '';
   }
