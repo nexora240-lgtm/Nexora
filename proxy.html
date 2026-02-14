@@ -136,11 +136,14 @@
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-radius: 8px 8px 0 0;
-      min-width: 100px;
-      max-width: none;
-      flex: 0 1 auto;
+      min-width: 48px;
+      max-width: 240px;
+      width: 240px;
+      flex: 1 0 auto;
+      flex-shrink: 1;
       cursor: pointer;
-      transition: all var(--transition-medium) cubic-bezier(0.4, 0, 0.2, 1);
+      transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                  all var(--transition-medium) cubic-bezier(0.4, 0, 0.2, 1);
       border: 1px solid rgba(255, 255, 255, 0.04);
       border-bottom: none;
       position: relative;
@@ -215,6 +218,14 @@
       font-size: 13px;
       font-weight: 500;
       z-index: 1;
+      min-width: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    .tab.tab-narrow .tab-title {
+      opacity: 0;
+      width: 0;
+      overflow: hidden;
     }
 
     .tab-close {
