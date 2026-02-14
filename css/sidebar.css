@@ -228,7 +228,7 @@ body {
 .main-content {
   flex: 1;
   padding: 20px;
-  transition: left 0.3s ease;
+  transition: left 0.3s ease, opacity 0.15s ease-in-out;
   overflow-y: auto; 
   overflow-x: hidden;
   min-height: 100vh;
@@ -570,4 +570,18 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   #cookie-popup, #cookie-actions button { transition: none !important; }
+}
+
+/* View Loading Transition - Prevent FOUC */
+.main-content.view-loading {
+  opacity: 0;
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .main-content,
+  .main-content.view-loading {
+    transition: none !important;
+    opacity: 1 !important;
+  }
 }

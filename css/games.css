@@ -1088,3 +1088,42 @@ html.performance-fast body {
     font-size: 0.75rem;
   }
 }
+
+/* Card Fade-In Drop Animation */
+@keyframes fadeInDrop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section-game-card {
+  animation: fadeInDrop 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+.section-game-card.loading {
+  animation: none;
+  opacity: 1;
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .section-game-card {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Performance mode - disable animations */
+html.performance-no-animations .section-game-card,
+html.performance-fast .section-game-card {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}

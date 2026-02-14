@@ -323,6 +323,9 @@ function loadView(file) {
     // If the persistent view is already mounted in stash, show it
     if (persistentConfig.stash && persistentConfig.stash.childNodes.length > 0) {
       app.style.display = 'none';
+      // Temporarily hide for smooth transition
+      persistentConfig.stash.classList.add('view-loading');
+      
       // Restore to visible state
       persistentConfig.stash.style.display = 'block';
       persistentConfig.stash.style.visibility = 'visible';
@@ -337,6 +340,13 @@ function loadView(file) {
       if (window.GameStateManager) {
         window.GameStateManager.markDomActive();
       }
+      
+      // Remove loading class for smooth fade-in
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          persistentConfig.stash.classList.remove('view-loading');
+        });
+      });
       return;
     }
   } else {
@@ -359,6 +369,10 @@ function loadView(file) {
   // Remove assets for the previous non-persistent view
   clearViewAssets();
   
+  // Add loading class to prevent FOUC
+  const targetContainer = persistentConfig ? (persistentConfig.stash || app) : app;
+  targetContainer.classList.add('view-loading');
+  
   fetch('/' + file)
     .then(res => res.text())
     .then(html => {
@@ -366,6 +380,7 @@ function loadView(file) {
       const doc = parser.parseFromString(html, 'text/html');
       const viewName = normalizeViewName(file);
       const newAssets = [];
+      const cssLinkPromises = [];
 
       const headNodes = doc.head ? Array.from(doc.head.querySelectorAll('link, style')) : [];
       headNodes.forEach(node => {
@@ -377,6 +392,16 @@ function loadView(file) {
           const newLink = document.createElement('link');
           Array.from(node.attributes).forEach(a => newLink.setAttribute(a.name, a.value));
           newLink.dataset.viewAsset = viewName;
+          
+          // Create promise to wait for CSS to load
+          const loadPromise = new Promise((resolve) => {
+            newLink.addEventListener('load', resolve, { once: true });
+            newLink.addEventListener('error', resolve, { once: true }); // Resolve on error too
+            // Timeout fallback in case load event doesn't fire
+            setTimeout(resolve, 100);
+          });
+          cssLinkPromises.push(loadPromise);
+          
           document.head.appendChild(newLink);
           newAssets.push(newLink);
         } else if (node.tagName === 'STYLE') {
@@ -430,6 +455,16 @@ function loadView(file) {
 
       setActiveViewClass(file);
 
+      // Wait for CSS to load before showing content
+      Promise.all(cssLinkPromises).then(() => {
+        // Small delay to ensure styles are applied
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            targetContainer.classList.remove('view-loading');
+          });
+        });
+      });
+
       loadScriptsSequentially(scripts)
         .catch(err => console.error('Failed to load view scripts', err));
 
@@ -447,6 +482,7 @@ function loadView(file) {
     .catch(() => {
       clearViewAssets();
       setActiveViewClass('error');
+      targetContainer.classList.remove('view-loading');
       app.innerHTML = `
         <h1 class="site-title">Error</h1>
         <p>Failed to load ${file}.</p>
