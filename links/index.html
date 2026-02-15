@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Links - Nexora</title>
+  <meta name="description" content="Quick access to game links and resources from Nexora" />
+  <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/nexora-amber.png">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/_tokens.css" />
+  <link rel="stylesheet" href="/css/links.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <script>
+    (function () {
+      try {
+        var THEME_KEY = 'settings.theme';
+        var SCHEME_KEY = 'settings.colorScheme';
+        var MAP = {
+          'midnight-amber': 'theme-midnight-amber',
+          'midnight-blueberry': 'theme-midnight-blueberry',
+          'midnight-grape': 'theme-midnight-grape'
+        };
+
+        var savedTheme = null;
+        var savedScheme = null;
+        try {
+          savedTheme = localStorage.getItem(THEME_KEY);
+          savedScheme = localStorage.getItem(SCHEME_KEY);
+        } catch (e) {}
+
+        var doc = document.documentElement;
+
+        if (savedScheme === 'light') {
+          doc.classList.add('light-scheme');
+          var cls = (savedTheme && MAP[savedTheme]) ? MAP[savedTheme] : 'theme-midnight-amber';
+          doc.classList.add(cls);
+        } else {
+          var cls = (savedTheme && MAP[savedTheme]) ? MAP[savedTheme] : 'theme-midnight-amber';
+          doc.classList.add(cls);
+        }
+      } catch (err) {}
+    })();
+  </script>
+</head>
+<body>
+  <div class="page-frame"></div>
+  <div class="links-page">
+    <header class="links-header">
+      <h1 id="page-title">Nexora Links</h1>
+      <p id="page-subtitle">Quick access to all your favorite games and resources</p>
+    </header>
+
+    <div class="links-container">
+      <a href="/" class="back-link">
+        <i class="fas fa-arrow-left"></i>
+        Back to Nexora
+      </a>
+
+      <div class="links-search">
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Search links..." 
+          id="search-input"
+          autocomplete="off"
+        />
+      </div>
+
+      <div id="links-content">
+        <div class="links-loading">
+          <div class="spinner"></div>
+          <p>Loading links...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="copy-toast" id="copy-toast">
+    <i class="fas fa-check-circle"></i>
+    <span>Link copied to clipboard!</span>
+  </div>
+
+  <script>
+    (function() {
+      let linksData = null;
+
+      // Fetch links data
+      async function loadLinks() {
+        try {
+          const response = await fetch('/links.json');
+          linksData = await response.json();
+          
+          // Update header
+          if (linksData.header) {
+            document.getElementById('page-title').textContent = linksData.header.title || 'Nexora Links';
+            document.getElementById('page-subtitle').textContent = linksData.header.subtitle || '';
+          }
+          
+          renderLinks(linksData.sections);
+        } catch (error) {
+          console.error('Failed to load links:', error);
+          document.getElementById('links-content').innerHTML = `
+            <div class="no-results">
+              <i class="fas fa-exclamation-circle"></i>
+              <p>Failed to load links. Please try again later.</p>
+            </div>
+          `;
+        }
+      }
+
+      // Render links
+      function renderLinks(sections, filterText = '') {
+        const container = document.getElementById('links-content');
+        const filter = filterText.toLowerCase().trim();
+        
+        let html = '';
+        let hasResults = false;
+
+        sections.forEach(section => {
+          const filteredLinks = section.links.filter(link => {
+            if (!filter) return true;
+            return link.name.toLowerCase().includes(filter) ||
+                   link.url.toLowerCase().includes(filter);
+          });
+
+          if (filteredLinks.length === 0) return;
+          hasResults = true;
+
+          html += `
+            <div class="links-section" data-section="${section.id}">
+              <div class="section-header">
+                <img src="${section.image || 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f517.svg'}" alt="${section.title}" />
+                <h2>${section.title}</h2>
+              </div>
+              <div class="links-list">
+          `;
+
+          filteredLinks.forEach(link => {
+            html += `
+              <div class="link-item">
+                <div class="link-info">
+                  <span class="link-name">${escapeHtml(link.name)}</span>
+                  <span class="link-url">${escapeHtml(link.url)}</span>
+                </div>
+                <div class="link-actions">
+                  <button class="link-btn copy-btn" data-url="${escapeHtml(link.url)}" title="Copy link">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                  <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="link-btn visit-btn" title="Visit">
+                    <i class="fas fa-external-link-alt"></i>
+                  </a>
+                </div>
+              </div>
+            `;
+          });
+
+          html += `
+              </div>
+            </div>
+          `;
+        });
+
+        if (!hasResults) {
+          html = `
+            <div class="no-results">
+              <i class="fas fa-search"></i>
+              <p>No links found matching "${escapeHtml(filter)}"</p>
+            </div>
+          `;
+        }
+
+        container.innerHTML = html;
+        attachCopyHandlers();
+      }
+
+      // Escape HTML to prevent XSS
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // Copy functionality
+      function attachCopyHandlers() {
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+          btn.addEventListener('click', async function() {
+            const url = this.dataset.url;
+            
+            try {
+              await navigator.clipboard.writeText(url);
+              
+              // Show success state on button
+              this.classList.add('copied');
+              const icon = this.querySelector('i');
+              icon.className = 'fas fa-check';
+              
+              // Show toast
+              showToast();
+              
+              // Reset after delay
+              setTimeout(() => {
+                this.classList.remove('copied');
+                icon.className = 'fas fa-copy';
+              }, 2000);
+            } catch (err) {
+              // Fallback for older browsers
+              const textArea = document.createElement('textarea');
+              textArea.value = url;
+              textArea.style.position = 'fixed';
+              textArea.style.opacity = '0';
+              document.body.appendChild(textArea);
+              textArea.select();
+              document.execCommand('copy');
+              document.body.removeChild(textArea);
+              
+              this.classList.add('copied');
+              showToast();
+              
+              setTimeout(() => {
+                this.classList.remove('copied');
+              }, 2000);
+            }
+          });
+        });
+      }
+
+      // Toast notification
+      function showToast() {
+        const toast = document.getElementById('copy-toast');
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2500);
+      }
+
+      // Search functionality
+      document.getElementById('search-input').addEventListener('input', function(e) {
+        if (linksData && linksData.sections) {
+          renderLinks(linksData.sections, e.target.value);
+        }
+      });
+
+      // Initialize
+      loadLinks();
+    })();
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if particles are enabled (default true)
+      let particlesEnabled = true;
+      try {
+        const savedParticles = localStorage.getItem('settings.particles');
+        if (savedParticles !== null) {
+          particlesEnabled = JSON.parse(savedParticles);
+        }
+      } catch (e) {
+        particlesEnabled = true;
+      }
+
+      function initParticles() {
+        if (!document.getElementById('particles-js')) {
+          var div = document.createElement('div');
+          div.id = 'particles-js';
+          div.style.position = 'fixed';
+          div.style.top = '0';
+          div.style.left = '0';
+          div.style.width = '100%';
+          div.style.height = '100%';
+          div.style.zIndex = '-1';
+          div.style.pointerEvents = 'none';
+          document.body.appendChild(div);
+        }
+
+        var script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js';
+        script.onload = function() {
+          var cfg = {
+            "particles": {
+              "number": {
+                "value": 100,
+                "density": {
+                  "enable": true,
+                  "value_area": 800
+                }
+              },
+              "color": {
+                "value": "#ffffff"
+              },
+              "shape": {
+                "type": "circle"
+              },
+              "opacity": {
+                "value": 0.5,
+                "random": false,
+                "anim": {
+                  "enable": false,
+                  "speed": 0.5,
+                  "opacity_min": 0.1,
+                  "sync": false
+                }
+              },
+              "size": {
+                "value": 7,
+                "random": true,
+                "anim": {
+                  "enable": false,
+                  "speed": 71.71429026757396,
+                  "size_min": 0.1,
+                  "sync": false
+                }
+              },
+              "line_linked": {
+                "enable": false,
+                "distance": 150,
+                "color": "#ffffff",
+                "opacity": 0.1,
+                "width": 1
+              },
+              "move": {
+                "enable": true,
+                "speed": 1,
+                "random": false,
+                "straight": false,
+                "out_mode": "out",
+                "bounce": false,
+                "attract": {
+                  "enable": false,
+                  "rotateX": 600,
+                  "rotateY": 1200
+                }
+              }
+            },
+            "interactivity": {
+              "detect_on": "canvas",
+              "events": {
+                "onhover": {
+                  "enable": true,
+                  "mode": "bubble"
+                },
+                "onclick": {
+                  "enable": true,
+                  "mode": "repulse"
+                },
+                "resize": true
+              },
+              "modes": {
+                "grab": {
+                  "distance": 400,
+                  "line_linked": {
+                    "opacity": 1
+                  }
+                },
+                "bubble": {
+                  "distance": 286.85716107029583,
+                  "size": 7.968254474174885,
+                  "duration": 2.1514287080272188,
+                  "opacity": 8,
+                  "speed": 3
+                },
+                "repulse": {
+                  "distance": 113.14228450435593,
+                  "duration": 0.4
+                },
+                "push": {
+                  "particles_nb": 4
+                },
+                "remove": {
+                  "particles_nb": 2
+                }
+              }
+            },
+            "retina_detect": true
+          };
+
+          particlesJS('particles-js', cfg);
+        };
+        document.head.appendChild(script);
+      }
+
+      function removeParticles() {
+        var particlesDiv = document.getElementById('particles-js');
+        if (particlesDiv) {
+          particlesDiv.remove();
+        }
+        if (window.pJSDom && window.pJSDom.length > 0) {
+          window.pJSDom = [];
+        }
+      }
+
+      if (particlesEnabled) {
+        initParticles();
+      }
+
+      document.addEventListener('settings:particlesToggled', function(e) {
+        if (e.detail.enabled) {
+          initParticles();
+        } else {
+          removeParticles();
+        }
+      });
+    });
+  </script>
+
+  <script>
+    (function() {
+      function attachMouseTracking() {
+        const linkItems = document.querySelectorAll('.link-item');
+        
+        linkItems.forEach(item => {
+          let rafId = null;
+          
+          function updateFromEvent(e) {
+            const rect = item.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            
+            if (rafId) return;
+            rafId = requestAnimationFrame(() => {
+              item.style.setProperty('--x', x + '%');
+              item.style.setProperty('--y', y + '%');
+              rafId = null;
+            });
+          }
+          
+          item.addEventListener('mousemove', updateFromEvent);
+          item.addEventListener('mouseleave', () => {
+            item.style.setProperty('--x', '50%');
+            item.style.setProperty('--y', '50%');
+          }, { passive: true });
+        });
+      }
+      
+      // Use MutationObserver to handle dynamically added link items
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.addedNodes.length) {
+            attachMouseTracking();
+          }
+        });
+      });
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        const linksContent = document.getElementById('links-content');
+        if (linksContent) {
+          observer.observe(linksContent, {
+            childList: true,
+            subtree: true
+          });
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
