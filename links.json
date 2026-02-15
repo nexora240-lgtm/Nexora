@@ -1,0 +1,137 @@
+{
+  "header": {
+    "title": "Nexora Links",
+    "subtitle": "Quick access to all your favorite games and resources"
+  },
+  "sections": [
+    {
+      "id": "firebase",
+      "title": "Firebase",
+      "image": "/assets/icons/firebase-icon.png",
+      "links": [
+        {
+          "name": "noterplusfire02",
+          "url": "https://noterplusfire02.firebaseapp.com"
+        },
+        {
+          "name": "noterplusfire06",
+          "url": "https://noterplusfire06.firebaseapp.com"
+        },
+        {
+          "name": "noterplusfire18",
+          "url": "https://noterplusfire18.firebaseapp.com"
+        },
+        {
+          "name": "noterplusfire21",
+          "url": "https://noterplusfire21.firebaseapp.com"
+        },
+        {
+          "name": "noterplusfire25",
+          "url": "https://noterplusfire25.firebaseapp.com"
+        },
+        {
+          "name": "noterplusfire30",
+          "url": "https://noterplusfire30.firebaseapp.com"
+        },
+        {
+          "name": "noterplusfire32",
+          "url": "https://noterplusfire32.firebaseapp.com"
+        },
+        {
+          "name": "noterplusfire36",
+          "url": "https://noterplusfire36.firebaseapp.com"
+        }
+      ]
+    },
+    {
+      "id": "web-apps",
+      "title": "Web App",
+      "image": "/assets/icons/firebase-icon.png",
+      "links": [
+        {
+          "name": "noterplusfire02",
+          "url": "https://noterplusfire02.web.app"
+        },
+        {
+          "name": "noterplusfire06",
+          "url": "https://noterplusfire06.web.app"
+        },
+        {
+          "name": "noterplusfire18",
+          "url": "https://noterplusfire18.web.app"
+        },
+        {
+          "name": "noterplusfire21",
+          "url": "https://noterplusfire21.web.app"
+        },
+        {
+          "name": "noterplusfire25",
+          "url": "https://noterplusfire25.web.app"
+        },
+        {
+          "name": "noterplusfire30",
+          "url": "https://noterplusfire30.web.app"
+        },
+        {
+          "name": "noterplusfire32",
+          "url": "https://noterplusfire32.web.app"
+        },
+        {
+          "name": "noterplusfire36",
+          "url": "https://noterplusfire36.web.app"
+        }
+      ]
+    },
+    {
+      "id": "cloudfront",
+      "title": "Cloudfront",
+      "image": "/assets/icons/cloudfront-icon.png",
+      "links": [
+        {
+          "name": "Coming Soon!",
+          "url": "https://cloudfront.net/"
+        }
+      ]
+    },
+    {
+      "id": "azure",
+      "title": "Azure",
+      "image": "/assets/icons/azure-icon.svg",
+      "links": [
+        {
+          "name": "Coming Soon!",
+          "url": "https://azure.com/"
+        }
+      ]
+    },
+    {
+      "id": "fastly",
+      "title": "Fastly",
+      "image": "/assets/icons/fastly-icon.png",
+      "links": [
+        {
+          "name": "notepad-20",
+          "url": "https://notepad20.a.ssl.fastly.net"
+        },
+        {
+          "name": "notepad-40",
+          "url": "https://notepad-40.a.ssl.fastly.net"
+        }
+      ]
+    },
+    {
+      "id": "resources",
+      "title": "Resources",
+      "links": [
+        {
+          "name": "Discord",
+          "url": "https://discord.gg/g8sRzm9jfv"
+        },
+        {
+          "name": "TikTok",
+          "url": "https://www.tiktok.com/@nexoraunblocked"
+        }
+      ]
+    }
+  ]
+}

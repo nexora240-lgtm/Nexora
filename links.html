@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Links - Nexora</title>
+  <meta name="description" content="Quick access to game links and resources from Nexora" />
+  <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/nexora-amber.png">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/_tokens.css" />
+  <link rel="stylesheet" href="/css/links.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <script>
+    (function () {
+      try {
+        var THEME_KEY = 'settings.theme';
+        var SCHEME_KEY = 'settings.colorScheme';
+        var MAP = {
+          'midnight-amber': 'theme-midnight-amber',
+          'midnight-blueberry': 'theme-midnight-blueberry',
+          'midnight-grape': 'theme-midnight-grape'
+        };
+
+        var savedTheme = null;
+        var savedScheme = null;
+        try {
+          savedTheme = localStorage.getItem(THEME_KEY);
+          savedScheme = localStorage.getItem(SCHEME_KEY);
+        } catch (e) {}
+
+        var doc = document.documentElement;
+
+        if (savedScheme === 'light') {
+          doc.classList.add('light-scheme');
+          var cls = (savedTheme && MAP[savedTheme]) ? MAP[savedTheme] : 'theme-midnight-amber';
+          doc.classList.add(cls);
+        } else {
+          var cls = (savedTheme && MAP[savedTheme]) ? MAP[savedTheme] : 'theme-midnight-amber';
+          doc.classList.add(cls);
+        }
+      } catch (err) {}
+    })();
+  </script>
+</head>
+<body>
+  <div class="page-frame"></div>
+  <div class="links-page">
+    <header class="links-header">
+      <h1 id="page-title">Nexora Links</h1>
+      <p id="page-subtitle">Quick access to all your favorite games and resources</p>
+    </header>
+
+    <div class="links-container">
+      <a href="/" class="back-link">
+        <i class="fas fa-arrow-left"></i>
+        Back to Nexora
+      </a>
+
+      <div class="links-search">
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Search links..." 
+          id="search-input"
+          autocomplete="off"
+        />
+      </div>
+
+      <div id="links-content">
+        <div class="links-loading">
+          <div class="spinner"></div>
+          <p>Loading links...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="copy-toast" id="copy-toast">
+    <i class="fas fa-check-circle"></i>
+    <span>Link copied to clipboard!</span>
+  </div>
+
+  <script>
+    (function() {
+      let linksData = null;
+
+      // Fetch links data
+      async function loadLinks() {
+        try {
+          const response = await fetch('/links.json');
+          linksData = await response.json();
+          
+          // Update header
+          if (linksData.header) {
+            document.getElementById('page-title').textContent = linksData.header.title || 'Nexora Links';
+            document.getElementById('page-subtitle').textContent = linksData.header.subtitle || '';
+          }
+          
+          renderLinks(linksData.sections);
+        } catch (error) {
+          console.error('Failed to load links:', error);
+          document.getElementById('links-content').innerHTML = `
+            <div class="no-results">
+              <i class="fas fa-exclamation-circle"></i>
+              <p>Failed to load links. Please try again later.</p>
+            </div>
+          `;
+        }
+      }
+
+      // Render links
+      function renderLinks(sections, filterText = '') {
+        const container = document.getElementById('links-content');
+        const filter = filterText.toLowerCase().trim();
+        
+        let html = '';
+        let hasResults = false;
+
+        // SVG icons for social media - matching website colors
+        const socialIcons = {
+          'Discord': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/></svg>`,
+          'TikTok': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74a2.89 2.89 0 0 1 2.31-4.64a2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>`,
+          'Twitter': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26l8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
+          'YouTube': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`,
+          'Instagram': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07c3.252.148 4.771 1.691 4.919 4.919c.058 1.265.069 1.645.069 4.849c0 3.205-.012 3.584-.069 4.849c-.149 3.225-1.664 4.771-4.919 4.919c-1.266.058-1.644.07-4.85.07c-3.204 0-3.584-.012-4.849-.07c-3.26-.149-4.771-1.699-4.919-4.92c-.058-1.265-.07-1.644-.07-4.849c0-3.204.013-3.583.07-4.849c.149-3.227 1.664-4.771 4.919-4.919c1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072C2.695.272.273 2.69.073 7.052C.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948c.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072c4.354-.2 6.782-2.618 6.979-6.98c.059-1.28.073-1.689.073-4.948c0-3.259-.014-3.667-.072-4.947c-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324a6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8a4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881a1.44 1.44 0 0 0 0-2.881z"/></svg>`
+        };
+
+        sections.forEach(section => {
+          const filteredLinks = section.links.filter(link => {
+            if (!filter) return true;
+            return link.name.toLowerCase().includes(filter) ||
+                   link.url.toLowerCase().includes(filter);
+          });
+
+          if (filteredLinks.length === 0) return;
+          hasResults = true;
+
+          // Render resources section as social media bar
+          if (section.id === 'resources') {
+            html += `
+              <div class="links-section social-media-section" data-section="${section.id}">
+                <div class="section-header">
+                  <h2>${section.title}</h2>
+                </div>
+                <div class="social-media-bar">
+            `;
+
+            filteredLinks.forEach(link => {
+              const icon = socialIcons[link.name] || socialIcons['Discord'];
+              html += `
+                <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="social-btn" title="${escapeHtml(link.name)}">
+                  ${icon}
+                </a>
+              `;
+            });
+
+            html += `
+                </div>
+              </div>
+            `;
+          } else {
+            // Regular sections
+            html += `
+              <div class="links-section" data-section="${section.id}">
+                <div class="section-header">
+                  <img src="${section.image || 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f517.svg'}" alt="${section.title}" />
+                  <h2>${section.title}</h2>
+                </div>
+                <div class="links-list">
+            `;
+
+            filteredLinks.forEach(link => {
+              html += `
+                <div class="link-item">
+                  <div class="link-info">
+                    <span class="link-name">${escapeHtml(link.name)}</span>
+                    <span class="link-url">${escapeHtml(link.url)}</span>
+                  </div>
+                  <div class="link-actions">
+                    <button class="link-btn copy-btn" data-url="${escapeHtml(link.url)}" title="Copy link">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                    <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="link-btn visit-btn" title="Visit">
+                      <i class="fas fa-external-link-alt"></i>
+                    </a>
+                  </div>
+                </div>
+              `;
+            });
+
+            html += `
+                </div>
+              </div>
+            `;
+          }
+        });
+
+        if (!hasResults) {
+          html = `
+            <div class="no-results">
+              <i class="fas fa-search"></i>
+              <p>No links found matching "${escapeHtml(filter)}"</p>
+            </div>
+          `;
+        }
+
+        container.innerHTML = html;
+        attachCopyHandlers();
+      }
+
+      // Escape HTML to prevent XSS
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // Copy functionality
+      function attachCopyHandlers() {
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+          btn.addEventListener('click', async function() {
+            const url = this.dataset.url;
+            
+            try {
+              await navigator.clipboard.writeText(url);
+              
+              // Show success state on button
+              this.classList.add('copied');
+              const icon = this.querySelector('i');
+              icon.className = 'fas fa-check';
+              
+              // Show toast
+              showToast();
+              
+              // Reset after delay
+              setTimeout(() => {
+                this.classList.remove('copied');
+                icon.className = 'fas fa-copy';
+              }, 2000);
+            } catch (err) {
+              // Fallback for older browsers
+              const textArea = document.createElement('textarea');
+              textArea.value = url;
+              textArea.style.position = 'fixed';
+              textArea.style.opacity = '0';
+              document.body.appendChild(textArea);
+              textArea.select();
+              document.execCommand('copy');
+              document.body.removeChild(textArea);
+              
+              this.classList.add('copied');
+              showToast();
+              
+              setTimeout(() => {
+                this.classList.remove('copied');
+              }, 2000);
+            }
+          });
+        });
+      }
+
+      // Toast notification
+      function showToast() {
+        const toast = document.getElementById('copy-toast');
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2500);
+      }
+
+      // Search functionality
+      document.getElementById('search-input').addEventListener('input', function(e) {
+        if (linksData && linksData.sections) {
+          renderLinks(linksData.sections, e.target.value);
+        }
+      });
+
+      // Initialize
+      loadLinks();
+    })();
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if particles are enabled (default true)
+      let particlesEnabled = true;
+      try {
+        const savedParticles = localStorage.getItem('settings.particles');
+        if (savedParticles !== null) {
+          particlesEnabled = JSON.parse(savedParticles);
+        }
+      } catch (e) {
+        particlesEnabled = true;
+      }
+
+      function initParticles() {
+        if (!document.getElementById('particles-js')) {
+          var div = document.createElement('div');
+          div.id = 'particles-js';
+          div.style.position = 'fixed';
+          div.style.top = '0';
+          div.style.left = '0';
+          div.style.width = '100%';
+          div.style.height = '100%';
+          div.style.zIndex = '-1';
+          div.style.pointerEvents = 'none';
+          document.body.appendChild(div);
+        }
+
+        var script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js';
+        script.onload = function() {
+          var cfg = {
+            "particles": {
+              "number": {
+                "value": 100,
+                "density": {
+                  "enable": true,
+                  "value_area": 800
+                }
+              },
+              "color": {
+                "value": "#ffffff"
+              },
+              "shape": {
+                "type": "circle"
+              },
+              "opacity": {
+                "value": 0.5,
+                "random": false,
+                "anim": {
+                  "enable": false,
+                  "speed": 0.5,
+                  "opacity_min": 0.1,
+                  "sync": false
+                }
+              },
+              "size": {
+                "value": 7,
+                "random": true,
+                "anim": {
+                  "enable": false,
+                  "speed": 71.71429026757396,
+                  "size_min": 0.1,
+                  "sync": false
+                }
+              },
+              "line_linked": {
+                "enable": false,
+                "distance": 150,
+                "color": "#ffffff",
+                "opacity": 0.1,
+                "width": 1
+              },
+              "move": {
+                "enable": true,
+                "speed": 1,
+                "random": false,
+                "straight": false,
+                "out_mode": "out",
+                "bounce": false,
+                "attract": {
+                  "enable": false,
+                  "rotateX": 600,
+                  "rotateY": 1200
+                }
+              }
+            },
+            "interactivity": {
+              "detect_on": "canvas",
+              "events": {
+                "onhover": {
+                  "enable": true,
+                  "mode": "bubble"
+                },
+                "onclick": {
+                  "enable": true,
+                  "mode": "repulse"
+                },
+                "resize": true
+              },
+              "modes": {
+                "grab": {
+                  "distance": 400,
+                  "line_linked": {
+                    "opacity": 1
+                  }
+                },
+                "bubble": {
+                  "distance": 286.85716107029583,
+                  "size": 7.968254474174885,
+                  "duration": 2.1514287080272188,
+                  "opacity": 8,
+                  "speed": 3
+                },
+                "repulse": {
+                  "distance": 113.14228450435593,
+                  "duration": 0.4
+                },
+                "push": {
+                  "particles_nb": 4
+                },
+                "remove": {
+                  "particles_nb": 2
+                }
+              }
+            },
+            "retina_detect": true
+          };
+
+          particlesJS('particles-js', cfg);
+        };
+        document.head.appendChild(script);
+      }
+
+      function removeParticles() {
+        var particlesDiv = document.getElementById('particles-js');
+        if (particlesDiv) {
+          particlesDiv.remove();
+        }
+        if (window.pJSDom && window.pJSDom.length > 0) {
+          window.pJSDom = [];
+        }
+      }
+
+      if (particlesEnabled) {
+        initParticles();
+      }
+
+      document.addEventListener('settings:particlesToggled', function(e) {
+        if (e.detail.enabled) {
+          initParticles();
+        } else {
+          removeParticles();
+        }
+      });
+    });
+  </script>
+
+  <script>
+    (function() {
+      function attachMouseTracking() {
+        const linkItems = document.querySelectorAll('.link-item');
+        
+        linkItems.forEach(item => {
+          let rafId = null;
+          
+          function updateFromEvent(e) {
+            const rect = item.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            
+            if (rafId) return;
+            rafId = requestAnimationFrame(() => {
+              item.style.setProperty('--x', x + '%');
+              item.style.setProperty('--y', y + '%');
+              rafId = null;
+            });
+          }
+          
+          item.addEventListener('mousemove', updateFromEvent);
+          item.addEventListener('mouseleave', () => {
+            item.style.setProperty('--x', '50%');
+            item.style.setProperty('--y', '50%');
+          }, { passive: true });
+        });
+      }
+      
+      // Use MutationObserver to handle dynamically added link items
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.addedNodes.length) {
+            attachMouseTracking();
+          }
+        });
+      });
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        const linksContent = document.getElementById('links-content');
+        if (linksContent) {
+          observer.observe(linksContent, {
+            childList: true,
+            subtree: true
+          });
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
