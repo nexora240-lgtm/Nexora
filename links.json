@@ -7,7 +7,7 @@
     {
       "id": "firebase",
       "title": "Firebase",
-      "image": "/assets/icons/firebase-icon.png",
+      "image": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/icons/firebase-icon.png",
       "links": [
         {
           "name": "noterplusfire02",
@@ -46,7 +46,7 @@
     {
       "id": "web-apps",
       "title": "Web App",
-      "image": "/assets/icons/firebase-icon.png",
+      "image": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/icons/firebase-icon.png",
       "links": [
         {
           "name": "noterplusfire02",
@@ -85,7 +85,7 @@
     {
       "id": "cloudfront",
       "title": "Cloudfront",
-      "image": "/assets/icons/cloudfront-icon.png",
+      "image": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/icons/cloudfront-icon.png",
       "links": [
         {
           "name": "Coming Soon!",
@@ -96,7 +96,7 @@
     {
       "id": "azure",
       "title": "Azure",
-      "image": "/assets/icons/azure-icon.svg",
+      "image": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/icons/azure-icon.svg",
       "links": [
         {
           "name": "Coming Soon!",
@@ -107,7 +107,7 @@
     {
       "id": "fastly",
       "title": "Fastly",
-      "image": "/assets/icons/fastly-icon.png",
+      "image": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/icons/fastly-icon.png",
       "links": [
         {
           "name": "notepad-20",
