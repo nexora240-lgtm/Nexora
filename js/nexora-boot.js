@@ -26,6 +26,18 @@
     "Khan Academy": "Dashboard | Khan Academy"
   };
 
+  const FAVICON_MAP = {
+    "Clever": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/clever.ico",
+    "Google Classroom": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/classroom.ico",
+    "Canvas": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/canvas.png",
+    "Google Drive": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/drive.png",
+    "Seesaw": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/seesaw.jpg",
+    "Edpuzzle": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/edpuzzle.png",
+    "Kahoot!": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/kahoot.ico",
+    "Quizlet": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/quizlet.png",
+    "Khan Academy": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/khanacademy.ico"
+  };
+
   const PERFORMANCE_PRESETS = {
     fast: {
       mouseTracking: false,
@@ -173,8 +185,16 @@
         if (win) {
           try {
             const doc = win.document;
+            const disguiseTitle = savedDisguise && CODE_LEVEL_TITLES[savedDisguise] ? CODE_LEVEL_TITLES[savedDisguise] : 'Loading...';
+            const disguiseFavicon = savedDisguise && FAVICON_MAP[savedDisguise] ? FAVICON_MAP[savedDisguise] : '';
+            
             doc.open();
-            doc.write('<!DOCTYPE html><html><head><title>Loading...</title></head><body style="margin:0;padding:0;overflow:hidden;"></body></html>');
+            let htmlContent = `<!DOCTYPE html><html><head><title>${disguiseTitle}</title>`;
+            if (disguiseFavicon) {
+              htmlContent += `<link rel="icon" href="${disguiseFavicon}">`;
+            }
+            htmlContent += '</head><body style="margin:0;padding:0;overflow:hidden;"></body></html>';
+            doc.write(htmlContent);
             doc.close();
 
             const iframe = doc.createElement('iframe');

@@ -1267,8 +1267,19 @@
           if (win) {
             try {
               const doc = win.document;
+              
+              // Find the disguise data to get title and favicon
+              const disguiseData = DISGUISE_OPTIONS.find(d => d.name === selectedDisguise);
+              const disguiseTitle = disguiseData ? disguiseData.title : 'Loading...';
+              const disguiseFavicon = disguiseData ? disguiseData.icon : '';
+              
               doc.open();
-              doc.write('<!DOCTYPE html><html><head><title>Loading...</title></head><body style="margin:0;padding:0;overflow:hidden;"></body></html>');
+              let htmlContent = `<!DOCTYPE html><html><head><title>${disguiseTitle}</title>`;
+              if (disguiseFavicon) {
+                htmlContent += `<link rel="icon" href="${disguiseFavicon}">`;
+              }
+              htmlContent += '</head><body style="margin:0;padding:0;overflow:hidden;"></body></html>';
+              doc.write(htmlContent);
               doc.close();
 
               const iframe = doc.createElement('iframe');
