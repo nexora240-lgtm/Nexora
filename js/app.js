@@ -1,20 +1,23 @@
 const app = document.getElementById('app');
 
 const routes = {
-  '/home':     renderHome,
-  '/games':    renderGamesRoute,
-  '/movies':   renderMovies,
-  '/proxy':    renderProxy,
-  '/hacks':    renderHacks,
-  '/chatbot':  renderChatbot,
-  '/chatroom': renderChatroom,
-  '/loader':   renderLoader,
-  '/settings': renderSettings 
+  '/home':      renderHome,
+  '/games':     renderGamesRoute,
+  '/movies':    renderMovies,
+  '/apps':      renderApps,
+  '/apploader': renderAppLoader,
+  '/proxy':     renderProxy,
+  '/hacks':     renderHacks,
+  '/chatbot':   renderChatbot,
+  '/chatroom':  renderChatroom,
+  '/loader':    renderLoader,
+  '/settings':  renderSettings 
 };
 
 function navigate(path) {
   history.pushState({}, '', path);
-  const renderFn = routes[path];
+  const routeKey = path.split('?')[0];
+  const renderFn = routes[routeKey];
   if (renderFn) {
     renderFn();
   } else {
@@ -62,10 +65,12 @@ if (redirectRoute) {
 
 function renderHome()        { loadView('home.html'); }
 function renderMovies()      { loadView('movies.html'); }
+function renderApps()        { loadView('apps.html'); }
+function renderAppLoader()   { loadView('apploader.html'); }
 function renderProxy()       { loadView('proxy.html'); }
 function renderHacks()       { loadView('hacks.html'); }
 function renderChatbot()     { loadView('chatbot.html'); }
 function renderChatroom()    { loadView('chatroom.html'); }
 function renderLoader()      { loadView('gameloader.html'); }
 function renderGamesRoute()  { loadView('games.html'); }
-function renderSettings()    { loadView('settings.html'); } // ✅ New
+function renderSettings()    { loadView('settings.html'); }

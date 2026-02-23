@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    if (window.location.pathname.endsWith('/apploader.html')) {
+      const params = window.location.search;
+      window.location.replace('/?route=/apploader' + (params ? '&' + params.substring(1) : ''));
+    }
+  </script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7925754855607435"
+     crossorigin="anonymous"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-H5VGHQJKD8"></script>
+  <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-H5VGHQJKD8');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="referrer" content="no-referrer-when-downgrade" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>App Loader - Nexora</title>
+  <link rel="stylesheet" href="css/theme-tokens.css" />
+  <link rel="stylesheet" href="css/apploader.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/nexora-amber.png">
+</head>
+<body>
+  <div class="apploader-page">
+    <div class="apploader-content">
+      <div class="apploader-wrapper">
+        <div class="apploader-header">
+          <button id="backBtn" class="back-btn" title="Back to Apps">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <h1 id="appTitle" class="app-title">Loading...</h1>
+          <button id="fullscreenBtn" class="fullscreen-btn" title="Toggle Fullscreen">
+            <i class="fas fa-expand"></i>
+          </button>
+        </div>
+        <div id="appContainer" class="app-container"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/baremux/index.js"></script>
+  <script src="/scram/scramjet.all.js"></script>
+  <script type="module" src="/epoxy/index.mjs"></script>
+  <script>
+    window._CONFIG = window._CONFIG || {
+      wispurl: "wss://anura.pro/",
+      bareurl: "https://aluu.xyz/bare/"
+    };
+  </script>
+
+  <script>
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const appTitle = params.get('app');
+      const appLink  = params.get('link');
+      const appThumb = params.get('thumb');
+
+      let scramjet  = null;
+      let swReady   = false;
+
+      const appContainer  = document.getElementById('appContainer');
+      const titleEl       = document.getElementById('appTitle');
+      const backBtn       = document.getElementById('backBtn');
+      const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+      /* ── Proxy init ──────────────────────────────────────────── */
+      async function initProxy() {
+        try {
+          const { ScramjetController } = $scramjetLoadController();
+          scramjet = new ScramjetController({
+            prefix: "/scramjet/",
+            files: {
+              wasm: "/scram/scramjet.wasm.wasm",
+              all:  "/scram/scramjet.all.js",
+              sync: "/scram/scramjet.sync.js",
+            }
+          });
+          await scramjet.init();
+
+          const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+          try {
+            await connection.setTransport("/epoxy/index.mjs", [{
+              wisp: window._CONFIG?.wispurl || "wss://anura.pro/"
+            }]);
+          } catch (e) {
+            await connection.setTransport("/baremux/index.mjs", [
+              window._CONFIG?.bareurl || "https://aluu.xyz/bare/"
+            ]);
+          }
+
+          await navigator.serviceWorker.register("/sw.js");
+          await navigator.serviceWorker.ready;
+          swReady = true;
+          window.scramjet = scramjet;
+        } catch (err) {
+          console.error("Proxy init failed:", err);
+        }
+      }
+
+      function getProxyUrl(url) {
+        if (scramjet && swReady) {
+          return scramjet.encodeUrl(url);
+        }
+        return "/scramjet/" + encodeURIComponent(url);
+      }
+
+      /* ── Iframe launch ───────────────────────────────────────── */
+      function launchApp() {
+        const proxyUrl = getProxyUrl(appLink);
+        appContainer.innerHTML = `
+          <iframe
+            id="appFrame"
+            src="${proxyUrl}"
+            class="app-iframe"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads"
+            allow="fullscreen; geolocation; microphone; camera"
+          ></iframe>
+        `;
+      }
+
+      /* ── Splash screen ───────────────────────────────────────── */
+      function initAppLoader() {
+        if (!appTitle || !appLink) {
+          appContainer.innerHTML = `
+            <div class="app-error">
+              <i class="fas fa-exclamation-triangle"></i>
+              <h2>No App Selected</h2>
+              <p>Please select an app from the Apps page.</p>
+              <button class="go-back-btn"
+                onclick="window.navigate ? window.navigate('/apps') : (window.location.href='/apps')">
+                <i class="fas fa-arrow-left"></i> Go to Apps
+              </button>
+            </div>
+          `;
+          return;
+        }
+
+        titleEl.textContent = appTitle;
+        document.title = `${appTitle} - Nexora`;
+
+        appContainer.innerHTML = `
+          <div class="app-start">
+            <div class="app-icon-preview">
+              <img src="${appThumb || ''}"
+                   alt="${appTitle}" />
+            </div>
+            <h2 class="app-start-title">${appTitle}</h2>
+            <button class="launch-btn" id="launchBtn">
+              <i class="fas fa-rocket"></i>
+              Launch App
+            </button>
+          </div>
+        `;
+        document.getElementById('launchBtn').addEventListener('click', launchApp);
+      }
+
+      /* ── Controls ────────────────────────────────────────────── */
+      backBtn.addEventListener('click', () => {
+        if (window.navigate) window.navigate('/apps');
+        else window.location.href = '/apps';
+      });
+
+      fullscreenBtn.addEventListener('click', () => {
+        const target = document.getElementById('appFrame') || appContainer;
+        if (!document.fullscreenElement) {
+          target.requestFullscreen().catch(console.error);
+          fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+        } else {
+          document.exitFullscreen();
+          fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+        }
+      });
+
+      document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement)
+          fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+      });
+
+      /* ── Boot ────────────────────────────────────────────────── */
+      initProxy();
+      initAppLoader();
+    })();
+  </script>
+</body>
+</html>
