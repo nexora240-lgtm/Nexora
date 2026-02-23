@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    if (window.location.pathname.endsWith('/apps.html')) {
+      const params = window.location.search;
+      window.location.replace('/?route=/apps' + (params ? '&' + params.substring(1) : ''));
+    }
+  </script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7925754855607435"
+     crossorigin="anonymous"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-H5VGHQJKD8"></script>
+  <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-H5VGHQJKD8');
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="referrer" content="no-referrer-when-downgrade" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apps - Nexora</title>
+  <link rel="stylesheet" href="css/apps.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="config.js"></script>
+</head>
+<body>
+
+  <div class="apps-container">
+    <div class="apps-header">
+      <h1 class="apps-title">Apps</h1>
+      <p class="apps-subtitle">Browse and launch your favorite applications</p>
+    </div>
+
+    <div class="search-bar">
+      <div class="container">
+        <div class="input-row">
+          <input
+            class="input"
+            id="searchInput"
+            type="text"
+            placeholder="Search Apps..."
+            autocomplete="off"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="apps-grid" id="appsGrid"></div>
+  </div>
+
+  <script>
+  (function() {
+    let allApps = [];
+    let filteredApps = [];
+    const grid = document.getElementById('appsGrid');
+    const searchInput = document.getElementById('searchInput');
+
+    // Load apps from JSON
+    async function loadApps() {
+      try {
+        const response = await fetch('/app-info.json');
+        allApps = await response.json();
+        filteredApps = [...allApps];
+        renderApps();
+      } catch (error) {
+        console.error('Failed to load apps:', error);
+        grid.innerHTML = '<div class="no-results">Failed to load apps. Please try again later.</div>';
+      }
+    }
+
+    function createAppCard(app) {
+      const card = document.createElement('div');
+      card.className = 'app-card';
+      card.innerHTML = `
+        <div class="app-icon-wrapper">
+          <img 
+            class="app-icon" 
+            src="${app.thumbnail}" 
+            alt="${app.title}"
+            onerror="this.src='https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/apps/default.png'"
+          />
+        </div>
+        <span class="app-name">${app.title}</span>
+      `;
+      
+      card.addEventListener('click', () => {
+        // Navigate to apploader with app info
+        const url = `/apploader?app=${encodeURIComponent(app.title)}&link=${encodeURIComponent(app.link)}&thumb=${encodeURIComponent(app.thumbnail)}`;
+        if (window.navigate && typeof window.navigate === 'function') {
+          window.navigate(url);
+        } else {
+          window.location.href = url;
+        }
+      });
+      
+      return card;
+    }
+
+    function renderApps() {
+      grid.innerHTML = '';
+      
+      if (filteredApps.length === 0) {
+        grid.innerHTML = '<div class="no-results">No apps found matching your search.</div>';
+        return;
+      }
+      
+      filteredApps.forEach(app => {
+        grid.appendChild(createAppCard(app));
+      });
+    }
+
+    function filterApps(query) {
+      const searchTerm = query.toLowerCase().trim();
+      
+      if (!searchTerm) {
+        filteredApps = [...allApps];
+      } else {
+        filteredApps = allApps.filter(app => 
+          app.title.toLowerCase().includes(searchTerm)
+        );
+      }
+      
+      renderApps();
+    }
+
+    // Search functionality
+    searchInput.addEventListener('input', (e) => {
+      filterApps(e.target.value);
+    });
+
+    // Load apps on init
+    loadApps();
+  })();
+  </script>
+
+</body>
+</html>

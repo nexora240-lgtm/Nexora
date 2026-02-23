@@ -1,0 +1,467 @@
+:root {
+  --al-page-bg: var(--page-bg, #0a0605);
+  --al-panel: var(--surface, #1a100d);
+  --al-panel-2: var(--surface-2, #1f1410);
+
+  --al-accent: var(--primary-accent, #d4550a);
+  --al-accent-deep: var(--primary-deep, #992f05);
+  --al-shadow: var(--primary-shadow, rgba(212,85,10,0.5));
+
+  --al-on-accent: var(--on-primary, #fff0e8);
+  --al-text: var(--text, #f8e7e0);
+  --al-muted: var(--muted, #c9a08a);
+  --al-radius: var(--radius, 14px);
+
+  --glass-bg: color-mix(in srgb, var(--al-panel) 40%, transparent);
+  --glass-border: color-mix(in srgb, var(--al-text) 15%, transparent);
+  --glass-highlight: color-mix(in srgb, var(--al-text) 10%, transparent);
+  --neu-shadow-light: color-mix(in srgb, var(--al-text) 5%, transparent);
+  --neu-shadow-dark: rgba(0, 0, 0, 0.5);
+}
+
+* { box-sizing: border-box; }
+
+@keyframes fadeSlideUp {
+  0% { opacity: 0; transform: translateY(20px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes fadeIn { 
+  0% { opacity: 0; } 
+  100% { opacity: 1; } 
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px var(--al-shadow), -6px -6px 16px var(--neu-shadow-light), 6px 6px 24px var(--neu-shadow-dark); }
+  50% { box-shadow: 0 0 50px var(--al-shadow), -6px -6px 16px var(--neu-shadow-light), 6px 6px 24px var(--neu-shadow-dark); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes btnPop {
+  0% { opacity: 0; transform: translateY(14px) scale(0.95); }
+  70% { transform: translateY(-3px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes titleSlide {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes headerSlideDown {
+  0% { opacity: 0; transform: translateY(-16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+body {
+  margin: 0;
+  color: var(--al-text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Inter, Arial, sans-serif;
+  animation: fadeIn 0.3s ease-out;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.apploader-page {
+  position: fixed;
+  top: 0;
+  left: 84px;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  overflow: hidden;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar:hover ~ * .apploader-page,
+body:has(.sidebar:hover) .apploader-page {
+  left: 274px;
+}
+
+.apploader-content {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex: 1;
+}
+
+.apploader-wrapper {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+}
+
+/* Header bar */
+.apploader-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-bottom: none;
+  border-radius: var(--al-radius) var(--al-radius) 0 0;
+  box-shadow:
+    -4px -4px 12px var(--neu-shadow-light),
+    4px 4px 16px var(--neu-shadow-dark);
+  animation: headerSlideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.back-btn,
+.fullscreen-btn {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(145deg, 
+    color-mix(in srgb, var(--al-accent) 80%, transparent), 
+    color-mix(in srgb, var(--al-accent-deep) 80%, transparent));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--al-on-accent) 20%, transparent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 
+    -2px -2px 8px var(--neu-shadow-light),
+    2px 2px 12px var(--neu-shadow-dark),
+    inset 0 1px 0 color-mix(in srgb, var(--al-on-accent) 20%, transparent);
+  color: var(--al-on-accent);
+  font-size: 16px;
+}
+
+.back-btn:hover,
+.fullscreen-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 
+    -3px -3px 10px var(--neu-shadow-light),
+    3px 3px 14px var(--neu-shadow-dark),
+    0 0 20px var(--al-shadow);
+}
+
+.app-title {
+  flex: 1;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--al-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* App container */
+.app-container {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  background: var(--al-panel);
+  border: 1px solid var(--glass-border);
+  border-radius: 0 0 var(--al-radius) var(--al-radius);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    -8px -8px 16px var(--neu-shadow-light),
+    8px 8px 24px var(--neu-shadow-dark),
+    0 0 60px var(--al-shadow);
+}
+
+.app-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #fff;
+}
+
+/* Start screen */
+.app-start {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+  animation: fadeSlideUp 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+  padding: 40px;
+}
+
+.app-icon-preview {
+  width: 160px;
+  height: 160px;
+  border-radius: 32px;
+  overflow: hidden;
+  box-shadow: 
+    -6px -6px 16px var(--neu-shadow-light),
+    6px 6px 24px var(--neu-shadow-dark),
+    0 0 40px var(--al-shadow);
+  border: 1px solid var(--glass-border);
+  animation: iconFloat 3.5s ease-in-out infinite, glowPulse 3.5s ease-in-out infinite;
+}
+
+.app-icon-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.app-start-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--al-text);
+  animation: titleSlide 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both;
+}
+
+.launch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(145deg, 
+    color-mix(in srgb, var(--al-accent) 90%, transparent), 
+    color-mix(in srgb, var(--al-accent-deep) 90%, transparent));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--al-on-accent);
+  border: 1px solid color-mix(in srgb, var(--al-on-accent) 20%, transparent);
+  padding: 14px 32px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  border-radius: var(--al-radius);
+  cursor: pointer;
+  box-shadow: 
+    -4px -4px 12px var(--neu-shadow-light),
+    4px 4px 16px var(--neu-shadow-dark),
+    inset 0 1px 0 color-mix(in srgb, var(--al-on-accent) 20%, transparent),
+    0 0 30px var(--al-shadow);
+  animation: btnPop 0.55s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+  transition: all 0.25s ease;
+  background-size: 200% 100%;
+}
+
+.launch-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    -6px -6px 16px var(--neu-shadow-light),
+    6px 6px 20px var(--neu-shadow-dark),
+    0 0 40px var(--al-shadow);
+}
+
+.launch-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.launch-btn i {
+  font-size: 1.1em;
+}
+
+/* Error state */
+.app-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  padding: 40px;
+  color: var(--al-muted);
+}
+
+.app-error i {
+  font-size: 3rem;
+  color: var(--al-accent);
+}
+
+.app-error h2 {
+  margin: 0;
+  color: var(--al-text);
+}
+
+.app-error p {
+  margin: 0;
+}
+
+.go-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--al-panel-2);
+  color: var(--al-text);
+  border: 1px solid var(--glass-border);
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--al-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+}
+
+.go-back-btn:hover {
+  background: var(--al-accent);
+  color: var(--al-on-accent);
+  border-color: var(--al-accent);
+}
+
+/* Other apps section */
+.other-apps-section {
+  width: 100%;
+  max-width: 1200px;
+  margin: 40px auto 0;
+  padding: 0 20px;
+}
+
+.other-apps-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--al-text);
+  margin: 0 0 20px 0;
+}
+
+.other-apps-title i {
+  color: var(--al-accent);
+}
+
+.other-apps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.other-app-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--al-panel);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--al-radius);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.other-app-card:hover {
+  transform: translateY(-4px) scale(1.03);
+  border-color: color-mix(in srgb, var(--al-accent) 50%, transparent);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    0 0 20px var(--al-shadow);
+}
+
+.other-app-thumbnail {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--al-panel-2);
+}
+
+.other-app-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.other-app-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--al-text);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .apploader-page {
+    left: 0;
+    padding: 8px;
+  }
+  
+  .apploader-header {
+    padding: 10px 12px;
+    gap: 12px;
+  }
+  
+  .back-btn,
+  .fullscreen-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+  
+  .app-title {
+    font-size: 1.1rem;
+  }
+  
+  .app-container {
+    min-height: unset;
+  }
+  
+  .app-icon-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 24px;
+  }
+  
+  .app-start-title {
+    font-size: 1.4rem;
+  }
+  
+  .launch-btn {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+  }
+  
+  .other-apps-section {
+    margin-top: 30px;
+    padding: 0 12px;
+  }
+  
+  .other-apps-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 12px;
+  }
+  
+  .other-app-card {
+    padding: 12px;
+  }
+  
+  .other-app-thumbnail {
+    width: 52px;
+    height: 52px;
+  }
+}
