@@ -20,6 +20,7 @@
   <meta name="referrer" content="no-referrer-when-downgrade" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Apps - Nexora</title>
+  <link rel="stylesheet" href="css/_tokens.css" />
   <link rel="stylesheet" href="css/apps.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="config.js"></script>
@@ -55,6 +56,31 @@
     let filteredApps = [];
     const grid = document.getElementById('appsGrid');
     const searchInput = document.getElementById('searchInput');
+
+    // Mouse tracking highlight for app cards
+    function bindCardHighlight(card) {
+      card.style.setProperty('--x', '50%');
+      card.style.setProperty('--y', '50%');
+
+      let rafId = null;
+      function updateFromEvent(e) {
+        const rect = card.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        if (rafId) return;
+        rafId = requestAnimationFrame(() => {
+          card.style.setProperty('--x', x + '%');
+          card.style.setProperty('--y', y + '%');
+          rafId = null;
+        });
+      }
+
+      card.addEventListener('mousemove', updateFromEvent);
+      card.addEventListener('mouseleave', () => {
+        card.style.setProperty('--x', '50%');
+        card.style.setProperty('--y', '50%');
+      }, { passive: true });
+    }
 
     // Load apps from JSON
     async function loadApps() {
@@ -94,6 +120,30 @@
         }
       });
       
+      // Bind mouse tracking highlight
+      bindCardHighlight(card);
+      
+      return card;
+    }
+
+    function createAddAppCard() {
+      const card = document.createElement('div');
+      card.className = 'app-card add-app-card';
+      card.innerHTML = `
+        <div class="app-icon-wrapper">
+          <div class="add-icon">+</div>
+        </div>
+        <span class="app-name">Add App</span>
+      `;
+      
+      card.addEventListener('click', () => {
+        // Open Google Form directly (not through proxy)
+        window.open('https://forms.gle/gwu2paejVJ6YREQL6', '_blank');
+      });
+      
+      // Bind mouse tracking highlight
+      bindCardHighlight(card);
+      
       return card;
     }
 
@@ -108,6 +158,9 @@
       filteredApps.forEach(app => {
         grid.appendChild(createAppCard(app));
       });
+
+      // Add the "Add App" card at the end
+      grid.appendChild(createAddAppCard());
     }
 
     function filterApps(query) {

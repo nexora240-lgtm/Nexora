@@ -12,6 +12,8 @@
   --a-muted: var(--muted, #c9a08a);
   --a-radius: var(--radius, 12px);
 
+  --accent-gradient-local: var(--accent-gradient, linear-gradient(90deg, var(--a-accent-deep), var(--a-accent)));
+
   --border-thickness: 2px;
   --glow-size: 200px;
   --glow-strength: 0.4;
@@ -37,28 +39,95 @@ body {
   color: var(--a-text);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Inter, Arial, sans-serif;
   position: relative;
+  overflow: hidden;
+  animation: fadeIn 0.8s ease-out;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at 20% 50%,
+    color-mix(in srgb, var(--a-accent) 8%, transparent) 0%,
+    transparent 50%
+  ),
+  radial-gradient(
+    circle at 80% 80%,
+    color-mix(in srgb, var(--a-accent-deep) 6%, transparent) 0%,
+    transparent 50%
+  );
+  animation: ambientMove 20s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: 
+    var(--a-page-bg),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      color-mix(in srgb, var(--a-accent) 2%, transparent) 2px,
+      color-mix(in srgb, var(--a-accent) 2%, transparent) 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      color-mix(in srgb, var(--a-accent) 2%, transparent) 2px,
+      color-mix(in srgb, var(--a-accent) 2%, transparent) 3px
+    );
+  background-size: 100% 100%, 50px 50px, 50px 50px;
+  z-index: -1;
+  opacity: 0.4;
 }
 
 .apps-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  position: relative;
+  z-index: 1;
+  animation: slideUp 0.6s ease-out;
 }
 
 .apps-header {
   text-align: center;
   margin-bottom: 24px;
   padding: 20px;
+  animation: float 3s ease-in-out infinite;
 }
 
 .apps-title {
   font-size: 2.5rem;
   font-weight: 700;
   margin: 0 0 8px 0;
-  background: linear-gradient(135deg, var(--a-text) 0%, var(--a-accent) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--a-accent-deep),
+    var(--a-accent),
+    var(--a-accent-deep)
+  );
+  background-size: 200% auto;
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  transition: transform 0.3s ease;
+  animation: gradientShift 3s ease infinite, textGlow 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px var(--a-shadow));
+}
+
+.apps-title:hover {
+  transform: scale(1.05);
 }
 
 .apps-subtitle {
@@ -66,6 +135,7 @@ body {
   color: var(--a-muted);
   margin: 0;
   font-weight: 400;
+  animation: fadeInScale 0.6s ease-out 0.2s both;
 }
 
 .search-bar {
@@ -90,11 +160,31 @@ body {
   border: 1px solid color-mix(in srgb, var(--a-panel) 12%, black);
   border-radius: 999px;
   padding: 6px 8px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeInScale 0.5s ease-out 0.3s both;
+}
+
+.input-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--a-accent) 20%, transparent),
+    transparent
+  );
+  animation: shimmer 3s infinite;
 }
 
 .input-row:focus-within {
   border-color: color-mix(in srgb, var(--a-accent) 65%, transparent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--a-accent) 16%, transparent);
+  animation: pulseGlow 2s ease-in-out infinite;
 }
 
 .input {
@@ -107,6 +197,13 @@ body {
   padding: 0 12px;
   font-size: 16px;
   border-radius: 999px;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.2s ease;
+}
+
+.input:focus {
+  transform: scale(1.01);
 }
 
 .input::placeholder {
@@ -120,6 +217,7 @@ body {
   padding: 20px;
   max-width: 1000px;
   margin: 0 auto;
+  perspective: 1000px;
 }
 
 .app-card {
@@ -135,31 +233,85 @@ body {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  animation: cardEntrance 0.5s ease-out both;
+  transform-style: preserve-3d;
 }
+
+.app-card:nth-child(1) { animation-delay: 0.05s; }
+.app-card:nth-child(2) { animation-delay: 0.1s; }
+.app-card:nth-child(3) { animation-delay: 0.15s; }
+.app-card:nth-child(4) { animation-delay: 0.2s; }
+.app-card:nth-child(5) { animation-delay: 0.25s; }
+.app-card:nth-child(6) { animation-delay: 0.3s; }
+.app-card:nth-child(7) { animation-delay: 0.35s; }
+.app-card:nth-child(8) { animation-delay: 0.4s; }
+.app-card:nth-child(9) { animation-delay: 0.45s; }
+.app-card:nth-child(10) { animation-delay: 0.5s; }
+.app-card:nth-child(n+11) { animation-delay: 0.55s; }
 
 .app-card::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    circle at 50% 0%,
-    color-mix(in srgb, var(--a-accent) 15%, transparent) 0%,
-    transparent 70%
-  );
+  pointer-events: none;
+  border-radius: var(--a-radius);
+  background-image:
+    radial-gradient(
+      var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--a-accent) 20%, transparent) 0%,
+      color-mix(in srgb, var(--a-accent) 10%, transparent) 30%,
+      transparent 68%
+    );
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transition: opacity 140ms ease-out, background-position 160ms ease-out, transform 200ms ease-out;
+  will-change: background-position, opacity, transform;
+  z-index: 1;
+}
+
+.app-card::after {
+  content: "";
+  position: absolute;
+  inset: -6px; 
+  pointer-events: none;
+  border-radius: calc(var(--a-radius) + 6px);
+  background: conic-gradient(
+    from 160deg at var(--x, 50%) var(--y, 50%),
+    color-mix(in srgb, var(--a-accent) 72%, transparent),
+    color-mix(in srgb, var(--a-accent-deep) 40%, transparent),
+    color-mix(in srgb, var(--a-accent) 52%, transparent)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  padding: 0; 
+  opacity: 0; 
+  transform: scale(0.995);
+  transition: opacity 160ms ease-out, transform 220ms cubic-bezier(.2,.9,.2,1), padding 200ms ease-out, background-position 200ms ease-out;
+  will-change: opacity, transform, padding, background-position;
+  z-index: -1;
 }
 
 .app-card:hover {
-  transform: translateY(-4px) scale(var(--card-scale-hover));
+  transform: translateY(-8px) scale(var(--card-scale-hover)) rotateX(5deg);
   border-color: color-mix(in srgb, var(--a-accent) 50%, transparent);
   box-shadow: 
     0 8px 24px rgba(0, 0, 0, 0.3),
-    0 0 20px var(--a-shadow);
+    0 0 20px var(--a-shadow),
+    0 15px 40px color-mix(in srgb, var(--a-accent) 25%, transparent);
 }
 
 .app-card:hover::before {
   opacity: 1;
+}
+
+.app-card:hover::after {
+  opacity: 0.75;
+  padding: var(--border-thickness);
 }
 
 .app-card:active {
@@ -174,22 +326,24 @@ body {
   justify-content: center;
   margin-bottom: 12px;
   border-radius: 16px;
-  background: var(--a-panel-2);
-  padding: 8px;
+  background: transparent;
+  padding: 0;
   transition: all 0.25s ease;
+  overflow: hidden;
 }
 
 .app-card:hover .app-icon-wrapper {
-  transform: scale(1.1);
-  background: color-mix(in srgb, var(--a-accent) 15%, var(--a-panel-2));
+  transform: scale(1.1) rotate(5deg);
 }
 
 .app-icon {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center;
   border-radius: 12px;
   transition: filter 0.25s ease;
+  border: none;
 }
 
 .app-card:hover .app-icon {
@@ -206,6 +360,13 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.app-card:hover .app-name {
+  color: var(--a-accent);
+  transform: translateY(-2px);
+  text-shadow: 0 2px 8px var(--a-shadow);
 }
 
 .no-results {
@@ -215,6 +376,188 @@ body {
   color: var(--a-muted);
   font-size: 1.1rem;
 }
+
+/* Add App Card */
+.add-app-card {
+  border: 2px dashed color-mix(in srgb, var(--a-accent) 50%, transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--a-accent) 5%, var(--a-panel)),
+    color-mix(in srgb, var(--a-accent) 8%, var(--a-panel))
+  );
+}
+
+.add-app-card:hover {
+  border-style: solid;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--a-accent) 12%, var(--a-panel)),
+    color-mix(in srgb, var(--a-accent) 18%, var(--a-panel))
+  );
+}
+
+.add-icon {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 0;
+  font-weight: 300;
+  color: var(--a-accent);
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--a-accent) 10%, transparent);
+  padding: 0;
+  margin: 0;
+  position: relative;
+}
+
+.add-icon::before {
+  content: "+";
+  font-size: 3rem;
+  line-height: 1;
+  color: inherit;
+  display: block;
+}
+
+.add-app-card:hover .add-icon {
+  color: var(--a-on-accent);
+  background: var(--a-accent);
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 0 20px var(--a-shadow);
+}
+
+/* ========== ANIMATIONS ========== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes textGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px var(--a-shadow));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px var(--a-shadow));
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--a-accent) 16%, transparent);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 3px color-mix(in srgb, var(--a-accent) 16%, transparent),
+      0 0 20px color-mix(in srgb, var(--a-accent) 30%, transparent);
+  }
+}
+
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px) rotateX(-15deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0);
+  }
+}
+
+@keyframes cardFloat {
+  0%, 100% {
+    transform: translateY(-8px) scale(var(--card-scale-hover)) rotateX(5deg);
+  }
+  50% {
+    transform: translateY(-12px) scale(var(--card-scale-hover)) rotateX(5deg);
+  }
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    transform: scale(1.1) rotate(5deg);
+  }
+  50% {
+    transform: scale(1.15) rotate(-5deg);
+  }
+}
+
+@keyframes ambientMove {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate(5%, 5%) rotate(120deg);
+  }
+  66% {
+    transform: translate(-5%, 10%) rotate(240deg);
+  }
+}
+
+@keyframes borderGlow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* ========== END ANIMATIONS ========== */
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
