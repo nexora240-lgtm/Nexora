@@ -82,7 +82,7 @@
     {
         "title": "Twitch",
         "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/twitch.webp",
-        "link": "https://twitch.tv"
+        "link": "https://twitch.tv" 
     },
     {
         "title": "Soundcloud",
