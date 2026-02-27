@@ -23,6 +23,7 @@
   <title>Movies & Series - Nexora</title>
   <link rel="stylesheet" href="/css/theme-tokens.css">
   <link rel="stylesheet" href="/css/movies.css">
+  <script src="/js/mouse-tracking.js"></script>
 </head>
 <body>
   <!-- Netflix-style Movies Interface -->
@@ -552,6 +553,16 @@
   
   // Register cleanup for hero rotation
   registerCleanup(stopHeroRotation);
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stopHeroRotation();
+      return;
+    }
+    if (heroItems.length) {
+      startHeroRotation();
+    }
+  });
 
   function displayHero(item) {
     const title = item.title || item.name || 'Untitled';
@@ -1253,15 +1264,10 @@
   }
 
   // Mouse tracking for nemophoric effects
-  const mouseMoveHandler = (e) => {
-    const x = e.clientX;
-    const y = e.clientY;
-    document.documentElement.style.setProperty('--x', `${x}px`);
-    document.documentElement.style.setProperty('--y', `${y}px`);
-  };
-  
-  document.addEventListener('mousemove', mouseMoveHandler);
-  registerCleanup(() => document.removeEventListener('mousemove', mouseMoveHandler));
+  if (window.NexoraMouseTracking) {
+    const cleanup = window.NexoraMouseTracking.bindDocumentRoot(document.documentElement);
+    registerCleanup(() => cleanup());
+  }
 
   // Start the app
   if (document.readyState === 'loading') {

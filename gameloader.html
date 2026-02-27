@@ -283,6 +283,12 @@
           </div>
 
           <div class="controls">
+            <div class="volume-control">
+              <button id="muteBtn" class="mute-btn" aria-label="Toggle mute">
+                <i class="fas fa-volume-up"></i>
+              </button>
+              <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="100" aria-label="Volume">
+            </div>
             <button id="fullscreenBtn" class="fullscreen-btn" aria-label="Toggle full screen">
               <img src="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/icons/full-screen-icon.svg" alt="Full Screen" />
             </button>
@@ -768,18 +774,44 @@
           const response = await fetch(currentGame.file);
           let htmlContent = await response.text();
           
-          // Inject audio tracking script to enable pause/resume when hidden
+          // Inject audio tracking script to enable pause/resume when hidden and volume control
           const audioTrackingScript = '<scr' + 'ipt>' +
             '(function() {' +
             '  window._audioContexts = window._audioContexts || [];' +
+            '  window._volumeLevel = 1.0;' +
+            '  window._gainNodes = [];' +
             '  var OriginalAudioContext = window.AudioContext || window.webkitAudioContext;' +
             '  if (OriginalAudioContext) {' +
             '    window.AudioContext = window.webkitAudioContext = function() {' +
             '      var ctx = new OriginalAudioContext();' +
             '      window._audioContexts.push(ctx);' +
+            '      var gainNode = ctx.createGain();' +
+            '      gainNode.gain.value = window._volumeLevel;' +
+            '      gainNode.connect(ctx.destination);' +
+            '      window._gainNodes.push(gainNode);' +
+            '      ctx._masterGain = gainNode;' +
+            '      var originalDestination = ctx.destination;' +
+            '      Object.defineProperty(ctx, "destination", {' +
+            '        get: function() { return gainNode; },' +
+            '        set: function() {}' +
+            '      });' +
             '      return ctx;' +
             '    };' +
             '  }' +
+            '  window.setVolume = function(vol) {' +
+            '    window._volumeLevel = vol;' +
+            '    window._gainNodes.forEach(function(node) {' +
+            '      node.gain.value = vol;' +
+            '    });' +
+            '    document.querySelectorAll("audio, video").forEach(function(el) {' +
+            '      el.volume = vol;' +
+            '    });' +
+            '  };' +
+            '  window.addEventListener("message", function(event) {' +
+            '    if (event.data && event.data.type === "setVolume") {' +
+            '      window.setVolume(event.data.volume);' +
+            '    }' +
+            '  });' +
             '  document.addEventListener("visibilitychange", function() {' +
             '    if (document.hidden) {' +
             '      window._audioContexts.forEach(function(ctx) {' +
@@ -797,6 +829,15 @@
             '      });' +
             '    }' +
             '  });' +
+            '  var observer = new MutationObserver(function() {' +
+            '    document.querySelectorAll("audio, video").forEach(function(el) {' +
+            '      if (!el.dataset.volumeSet) {' +
+            '        el.volume = window._volumeLevel;' +
+            '        el.dataset.volumeSet = "true";' +
+            '      }' +
+            '    });' +
+            '  });' +
+            '  observer.observe(document.body || document.documentElement, { childList: true, subtree: true });' +
             '})();' +
             '</scr' + 'ipt>';
           
@@ -993,6 +1034,132 @@
           else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
         };
       }
+      
+      // Volume control
+      const volumeSlider = document.getElementById("volumeSlider");
+      const muteBtn = document.getElementById("muteBtn");
+      let previousVolume = 100;
+      let currentIframe = null;
+      
+      // Load saved volume from localStorage
+      const savedVolume = localStorage.getItem("gameVolume");
+      if (savedVolume !== null) {
+        const vol = parseInt(savedVolume);
+        if (volumeSlider) volumeSlider.value = vol;
+        previousVolume = vol;
+      }
+      
+      // Update iframe volume
+      function updateIframeVolume(volumePercent) {
+        const iframe = container.querySelector(".game-iframe");
+        if (iframe && iframe.contentWindow) {
+          try {
+            const volumeLevel = volumePercent / 100;
+            iframe.contentWindow.postMessage({ type: 'setVolume', volume: volumeLevel }, '*');
+            // Try direct access if same-origin
+            if (iframe.contentWindow.setVolume) {
+              iframe.contentWindow.setVolume(volumeLevel);
+            }
+          } catch (e) {
+            console.log('Volume control via postMessage');
+          }
+        }
+        // Update mute button icon
+        updateMuteIcon(volumePercent);
+        // Update slider gradient
+        updateSliderGradient(volumePercent);
+      }
+      
+      // Update mute button icon based on volume
+      function updateMuteIcon(volumePercent) {
+        if (!muteBtn) return;
+        const icon = muteBtn.querySelector('i');
+        if (!icon) return;
+        
+        if (volumePercent === 0) {
+          icon.className = 'fas fa-volume-mute';
+        } else if (volumePercent < 50) {
+          icon.className = 'fas fa-volume-down';
+        } else {
+          icon.className = 'fas fa-volume-up';
+        }
+      }
+      
+      // Update slider gradient to show current volume
+      function updateSliderGradient(volumePercent) {
+        if (!volumeSlider) return;
+        const gradient = `linear-gradient(to right, var(--g-accent) 0%, var(--g-accent) ${volumePercent}%, color-mix(in srgb, var(--g-text) 20%, transparent) ${volumePercent}%)`;
+        volumeSlider.style.background = gradient;
+      }
+      
+      // Volume slider handler
+      if (volumeSlider) {
+        volumeSlider.addEventListener('input', (e) => {
+          const volume = parseInt(e.target.value);
+          updateIframeVolume(volume);
+          localStorage.setItem("gameVolume", volume);
+          if (volume > 0) {
+            previousVolume = volume;
+          }
+        });
+        
+        // Initialize slider gradient
+        updateSliderGradient(volumeSlider.value);
+        updateMuteIcon(volumeSlider.value);
+      }
+      
+      // Mute button handler
+      if (muteBtn) {
+        muteBtn.onclick = () => {
+          if (!volumeSlider) return;
+          const currentVolume = parseInt(volumeSlider.value);
+          
+          if (currentVolume > 0) {
+            // Mute
+            previousVolume = currentVolume;
+            volumeSlider.value = 0;
+            updateIframeVolume(0);
+            localStorage.setItem("gameVolume", 0);
+          } else {
+            // Unmute
+            volumeSlider.value = previousVolume || 100;
+            updateIframeVolume(volumeSlider.value);
+            localStorage.setItem("gameVolume", volumeSlider.value);
+          }
+        };
+      }
+      
+      // Listen for iframe load to apply volume
+      const gameLoadObserver = new MutationObserver(() => {
+        const iframe = container.querySelector(".game-iframe");
+        if (iframe && iframe !== currentIframe) {
+          currentIframe = iframe;
+          iframe.addEventListener('load', () => {
+            const volume = volumeSlider ? parseInt(volumeSlider.value) : 100;
+            setTimeout(() => {
+              updateIframeVolume(volume);
+            }, 100);
+          });
+        }
+      });
+      
+      gameLoadObserver.observe(container, { childList: true, subtree: true });
+      
+      // Handle postMessage from iframe for volume control
+      window.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'setVolume') {
+          const iframe = container.querySelector(".game-iframe");
+          if (iframe && iframe.contentWindow) {
+            try {
+              if (iframe.contentWindow.setVolume) {
+                iframe.contentWindow.setVolume(event.data.volume);
+              }
+            } catch (e) {
+              console.log('Cross-origin iframe detected');
+            }
+          }
+        }
+      });
     }
 
     initLoader();

@@ -62,6 +62,11 @@
 
   let selectedDisguise = null;
 
+  function bindMouseTracking(element) {
+    if (!element || !window.NexoraMouseTracking) return;
+    window.NexoraMouseTracking.bindElement(element);
+  }
+
   function getCookie(name) {
     try {
       const match = document.cookie.match('(?:^|; )' + encodeURIComponent(name) + '=([^;]*)');
@@ -113,18 +118,7 @@
     const modal = document.createElement('div');
     modal.id = 'first-time-modal';
 
-    modal.addEventListener('mousemove', (e) => {
-      const rect = modal.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      modal.style.setProperty('--x', x + '%');
-      modal.style.setProperty('--y', y + '%');
-    });
-
-    modal.addEventListener('mouseleave', () => {
-      modal.style.setProperty('--x', '50%');
-      modal.style.setProperty('--y', '50%');
-    });
+    bindMouseTracking(modal);
 
     const header = document.createElement('div');
     header.innerHTML = `
@@ -252,23 +246,7 @@
     const modal = document.createElement('div');
     modal.id = 'cloaking-modal';
 
-    let rafId = null;
-    modal.addEventListener('mousemove', (e) => {
-      if (rafId) return;
-      rafId = requestAnimationFrame(() => {
-        const rect = modal.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        modal.style.setProperty('--x', x + '%');
-        modal.style.setProperty('--y', y + '%');
-        rafId = null;
-      });
-    });
-
-    modal.addEventListener('mouseleave', () => {
-      modal.style.setProperty('--x', '50%');
-      modal.style.setProperty('--y', '50%');
-    });
+    bindMouseTracking(modal);
 
     const header = document.createElement('div');
     header.innerHTML = `
@@ -425,23 +403,7 @@
     const modal = document.createElement('div');
     modal.id = 'panic-button-modal';
 
-    let rafId = null;
-    modal.addEventListener('mousemove', (e) => {
-      if (rafId) return;
-      rafId = requestAnimationFrame(() => {
-        const rect = modal.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        modal.style.setProperty('--x', x + '%');
-        modal.style.setProperty('--y', y + '%');
-        rafId = null;
-      });
-    });
-
-    modal.addEventListener('mouseleave', () => {
-      modal.style.setProperty('--x', '50%');
-      modal.style.setProperty('--y', '50%');
-    });
+    bindMouseTracking(modal);
 
     const header = document.createElement('div');
     header.innerHTML = `
@@ -629,23 +591,7 @@
     const modal = document.createElement('div');
     modal.id = 'cookie-consent-modal';
 
-    let rafId = null;
-    modal.addEventListener('mousemove', (e) => {
-      if (rafId) return;
-      rafId = requestAnimationFrame(() => {
-        const rect = modal.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        modal.style.setProperty('--x', x + '%');
-        modal.style.setProperty('--y', y + '%');
-        rafId = null;
-      });
-    });
-
-    modal.addEventListener('mouseleave', () => {
-      modal.style.setProperty('--x', '50%');
-      modal.style.setProperty('--y', '50%');
-    });
+    bindMouseTracking(modal);
 
     const header = document.createElement('div');
     header.innerHTML = `
@@ -822,18 +768,7 @@
     modal.id = 'welcome-choice-modal';
     modal.className = 'ftm-modal';
 
-    modal.addEventListener('mousemove', (e) => {
-      const rect = modal.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      modal.style.setProperty('--x', x + '%');
-      modal.style.setProperty('--y', y + '%');
-    });
-
-    modal.addEventListener('mouseleave', () => {
-      modal.style.setProperty('--x', '50%');
-      modal.style.setProperty('--y', '50%');
-    });
+    bindMouseTracking(modal);
 
     const header = document.createElement('div');
     header.innerHTML = `
@@ -917,18 +852,7 @@
     modal.id = 'login-form-modal';
     modal.className = 'ftm-modal';
 
-    modal.addEventListener('mousemove', (e) => {
-      const rect = modal.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      modal.style.setProperty('--x', x + '%');
-      modal.style.setProperty('--y', y + '%');
-    });
-
-    modal.addEventListener('mouseleave', () => {
-      modal.style.setProperty('--x', '50%');
-      modal.style.setProperty('--y', '50%');
-    });
+    bindMouseTracking(modal);
 
     const header = document.createElement('div');
     header.innerHTML = `
@@ -1043,18 +967,7 @@
     modal.id = 'account-prompt-modal';
     modal.className = 'ftm-modal';
 
-    modal.addEventListener('mousemove', (e) => {
-      const rect = modal.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      modal.style.setProperty('--x', x + '%');
-      modal.style.setProperty('--y', y + '%');
-    });
-
-    modal.addEventListener('mouseleave', () => {
-      modal.style.setProperty('--x', '50%');
-      modal.style.setProperty('--y', '50%');
-    });
+    bindMouseTracking(modal);
 
     const header = document.createElement('div');
     header.innerHTML = `

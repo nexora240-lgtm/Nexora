@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="css/apps.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="config.js"></script>
+  <script src="js/mouse-tracking.js"></script>
 </head>
 <body>
 
@@ -59,27 +60,8 @@
 
     // Mouse tracking highlight for app cards
     function bindCardHighlight(card) {
-      card.style.setProperty('--x', '50%');
-      card.style.setProperty('--y', '50%');
-
-      let rafId = null;
-      function updateFromEvent(e) {
-        const rect = card.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        if (rafId) return;
-        rafId = requestAnimationFrame(() => {
-          card.style.setProperty('--x', x + '%');
-          card.style.setProperty('--y', y + '%');
-          rafId = null;
-        });
-      }
-
-      card.addEventListener('mousemove', updateFromEvent);
-      card.addEventListener('mouseleave', () => {
-        card.style.setProperty('--x', '50%');
-        card.style.setProperty('--y', '50%');
-      }, { passive: true });
+      if (!window.NexoraMouseTracking) return;
+      window.NexoraMouseTracking.bindElement(card);
     }
 
     // Load apps from JSON

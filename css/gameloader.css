@@ -282,6 +282,108 @@ body:has(.sidebar:hover) .loader-page {
 
 .controls { display:flex; align-items:center; gap:12px; flex: 0 0 auto; }
 
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: linear-gradient(145deg, 
+    color-mix(in srgb, var(--g-panel-2) 60%, transparent), 
+    color-mix(in srgb, var(--g-panel) 60%, transparent));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--g-radius);
+  box-shadow: 
+    -4px -4px 10px var(--neu-shadow-light),
+    4px 4px 14px var(--neu-shadow-dark),
+    inset 0 1px 0 var(--glass-highlight);
+}
+
+.mute-btn {
+  background: transparent;
+  border: none;
+  color: var(--g-on-accent);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-size: 16px;
+}
+
+.mute-btn:hover {
+  color: var(--g-accent);
+  transform: scale(1.1);
+}
+
+.mute-btn i {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(to right, 
+    var(--g-accent) 0%, 
+    var(--g-accent) 100%, 
+    color-mix(in srgb, var(--g-text) 20%, transparent) 100%);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(145deg, var(--g-accent), var(--g-accent-deep));
+  border: 2px solid var(--g-on-accent);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    0 0 8px var(--g-shadow-soft);
+  transition: all 0.2s ease;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 
+    0 3px 6px rgba(0, 0, 0, 0.4),
+    0 0 12px var(--g-shadow-soft);
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(145deg, var(--g-accent), var(--g-accent-deep));
+  border: 2px solid var(--g-on-accent);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    0 0 8px var(--g-shadow-soft);
+  transition: all 0.2s ease;
+}
+
+.volume-slider::-moz-range-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 
+    0 3px 6px rgba(0, 0, 0, 0.4),
+    0 0 12px var(--g-shadow-soft);
+}
+
+.volume-slider:hover {
+  height: 5px;
+}
+
+
 .fullscreen-btn {
   background: linear-gradient(145deg, 
     color-mix(in srgb, var(--g-accent) 80%, transparent), 

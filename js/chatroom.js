@@ -240,17 +240,6 @@ function restoreChatroomState() {
     }
 }
 
-const container = document.querySelector('.nexora-chatroom .container');
-if (container) {
-    container.addEventListener('mousemove', (e) => {
-        const rect = container.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        container.style.setProperty('--x', `${x}%`);
-        container.style.setProperty('--y', `${y}%`);
-    });
-}
-
 function generateRoomCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -1343,28 +1332,12 @@ function continueAsGuest() {
 (function() {
     function setupChoiceButtonTracking() {
         const choiceButtons = document.querySelectorAll('.nexora-chatroom .choice-button');
-        
+        if (!window.NexoraMouseTracking) return;
+
         choiceButtons.forEach(button => {
-            let rafId = null;
-
-            function updateFromEvent(e) {
-                const rect = button.getBoundingClientRect();
-                const x = ((e.clientX - rect.left) / rect.width) * 100;
-                const y = ((e.clientY - rect.top) / rect.height) * 100;
-                
-                if (rafId) return;
-                rafId = requestAnimationFrame(() => {
-                    button.style.setProperty('--x', x + '%');
-                    button.style.setProperty('--y', y + '%');
-                    rafId = null;
-                });
-            }
-
-            button.addEventListener('mousemove', updateFromEvent);
-            button.addEventListener('mouseleave', () => {
-                button.style.setProperty('--x', '50%');
-                button.style.setProperty('--y', '50%');
-            }, { passive: true });
+            if (button.dataset.mouseTrackingBound) return;
+            button.dataset.mouseTrackingBound = 'true';
+            window.NexoraMouseTracking.bindElement(button);
         });
     }
 
@@ -1430,38 +1403,18 @@ function continueAsGuest() {
         // Helper function to add tracking to an element
         const addTracking = (element) => {
             if (!element || element._hasMouseTracking || document.documentElement.classList.contains('performance-no-mouse-tracking')) return;
+            if (!window.NexoraMouseTracking) return;
+
             element._hasMouseTracking = true;
-            
-            let rafId = null;
-            const updateFromEvent = (e) => {
-                const rect = element.getBoundingClientRect();
-                const x = ((e.clientX - rect.left) / rect.width) * 100;
-                const y = ((e.clientY - rect.top) / rect.height) * 100;
-                
-                if (rafId) return;
-                rafId = requestAnimationFrame(() => {
-                    element.style.setProperty('--x', x + '%');
-                    element.style.setProperty('--y', y + '%');
-                    rafId = null;
-                });
-            };
 
-            const resetPosition = () => {
-                element.style.setProperty('--x', '50%');
-                element.style.setProperty('--y', '50%');
-            };
-            
-            element.addEventListener('mousemove', updateFromEvent);
-            element.addEventListener('mouseleave', resetPosition, { passive: true });
-
+            const cleanup = window.NexoraMouseTracking.bindElement(element);
             element._mouseTrackingCleanup = () => {
-                element.removeEventListener('mousemove', updateFromEvent);
-                element.removeEventListener('mouseleave', resetPosition);
+                cleanup();
                 element._hasMouseTracking = false;
                 trackedMouseElements.delete(element);
             };
             trackedMouseElements.add(element);
-            
+
             console.log('[Chatroom Mouse Tracking] Added tracking to:', element.className || element.id || element.tagName);
         };
 
