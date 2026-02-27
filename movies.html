@@ -268,6 +268,22 @@
 
   let selectedContent = null;
   let searchTimeout = null;
+
+  const heroTitleEl = document.getElementById('heroTitle');
+  const heroDescriptionEl = document.getElementById('heroDescription');
+  const heroRatingEl = document.getElementById('heroRating');
+  const heroYearEl = document.getElementById('heroYear');
+  const heroBackdropEl = document.getElementById('heroBackdrop');
+  const heroPlayBtn = document.getElementById('heroPlayBtn');
+  const heroInfoBtn = document.getElementById('heroInfoBtn');
+
+  const infoTitleEl = document.getElementById('infoTitle');
+  const infoDescriptionEl = document.getElementById('infoDescription');
+  const infoRatingEl = document.getElementById('infoRating');
+  const infoYearEl = document.getElementById('infoYear');
+  const infoDurationEl = document.getElementById('infoDuration');
+  const infoBackdropEl = document.getElementById('infoBackdrop');
+  const infoGenresEl = document.getElementById('infoGenres');
   
   // Cleanup tracking
   const cleanupTasks = [];
@@ -452,11 +468,12 @@
       return;
     }
 
-    container.innerHTML = '';
+    const fragment = document.createDocumentFragment();
     uniqueRecommendations.forEach(item => {
-      const card = createCard(item, 'recommended');
-      container.appendChild(card);
+      fragment.appendChild(createCard(item, 'recommended'));
     });
+    container.textContent = '';
+    container.appendChild(fragment);
 
     setupScrollNav(rowElement);
   }
@@ -571,13 +588,13 @@
     const year = (item.release_date || item.first_air_date || '').split('-')[0];
     const backdropPath = backdrop(item.backdrop_path);
 
-    document.getElementById('heroTitle').textContent = title;
-    document.getElementById('heroDescription').textContent = overview;
-    document.getElementById('heroRating').textContent = rating;
-    document.getElementById('heroYear').textContent = year;
+    heroTitleEl.textContent = title;
+    heroDescriptionEl.textContent = overview;
+    heroRatingEl.textContent = rating;
+    heroYearEl.textContent = year;
     
     if (backdropPath) {
-      document.getElementById('heroBackdrop').style.backgroundImage = `url(${backdropPath})`;
+      heroBackdropEl.style.backgroundImage = `url(${backdropPath})`;
     }
 
     // Store for playback
@@ -588,11 +605,11 @@
       item: item
     };
 
-    document.getElementById('heroPlayBtn').onclick = () => {
+    heroPlayBtn.onclick = () => {
       stopHeroRotation();
       playContent(selectedContent);
     };
-    document.getElementById('heroInfoBtn').onclick = () => {
+    heroInfoBtn.onclick = () => {
       stopHeroRotation();
       showInfo(selectedContent);
     };
@@ -647,11 +664,12 @@
     const data = await fetchTMDB(endpoint);
     if (!data || !data.results) return;
 
-    container.innerHTML = '';
+    const fragment = document.createDocumentFragment();
     data.results.forEach(item => {
-      const card = createCard(item, category);
-      container.appendChild(card);
+      fragment.appendChild(createCard(item, category));
     });
+    container.textContent = '';
+    container.appendChild(fragment);
 
     // Setup scroll navigation
     setupScrollNav(container.closest('.content-row'));
@@ -716,13 +734,18 @@
     };
 
     // Show/hide nav buttons based on scroll position
+    let navRaf = null;
     const updateNavButtons = () => {
-      leftBtn.style.opacity = container.scrollLeft > 0 ? '1' : '0';
-      rightBtn.style.opacity = 
-        container.scrollLeft < container.scrollWidth - container.offsetWidth - 10 ? '1' : '0';
+      if (navRaf) return;
+      navRaf = requestAnimationFrame(() => {
+        navRaf = null;
+        leftBtn.style.opacity = container.scrollLeft > 0 ? '1' : '0';
+        rightBtn.style.opacity =
+          container.scrollLeft < container.scrollWidth - container.offsetWidth - 10 ? '1' : '0';
+      });
     };
 
-    container.addEventListener('scroll', updateNavButtons);
+    container.addEventListener('scroll', updateNavButtons, { passive: true });
     registerCleanup(() => container.removeEventListener('scroll', updateNavButtons));
     updateNavButtons();
   }
@@ -862,7 +885,9 @@
       return;
     }
 
-    episodeList.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+    let currentItem = null;
+
     seasonData.episodes.forEach(episode => {
       const episodeItem = document.createElement('div');
       episodeItem.className = 'player-episode-item';
@@ -870,6 +895,7 @@
       // Mark current episode
       if (seasonNumber === (content.season || 1) && episode.episode_number === (content.episode || 1)) {
         episodeItem.classList.add('current');
+        currentItem = episodeItem;
       }
 
       // Get episode title, fallback to description or generic title
@@ -908,15 +934,20 @@
         title.textContent = `${currentPlayerContent.title} - S${seasonNumber}E${episode.episode_number}${episode.name ? ': ' + episode.name : ''}`;
         
         // Update current episode highlight
-        document.querySelectorAll('.player-episode-item').forEach(item => item.classList.remove('current'));
+        if (currentItem && currentItem !== episodeItem) {
+          currentItem.classList.remove('current');
+        }
         episodeItem.classList.add('current');
+        currentItem = episodeItem;
         
         // Track in history
         addToWatchHistory(newContent);
       };
 
-      episodeList.appendChild(episodeItem);
+      fragment.appendChild(episodeItem);
     });
+    episodeList.textContent = '';
+    episodeList.appendChild(fragment);
   }
 
   // Load recommendations for the current content
@@ -952,7 +983,7 @@
 
   function displayRecommendations(items, type) {
     const grid = document.getElementById('recommendationsGrid');
-    grid.innerHTML = '';
+    const fragment = document.createDocumentFragment();
 
     items.slice(0, 12).forEach(item => {
       const card = document.createElement('div');
@@ -992,8 +1023,11 @@
         setTimeout(() => playContent(contentData), 100);
       };
 
-      grid.appendChild(card);
+      fragment.appendChild(card);
     });
+
+    grid.textContent = '';
+    grid.appendChild(fragment);
   }
 
   // Show info modal
@@ -1006,18 +1040,18 @@
     const details = await fetchTMDB(endpoint);
     if (!details) return;
 
-    document.getElementById('infoTitle').textContent = content.title;
-    document.getElementById('infoDescription').textContent = details.overview || 'No description available.';
-    document.getElementById('infoRating').textContent = details.vote_average ? `⭐ ${details.vote_average.toFixed(1)}` : '';
-    document.getElementById('infoYear').textContent = (details.release_date || details.first_air_date || '').split('-')[0];
-    document.getElementById('infoDuration').textContent = details.runtime ? `${details.runtime} min` : (details.number_of_seasons ? `${details.number_of_seasons} Seasons` : '');
+    infoTitleEl.textContent = content.title;
+    infoDescriptionEl.textContent = details.overview || 'No description available.';
+    infoRatingEl.textContent = details.vote_average ? `⭐ ${details.vote_average.toFixed(1)}` : '';
+    infoYearEl.textContent = (details.release_date || details.first_air_date || '').split('-')[0];
+    infoDurationEl.textContent = details.runtime ? `${details.runtime} min` : (details.number_of_seasons ? `${details.number_of_seasons} Seasons` : '');
     
     if (details.backdrop_path) {
-      document.getElementById('infoBackdrop').style.backgroundImage = `url(${backdrop(details.backdrop_path)})`;
+      infoBackdropEl.style.backgroundImage = `url(${backdrop(details.backdrop_path)})`;
     }
 
     if (details.genres) {
-      document.getElementById('infoGenres').innerHTML = details.genres.map(g => 
+      infoGenresEl.innerHTML = details.genres.map(g => 
         `<span class="genre-tag">${g.name}</span>`
       ).join('');
     }
@@ -1084,7 +1118,7 @@
       return;
     }
 
-    episodesGrid.innerHTML = '';
+    const fragment = document.createDocumentFragment();
     seasonData.episodes.forEach(episode => {
       const episodeCard = document.createElement('div');
       episodeCard.className = 'episode-card';
@@ -1123,8 +1157,10 @@
         playContent(episodeContent);
       };
 
-      episodesGrid.appendChild(episodeCard);
+      fragment.appendChild(episodeCard);
     });
+    episodesGrid.textContent = '';
+    episodesGrid.appendChild(fragment);
   }
 
   // Search functionality

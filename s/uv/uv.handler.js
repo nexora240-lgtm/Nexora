@@ -99,7 +99,9 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 	);
 
 	if (window.localStorage) {
-		for (const key in window.localStorage) {
+		for (let i = 0; i < window.localStorage.length; i++) {
+			const key = window.localStorage.key(i);
+			if (!key) continue;
 			if (key.startsWith(methodPrefix + __uv.location.origin + "@")) {
 				__uv.localStorageObj[
 					key.slice((methodPrefix + __uv.location.origin + "@").length)
@@ -114,7 +116,9 @@ async function __uvHook(window, config = {}, bare = "/bare/") {
 	}
 
 	if (window.sessionStorage) {
-		for (const key in window.sessionStorage) {
+		for (let i = 0; i < window.sessionStorage.length; i++) {
+			const key = window.sessionStorage.key(i);
+			if (!key) continue;
 			if (key.startsWith(methodPrefix + __uv.location.origin + "@")) {
 				__uv.sessionStorageObj[
 					key.slice((methodPrefix + __uv.location.origin + "@").length)
