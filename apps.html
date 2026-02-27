@@ -130,19 +130,21 @@
     }
 
     function renderApps() {
-      grid.innerHTML = '';
+      grid.textContent = '';
       
       if (filteredApps.length === 0) {
         grid.innerHTML = '<div class="no-results">No apps found matching your search.</div>';
         return;
       }
-      
+
+      const fragment = document.createDocumentFragment();
       filteredApps.forEach(app => {
-        grid.appendChild(createAppCard(app));
+        fragment.appendChild(createAppCard(app));
       });
 
       // Add the "Add App" card at the end
-      grid.appendChild(createAddAppCard());
+      fragment.appendChild(createAddAppCard());
+      grid.appendChild(fragment);
     }
 
     function filterApps(query) {

@@ -8,6 +8,7 @@ if (navigator.userAgent.includes("Firefox")) {
 importScripts("/scram/scramjet.all.js");
 const { ScramjetServiceWorker } = $scramjetLoadWorker();
 const scramjet = new ScramjetServiceWorker();
+let scramjetConfigPromise = null;
 
 console.log('Scramjet service worker loaded');
 
@@ -36,7 +37,13 @@ async function handleRequest(event) {
 		}
 	}
 	
-	await scramjet.loadConfig();
+	if (!scramjetConfigPromise) {
+		scramjetConfigPromise = scramjet.loadConfig().catch((err) => {
+			scramjetConfigPromise = null;
+			throw err;
+		});
+	}
+	await scramjetConfigPromise;
 
 	if (scramjet.route(event)) {
 		return scramjet.fetch(event);
