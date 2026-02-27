@@ -136,6 +136,7 @@
   <script src="/js/auth.js"></script>
   <script src="/js/views.js"></script>
   <script src="/js/app.js"></script>
+  <script src="/js/mouse-tracking.js"></script>
   <script src="/js/first-time-visitor.js"></script>
 
   <script>
@@ -188,6 +189,25 @@
         particlesEnabled = true;
       }
 
+      function loadParticlesLib(ready) {
+        if (window.particlesJS) {
+          ready();
+          return;
+        }
+
+        var existing = document.getElementById('particles-js-lib');
+        if (existing) {
+          existing.addEventListener('load', ready, { once: true });
+          return;
+        }
+
+        var script = document.createElement('script');
+        script.id = 'particles-js-lib';
+        script.src = 'https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js';
+        script.onload = ready;
+        document.head.appendChild(script);
+      }
+
       function initParticles() {
         if (!document.getElementById('particles-js')) {
           var div = document.createElement('div');
@@ -202,9 +222,7 @@
           document.body.appendChild(div);
         }
 
-        var script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js';
-        script.onload = function() {
+        loadParticlesLib(function() {
           var cfg = {
             "particles": {
               "number": {
@@ -304,8 +322,7 @@
           };
 
           particlesJS('particles-js', cfg);
-        };
-        document.head.appendChild(script);
+        });
       }
 
       function removeParticles() {
@@ -319,15 +336,23 @@
         }
       }
 
+      function scheduleInitParticles() {
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(initParticles, { timeout: 2000 });
+        } else {
+          setTimeout(initParticles, 200);
+        }
+      }
+
       // Initialize or remove based on saved preference
       if (particlesEnabled) {
-        initParticles();
+        scheduleInitParticles();
       }
 
       // Listen for settings changes
       document.addEventListener('settings:particlesToggled', function(e) {
         if (e.detail.enabled) {
-          initParticles();
+          scheduleInitParticles();
         } else {
           removeParticles();
         }
@@ -388,31 +413,10 @@
   </script>
 
   <script>
-
     (function() {
       const sidebar = document.querySelector('.sidebar');
-      if (!sidebar) return;
-
-      let rafId = null;
-
-      function updateFromEvent(e) {
-        const rect = sidebar.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        
-        if (rafId) return;
-        rafId = requestAnimationFrame(() => {
-          sidebar.style.setProperty('--x', x + '%');
-          sidebar.style.setProperty('--y', y + '%');
-          rafId = null;
-        });
-      }
-
-      sidebar.addEventListener('mousemove', updateFromEvent);
-      sidebar.addEventListener('mouseleave', () => {
-        sidebar.style.setProperty('--x', '50%');
-        sidebar.style.setProperty('--y', '50%');
-      }, { passive: true });
+      if (!sidebar || !window.NexoraMouseTracking) return;
+      window.NexoraMouseTracking.bindElement(sidebar);
     })();
   </script>
 

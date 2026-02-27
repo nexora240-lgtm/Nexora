@@ -1274,26 +1274,10 @@
     const addTracking = (element) => {
       if (!element || element._hasMouseTracking) return;
       element._hasMouseTracking = true;
-      
-      let rafId = null;
-      const updateFromEvent = (e) => {
-        const rect = element.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        
-        if (rafId) return;
-        rafId = requestAnimationFrame(() => {
-          element.style.setProperty('--x', x + '%');
-          element.style.setProperty('--y', y + '%');
-          rafId = null;
-        });
-      };
-      
-      element.addEventListener('mousemove', updateFromEvent);
-      element.addEventListener('mouseleave', () => {
-        element.style.setProperty('--x', '50%');
-        element.style.setProperty('--y', '50%');
-      }, { passive: true });
+
+      if (window.NexoraMouseTracking) {
+        window.NexoraMouseTracking.bindElement(element);
+      }
       
       console.log('[Mouse Tracking] Added tracking to:', element.className || element.id || element.tagName);
     };

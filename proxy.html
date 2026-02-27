@@ -15,6 +15,7 @@
   <title>Nexora Browser</title>
   
   <link rel="stylesheet" href="css/_tokens.css">
+  <script src="/js/mouse-tracking.js"></script>
   <style>
     * {
       margin: 0;
@@ -858,49 +859,22 @@
   <script>
     // Mouse tracking for glow effects
     document.addEventListener('DOMContentLoaded', function() {
+      if (!window.NexoraMouseTracking) return;
+
       const tabs = document.getElementById('tab-bar');
-      const navBar = document.querySelector('.nav-bar');
-      
-      function updateMousePosition(e, element) {
-        const rect = element.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        element.style.setProperty('--x', `${x}%`);
-        element.style.setProperty('--y', `${y}%`);
+      if (tabs) {
+        window.NexoraMouseTracking.bindElement(tabs);
+        window.NexoraMouseTracking.bindDelegated(tabs, '.tab');
       }
-      
-      // Track mouse for tabs
-      tabs.addEventListener('mousemove', function(e) {
-        // Update container
-        updateMousePosition(e, tabs);
-        
-        // Update individual tab if hovering over it
-        const tab = e.target.closest('.tab');
-        if (tab) {
-          updateMousePosition(e, tab);
-        }
-      });
-      
-      // Track mouse for nav buttons
-      document.querySelectorAll('.nav-btn, .menu-btn').forEach(btn => {
-        btn.addEventListener('mousemove', function(e) {
-          updateMousePosition(e, btn);
-        });
-      });
-      
-      // Track mouse for address bar
+
+      window.NexoraMouseTracking.bindElements(document.querySelectorAll('.nav-btn, .menu-btn'));
+
       const addressBar = document.querySelector('.address-bar-container');
-      addressBar.addEventListener('mousemove', function(e) {
-        updateMousePosition(e, addressBar);
-      });
-      
-      // Track mouse for shortcuts
-      document.addEventListener('mousemove', function(e) {
-        const shortcut = e.target.closest('.shortcut');
-        if (shortcut) {
-          updateMousePosition(e, shortcut);
-        }
-      });
+      if (addressBar) {
+        window.NexoraMouseTracking.bindElement(addressBar);
+      }
+
+      window.NexoraMouseTracking.bindDelegated(document, '.shortcut');
     });
   </script>
   <script src="js/proxy-browser.js"></script>

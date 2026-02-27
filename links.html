@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="/css/_tokens.css" />
   <link rel="stylesheet" href="/css/links.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="/js/mouse-tracking.js"></script>
 
   <script>
     (function () {
@@ -444,28 +445,12 @@
     (function() {
       function attachMouseTracking() {
         const linkItems = document.querySelectorAll('.link-item');
-        
+        if (!window.NexoraMouseTracking) return;
+
         linkItems.forEach(item => {
-          let rafId = null;
-          
-          function updateFromEvent(e) {
-            const rect = item.getBoundingClientRect();
-            const x = ((e.clientX - rect.left) / rect.width) * 100;
-            const y = ((e.clientY - rect.top) / rect.height) * 100;
-            
-            if (rafId) return;
-            rafId = requestAnimationFrame(() => {
-              item.style.setProperty('--x', x + '%');
-              item.style.setProperty('--y', y + '%');
-              rafId = null;
-            });
-          }
-          
-          item.addEventListener('mousemove', updateFromEvent);
-          item.addEventListener('mouseleave', () => {
-            item.style.setProperty('--x', '50%');
-            item.style.setProperty('--y', '50%');
-          }, { passive: true });
+          if (item.dataset.mouseTrackingBound) return;
+          item.dataset.mouseTrackingBound = 'true';
+          window.NexoraMouseTracking.bindElement(item);
         });
       }
       
