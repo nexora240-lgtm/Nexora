@@ -44,15 +44,9 @@
 
   </div>
 
-  <script src="/baremux/index.js"></script>
-  <script src="/scram/scramjet.all.js"></script>
-  <script type="module" src="/epoxy/index.mjs"></script>
-  <script>
-    window._CONFIG = window._CONFIG || {
-      wispurl: "wss://anura.pro/",
-      bareurl: "https://aluu.xyz/bare/"
-    };
-  </script>
+  <script src="/s/uv/uv.bundle.js"></script>
+  <script src="/s/uv/uv.config.js"></script>
+  <script src="/s/register-sw.js"></script>
 
   <script>
     (function() {
@@ -61,53 +55,30 @@
       const appLink  = params.get('link');
       const appThumb = params.get('thumb');
 
-      let scramjet  = null;
-      let swReady   = false;
+      let swReady = false;
 
       const appContainer  = document.getElementById('appContainer');
       const titleEl       = document.getElementById('appTitle');
       const backBtn       = document.getElementById('backBtn');
       const fullscreenBtn = document.getElementById('fullscreenBtn');
 
-      /* ── Proxy init ──────────────────────────────────────────── */
+      /* ── Proxy init (Ultraviolet) ────────────────────────────── */
       async function initProxy() {
         try {
-          const { ScramjetController } = $scramjetLoadController();
-          scramjet = new ScramjetController({
-            prefix: "/scramjet/",
-            files: {
-              wasm: "/scram/scramjet.wasm.wasm",
-              all:  "/scram/scramjet.all.js",
-              sync: "/scram/scramjet.sync.js",
-            }
-          });
-          await scramjet.init();
-
-          const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
-          try {
-            await connection.setTransport("/epoxy/index.mjs", [{
-              wisp: window._CONFIG?.wispurl || "wss://anura.pro/"
-            }]);
-          } catch (e) {
-            await connection.setTransport("/baremux/index.mjs", [
-              window._CONFIG?.bareurl || "https://aluu.xyz/bare/"
-            ]);
-          }
-
-          await navigator.serviceWorker.register("/sw.js");
-          await navigator.serviceWorker.ready;
+          await registerSW();
           swReady = true;
-          window.scramjet = scramjet;
+          console.log('Ultraviolet service worker ready');
         } catch (err) {
           console.error("Proxy init failed:", err);
         }
       }
 
       function getProxyUrl(url) {
-        if (scramjet && swReady) {
-          return scramjet.encodeUrl(url);
+        if (!swReady) {
+          console.warn('Service worker not ready yet');
         }
-        return "/scramjet/" + encodeURIComponent(url);
+        // Use Ultraviolet's encoding
+        return __uv$config.prefix + __uv$config.encodeUrl(url);
       }
 
       /* ── Iframe launch ───────────────────────────────────────── */
