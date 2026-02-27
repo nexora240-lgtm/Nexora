@@ -120,10 +120,25 @@ class UVServiceWorker extends EventEmitter {
 
 			if (reqEvent.intercepted) return reqEvent.returnValue;
 
-			const response = await fetch(requestCtx.send);
+			let response;
+			try {
+				response = await fetch(requestCtx.send);
+			} catch (fetchError) {
+				// Network error or CORS block
+				console.error('Bare server fetch failed:', fetchError);
+				return new Response('Failed to connect to bare server: ' + fetchError.message, {
+					status: 502,
+					statusText: 'Bad Gateway',
+				});
+			}
 
-			if (response.status === 500) {
-				return Promise.reject("");
+			// Check if bare server returned an error (not a proxied error)
+			if (response.status >= 400 && !response.headers.get("x-bare-status")) {
+				const errorText = await response.text().catch(() => 'Unknown error');
+				return new Response('Bare server error: ' + errorText, {
+					status: response.status,
+					statusText: response.statusText,
+				});
 			}
 
 			const responseCtx = new ResponseContext(requestCtx, response, this);
@@ -220,8 +235,22 @@ class UVServiceWorker extends EventEmitter {
 		}
 	}
 	getBarerResponse(response) {
+		// Check if this is a valid bare response with expected headers
+		const bareHeaders = response.headers.get("x-bare-headers");
+		const bareStatus = response.headers.get("x-bare-status");
+		
+		// If bare headers are missing, return the raw response (error from bare server itself)
+		if (!bareHeaders || !bareStatus) {
+			return {
+				headers: Object.fromEntries([...response.headers.entries()]),
+				status: response.status || 500,
+				statusText: response.statusText || "Bare Server Error",
+				body: response.body,
+			};
+		}
+		
 		const headers = {};
-		const raw = JSON.parse(response.headers.get("x-bare-headers"));
+		const raw = JSON.parse(bareHeaders);
 
 		for (const key in raw) {
 			headers[key.toLowerCase()] = raw[key];
@@ -229,11 +258,9 @@ class UVServiceWorker extends EventEmitter {
 
 		return {
 			headers,
-			status: +response.headers.get("x-bare-status"),
+			status: +bareStatus,
 			statusText: response.headers.get("x-bare-status-text"),
-			body: !this.statusCode.empty.includes(
-				+response.headers.get("x-bare-status"),
-			)
+			body: !this.statusCode.empty.includes(+bareStatus)
 				? response.body
 				: null,
 		};

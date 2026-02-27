@@ -1,6 +1,6 @@
 self.__uv$config = {
 	prefix: "/s/ultraviolet/",
-	bare: "https://3sow4six3pqlu5t4qgyximuyrm0nlegb.lambda-url.us-east-2.on.aws/",
+	bare: "https://uv-proxyservice.fly.dev/",
 	encodeUrl: Ultraviolet.codec.xor.encode,
 	decodeUrl: Ultraviolet.codec.xor.decode,
 	handler: "/s/uv/uv.handler.js",
