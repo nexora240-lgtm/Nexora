@@ -315,7 +315,7 @@
       // Ensure _CONFIG is available
       if (typeof _CONFIG === 'undefined') {
         window._CONFIG = {
-          viewsApiUrl: 'https://j2ii8694xc.execute-api.us-east-2.amazonaws.com'
+          viewsApiUrl: 'https://2zpvhn3woh.execute-api.us-east-2.amazonaws.com'
         };
       }
       
@@ -928,7 +928,8 @@
         `;
         document.body.appendChild(overlay);
         
-        parseVAST(VAST_AD_URL).then(adData => {
+        const adTimeout = new Promise(resolve => setTimeout(() => resolve(null), 5000));
+        Promise.race([parseVAST(VAST_AD_URL), adTimeout]).then(adData => {
           if (!adData || !adData.videoUrl) {
             console.log('No VAST ad available, starting game');
             overlay.remove();

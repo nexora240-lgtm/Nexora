@@ -1,7 +1,7 @@
 
 (function() {
 
-    const WS_URL = 'wss://4bmnyxahxh.execute-api.us-east-2.amazonaws.com/production';
+    const WS_URL = 'wss://uqmhbkythi.execute-api.us-east-2.amazonaws.com/production';
 
     let ws = null;
     let currentUsername = '';
@@ -383,6 +383,7 @@ function joinRoom() {
 
     currentUsername = username;
     currentRoomCode = roomCode;
+    roomOwner = ''; // Reset - will be learned from host's PRESENCE message
     
     // Only save to cookie if not using account username
     if (!isUsingAccountUsername()) {

@@ -12,7 +12,7 @@
   }
 
   const AUTH_API_URL = (typeof _CONFIG !== 'undefined' && _CONFIG.authApiUrl) 
-    || 'https://j2ii8694xc.execute-api.us-east-2.amazonaws.com';
+    || 'https://2zpvhn3woh.execute-api.us-east-2.amazonaws.com';
 
   const SESSION_KEY = 'nexora.auth.session';
   const SYNC_INTERVAL = 60000; // Sync every minute when logged in
