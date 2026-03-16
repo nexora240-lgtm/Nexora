@@ -110,6 +110,123 @@
   <link rel="sitemap" type="application/xml" title="Sitemap" href="https://thenexoraproject.xyz/sitemap.xml" />
 </head>
 <body>
+
+  <div id="nexora-maintenance-overlay" style="
+    position: fixed; inset: 0; z-index: 99999;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--page-bg);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+  ">
+    <style>
+      #nexora-maintenance-overlay * { box-sizing: border-box; }
+      #nexora-maintenance-overlay::before {
+        content: '';
+        position: absolute; inset: 0; pointer-events: none;
+        background:
+          radial-gradient(ellipse 60% 50% at 50% 0%, var(--primary-shadow, rgba(212,85,10,0.08)) 0%, transparent 70%),
+          radial-gradient(ellipse 40% 40% at 80% 80%, var(--primary-shadow, rgba(212,85,10,0.04)) 0%, transparent 60%);
+      }
+      #nexora-maintenance-card {
+        position: relative; z-index: 1;
+        text-align: center;
+        padding: 3rem 2.5rem;
+        max-width: 480px; width: 90%;
+        background: var(--surface);
+        border: 1px solid rgba(var(--primary-rgb, 212,85,10), 0.18);
+        border-radius: 20px;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.35), 0 0 80px var(--primary-shadow, rgba(212,85,10,0.06));
+        animation: _mnt-fadeUp 0.55s ease both;
+      }
+      @keyframes _mnt-fadeUp {
+        from { opacity: 0; transform: translateY(18px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      #nexora-maintenance-card .mnt-logo {
+        display: block; margin: 0 auto 1.5rem;
+        width: 68px; height: 68px; object-fit: contain;
+        border-radius: 10px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 2px rgba(255,255,255,0.05);
+        animation: _mnt-pulse 3s ease-in-out infinite;
+      }
+      @keyframes _mnt-pulse {
+        0%,100% { filter: drop-shadow(0 0 8px var(--primary-shadow, rgba(212,85,10,0.45))); }
+        50%      { filter: drop-shadow(0 0 20px var(--primary-shadow, rgba(212,85,10,0.75))); }
+      }
+      #nexora-maintenance-card .mnt-badge {
+        display: inline-flex; align-items: center; justify-content: center;
+        gap: 6px;
+        background: color-mix(in srgb, var(--primary) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
+        color: var(--primary);
+        font-size: 0.7rem; font-weight: 600;
+        letter-spacing: 0.1em; text-transform: uppercase;
+        padding: 4px 12px; border-radius: 100px;
+        margin-bottom: 1.25rem;
+      }
+      #nexora-maintenance-card .mnt-badge::before {
+        content: ''; width: 6px; height: 6px;
+        border-radius: 50%; background: var(--primary);
+        animation: _mnt-blink 1.4s ease-in-out infinite;
+        flex-shrink: 0;
+      }
+      @keyframes _mnt-blink {
+        0%,100% { opacity: 1; } 50% { opacity: 0.2; }
+      }
+      #nexora-maintenance-card .mnt-heading {
+        font-size: clamp(1.5rem, 4.5vw, 2rem);
+        font-weight: 700; line-height: 1.2;
+        color: var(--text); margin-bottom: 0.75rem;
+        letter-spacing: -0.01em;
+      }
+      #nexora-maintenance-card .mnt-heading span {
+        background: var(--accent-gradient);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      #nexora-maintenance-card .mnt-body {
+        font-size: 0.94rem; color: var(--muted);
+        line-height: 1.65; max-width: 360px; margin: 0 auto;
+      }
+      #nexora-maintenance-card .mnt-divider {
+        width: 40px; height: 2px;
+        background: color-mix(in srgb, var(--primary) 40%, transparent);
+        margin: 1.75rem auto; border-radius: 2px;
+      }
+      #nexora-maintenance-card .mnt-status {
+        display: flex; align-items: center; justify-content: center;
+        gap: 8px; font-size: 0.81rem; color: var(--muted);
+      }
+      #nexora-maintenance-card .mnt-dot {
+        width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+        background: var(--primary);
+        box-shadow: 0 0 6px var(--primary-shadow);
+        animation: _mnt-blink 1.4s ease-in-out infinite;
+      }
+    </style>
+
+    <div id="nexora-maintenance-card">
+      <img
+        src="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/nexora-amber.png"
+        alt="Nexora Logo"
+        class="mnt-logo"
+        onerror="this.style.display='none'"
+      />
+      <div class="mnt-badge">Scheduled Maintenance</div>
+      <h1 class="mnt-heading">Nexora is Currently<br>in <span>Maintenance</span></h1>
+      <p class="mnt-body">
+        We are currently working on the site!
+        The site will be back on soon, updates are posted on discord's #announcements channel.
+      </p>
+      <div class="mnt-divider"></div>
+      <div class="mnt-status">
+        <span class="mnt-dot"></span>
+        <span>Maintenance in progress</span>
+      </div>
+    </div>
+  </div>
+  <!-- END MAINTENANCE POPUP -->
+
   <div class="page-frame">
     <aside class="sidebar" aria-label="Main navigation">
       <div class="sidebar-glow"></div>
@@ -379,12 +496,14 @@
     function updateLogoAndFavicon() {
       const logo = document.querySelector('.sidebar-title img');
       const favicon = document.getElementById('favicon');
+      const mntLogo = document.querySelector('#nexora-maintenance-card .mnt-logo');
       
       const isLight = document.documentElement.classList.contains('light-scheme');
       
       if (isLight) {
         if (logo) logo.src = DEFAULT_LOGO;
         if (favicon) favicon.href = DEFAULT_FAVICON;
+        if (mntLogo) mntLogo.src = DEFAULT_LOGO;
       } else {
         let savedTheme = null;
         try {
@@ -396,6 +515,7 @@
 
         if (logo) logo.src = logoSrc;
         if (favicon) favicon.href = faviconHref;
+        if (mntLogo) mntLogo.src = logoSrc;
       }
     }
 
