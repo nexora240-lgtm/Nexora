@@ -485,8 +485,8 @@
     // Also get any game-related data
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      // Exclude session key from cloud sync to prevent overwriting new session with old one
-      if (key && key !== SESSION_KEY && (key.startsWith('game.') || key.startsWith('nexora.'))) {
+      // Exclude session/credentials keys from cloud sync to prevent overwriting new session with old one
+      if (key && key !== SESSION_KEY && key !== CREDENTIALS_KEY && (key.startsWith('game.') || key.startsWith('nexora.'))) {
         data[key] = localStorage.getItem(key);
       }
     }
@@ -501,8 +501,8 @@
     if (!data || typeof data !== 'object') return;
     
     Object.keys(data).forEach(key => {
-      // Never overwrite the session from cloud data
-      if (key === SESSION_KEY) return;
+      // Never overwrite the session or credentials from cloud data
+      if (key === SESSION_KEY || key === CREDENTIALS_KEY) return;
       localStorage.setItem(key, data[key]);
     });
 
