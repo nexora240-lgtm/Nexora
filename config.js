@@ -10,5 +10,7 @@ let _CONFIG = {
   // Views API Configuration - Replace with your AWS API Gateway URL
   viewsApiUrl: "https://2zpvhn3woh.execute-api.us-east-2.amazonaws.com",
   // Auth API Configuration - User authentication and data sync
-  authApiUrl: "https://2zpvhn3woh.execute-api.us-east-2.amazonaws.com"
+  authApiUrl: "https://2zpvhn3woh.execute-api.us-east-2.amazonaws.com",
+  // Admin API Configuration
+  adminApiUrl: "https://2zpvhn3woh.execute-api.us-east-2.amazonaws.com"
 };

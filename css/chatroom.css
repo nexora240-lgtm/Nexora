@@ -1908,3 +1908,89 @@
 .nexora-chatroom .dont-show-again span {
     cursor: pointer;
 }
+
+/* ── Room Closed Overlay (admin close) ── */
+
+.room-closed-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: roomClosedFadeIn 0.35s ease;
+}
+
+@keyframes roomClosedFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.room-closed-card {
+    text-align: center;
+    padding: 48px 40px;
+    border-radius: 20px;
+    background: var(--surface, #1a100d);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+    max-width: 420px;
+    width: 90%;
+    animation: roomClosedCardIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+@keyframes roomClosedCardIn {
+    from { opacity: 0; transform: scale(0.9) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.room-closed-icon {
+    font-size: 48px;
+    color: #e53935;
+    margin-bottom: 16px;
+}
+
+.room-closed-card h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text, #f8e7e0);
+    margin: 0 0 12px;
+}
+
+.room-closed-card p {
+    font-size: 15px;
+    color: var(--muted, #c9a08a);
+    line-height: 1.5;
+    margin: 0 0 8px;
+}
+
+.room-closed-admin {
+    font-size: 13px !important;
+    opacity: 0.7;
+}
+
+.room-closed-btn {
+    margin-top: 24px;
+    padding: 12px 32px;
+    border: none;
+    border-radius: 12px;
+    background: var(--accent-gradient, linear-gradient(135deg, var(--primary-deep, #992f05), var(--primary, #d4550a)));
+    color: var(--on-primary, #fff0e8);
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.2s;
+    box-shadow: 0 4px 16px var(--primary-shadow, rgba(212, 85, 10, 0.4));
+}
+
+.room-closed-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.room-closed-btn:active {
+    transform: scale(0.97);
+}

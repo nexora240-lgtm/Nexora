@@ -534,6 +534,59 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                         return;
         }
 
+        // Handle room closed by admin
+        if (data.type === 'room_closed') {
+            if (ws) { ws.onclose = null; ws.close(); ws = null; }
+            const chatScreen = document.getElementById('chatScreen');
+            if (chatScreen) {
+                const overlay = document.createElement('div');
+                overlay.className = 'room-closed-overlay';
+                overlay.innerHTML = `
+                    <div class="room-closed-card">
+                        <div class="room-closed-icon"><i class="fas fa-door-closed"></i></div>
+                        <h2>Room Closed</h2>
+                        <p>This room has been closed by an administrator.</p>
+                        <p class="room-closed-admin">Closed by <strong>Administrator</strong></p>
+                        <button class="room-closed-btn" onclick="this.closest('.room-closed-overlay').remove(); leaveChat();">Return to Lobby</button>
+                    </div>
+                `;
+                chatScreen.appendChild(overlay);
+            }
+            roomUsers = [];
+            currentUsername = '';
+            currentRoomCode = '';
+            roomOwner = '';
+            userJoinTimes = {};
+            presenceAnnouncedTo.clear();
+            return;
+        }
+
+        // Handle kicked by admin
+        if (data.type === 'kicked') {
+            if (ws) { ws.onclose = null; ws.close(); ws = null; }
+            const chatScreen = document.getElementById('chatScreen');
+            if (chatScreen) {
+                const overlay = document.createElement('div');
+                overlay.className = 'room-closed-overlay';
+                overlay.innerHTML = `
+                    <div class="room-closed-card">
+                        <div class="room-closed-icon"><i class="fas fa-user-slash"></i></div>
+                        <h2>Kicked</h2>
+                        <p>You have been kicked from this room by an administrator.</p>
+                        <button class="room-closed-btn" onclick="this.closest('.room-closed-overlay').remove(); leaveChat();">Return to Lobby</button>
+                    </div>
+                `;
+                chatScreen.appendChild(overlay);
+            }
+            roomUsers = [];
+            currentUsername = '';
+            currentRoomCode = '';
+            roomOwner = '';
+            userJoinTimes = {};
+            presenceAnnouncedTo.clear();
+            return;
+        }
+
         // Handle server error messages (have message but no username)
         if (data.message && !data.username) {
             console.warn('[Chatroom] Server message:', data.message);

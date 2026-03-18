@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <script>
+    if (window.location.pathname.endsWith('/admin.html')) {
+      window.location.replace('/?route=/admin');
+    }
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="/css/_tokens.css" />
+  <link rel="stylesheet" href="/css/admin.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+
+<div class="admin-root" id="adminRoot">
+  <div class="admin-app">
+
+    <!-- Access denied state (shown to non-admins) -->
+    <div id="adminDenied" class="admin-denied" style="display:none">
+      <h2><i class="fas fa-lock"></i> Access Denied</h2>
+      <p>You must be logged in as an administrator to view this page.</p>
+    </div>
+
+    <!-- Admin content (shown to admins) -->
+    <div id="adminContent" style="display:none">
+      <div class="header-row">
+        <h1 class="admin-title">Admin Panel</h1>
+        <p class="admin-subtitle">Manage users, chatrooms, and site settings</p>
+
+        <nav class="nav-buttons" role="tablist" aria-label="Admin sections">
+          <button class="nav-btn active" data-target="dashboard" role="tab" aria-selected="true"><i class="fas fa-tachometer-alt"></i> Dashboard</button>
+          <button class="nav-btn" data-target="users" role="tab"><i class="fas fa-users"></i> Users</button>
+          <button class="nav-btn" data-target="chatrooms" role="tab"><i class="fas fa-comments"></i> Chatrooms</button>
+          <button class="nav-btn" data-target="analytics" role="tab"><i class="fas fa-chart-bar"></i> Analytics</button>
+          <button class="nav-btn" data-target="announcements" role="tab"><i class="fas fa-bullhorn"></i> Announcements</button>
+          <button class="nav-btn" data-target="site-settings" role="tab"><i class="fas fa-sliders-h"></i> Settings</button>
+          <button class="nav-btn" data-target="moderation" role="tab"><i class="fas fa-flag"></i> Moderation</button>
+          <button class="nav-btn" data-target="audit-log" role="tab"><i class="fas fa-clipboard-list"></i> Audit Log</button>
+        </nav>
+      </div>
+
+      <!-- ═══ DASHBOARD ═══ -->
+      <section id="dashboard" class="panel active" role="tabpanel">
+        <div class="stat-grid" id="dashStats">
+          <div class="loading"><div class="spinner"></div> Loading dashboard…</div>
+        </div>
+        <div class="panel-card">
+          <div class="section-header"><h2>Recent Admin Actions</h2></div>
+          <div class="admin-table-wrap">
+            <table><thead><tr><th>Time</th><th>Admin</th><th>Action</th><th>Target</th><th>Details</th></tr></thead>
+            <tbody id="dashActions"><tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr></tbody></table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ USERS ═══ -->
+      <section id="users" class="panel" role="tabpanel">
+        <div class="panel-card">
+          <div class="section-header">
+            <h2>Users</h2>
+            <span class="meta-count" id="userCount"></span>
+            <div class="search-bar">
+              <input type="text" class="form-input" id="userSearch" placeholder="Search Userbase..." />
+              <button class="btn btn-primary btn-sm" onclick="searchUsers()"><i class="fas fa-search"></i> Search</button>
+              <button class="btn btn-outline btn-sm" onclick="clearUserSearch()" title="Clear search"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          <div class="admin-table-wrap">
+            <table><thead><tr><th>Username</th><th>Display Name</th><th>Registered</th><th>Last Login</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="usersBody"><tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr></tbody></table>
+          </div>
+          <div class="pagination" id="usersPagination"></div>
+        </div>
+      </section>
+
+      <!-- ═══ CHATROOMS ═══ -->
+      <section id="chatrooms" class="panel" role="tabpanel">
+        <div class="panel-card">
+          <div class="section-header">
+            <h2>All Chatrooms</h2>
+            <button class="btn btn-outline btn-sm" onclick="loadChatrooms()"><i class="fas fa-sync"></i> Refresh</button>
+          </div>
+          <p class="text-muted" style="font-size:13px;margin:-8px 0 12px">All rooms with saved messages, sorted by most recent activity. Deleted after 31 days of inactivity.</p>
+          <div class="admin-table-wrap">
+            <table><thead><tr><th>Room Code</th><th>Status</th><th>Active Users</th><th>Last Message</th><th>Actions</th></tr></thead>
+            <tbody id="chatroomsBody"><tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr></tbody></table>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="section-header">
+            <h2>Chat History Lookup</h2>
+            <div class="search-bar">
+              <input type="text" class="form-input" id="historyRoomCode" placeholder="Room code…" />
+              <button class="btn btn-primary btn-sm" onclick="lookupChatHistory()"><i class="fas fa-search"></i> Search</button>
+            </div>
+          </div>
+          <p class="text-muted" style="font-size:13px;margin:0 0 12px">Look up saved chat history for any room (active or inactive). Messages are retained for 31 days.</p>
+          <div id="historyRoomList" class="history-room-list"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+      </section>
+
+      <!-- ═══ ANALYTICS ═══ -->
+      <section id="analytics" class="panel" role="tabpanel">
+        <div class="stat-grid" id="analyticsStats">
+          <div class="loading"><div class="spinner"></div> Loading analytics…</div>
+        </div>
+        <div class="panel-card">
+          <div class="section-header"><h2>User Registrations (Last 30 Days)</h2></div>
+          <div class="chart-card" id="regChart">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="section-header"><h2>Top Games by Views</h2><span class="meta-count" id="gamesCount"></span></div>
+          <div class="admin-table-wrap scrollable-table">
+            <table><thead><tr><th>#</th><th>Game</th><th>Views</th><th>Likes</th><th>Dislikes</th></tr></thead>
+            <tbody id="topGamesBody"><tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr></tbody></table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ ANNOUNCEMENTS ═══ -->
+      <section id="announcements" class="panel" role="tabpanel">
+        <div class="panel-card">
+          <div class="section-header">
+            <h2>Announcements</h2>
+            <button class="btn btn-primary btn-sm" onclick="showAnnouncementForm()"><i class="fas fa-plus"></i> New</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table><thead><tr><th>Title</th><th>Status</th><th>Created</th><th>Expires</th><th>Actions</th></tr></thead>
+            <tbody id="announcementsBody"><tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr></tbody></table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ SITE SETTINGS ═══ -->
+      <section id="site-settings" class="panel" role="tabpanel">
+        <div class="panel-card">
+          <div class="section-header"><h2>Site Settings</h2></div>
+          <div id="settingsContainer" class="settings-list">
+            <div class="loading"><div class="spinner"></div> Loading settings…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ AUDIT LOG ═══ -->
+      <section id="audit-log" class="panel" role="tabpanel">
+        <div class="panel-card">
+          <div class="section-header">
+            <h2>Audit Log</h2>
+            <div class="search-bar">
+              <select class="form-input" id="auditAction">
+                <option value="">All Actions</option>
+                <option value="BAN">Ban</option>
+                <option value="UNBAN">Unban</option>
+                <option value="MUTE">Mute</option>
+                <option value="KICK">Kick</option>
+                <option value="KICK_ROOM">Kick from Room</option>
+                <option value="CLOSE_ROOM">Close Room</option>
+                <option value="ROOM_MESSAGE">Room Message</option>
+                <option value="CREATE_ANNOUNCEMENT">Create Announcement</option>
+                <option value="UPDATE_ANNOUNCEMENT">Update Announcement</option>
+                <option value="DELETE_ANNOUNCEMENT">Delete Announcement</option>
+                <option value="UPDATE_SETTING">Update Setting</option>
+                <option value="ADD_FLAGGED_WORD">Add Flagged Word</option>
+                <option value="REMOVE_FLAGGED_WORD">Remove Flagged Word</option>
+              </select>
+              <input type="text" class="form-input" id="auditTarget" placeholder="Target…" />
+              <button class="btn btn-primary btn-sm" onclick="loadAuditLog()"><i class="fas fa-filter"></i> Filter</button>
+            </div>
+          </div>
+          <div class="admin-table-wrap">
+            <table><thead><tr><th>Time</th><th>Admin</th><th>Action</th><th>Target</th><th>Details</th></tr></thead>
+            <tbody id="auditBody"><tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr></tbody></table>
+          </div>
+        </div>
+      </section>
+
+      </section>
+
+      <!-- ═══ MODERATION ═══ -->
+      <section id="moderation" class="panel" role="tabpanel">
+        <div class="panel-card">
+          <div class="section-header">
+            <h2>Flagged Words</h2>
+            <div class="search-bar">
+              <input type="text" class="form-input" id="newFlaggedWord" placeholder="Add a word…" />
+              <button class="btn btn-primary btn-sm" onclick="doAddFlaggedWord()"><i class="fas fa-plus"></i> Add</button>
+            </div>
+          </div>
+          <div id="flaggedWordsList" class="flagged-words-grid">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="section-header">
+            <h2>Flagged Messages</h2>
+            <button class="btn btn-outline btn-sm" onclick="loadFlaggedMessages()"><i class="fas fa-sync"></i> Refresh</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table><thead><tr><th>Time</th><th>Room</th><th>User</th><th>Message</th><th>Triggered Words</th></tr></thead>
+            <tbody id="flaggedMessagesBody"><tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr></tbody></table>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /adminContent -->
+  </div><!-- /admin-app -->
+
+  <!-- Modal container (injected dynamically) -->
+  <div id="adminModal"></div>
+
+</div><!-- /admin-root -->
+
+<script>
+(function() {
+  'use strict';
+
+  const API = (typeof _CONFIG !== 'undefined' && _CONFIG.adminApiUrl) || 'https://j2ii8694xc.execute-api.us-east-2.amazonaws.com';
+
+
+  // ─── Init ───
+
+  function init() {
+    document.getElementById('adminContent').style.display = 'none';
+    document.getElementById('adminDenied').style.display = 'none';
+
+    if (!window.NexoraAuth) {
+      document.getElementById('adminDenied').style.display = '';
+      return;
+    }
+
+    let started = false;
+
+    function handleSession(session) {
+      if (!session) {
+        // Only show "denied" once auth has fully resolved (not while autoLogin is still pending)
+        if (window.NexoraAuth.authResolved) {
+          document.getElementById('adminContent').style.display = 'none';
+          document.getElementById('adminDenied').style.display = '';
+        }
+        return;
+      }
+      if (!window.NexoraAuth.isAdmin()) {
+        document.getElementById('adminContent').style.display = 'none';
+        document.getElementById('adminDenied').style.display = '';
+        return;
+      }
+      if (!started) {
+        started = true;
+        document.getElementById('adminDenied').style.display = 'none';
+        document.getElementById('adminContent').style.display = '';
+        setupTabs();
+        loadDashboard();
+        loadUsers();
+        loadChatrooms();
+        loadAnalytics();
+        loadAnnouncements();
+        loadSettings();
+        loadAuditLog();
+        loadModeration();
+      }
+    }
+
+    window.NexoraAuth.onAuthChange(handleSession);
+  }
+
+  // ─── API Helper ───
+
+  async function adminFetch(endpoint, method = 'GET', body = null) {
+    const session = window.NexoraAuth.getSession();
+    if (!session) throw new Error('Not authenticated');
+
+    const opts = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': session.token,
+        'X-Admin-Username': session.username
+      }
+    };
+    if (body && method !== 'GET') opts.body = JSON.stringify(body);
+
+    const resp = await fetch(`${API}${endpoint}`, opts);
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Request failed');
+    return data;
+  }
+
+  // ─── Toast ───
+
+  function toast(msg, type = 'success') {
+    const el = document.createElement('div');
+    el.className = `toast toast-${type}`;
+    el.textContent = msg;
+    document.getElementById('adminRoot').appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+  }
+
+  // ─── Tabs ───
+
+  function setupTabs() {
+    const btns = document.querySelectorAll('#adminRoot .nav-btn');
+    btns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        btns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+
+        document.querySelectorAll('#adminRoot .panel').forEach(p => p.classList.remove('active'));
+        const target = document.getElementById(btn.dataset.target);
+        if (target) target.classList.add('active');
+
+        // Lazy-load tab data (refresh on tab click)
+        const t = btn.dataset.target;
+        if (t === 'dashboard')      loadDashboard();
+        else if (t === 'users')     { /* already loaded */ }
+        else if (t === 'chatrooms') loadChatrooms();
+        else if (t === 'analytics') loadAnalytics();
+        else if (t === 'announcements') loadAnnouncements();
+        else if (t === 'site-settings') loadSettings();
+        else if (t === 'moderation')    loadModeration();
+        else if (t === 'audit-log') loadAuditLog();
+      });
+    });
+  }
+
+  // ─── Helpers ───
+
+  function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
+  }
+
+  function fmtDate(d) {
+    if (!d) return '—';
+    const date = typeof d === 'number' ? new Date(d) : new Date(d);
+    if (isNaN(date)) return '—';
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+      ' ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function fmtRelative(d) {
+    if (!d) return '—';
+    const date = typeof d === 'number' ? new Date(d) : new Date(d);
+    const diff = Date.now() - date.getTime();
+    if (diff < 60000) return 'just now';
+    if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
+    if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
+    return Math.floor(diff/86400000) + 'd ago';
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // DASHBOARD
+  // ═══════════════════════════════════════════════════════════════
+
+  async function loadDashboard() {
+    try {
+      const data = await adminFetch('/admin/dashboard');
+      document.getElementById('dashStats').innerHTML = `
+        <div class="stat-card"><div class="stat-value">${data.totalUsers}</div><div class="stat-label">Total Users</div></div>
+        <div class="stat-card"><div class="stat-value">${data.activeUsers24h}</div><div class="stat-label">Active (24h)</div></div>
+        <div class="stat-card"><div class="stat-value">${data.activeRooms}</div><div class="stat-label">Active Rooms</div></div>
+        <div class="stat-card"><div class="stat-value">${data.activeConnections}</div><div class="stat-label">Chat Connections</div></div>
+        <div class="stat-card"><div class="stat-value">${data.totalBans}</div><div class="stat-label">Active Bans</div></div>
+        <div class="stat-card"><div class="stat-value">${data.totalAnnouncements}</div><div class="stat-label">Announcements</div></div>
+      `;
+
+      const actions = data.recentActions || [];
+      document.getElementById('dashActions').innerHTML = actions.length
+        ? actions.map(a => `<tr><td>${fmtRelative(a.timestamp)}</td><td>${esc(a.adminUsername)}</td><td><span class="badge badge-muted">${esc(a.action)}</span></td><td>${esc(a.targetUsername)}</td><td>${esc(a.details).substring(0,60)}</td></tr>`).join('')
+        : '<tr><td colspan="5" class="empty-state">No recent actions</td></tr>';
+    } catch (e) {
+      document.getElementById('dashStats').innerHTML = `<div class="empty-state">Failed to load dashboard: ${esc(e.message)}</div>`;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // USERS
+  // ═══════════════════════════════════════════════════════════════
+
+  const USERS_PER_PAGE = 40;
+  let allUsersCache = [];
+  let filteredUsers = [];
+  let usersPage = 1;
+  let usersSearchActive = false;
+
+  async function loadUsers() {
+    const body = document.getElementById('usersBody');
+    body.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr>';
+
+    const q = document.getElementById('userSearch').value.trim();
+    let url = '/admin/users';
+    if (q) url += '?q=' + encodeURIComponent(q);
+
+    try {
+      const data = await adminFetch(url);
+      allUsersCache = data.users || [];
+      filteredUsers = allUsersCache;
+      usersSearchActive = !!q;
+      usersPage = 1;
+      renderUsersPage();
+    } catch (e) {
+      body.innerHTML = `<tr><td colspan="6" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
+    }
+  }
+  window.loadUsers = loadUsers;
+
+  function renderUsersPage() {
+    const total = filteredUsers.length;
+    const totalPages = Math.max(1, Math.ceil(total / USERS_PER_PAGE));
+    if (usersPage > totalPages) usersPage = totalPages;
+    const start = (usersPage - 1) * USERS_PER_PAGE;
+    const pageUsers = filteredUsers.slice(start, start + USERS_PER_PAGE);
+
+    // User count
+    const countEl = document.getElementById('userCount');
+    if (countEl) {
+      countEl.textContent = usersSearchActive
+        ? `${total} result${total !== 1 ? 's' : ''} found`
+        : `${total} total user${total !== 1 ? 's' : ''}`;
+    }
+
+    const body = document.getElementById('usersBody');
+    if (!pageUsers.length) {
+      body.innerHTML = '<tr><td colspan="6" class="empty-state">No users found</td></tr>';
+    } else {
+      body.innerHTML = pageUsers.map(u => {
+        let status;
+        if (u.banned) {
+          status = `<span class="badge badge-danger">${u.banInfo?.type === 'mute' ? 'Muted' : 'Banned'}</span>`;
+        } else if (u.online) {
+          status = '<span class="badge badge-success">Online</span>';
+        } else {
+          status = '<span class="badge badge-muted">Offline</span>';
+        }
+        return `<tr>
+          <td><strong>${esc(u.username)}</strong></td>
+          <td>${esc(u.displayName)}</td>
+          <td>${fmtDate(u.createdAt)}</td>
+          <td>${fmtRelative(u.lastLogin)}</td>
+          <td>${status}</td>
+          <td class="btn-group">
+            <button class="btn btn-outline btn-sm" onclick="viewUser('${esc(u.username)}')"><i class="fas fa-eye"></i></button>
+            ${u.banned
+              ? `<button class="btn btn-success btn-sm" onclick="doUnban('${esc(u.username)}')"><i class="fas fa-unlock"></i></button>`
+              : `<button class="btn btn-danger btn-sm" onclick="showBanForm('${esc(u.username)}')"><i class="fas fa-ban"></i></button>`}
+            <button class="btn btn-outline btn-sm" onclick="doKick('${esc(u.username)}')" title="Kick from chatrooms"><i class="fas fa-sign-out-alt"></i></button>
+          </td></tr>`;
+      }).join('');
+    }
+
+    // Pagination controls
+    const pag = document.getElementById('usersPagination');
+    if (totalPages <= 1) { pag.innerHTML = ''; return; }
+
+    let html = '';
+    html += `<button class="page-btn" ${usersPage <= 1 ? 'disabled' : ''} onclick="goUsersPage(${usersPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
+
+    const maxVisible = 7;
+    let pages = [];
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      let lo = Math.max(2, usersPage - 2);
+      let hi = Math.min(totalPages - 1, usersPage + 2);
+      if (usersPage <= 3) hi = Math.min(totalPages - 1, 5);
+      if (usersPage >= totalPages - 2) lo = Math.max(2, totalPages - 4);
+      if (lo > 2) pages.push('…');
+      for (let i = lo; i <= hi; i++) pages.push(i);
+      if (hi < totalPages - 1) pages.push('…');
+      pages.push(totalPages);
+    }
+
+    pages.forEach(p => {
+      if (p === '…') {
+        html += `<span class="page-ellipsis">…</span>`;
+      } else {
+        html += `<button class="page-btn${p === usersPage ? ' active' : ''}" onclick="goUsersPage(${p})">${p}</button>`;
+      }
+    });
+
+    html += `<button class="page-btn" ${usersPage >= totalPages ? 'disabled' : ''} onclick="goUsersPage(${usersPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
+    html += `<span class="page-info">Page ${usersPage} of ${totalPages}</span>`;
+    pag.innerHTML = html;
+  }
+
+  window.goUsersPage = function(page) {
+    usersPage = page;
+    renderUsersPage();
+    document.getElementById('users')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  window.searchUsers = function() {
+    loadUsers();
+  };
+
+  window.clearUserSearch = function() {
+    document.getElementById('userSearch').value = '';
+    if (usersSearchActive) loadUsers();
+  };
+
+  window.viewUser = async function(username) {
+    try {
+      const data = await adminFetch(`/admin/users/${encodeURIComponent(username)}`);
+      const u = data.user;
+      const b = data.ban;
+      document.getElementById('adminModal').innerHTML = `
+        <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+          <div class="modal">
+            <h3><i class="fas fa-user"></i> ${esc(u.username)}</h3>
+            <div class="form-group"><label>Display Name</label><div>${esc(u.displayName)}</div></div>
+            <div class="form-group"><label>Registered</label><div>${fmtDate(u.createdAt)}</div></div>
+            <div class="form-group"><label>Last Login</label><div>${fmtDate(u.lastLogin)}</div></div>
+            <div class="form-group"><label>Registration IP</label><div>${esc(u.registrationIP)}</div></div>
+            <div class="form-group"><label>Last Login IP</label><div>${esc(u.lastLoginIP)}</div></div>
+            ${b ? `<div class="form-group"><label>Ban Status</label><div><span class="badge badge-danger">${esc(b.type)}</span> — ${esc(b.reason)} <br/><small>By ${esc(b.bannedBy)} at ${fmtDate(b.bannedAt)}${b.expiresAt ? ' · Expires ' + fmtDate(b.expiresAt) : ' · Permanent'}</small></div></div>` : ''}
+            <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Close</button></div>
+          </div>
+        </div>`;
+    } catch (e) {
+      toast('Failed to load user: ' + e.message, 'error');
+    }
+  };
+
+  window.showBanForm = function(username) {
+    document.getElementById('adminModal').innerHTML = `
+      <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+        <div class="modal">
+          <h3><i class="fas fa-ban"></i> Ban ${esc(username)}</h3>
+          <div class="form-group"><label>Type</label>
+            <select class="form-input" id="banType"><option value="ban">Ban</option><option value="mute">Mute</option></select>
+          </div>
+          <div class="form-group"><label>Reason</label>
+            <textarea class="form-input" id="banReason" placeholder="Reason for ban…"></textarea>
+          </div>
+          <div class="form-group"><label>Duration (minutes, 0 = permanent)</label>
+            <input type="number" class="form-input" id="banDuration" value="0" min="0" />
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-danger" onclick="doBan('${esc(username)}')"><i class="fas fa-ban"></i> Confirm Ban</button>
+          </div>
+        </div>
+      </div>`;
+  };
+
+  window.doBan = async function(username) {
+    try {
+      await adminFetch(`/admin/users/${encodeURIComponent(username)}/ban`, 'PUT', {
+        type: document.getElementById('banType').value,
+        reason: document.getElementById('banReason').value,
+        duration: parseInt(document.getElementById('banDuration').value) || 0
+      });
+      toast(`${username} has been banned`);
+      closeModal();
+      loadUsers();
+    } catch (e) { toast('Ban failed: ' + e.message, 'error'); }
+  };
+
+  window.doUnban = async function(username) {
+    if (!confirm(`Unban ${username}?`)) return;
+    try {
+      await adminFetch(`/admin/users/${encodeURIComponent(username)}/ban`, 'DELETE');
+      toast(`${username} has been unbanned`);
+      loadUsers();
+    } catch (e) { toast('Unban failed: ' + e.message, 'error'); }
+  };
+
+  window.doKick = async function(username) {
+    if (!confirm(`Kick ${username} from all chatrooms?`)) return;
+    try {
+      const data = await adminFetch(`/admin/users/${encodeURIComponent(username)}/kick`, 'POST');
+      toast(`Kicked ${username} (${data.disconnected} connection${data.disconnected !== 1 ? 's' : ''})`);
+    } catch (e) { toast('Kick failed: ' + e.message, 'error'); }
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // CHATROOMS
+  // ═══════════════════════════════════════════════════════════════
+
+  async function loadChatrooms() {
+    try {
+      const data = await adminFetch('/admin/chatrooms');
+      const body = document.getElementById('chatroomsBody');
+      const historyList = document.getElementById('historyRoomList');
+      const allRooms = data.chatrooms || [];
+      const activeRooms = allRooms.filter(r => r.activeUsers > 0);
+
+      // Populate Chat History Lookup room list (ALL rooms including inactive)
+      if (historyList) {
+        if (!allRooms.length) {
+          historyList.innerHTML = '<div class="empty-state" style="font-size:13px">No rooms with saved history</div>';
+        } else {
+          historyList.innerHTML = allRooms.map(r => {
+            const isActive = r.activeUsers > 0;
+            const badge = isActive
+              ? `<span class="badge badge-success">${r.activeUsers} online</span>`
+              : '<span class="badge badge-muted">Inactive</span>';
+            const lastMsg = r.lastMessage ? fmtRelative(r.lastMessage) : 'No messages';
+            return `<div class="history-room-item" onclick="viewChatHistory('${esc(r.roomCode)}')">
+              <span class="history-room-code">${esc(r.roomCode)}</span>
+              ${badge}
+              <span class="history-room-time">${lastMsg}</span>
+            </div>`;
+          }).join('');
+        }
+      }
+
+      // Chatrooms table shows only ACTIVE rooms
+      if (!activeRooms.length) {
+        body.innerHTML = '<tr><td colspan="5" class="empty-state">No active chatrooms</td></tr>';
+        return;
+      }
+      body.innerHTML = activeRooms.map(r => {
+        const isActive = r.activeUsers > 0;
+        const statusBadge = isActive
+          ? `<span class="badge badge-success">${r.activeUsers} online</span>`
+          : '<span class="badge badge-muted">Inactive</span>';
+        const activeActions = isActive ? `
+          <button class="btn btn-outline btn-sm" onclick="viewRoom('${esc(r.roomCode)}')" title="View active users"><i class="fas fa-eye"></i></button>
+          <button class="btn btn-outline btn-sm" onclick="showRoomMessage('${esc(r.roomCode)}')" title="Send message"><i class="fas fa-envelope"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="doCloseRoom('${esc(r.roomCode)}')" title="Close room"><i class="fas fa-times"></i></button>` : '';
+        return `<tr>
+          <td><strong>${esc(r.roomCode)}</strong></td>
+          <td>${statusBadge}</td>
+          <td>${isActive ? r.activeUsers : '—'}</td>
+          <td>${r.lastMessage ? fmtRelative(r.lastMessage) : '—'}</td>
+          <td class="btn-group">
+            <button class="btn btn-outline btn-sm" onclick="viewChatHistory('${esc(r.roomCode)}')" title="Chat history"><i class="fas fa-history"></i></button>
+            ${activeActions}
+          </td>
+        </tr>`;
+      }).join('');
+    } catch (e) {
+      document.getElementById('chatroomsBody').innerHTML = `<tr><td colspan="5" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
+    }
+  }
+  window.loadChatrooms = loadChatrooms;
+
+  window.viewRoom = async function(roomCode) {
+    try {
+      const data = await adminFetch(`/admin/chatrooms/${encodeURIComponent(roomCode)}`);
+      const conns = data.connections || [];
+      document.getElementById('adminModal').innerHTML = `
+        <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+          <div class="modal">
+            <h3><i class="fas fa-door-open"></i> Room ${esc(roomCode)}</h3>
+            <p class="meta-count">${conns.length} connected user${conns.length !== 1 ? 's' : ''}</p>
+            <div class="admin-table-wrap">
+              <table><thead><tr><th>Username</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>${conns.length ? conns.map(c => `
+                <tr><td>${esc(c.username)}</td><td><span class="badge badge-success">${esc(c.status || 'ACTIVE')}</span></td>
+                <td><button class="btn btn-danger btn-sm" onclick="doRoomKick('${esc(roomCode)}','${esc(c.username)}')"><i class="fas fa-sign-out-alt"></i> Kick</button></td></tr>
+              `).join('') : '<tr><td colspan="3" class="empty-state">No users connected</td></tr>'}</tbody></table>
+            </div>
+            <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Close</button><button class="btn btn-primary btn-sm" onclick="viewChatHistory('${esc(roomCode)}')"><i class="fas fa-history"></i> View Chats</button></div>
+          </div>
+        </div>`;
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+  };
+
+  window.doRoomKick = async function(roomCode, username) {
+    try {
+      await adminFetch(`/admin/chatrooms/${encodeURIComponent(roomCode)}/kick/${encodeURIComponent(username)}`, 'POST');
+      toast(`Kicked ${username} from room ${roomCode}`);
+      viewRoom(roomCode); // Refresh
+    } catch (e) { toast('Kick failed: ' + e.message, 'error'); }
+  };
+
+  window.showRoomMessage = function(roomCode) {
+    document.getElementById('adminModal').innerHTML = `
+      <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+        <div class="modal">
+          <h3><i class="fas fa-envelope"></i> Send Message to Room ${esc(roomCode)}</h3>
+          <div class="form-group"><label>Message</label>
+            <textarea class="form-input" id="roomMsgText" placeholder="Message to broadcast…"></textarea>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="doSendRoomMessage('${esc(roomCode)}')"><i class="fas fa-paper-plane"></i> Send</button>
+          </div>
+        </div>
+      </div>`;
+  };
+
+  window.doSendRoomMessage = async function(roomCode) {
+    const msg = document.getElementById('roomMsgText').value.trim();
+    if (!msg) return;
+    try {
+      const data = await adminFetch(`/admin/chatrooms/${encodeURIComponent(roomCode)}/message`, 'POST', { message: msg });
+      toast(`Sent to ${data.recipients} user(s)`);
+      closeModal();
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+  };
+
+  window.doCloseRoom = async function(roomCode) {
+    if (!confirm(`Close room ${roomCode}? All users will be disconnected.`)) return;
+    try {
+      const data = await adminFetch(`/admin/chatrooms/${encodeURIComponent(roomCode)}`, 'DELETE');
+      toast(`Room ${roomCode} closed (${data.disconnected} disconnected)`);
+      loadChatrooms();
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+  };
+
+  window.viewChatHistory = async function(roomCode) {
+    document.getElementById('adminModal').innerHTML = `
+      <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+        <div class="modal" style="max-width:600px;max-height:80vh;display:flex;flex-direction:column">
+          <h3><i class="fas fa-history"></i> Chat History — ${esc(roomCode)}</h3>
+          <div class="chat-history-container" style="flex:1;overflow-y:auto;padding:12px 0">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+          <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Close</button></div>
+        </div>
+      </div>`;
+
+    try {
+      const data = await adminFetch(`/admin/chatrooms/${encodeURIComponent(roomCode)}/history`);
+      const msgs = data.messages || [];
+      const container = document.querySelector('.chat-history-container');
+      if (!msgs.length) {
+        container.innerHTML = '<div class="empty-state" style="padding:24px;text-align:center">No messages recorded for this room</div>';
+        return;
+      }
+      container.innerHTML = msgs.map(m => `
+        <div class="chat-history-msg${m.flagged ? ' chat-msg-flagged' : ''}">
+          <div class="chat-history-meta">
+            <strong>${esc(m.username)}</strong>
+            ${m.flagged ? '<span class="badge badge-danger">FLAGGED</span>' : ''}
+            <span>${fmtDate(m.timestamp)}</span>
+          </div>
+          <div class="chat-history-text">${esc(m.message)}</div>
+          ${m.flagged && m.flaggedWords && m.flaggedWords.length ? '<div class="chat-flag-words">Triggered: ' + m.flaggedWords.map(w => '<span class="badge badge-danger">' + esc(w) + '</span>').join(' ') + '</div>' : ''}
+        </div>
+      `).join('');
+      container.scrollTop = container.scrollHeight;
+    } catch (e) {
+      const container = document.querySelector('.chat-history-container');
+      if (container) container.innerHTML = `<div class="empty-state" style="padding:24px">Failed to load history: ${esc(e.message)}</div>`;
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // ANALYTICS
+  // ═══════════════════════════════════════════════════════════════
+
+  async function loadAnalytics() {
+    try {
+      const data = await adminFetch('/admin/analytics');
+      document.getElementById('analyticsStats').innerHTML = `
+        <div class="stat-card"><div class="stat-value">${data.totalUsers}</div><div class="stat-label">Total Users</div></div>
+        <div class="stat-card"><div class="stat-value">${data.active24h}</div><div class="stat-label">Active (24h)</div></div>
+        <div class="stat-card"><div class="stat-value">${data.active7d}</div><div class="stat-label">Active (7d)</div></div>
+        <div class="stat-card"><div class="stat-value">${data.active30d}</div><div class="stat-label">Active (30d)</div></div>
+        <div class="stat-card"><div class="stat-value">${data.newUsers7d}</div><div class="stat-label">New Users (7d)</div></div>
+        <div class="stat-card"><div class="stat-value">${data.newUsers30d}</div><div class="stat-label">New Users (30d)</div></div>
+        <div class="stat-card"><div class="stat-value">${data.activeRooms}</div><div class="stat-label">Active Rooms</div></div>
+        <div class="stat-card"><div class="stat-value">${data.activeConnections}</div><div class="stat-label">Chat Connections</div></div>
+      `;
+
+      // Registration chart
+      const regDays = data.registrationsByDay || {};
+      const sortedDays = Object.keys(regDays).sort();
+      const maxReg = Math.max(1, ...Object.values(regDays));
+      let chartHtml = '<div class="bar-chart">';
+      sortedDays.forEach(day => {
+        const h = Math.max(2, (regDays[day] / maxReg) * 100);
+        chartHtml += `<div class="bar" style="height:${h}%"><div class="bar-tooltip">${day}: ${regDays[day]}</div></div>`;
+      });
+      chartHtml += '</div><div class="chart-labels"><span>' + (sortedDays[0] || '') + '</span><span>' + (sortedDays[sortedDays.length-1] || '') + '</span></div>';
+      document.getElementById('regChart').innerHTML = chartHtml;
+
+      // Top games
+      const games = data.topGames || [];
+      const gamesCountEl = document.getElementById('gamesCount');
+      if (gamesCountEl) gamesCountEl.textContent = `${games.length} game${games.length !== 1 ? 's' : ''}`;
+      document.getElementById('topGamesBody').innerHTML = games.length
+        ? games.map((g, i) => `<tr><td class="meta-count">${i + 1}</td><td>${esc(g.gameId)}</td><td>${g.views.toLocaleString()}</td><td>${g.likes.toLocaleString()}</td><td>${g.dislikes.toLocaleString()}</td></tr>`).join('')
+        : '<tr><td colspan="5" class="empty-state">No game data</td></tr>';
+    } catch (e) {
+      document.getElementById('analyticsStats').innerHTML = `<div class="empty-state">Error: ${esc(e.message)}</div>`;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // ANNOUNCEMENTS
+  // ═══════════════════════════════════════════════════════════════
+
+  async function loadAnnouncements() {
+    try {
+      const data = await adminFetch('/admin/announcements');
+      const body = document.getElementById('announcementsBody');
+      if (!data.announcements.length) {
+        body.innerHTML = '<tr><td colspan="5" class="empty-state">No announcements</td></tr>';
+        return;
+      }
+      body.innerHTML = data.announcements.map(a => {
+        const now = Date.now();
+        const expired = a.expiresAt && a.expiresAt > 0 && a.expiresAt < now;
+        const status = !a.active ? '<span class="badge badge-muted">Inactive</span>'
+          : expired ? '<span class="badge badge-warning">Expired</span>'
+          : '<span class="badge badge-success">Active</span>';
+        return `<tr>
+          <td><strong>${esc(a.title)}</strong><br><small style="color:var(--admin-muted)">${esc(a.message).substring(0,80)}</small></td>
+          <td>${status}</td>
+          <td>${fmtDate(a.createdAt)}</td>
+          <td>${a.expiresAt && a.expiresAt > 0 ? fmtDate(a.expiresAt) : 'Never'}</td>
+          <td class="btn-group">
+            <button class="btn btn-outline btn-sm" onclick="showAnnouncementForm('${esc(a.id)}','${esc(a.title).replace(/'/g,"\\'")}','${esc(a.message).replace(/'/g,"\\'")}',${a.active !== false},${a.expiresAt || 0})"><i class="fas fa-edit"></i></button>
+            <button class="btn ${a.active !== false ? 'btn-outline' : 'btn-success'} btn-sm" onclick="toggleAnnouncement('${esc(a.id)}',${a.active === false})">
+              <i class="fas fa-${a.active !== false ? 'eye-slash' : 'eye'}"></i>
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="doDeleteAnnouncement('${esc(a.id)}')"><i class="fas fa-trash"></i></button>
+          </td></tr>`;
+      }).join('');
+    } catch (e) {
+      document.getElementById('announcementsBody').innerHTML = `<tr><td colspan="5" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
+    }
+  }
+
+  window.showAnnouncementForm = function(id, title, message, active, expiresAt) {
+    const isEdit = !!id;
+    document.getElementById('adminModal').innerHTML = `
+      <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+        <div class="modal">
+          <h3><i class="fas fa-bullhorn"></i> ${isEdit ? 'Edit' : 'New'} Announcement</h3>
+          <div class="form-group"><label>Title</label>
+            <input type="text" class="form-input" id="annTitle" value="${esc(title || '')}" />
+          </div>
+          <div class="form-group"><label>Message</label>
+            <textarea class="form-input" id="annMessage">${esc(message || '')}</textarea>
+          </div>
+          <div class="form-group"><label>Expires (leave empty for no expiry)</label>
+            <input type="datetime-local" class="form-input" id="annExpires" value="${expiresAt && expiresAt > 0 ? new Date(expiresAt).toISOString().slice(0,16) : ''}" />
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="doSaveAnnouncement('${esc(id || '')}')"><i class="fas fa-save"></i> Save</button>
+          </div>
+        </div>
+      </div>`;
+  };
+
+  window.doSaveAnnouncement = async function(id) {
+    const title = document.getElementById('annTitle').value.trim();
+    const message = document.getElementById('annMessage').value.trim();
+    const expiresInput = document.getElementById('annExpires').value;
+    const expiresAt = expiresInput ? new Date(expiresInput).getTime() : 0;
+    if (!title || !message) { toast('Title and message are required', 'error'); return; }
+
+    try {
+      if (id) {
+        await adminFetch(`/admin/announcements/${id}`, 'PUT', { title, message, expiresAt });
+      } else {
+        await adminFetch('/admin/announcements', 'POST', { title, message, expiresAt });
+      }
+      toast(id ? 'Announcement updated' : 'Announcement created');
+      closeModal();
+      loadAnnouncements();
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+  };
+
+  window.toggleAnnouncement = async function(id, activate) {
+    try {
+      await adminFetch(`/admin/announcements/${id}`, 'PUT', { active: activate });
+      toast(activate ? 'Announcement activated' : 'Announcement deactivated');
+      loadAnnouncements();
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+  };
+
+  window.doDeleteAnnouncement = async function(id) {
+    if (!confirm('Delete this announcement?')) return;
+    try {
+      await adminFetch(`/admin/announcements/${id}`, 'DELETE');
+      toast('Announcement deleted');
+      loadAnnouncements();
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // SITE SETTINGS
+  // ═══════════════════════════════════════════════════════════════
+
+  async function loadSettings() {
+    try {
+      const data = await adminFetch('/admin/settings');
+      const s = data.settings || {};
+      const container = document.getElementById('settingsContainer');
+      container.innerHTML = `
+        <div class="setting-row">
+          <div class="setting-info"><h3>Maintenance Mode</h3><p>Block non-admin users from accessing the site</p></div>
+          <label class="toggle"><input type="checkbox" ${s.maintenanceMode === 'true' ? 'checked' : ''} onchange="updateSetting('maintenanceMode', this.checked ? 'true' : 'false')">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><h3>User Registration</h3><p>Allow new users to register accounts</p></div>
+          <label class="toggle"><input type="checkbox" ${s.registrationEnabled !== 'false' ? 'checked' : ''} onchange="updateSetting('registrationEnabled', this.checked ? 'true' : 'false')">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><h3>Max Chatroom Users</h3><p>Maximum users per chatroom</p></div>
+          <div class="setting-control">
+            <input type="number" class="form-input setting-input-sm" id="maxChatUsers" value="${esc(s.maxChatroomUsers || '50')}" min="2" max="200" />
+            <button class="btn btn-primary btn-sm" onclick="updateSetting('maxChatroomUsers', document.getElementById('maxChatUsers').value)">Save</button>
+          </div>
+        </div>
+        <div class="setting-row setting-row-stacked">
+          <div class="setting-info"><h3>Feature Flags</h3><p>Toggle features on/off (JSON format)</p></div>
+          <div class="setting-control setting-control-wide">
+            <textarea class="form-input setting-textarea" id="featureFlagsInput">${esc(s.featureFlags || '{}')}</textarea>
+            <button class="btn btn-primary btn-sm" onclick="updateSetting('featureFlags', document.getElementById('featureFlagsInput').value)">Save</button>
+          </div>
+        </div>
+      `;
+    } catch (e) {
+      document.getElementById('settingsContainer').innerHTML = `<div class="empty-state">Error: ${esc(e.message)}</div>`;
+    }
+  }
+
+  window.updateSetting = async function(key, value) {
+    try {
+      await adminFetch(`/admin/settings/${key}`, 'PUT', { value });
+      toast(`${key} updated`);
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // AUDIT LOG
+  // ═══════════════════════════════════════════════════════════════
+
+  async function loadAuditLog() {
+    const action = document.getElementById('auditAction').value;
+    const target = document.getElementById('auditTarget').value.trim();
+    let url = '/admin/audit-log?limit=100';
+    if (action) url += '&action=' + encodeURIComponent(action);
+    if (target) url += '&target=' + encodeURIComponent(target);
+
+    try {
+      const data = await adminFetch(url);
+      const body = document.getElementById('auditBody');
+      const entries = data.entries || [];
+      if (!entries.length) {
+        body.innerHTML = '<tr><td colspan="5" class="empty-state">No audit log entries</td></tr>';
+        return;
+      }
+      body.innerHTML = entries.map(e => `
+        <tr>
+          <td>${fmtDate(e.timestamp)}</td>
+          <td>${esc(e.adminUsername)}</td>
+          <td><span class="badge badge-muted">${esc(e.action)}</span></td>
+          <td>${esc(e.targetUsername)}</td>
+          <td class="audit-details" title="${esc(e.details)}">${esc(e.details)}</td>
+        </tr>`).join('');
+    } catch (e) {
+      document.getElementById('auditBody').innerHTML = `<tr><td colspan="5" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
+    }
+  }
+  window.loadAuditLog = loadAuditLog;
+
+  // ═════════════════════════════════════════════════════════════════
+  // MODERATION (Flagged Words + Flagged Messages)
+  // ═════════════════════════════════════════════════════════════════
+
+  async function loadModeration() {
+    await Promise.all([loadFlaggedWords(), loadFlaggedMessages()]);
+  }
+
+  async function loadFlaggedWords() {
+    try {
+      const data = await adminFetch('/admin/flagged-words');
+      const container = document.getElementById('flaggedWordsList');
+      const words = data.words || [];
+      if (!words.length) {
+        container.innerHTML = '<div class="empty-state">No flagged words configured</div>';
+        return;
+      }
+      container.innerHTML = words.map(w => `
+        <div class="flagged-word-chip">
+          <span>${esc(w.word)}</span>
+          <button class="chip-remove" onclick="doRemoveFlaggedWord('${esc(w.word)}')" title="Remove">&times;</button>
+        </div>
+      `).join('');
+    } catch (e) {
+      document.getElementById('flaggedWordsList').innerHTML = `<div class="empty-state">Error: ${esc(e.message)}</div>`;
+    }
+  }
+
+  window.doAddFlaggedWord = async function() {
+    const input = document.getElementById('newFlaggedWord');
+    const word = input.value.trim();
+    if (!word) return;
+    try {
+      await adminFetch('/admin/flagged-words', 'POST', { word });
+      input.value = '';
+      toast(`"${word}" added to flagged words`);
+      loadFlaggedWords();
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+  };
+
+  window.doRemoveFlaggedWord = async function(word) {
+    if (!confirm(`Remove "${word}" from flagged words?`)) return;
+    try {
+      await adminFetch(`/admin/flagged-words/${encodeURIComponent(word)}`, 'DELETE');
+      toast(`"${word}" removed`);
+      loadFlaggedWords();
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+  };
+
+  async function loadFlaggedMessages() {
+    try {
+      const data = await adminFetch('/admin/flagged-messages?limit=100');
+      const body = document.getElementById('flaggedMessagesBody');
+      const msgs = data.messages || [];
+      if (!msgs.length) {
+        body.innerHTML = '<tr><td colspan="5" class="empty-state">No flagged messages</td></tr>';
+        return;
+      }
+      body.innerHTML = msgs.map(m => `
+        <tr>
+          <td>${fmtDate(m.timestamp)}</td>
+          <td><strong>${esc(m.roomCode)}</strong></td>
+          <td>${esc(m.username)}</td>
+          <td class="audit-details" title="${esc(m.message)}">${esc(m.message)}</td>
+          <td>${(m.flaggedWords || []).map(w => '<span class="badge badge-danger">' + esc(w) + '</span>').join(' ')}</td>
+        </tr>`).join('');
+    } catch (e) {
+      document.getElementById('flaggedMessagesBody').innerHTML = `<tr><td colspan="5" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
+    }
+  }
+  window.loadFlaggedMessages = loadFlaggedMessages;
+
+  document.getElementById('newFlaggedWord')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') doAddFlaggedWord();
+  });
+
+  window.lookupChatHistory = function() {
+    const code = document.getElementById('historyRoomCode').value.trim();
+    if (!code) return;
+    viewChatHistory(code);
+  };
+
+  document.getElementById('historyRoomCode')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') lookupChatHistory();
+  });
+
+  // ─── Modal close ───
+
+  window.closeModal = function() {
+    document.getElementById('adminModal').innerHTML = '';
+    document.body.style.overflow = '';
+  };
+
+  // Lock body scroll when a modal is open
+  new MutationObserver(() => {
+    const hasModal = document.getElementById('adminModal').children.length > 0;
+    document.body.style.overflow = hasModal ? 'hidden' : '';
+  }).observe(document.getElementById('adminModal'), { childList: true });
+
+  // ─── Search on enter ───
+
+  document.getElementById('userSearch')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') searchUsers();
+  });
+
+  // ─── Init ───
+
+  init();
+
+})();
+</script>
+
+</body>
+</html>

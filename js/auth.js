@@ -21,6 +21,7 @@
   let currentSession = null;
   let syncTimer = null;
   let authListeners = [];
+  let authResolved = false; // true once initial auto-login attempt has settled
 
   const CREDENTIALS_KEY = 'nexora.auth.credentials';
 
@@ -33,11 +34,14 @@
     // Try to auto-login with saved credentials
     const savedCreds = getSavedCredentials();
     if (savedCreds) {
-      console.log('[NexoraAuth] Found saved credentials for:', savedCreds.username);
-      // Auto-login silently
-      autoLogin(savedCreds.username, savedCreds.password);
+      console.log('[NexoraAuth] Found saved session for:', savedCreds.username);
+      autoRefresh(savedCreds.username, savedCreds.token).finally(() => {
+        authResolved = true;
+        notifyListeners();
+      });
     } else {
       console.log('[NexoraAuth] No saved credentials found');
+      authResolved = true;
       notifyListeners();
     }
     
@@ -45,7 +49,7 @@
   }
 
   /**
-   * Get saved credentials from localStorage
+   * Get saved session token from localStorage
    */
   function getSavedCredentials() {
     try {
@@ -60,12 +64,11 @@
   }
 
   /**
-   * Save credentials to localStorage
+   * Save session token to localStorage (no password stored)
    */
-  function saveCredentials(username, password) {
+  function saveCredentials(username, token) {
     try {
-      localStorage.setItem(CREDENTIALS_KEY, JSON.stringify({ username, password }));
-      console.log('[NexoraAuth] Credentials saved for:', username);
+      localStorage.setItem(CREDENTIALS_KEY, JSON.stringify({ username, token }));
     } catch (e) {
       console.error('[NexoraAuth] Failed to save credentials:', e);
     }
@@ -79,27 +82,74 @@
   }
 
   /**
-   * Auto-login with saved credentials (silent, no reload)
+   * Auto-refresh session using stored token (no password needed)
    */
-  async function autoLogin(username, password) {
+  async function autoRefresh(username, token) {
+    if (!token) {
+      // Old localStorage format had {username, password} — migrate by logging in with the password.
+      const creds = getSavedCredentials();
+      if (creds && creds.password) {
+        console.log('[NexoraAuth] Migrating old credential format for:', username);
+        try {
+          const result = await apiRequest('/auth/login', 'POST', { username: creds.username, password: creds.password });
+          if (result.success) {
+            saveCredentials(result.username, result.token);
+            currentSession = {
+              username: result.username,
+              displayName: result.displayName,
+              token: result.token,
+              isAdmin: result.isAdmin || false
+            };
+            console.log('[NexoraAuth] Migrated to token-only session for:', result.username);
+            startAutoSync();
+          } else {
+            clearCredentials();
+            currentSession = null;
+          }
+        } catch (e) {
+          console.error('[NexoraAuth] Migration login failed:', e);
+          clearCredentials();
+          currentSession = null;
+        }
+      } else {
+        clearCredentials();
+        currentSession = null;
+      }
+      return;
+    }
     try {
-      const result = await apiRequest('/auth/login', 'POST', { username, password });
+      const result = await apiRequest('/auth/refresh', 'POST', { username, token });
       if (result.success) {
+        // Check ban status silently
+        try {
+          const banCheck = await checkBanStatus(username);
+          if (banCheck && banCheck.banned && banCheck.type !== 'mute') {
+            console.warn('[NexoraAuth] User is banned, clearing session');
+            clearCredentials();
+            currentSession = null;
+            return;
+          }
+        } catch (_) { /* proceed if ban check fails */ }
+
+        // Store the new token (old one is invalidated)
+        saveCredentials(result.username, result.token);
         currentSession = {
           username: result.username,
           displayName: result.displayName,
-          token: result.token
+          token: result.token,
+          isAdmin: result.isAdmin || false
         };
-        console.log('[NexoraAuth] Auto-login successful for:', username);
-        notifyListeners();
+        console.log('[NexoraAuth] Session refreshed for:', username);
         startAutoSync();
+      } else {
+        // Token rejected (expired or invalid)
+        clearCredentials();
+        currentSession = null;
       }
     } catch (e) {
-      console.error('[NexoraAuth] Auto-login failed:', e);
-      // Credentials might be wrong, clear them
+      console.error('[NexoraAuth] Auto-refresh failed:', e);
       clearCredentials();
       currentSession = null;
-      notifyListeners();
     }
   }
 
@@ -140,10 +190,9 @@
    */
   function handleStorageChange(e) {
     if (e.key === CREDENTIALS_KEY) {
-      // Credentials changed in another tab, reload to re-check
       const creds = getSavedCredentials();
-      if (creds) {
-        autoLogin(creds.username, creds.password);
+      if (creds && creds.token) {
+        autoRefresh(creds.username, creds.token);
       } else {
         currentSession = null;
         notifyListeners();
@@ -156,8 +205,8 @@
    */
   function onAuthChange(callback) {
     authListeners.push(callback);
-    // Call immediately with current state
-    callback(currentSession);
+    // Only call immediately if auth has already resolved
+    if (authResolved) callback(currentSession);
     return () => {
       authListeners = authListeners.filter(cb => cb !== callback);
     };
@@ -202,13 +251,14 @@
   async function register(username, password, reloadAfterRegister = false) {
     const result = await apiRequest('/auth/register', 'POST', { username, password });
     if (result.success) {
-      // Save credentials for auto-login
-      saveCredentials(username, password);
+      // Save token for auto-refresh (no password stored)
+      saveCredentials(result.username, result.token);
       
       currentSession = {
         username: result.username,
         displayName: result.displayName,
-        token: result.token
+        token: result.token,
+        isAdmin: result.isAdmin || false
       };
       notifyListeners();
       
@@ -232,13 +282,30 @@
   async function login(username, password, reloadAfterLogin = true) {
     const result = await apiRequest('/auth/login', 'POST', { username, password });
     if (result.success) {
-      // Save credentials for auto-login next time
-      saveCredentials(username, password);
+      // Check if user is banned before completing login
+      try {
+        const banCheck = await checkBanStatus(username);
+        if (banCheck && banCheck.banned) {
+          const reason = banCheck.reason || 'No reason given';
+          const expires = banCheck.expiresAt
+            ? 'Expires: ' + new Date(banCheck.expiresAt).toLocaleString()
+            : 'Permanent';
+          throw new Error(`Your account is ${banCheck.type === 'mute' ? 'muted' : 'banned'}. Reason: ${reason} (${expires})`);
+        }
+      } catch (banErr) {
+        if (banErr.message.includes('banned') || banErr.message.includes('muted')) throw banErr;
+        // If ban check fails (network issue), allow login to proceed
+        console.warn('[NexoraAuth] Ban check failed, proceeding:', banErr.message);
+      }
+
+      // Save token for auto-refresh (no password stored)
+      saveCredentials(username, result.token);
       
       currentSession = {
         username: result.username,
         displayName: result.displayName,
-        token: result.token
+        token: result.token,
+        isAdmin: result.isAdmin || false
       };
       notifyListeners();
       
@@ -256,6 +323,17 @@
       }
     }
     return result;
+  }
+
+  /**
+   * Check if a user is banned via admin API
+   */
+  async function checkBanStatus(username) {
+    const adminApi = (typeof _CONFIG !== 'undefined' && _CONFIG.adminApiUrl) || '';
+    if (!adminApi) return null;
+    const resp = await fetch(`${adminApi}/bans/check?username=${encodeURIComponent(username)}`);
+    if (!resp.ok) return null;
+    return resp.json();
   }
 
   /**
@@ -317,8 +395,8 @@
     });
 
     if (result.success) {
-      // Update saved credentials with new password
-      saveCredentials(currentSession.username, newPassword);
+      // Update stored token
+      saveCredentials(currentSession.username, result.token);
       
       currentSession = {
         ...currentSession,
@@ -335,9 +413,6 @@
   async function changeUsername(newUsername) {
     if (!currentSession) throw new Error('Not logged in');
     
-    // Get current password from saved credentials
-    const savedCreds = getSavedCredentials();
-    
     const result = await apiRequest('/auth/username', 'PUT', {
       username: currentSession.username,
       token: currentSession.token,
@@ -345,15 +420,14 @@
     });
 
     if (result.success) {
-      // Update saved credentials with new username
-      if (savedCreds) {
-        saveCredentials(newUsername, savedCreds.password);
-      }
+      // Update stored credentials with new username + new token
+      saveCredentials(result.username, result.token);
       
       currentSession = {
         username: result.username,
         displayName: result.displayName,
-        token: result.token
+        token: result.token,
+        isAdmin: currentSession.isAdmin
       };
       notifyListeners();
     }
@@ -559,9 +633,34 @@
     }
   });
 
+  /**
+   * Check if current user is an admin
+   */
+  function isAdmin() {
+    return currentSession?.isAdmin === true;
+  }
+
+  /**
+   * Toggle admin sidebar link visibility
+   */
+  function updateAdminLink() {
+    const link = document.querySelector('.admin-link');
+    if (link) link.style.display = isAdmin() ? '' : 'none';
+  }
+
+  // Update admin link on every auth state change
+  authListeners.push(updateAdminLink);
+  // Also try on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateAdminLink);
+  } else {
+    updateAdminLink();
+  }
+
   // Export to window
   window.NexoraAuth = {
     _initialized: true,
+    get authResolved() { return authResolved; },
     register,
     login,
     logout,
@@ -569,6 +668,7 @@
     changeUsername,
     getSession,
     isLoggedIn,
+    isAdmin,
     onAuthChange,
     saveCloudData,
     loadCloudData,
