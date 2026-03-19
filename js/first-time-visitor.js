@@ -122,10 +122,9 @@
 
     const header = document.createElement('div');
     header.innerHTML = `
-      <h2>Welcome to Nexora!</h2>
+      <h2>Pick your disguise</h2>
       <p class="subtitle">
-        For your privacy, choose a disguise to make this site look like an educational platform. 
-        You can change this anytime in Settings.
+        This changes what your browser tab looks like. Pick something that blends in so nobody knows what you're actually doing.
       </p>
     `;
 
@@ -165,7 +164,7 @@
 
     const continueBtn = document.createElement('button');
     continueBtn.className = 'btn-continue';
-    continueBtn.textContent = 'Continue';
+    continueBtn.textContent = "Let's go";
     continueBtn.disabled = true;
     continueBtn.addEventListener('click', handleContinue);
 
@@ -250,9 +249,9 @@
 
     const header = document.createElement('div');
     header.innerHTML = `
-      <h2>About:Blank 🔒</h2>
+      <h2>Hide your screen and history?</h2>
       <p class="subtitle">
-        Prevents others from seeing your screen and hides this site from browser history.
+        When this is on, Nexora opens hidden inside a blank tab. Your browser history stays clean and nobody sees it on your screen.
       </p>
     `;
 
@@ -264,11 +263,10 @@
     enableOption.dataset.value = 'enabled';
     enableOption.innerHTML = `
       <div class="option-header">
-        <div class="icon-wrapper">🛡️</div>
-        <h3 class="option-title">Enable Cloaking</h3>
+        <h3 class="option-title">Yes, hide it <span style="font-size:11px;font-weight:500;opacity:0.6;margin-left:6px;">recommended</span></h3>
       </div>
       <p class="option-description">
-        Opens in about:blank window. People won't see your screen and it hides from search history.
+        Opens inside a hidden blank tab. Your browser history stays clean and nobody sees it on your screen.
       </p>
       <div class="checkmark-radio"></div>
     `;
@@ -278,11 +276,10 @@
     disableOption.dataset.value = 'disabled';
     disableOption.innerHTML = `
       <div class="option-header">
-        <div class="icon-wrapper">🌐</div>
-        <h3 class="option-title">No Cloaking</h3>
+        <h3 class="option-title">Nah, skip it</h3>
       </div>
-      <p class="option-description">
-        Use the site normally without about:blank cloaking. You can always enable this later in Settings.
+      <p class="option-description" style="color: #f87171; font-weight: 600;">
+        Your screen is visible &amp; this site will appear in your browser history.
       </p>
       <div class="checkmark-radio"></div>
     `;
@@ -407,9 +404,9 @@
 
     const header = document.createElement('div');
     header.innerHTML = `
-      <h2>Panic Button ⚡</h2>
+      <h2>Set a panic key</h2>
       <p class="subtitle">
-        Set a keybind to instantly redirect to a safe URL when someone approaches. Optional but recommended.
+        Someone heading over? Press a hotkey and you instantly switch to a safe page — in under a second. You can skip this.
       </p>
     `;
 
@@ -420,12 +417,12 @@
     const keyInputWrapper = document.createElement('div');
     keyInputWrapper.innerHTML = `
       <label style="display: block; margin-bottom: 8px; font-size: 14px; color: var(--muted, #9e8c80); font-weight: 500;">
-        Keybind
+        Your hotkey — click the box, then press any key combo
       </label>
       <input 
         id="panic-key-input-modal" 
         type="text" 
-        placeholder="Click and press a key combination" 
+        placeholder="e.g. Ctrl + Q" 
         readonly
         style="width: 100%; padding: 12px 16px; border-radius: 10px; background: var(--surface-2, #261813); border: 1px solid rgba(255,255,255,0.08); color: var(--text, #f5f0ed); font-size: 15px; cursor: pointer; transition: border-color 0.2s ease;"
       />
@@ -434,7 +431,7 @@
     const urlInputWrapper = document.createElement('div');
     urlInputWrapper.innerHTML = `
       <label style="display: block; margin-bottom: 8px; font-size: 14px; color: var(--muted, #9e8c80); font-weight: 500;">
-        Redirect URL
+        Where to send you — paste any URL
       </label>
       <input 
         id="panic-url-input-modal" 
@@ -595,9 +592,9 @@
 
     const header = document.createElement('div');
     header.innerHTML = `
-      <h2>Cookie & Storage Preferences 🍪</h2>
+      <h2>Save your stuff?</h2>
       <p class="subtitle">
-        Choose how you want to use this site. Cookies and localStorage help us save your preferences and progress.
+        We need your OK to remember things like your settings, disguise, and game progress. Takes one second.
       </p>
     `;
 
@@ -609,17 +606,16 @@
     acceptOption.dataset.value = 'accept';
     acceptOption.innerHTML = `
       <div class="option-header">
-        <div class="icon-wrapper">✓</div>
-        <h3 class="option-title">Accept Cookies</h3>
+        <h3 class="option-title">Yes, save my stuff</h3>
       </div>
       <p class="option-description">
-        Enable full functionality with saved preferences, game progress, and settings.
+        Everything works. Your settings, disguise, and progress all get remembered between visits.
       </p>
       <ul class="consequences-list">
-        <li>✓ Save your game progress and favorites</li>
-        <li>✓ Remember your theme and settings</li>
-        <li>✓ Keep your disguise preferences</li>
-        <li>✓ Full site functionality</li>
+        <li>✓ Your disguise sticks every visit</li>
+        <li>✓ Game progress actually saves</li>
+        <li>✓ Settings don't reset</li>
+        <li>✓ Full site works properly</li>
       </ul>
       <div class="checkmark-radio"></div>
     `;
@@ -629,19 +625,18 @@
     declineOption.dataset.value = 'decline';
     declineOption.innerHTML = `
       <div class="option-header">
-        <div class="icon-wrapper">⚠️</div>
-        <h3 class="option-title">Decline Cookies</h3>
+        <h3 class="option-title">No thanks</h3>
       </div>
       <p class="option-description">
-        Use the site with limited functionality. Some features will not work properly.
+        Nothing gets saved. You'll have to redo your settings every single visit. Kind of annoying.
       </p>
       <ul class="consequences-list">
-        <li>✗ Game progress will NOT be saved</li>
-        <li>✗ Settings reset every visit</li>
-        <li>✗ Disguise preferences not saved</li>
-        <li>✗ Limited functionality</li>
+        <li>✗ Game progress won't save</li>
+        <li>✗ Settings reset every time</li>
+        <li>✗ Disguise resets every time</li>
+        <li>✗ Some features won't work</li>
       </ul>
-      <span class="warning-badge">⚠ Limited Experience</span>
+      <span class="warning-badge">Not recommended</span>
       <div class="checkmark-radio"></div>
     `;
 
@@ -664,7 +659,7 @@
 
     const continueBtn = document.createElement('button');
     continueBtn.className = 'btn-continue';
-    continueBtn.textContent = 'Finish Setup';
+    continueBtn.textContent = 'Done';
     continueBtn.disabled = true;
     continueBtn.addEventListener('click', handleCookieConsentContinue);
 
@@ -785,7 +780,6 @@
     loginOption.className = 'welcome-option';
     loginOption.innerHTML = `
       <div class="option-header">
-        <div class="icon-wrapper">👤</div>
         <h3 class="option-title">Log In</h3>
       </div>
       <p class="option-description">
@@ -797,7 +791,6 @@
     newSetupOption.className = 'welcome-option';
     newSetupOption.innerHTML = `
       <div class="option-header">
-        <div class="icon-wrapper">✨</div>
         <h3 class="option-title">New Setup</h3>
       </div>
       <p class="option-description">
@@ -971,7 +964,7 @@
 
     const header = document.createElement('div');
     header.innerHTML = `
-      <h2>Save Your Progress 🔐</h2>
+      <h2>Save Your Progress</h2>
       <p class="subtitle">
         ${isAfterSetup 
           ? 'Create an account to save your settings and sync them across all your devices.' 

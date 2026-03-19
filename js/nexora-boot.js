@@ -137,8 +137,8 @@
         }
       </style>
       <div class="big-emoji">🚫</div>
-      <h3>Pop-ups Are Blocked!</h3>
-      <p>Click the icon in your address bar ☝️<br>then allow pop-ups</p>
+      <h3>⚠ Hide mode is blocked!</h3>
+      <p>Your screen is <strong>visible</strong> right now.<br>Click the icon in your address bar, then <strong>allow pop-ups</strong> to fix it.</p>
     `;
 
     document.body.appendChild(notification);

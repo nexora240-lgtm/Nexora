@@ -479,19 +479,7 @@
   margin-bottom: 0.3rem;
 }
 
-.cloaking-option .icon-wrapper {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: var(--accent-gradient, linear-gradient(90deg, rgba(255,77,0,1), rgba(255,106,0,1)));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  color: var(--on-primary, #fff0e8);
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px var(--primary-shadow, rgba(212,85,10,0.55));
-}
+
 
 .cloaking-option .option-title {
   font-size: 15px;
@@ -505,7 +493,6 @@
   font-size: 12px;
   line-height: 1.4;
   margin: 0;
-  padding-left: 40px;
 }
 
 .cloaking-option .checkmark-radio {
@@ -691,19 +678,7 @@
   margin-bottom: 0.35rem;
 }
 
-.cookie-option .icon-wrapper {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: var(--accent-gradient, linear-gradient(90deg, rgba(255,77,0,1), rgba(255,106,0,1)));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  color: var(--on-primary, #fff0e8);
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px var(--primary-shadow, rgba(212,85,10,0.55));
-}
+
 
 .cookie-option .option-title {
   font-size: 15px;
@@ -717,7 +692,6 @@
   font-size: 13px;
   line-height: 1.5;
   margin: 0;
-  padding-left: 40px;
 }
 
 .cookie-option .consequences-list {
