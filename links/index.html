@@ -107,46 +107,26 @@
       const PER_PAGE = 10;
       const LINKS_API = 'https://2zpvhn3woh.execute-api.us-east-2.amazonaws.com/links';
 
-      // Flatten all non-resources links from static JSON
-      function flattenLinks(sections) {
-        const all = [];
-        sections.forEach(section => {
-          if (section.id === 'resources') return;
-          section.links.forEach(link => {
-            if (link.name === 'Coming Soon!') return;
-            all.push({ name: link.name, url: link.url });
-          });
-        });
-        return all;
-      }
-
-      // Fetch links — try API first, fall back to static JSON
+      // Fetch links from API
       async function loadLinks() {
         try {
-          // Try the live API
           const apiRes = await fetch(LINKS_API, { signal: AbortSignal.timeout(5000) });
           if (apiRes.ok) {
             const data = await apiRes.json();
             allLinks = (data.links || []).map(l => ({ name: l.name || l.domain, url: l.url }));
-          } else {
-            throw new Error('API returned ' + apiRes.status);
           }
-        } catch (apiErr) {
-          console.warn('Links API unavailable, falling back to static JSON:', apiErr.message);
-          try {
-            const res = await fetch('/links.json');
-            const data = await res.json();
-            allLinks = flattenLinks(data.sections);
-          } catch (jsonErr) {
-            console.error('Failed to load links:', jsonErr);
-            document.getElementById('links-content').innerHTML = `
-              <div class="no-results">
-                <i class="fas fa-exclamation-circle"></i>
-                <p>Failed to load links. Please try again later.</p>
-              </div>
-            `;
-            return;
+          if (!apiRes.ok || allLinks.length === 0) {
+            throw new Error('API returned empty or ' + apiRes.status);
           }
+        } catch (err) {
+          console.error('Failed to load links:', err);
+          document.getElementById('links-content').innerHTML = `
+            <div class="no-results">
+              <i class="fas fa-exclamation-circle"></i>
+              <p>No links available yet. Check back later!</p>
+            </div>
+          `;
+          return;
         }
 
         renderLinks();
@@ -164,7 +144,6 @@
 
       // Render current page
       function renderLinks() {
-        if (!allLinks.length) return;
         const filter = document.getElementById('search-input').value.toLowerCase().trim();
         const container = document.getElementById('links-content');
         const paginationEl = document.getElementById('links-pagination');
