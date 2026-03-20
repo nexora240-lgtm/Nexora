@@ -94,6 +94,24 @@
     </div>
   </div>
 
+  <!-- Links Info Modal -->
+  <div class="links-info-overlay" id="links-info-overlay">
+    <div class="links-info-modal">
+      <div class="links-info-icon"><i class="fas fa-globe"></i></div>
+      <h2>How This Works</h2>
+      <p>Any website that hosts <strong>Nexora files</strong> is automatically added to this directory. When you visit a Nexora-powered site for the first time, it registers itself here.</p>
+      <div class="links-info-divider"></div>
+      <div class="links-info-heartbeat">
+        <i class="fas fa-heartbeat"></i>
+        <div>
+          <strong>Heartbeat System</strong>
+          <span>Every 6 hours, Nexora checks every link in this list. If a site goes offline or removes Nexora files, it gets automatically removed from the directory.</span>
+        </div>
+      </div>
+      <button class="links-info-ok" id="links-info-ok">Got it</button>
+    </div>
+  </div>
+
   <div class="copy-toast" id="copy-toast">
     <i class="fas fa-check-circle"></i>
     <span>Link copied to clipboard!</span>
@@ -113,7 +131,7 @@
           const apiRes = await fetch(LINKS_API, { signal: AbortSignal.timeout(5000) });
           if (apiRes.ok) {
             const data = await apiRes.json();
-            allLinks = (data.links || []).map(l => ({ name: l.name || l.domain, url: l.url }));
+            allLinks = (data.links || []).map(l => ({ name: l.name || l.domain, url: l.url, badge: l.badge || null }));
           }
           if (!apiRes.ok || allLinks.length === 0) {
             throw new Error('API returned empty or ' + apiRes.status);
@@ -182,10 +200,13 @@
         let html = '<div class="world-list">';
         pageLinks.forEach(link => {
           const domain = getMainDomain(link.url);
+          let badgeHtml = '';
+          if (link.badge === 'verified') badgeHtml = '<span class="link-badge link-badge-verified" title="Verified"><i class="fas fa-check-circle"></i></span>';
+          else if (link.badge === 'official') badgeHtml = '<span class="link-badge link-badge-official" title="Official"><i class="fas fa-certificate"></i></span>';
           html += `
             <div class="world-item">
               <div class="world-meta">
-                <span class="world-domain">${escapeHtml(domain)}</span>
+                <span class="world-domain">${escapeHtml(domain)}${badgeHtml}</span>
                 <span class="world-label">${escapeHtml(link.name)}</span>
               </div>
               <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="world-open-btn">
@@ -501,6 +522,11 @@
         }
       });
     })();
-  </script>
+    (function() {
+      const overlay = document.getElementById('links-info-overlay');
+      document.getElementById('links-info-ok').addEventListener('click', function() {
+        overlay.classList.add('links-info-hidden');
+      });
+    })();  </script>
 </body>
 </html>

@@ -38,6 +38,7 @@
           <button class="nav-btn" data-target="announcements" role="tab"><i class="fas fa-bullhorn"></i> Announcements</button>
           <button class="nav-btn" data-target="site-settings" role="tab"><i class="fas fa-sliders-h"></i> Settings</button>
           <button class="nav-btn" data-target="moderation" role="tab"><i class="fas fa-flag"></i> Moderation</button>
+          <button class="nav-btn" data-target="links-mgmt" role="tab"><i class="fas fa-globe"></i> Links</button>
           <button class="nav-btn" data-target="audit-log" role="tab"><i class="fas fa-clipboard-list"></i> Audit Log</button>
         </nav>
       </div>
@@ -167,6 +168,10 @@
                 <option value="UPDATE_SETTING">Update Setting</option>
                 <option value="ADD_FLAGGED_WORD">Add Flagged Word</option>
                 <option value="REMOVE_FLAGGED_WORD">Remove Flagged Word</option>
+                <option value="ADD_LINK">Add Link</option>
+                <option value="REMOVE_LINK">Remove Link</option>
+                <option value="SET_BADGE">Set Badge</option>
+                <option value="REMOVE_BADGE">Remove Badge</option>
               </select>
               <input type="text" class="form-input" id="auditTarget" placeholder="Target…" />
               <button class="btn btn-primary btn-sm" onclick="loadAuditLog()"><i class="fas fa-filter"></i> Filter</button>
@@ -183,6 +188,24 @@
 
       <!-- ═══ MODERATION ═══ -->
       <section id="moderation" class="panel" role="tabpanel">
+
+      <!-- ═══ LINKS MANAGEMENT ═══ -->
+      <section id="links-mgmt" class="panel" role="tabpanel">
+        <div class="panel-card">
+          <div class="section-header">
+            <h2>Links Directory</h2>
+            <span class="meta-count" id="linksCount"></span>
+            <div class="search-bar">
+              <button class="btn btn-primary btn-sm" onclick="showAddLinkForm()"><i class="fas fa-plus"></i> Add Link</button>
+              <button class="btn btn-outline btn-sm" onclick="loadAdminLinks()"><i class="fas fa-sync"></i> Refresh</button>
+            </div>
+          </div>
+          <div class="admin-table-wrap">
+            <table><thead><tr><th>URL</th><th>Domain</th><th>Badge</th><th>Added</th><th>Last Checked</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="adminLinksBody"><tr><td colspan="7" class="loading"><div class="spinner"></div></td></tr></tbody></table>
+          </div>
+        </div>
+      </section>
         <div class="panel-card">
           <div class="section-header">
             <h2>Flagged Words</h2>
@@ -262,6 +285,7 @@
         loadSettings();
         loadAuditLog();
         loadModeration();
+        loadAdminLinks();
       }
     }
 
@@ -323,6 +347,7 @@
         else if (t === 'announcements') loadAnnouncements();
         else if (t === 'site-settings') loadSettings();
         else if (t === 'moderation')    loadModeration();
+        else if (t === 'links-mgmt')    loadAdminLinks();
         else if (t === 'audit-log') loadAuditLog();
       });
     });
@@ -1048,6 +1073,128 @@
   document.getElementById('historyRoomCode')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') lookupChatHistory();
   });
+
+  // ═══════════════════════════════════════════════════════════════
+  // LINKS MANAGEMENT
+  // ═══════════════════════════════════════════════════════════════
+
+  const LINKS_API_BASE = (typeof _CONFIG !== 'undefined' && _CONFIG.adminApiUrl) || API;
+
+  async function loadAdminLinks() {
+    const body = document.getElementById('adminLinksBody');
+    body.innerHTML = '<tr><td colspan="7" class="loading"><div class="spinner"></div></td></tr>';
+    try {
+      const data = await adminFetch('/admin/links');
+      const links = data.links || [];
+      const countEl = document.getElementById('linksCount');
+      if (countEl) countEl.textContent = `${links.length} link${links.length !== 1 ? 's' : ''}`;
+
+      if (!links.length) {
+        body.innerHTML = '<tr><td colspan="7" class="empty-state">No links in directory</td></tr>';
+        return;
+      }
+      body.innerHTML = links.map(l => {
+        let badgeHtml = '—';
+        if (l.badge === 'verified') badgeHtml = '<span class="link-badge link-badge-verified"><i class="fas fa-check-circle"></i> Verified</span>';
+        else if (l.badge === 'official') badgeHtml = '<span class="link-badge link-badge-official"><i class="fas fa-certificate"></i> Official</span>';
+
+        const statusBadge = l.healthy === false
+          ? '<span class="badge badge-danger">Down</span>'
+          : '<span class="badge badge-success">Healthy</span>';
+
+        const domain = l.domain || l.name || '—';
+        return `<tr>
+          <td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(l.url)}">${esc(l.url)}</td>
+          <td><strong>${esc(domain)}</strong></td>
+          <td>${badgeHtml}</td>
+          <td>${fmtRelative(l.addedAt)}</td>
+          <td>${fmtRelative(l.lastChecked)}</td>
+          <td>${statusBadge}</td>
+          <td class="btn-group">
+            <button class="btn btn-outline btn-sm" onclick="showBadgeForm('${esc(l.url)}')" title="Set badge"><i class="fas fa-award"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="doRemoveLink('${esc(l.url)}')" title="Remove link"><i class="fas fa-trash"></i></button>
+          </td></tr>`;
+      }).join('');
+    } catch (e) {
+      body.innerHTML = `<tr><td colspan="7" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
+    }
+  }
+  window.loadAdminLinks = loadAdminLinks;
+
+  window.showAddLinkForm = function() {
+    document.getElementById('adminModal').innerHTML = `
+      <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+        <div class="modal">
+          <h3><i class="fas fa-plus-circle"></i> Add Link</h3>
+          <p style="font-size:13px;color:var(--admin-muted);margin:0 0 16px">Add a URL directly to the links directory. The system will verify it contains Nexora files.</p>
+          <div class="form-group"><label>URL</label>
+            <input type="text" class="form-input" id="addLinkUrl" placeholder="https://example.com" />
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="doAddLink()"><i class="fas fa-plus"></i> Add & Verify</button>
+          </div>
+        </div>
+      </div>`;
+  };
+
+  window.doAddLink = async function() {
+    const url = document.getElementById('addLinkUrl').value.trim();
+    if (!url) { toast('URL is required', 'error'); return; }
+    try {
+      await adminFetch('/admin/links', 'POST', { url });
+      toast('Link added successfully');
+      closeModal();
+      loadAdminLinks();
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+  };
+
+  window.doRemoveLink = async function(url) {
+    if (!confirm(`Remove ${url} from the directory?`)) return;
+    try {
+      await adminFetch('/admin/links/' + encodeURIComponent(url), 'DELETE');
+      toast('Link removed');
+      loadAdminLinks();
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+  };
+
+  window.showBadgeForm = function(url) {
+    document.getElementById('adminModal').innerHTML = `
+      <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+        <div class="modal">
+          <h3><i class="fas fa-award"></i> Set Badge</h3>
+          <p style="font-size:13px;color:var(--admin-muted);margin:0 0 16px">${esc(url)}</p>
+          <div class="form-group"><label>Badge Type</label>
+            <select class="form-input" id="badgeType">
+              <option value="">No Badge</option>
+              <option value="verified">✅ Verified (Green)</option>
+              <option value="official">🔵 Official (Blue)</option>
+            </select>
+          </div>
+          <div class="badge-preview" id="badgePreview" style="margin-bottom:16px"></div>
+          <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="doSetBadge('${esc(url)}')"><i class="fas fa-save"></i> Save</button>
+          </div>
+        </div>
+      </div>`;
+    document.getElementById('badgeType').addEventListener('change', function() {
+      const preview = document.getElementById('badgePreview');
+      if (this.value === 'verified') preview.innerHTML = '<span class="link-badge link-badge-verified"><i class="fas fa-check-circle"></i> Verified</span>';
+      else if (this.value === 'official') preview.innerHTML = '<span class="link-badge link-badge-official"><i class="fas fa-certificate"></i> Official</span>';
+      else preview.innerHTML = '';
+    });
+  };
+
+  window.doSetBadge = async function(url) {
+    const badge = document.getElementById('badgeType').value;
+    try {
+      await adminFetch('/admin/links/' + encodeURIComponent(url) + '/badge', 'PUT', { badge: badge || null });
+      toast(badge ? `Badge set to "${badge}"` : 'Badge removed');
+      closeModal();
+      loadAdminLinks();
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+  };
 
   // ─── Modal close ───
 
