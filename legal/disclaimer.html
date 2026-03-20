@@ -150,9 +150,12 @@
       margin-bottom: 1rem;
     }
 
-    ul {
+    ul, ol {
       margin: 1rem 0;
       padding-left: 2rem;
+    }
+
+    ul {
       list-style-type: disc;
     }
 
@@ -164,6 +167,18 @@
     strong {
       color: var(--text);
       font-weight: 600;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    a:hover {
+      color: var(--primary-deep);
+      border-bottom-color: var(--primary);
     }
 
     @keyframes fadeInUp {
@@ -197,62 +212,94 @@
     <div class="disclaimer-content">
 
     <section>
+      <h2>Effective Date</h2>
+      <p>This Disclaimer is effective as of March 20, 2026, and applies to all users of this website.</p>
+    </section>
+
+    <section>
       <h2>General Information</h2>
-      <p>The content and services provided on this website are offered for informational and entertainment purposes only. By accessing or using this website, you acknowledge and agree that you do so at your own risk. The website owner, administrators, and affiliates make no representations or warranties of any kind, express or implied, regarding the accuracy, reliability, availability, or completeness of any content or services provided.</p>
+      <p>This website is operated by The Nexora Project ("Nexora," "we," "us," or "our"). The content, tools, and services provided on this website are offered strictly for informational and entertainment purposes only. By accessing or using this website, you acknowledge and agree that you do so entirely at your own risk.</p>
+      <p>Nexora makes no representations or warranties of any kind, express or implied, regarding the accuracy, reliability, availability, suitability, or completeness of any content, software, or services provided through or accessible via this website. All content is provided on an "as is" and "as available" basis without warranty of any kind.</p>
     </section>
 
     <section>
       <h2>Limitation of Liability</h2>
-      <p>Under no circumstances shall the website owner, operators, or affiliates be held responsible or liable for any direct, indirect, incidental, consequential, or special damages arising from or related to the use of, or inability to use, this website. This includes but is not limited to damages resulting from loss of data, service interruptions, device damage, or any other technical or non-technical issues.</p>
-      <p>Users are solely responsible for how they access, use, or interact with the website and its content. The website owner assumes no responsibility for user behavior, including but not limited to actions taken based on information found on this site or the manner in which the site is accessed (e.g., on school, workplace, or restricted networks).</p>
+      <p>To the fullest extent permitted by applicable law, The Nexora Project, its owner, operators, contributors, and affiliates shall not be held responsible or liable for any direct, indirect, incidental, consequential, special, exemplary, or punitive damages arising from or related to your use of, or inability to use, this website or any content therein.</p>
+      <p>This limitation applies regardless of whether such damages arise from breach of contract, tort (including negligence), strict liability, or any other legal theory, and includes but is not limited to damages resulting from:</p>
+      <ul>
+        <li>Loss of data, revenue, profits, or business opportunity</li>
+        <li>Service interruptions, outages, or technical failures</li>
+        <li>Device damage, software corruption, or security vulnerabilities</li>
+        <li>Unauthorized access to or alteration of your transmissions or data</li>
+        <li>Reliance on any content or information obtained through this website</li>
+      </ul>
+      <p>Users are solely responsible for how they access, use, or interact with this website and its content. Nexora assumes no responsibility for user conduct, including but not limited to actions taken based on information found on this site or the manner in which the site is accessed (e.g., on school, workplace, or otherwise restricted networks).</p>
     </section>
 
     <section>
-      <h2>User Responsibility</h2>
-      <p>It is the responsibility of each user to ensure that their use of this website complies with all applicable local, state, federal, institutional, and international laws, rules, and policies. This includes, but is not limited to, rules enforced by schools, workplaces, internet service providers, or network administrators.</p>
-      <p>The website owner does not encourage or endorse bypassing network restrictions, content filters, or administrative policies. Any such actions are performed solely at the discretion and risk of the user.</p>
+      <h2>User Responsibility and Compliance</h2>
+      <p>It is the sole responsibility of each user to ensure that their use of this website complies with all applicable local, state, federal, institutional, and international laws, regulations, rules, and policies. This includes, without limitation, rules enforced by educational institutions, employers, internet service providers, or network administrators.</p>
+      <p>The Nexora Project does not encourage, endorse, or condone the bypassing of network restrictions, content filters, firewalls, or any administrative security policies. Any such actions are performed solely at the discretion and risk of the individual user, and Nexora disclaims all liability arising therefrom.</p>
     </section>
 
     <section>
       <h2>Third-Party Content and External Links</h2>
-      <p>This website may include links to third-party websites, services, or content. These are provided for convenience only. The website owner does not control, endorse, or assume responsibility for the content, policies, or practices of any third-party websites or services.</p>
+      <p>This website may contain links to, or content from, third-party websites, services, APIs, or platforms. Such content and links are provided solely for convenience and informational purposes. The Nexora Project does not control, endorse, warrant, or assume any responsibility for the content, accuracy, privacy policies, or practices of any third-party websites or services.</p>
+      <p>Your interaction with any third-party website or service is governed by that third party's own terms and policies. Nexora shall not be liable for any loss or damage arising from your use of or reliance on any third-party content.</p>
     </section>
 
     <section>
       <h2>Games and Interactive Content</h2>
-      <p>All games made available through this website are either:</p>
+      <p>Interactive content (including games) made available through this website is either:</p>
       <ul>
-        <li>Freely accessible web-based content, or</li>
-        <li>Embedded or linked content hosted on third-party platforms.</li>
+        <li>Freely accessible, open-source, or publicly available web-based content; or</li>
+        <li>Embedded or linked content provided by and hosted on third-party platforms and content providers.</li>
       </ul>
-      <p>The website does not claim ownership over third-party games unless explicitly stated. Any trademarks, logos, or copyrighted materials belong to their respective owners.</p>
+      <p>The Nexora Project does not claim ownership over any third-party games, applications, or interactive content unless explicitly stated. All trademarks, trade names, logos, and copyrighted materials are and remain the property of their respective owners. Any use of such materials on this website is for identification and reference purposes only.</p>
     </section>
 
     <section>
-      <h2>Movies and Media Information (TMDB Usage)</h2>
-      <p>This website may display movie-related information, including but not limited to titles, descriptions, posters, ratings, and metadata. Such information is provided through the use of The Movie Database (TMDB) API.</p>
+      <h2>Movies and Media Information</h2>
+      <p>This website may display movie-related information, including but not limited to titles, synopses, poster images, ratings, cast information, and other metadata. Such information is retrieved dynamically from The Movie Database (TMDB) API and other third-party data sources.</p>
       <ul>
-        <li>This website does not host, store, or distribute movie files.</li>
-        <li>All movie-related data is retrieved dynamically from third-party sources.</li>
-        <li>Any streaming or playback functionality, if present, is provided via external services not controlled or operated by this website.</li>
+        <li>This website does not host, store, distribute, or stream any movie files, video content, or copyrighted media.</li>
+        <li>All movie-related data is obtained from and remains the property of its respective sources and copyright holders.</li>
+        <li>Any streaming, playback, or media access functionality, if present, is provided exclusively via external third-party services not operated or controlled by Nexora.</li>
         <li>This product uses the TMDB API but is not endorsed or certified by TMDB.</li>
       </ul>
-      <p>All trademarks, images, and content related to movies remain the property of their respective copyright holders.</p>
     </section>
 
     <section>
-      <h2>Copyright and Fair Use</h2>
-      <p>The website respects intellectual property rights and makes reasonable efforts to comply with applicable copyright laws. If you believe that any content on this website infringes upon your copyright, please contact the website administrator with sufficient detail so the matter can be reviewed and addressed appropriately.</p>
+      <h2>Intellectual Property and Copyright</h2>
+      <p>The Nexora Project respects the intellectual property rights of others and makes reasonable efforts to comply with applicable copyright laws, including the Digital Millennium Copyright Act (DMCA). If you believe that any content accessible through this website infringes upon your copyright or other intellectual property rights, please refer to our <a href="/legal/dmca-policy.html">DMCA &amp; Copyright Policy</a> or contact us at the email address provided below.</p>
+    </section>
+
+    <section>
+      <h2>Indemnification</h2>
+      <p>By using this website, you agree to indemnify, defend, and hold harmless The Nexora Project, its owner, operators, contributors, and affiliates from and against any and all claims, liabilities, damages, losses, costs, and expenses (including reasonable attorney's fees) arising out of or in connection with your use of this website, your violation of this Disclaimer or any applicable law, or your infringement of any rights of a third party.</p>
+    </section>
+
+    <section>
+      <h2>Severability</h2>
+      <p>If any provision of this Disclaimer is found to be invalid, illegal, or unenforceable by a court of competent jurisdiction, such finding shall not affect the validity or enforceability of the remaining provisions, which shall continue in full force and effect.</p>
+    </section>
+
+    <section>
+      <h2>Governing Law</h2>
+      <p>This Disclaimer and any disputes arising out of or relating to this website shall be governed by and construed in accordance with the laws of the United States, without regard to conflict of law principles.</p>
     </section>
 
     <section>
       <h2>Changes to This Disclaimer</h2>
-      <p>This disclaimer may be updated, modified, or replaced at any time without prior notice. Continued use of the website after changes are posted constitutes acceptance of the revised disclaimer.</p>
+      <p>The Nexora Project reserves the right to update, modify, or replace this Disclaimer at any time without prior notice. Changes become effective immediately upon posting to this page. The "Effective Date" at the top of this Disclaimer indicates the date of the most recent revision. Your continued use of this website after any changes constitutes your acceptance of the revised Disclaimer.</p>
+    </section>
+
+    <section>
+      <h2>Contact Information</h2>
+      <p>If you have any questions or concerns regarding this Disclaimer, please contact us at:</p>
+      <p><strong>The Nexora Project</strong><br>
+      Email: <a href="mailto:nexora.unblocked@gmail.com">nexora.unblocked@gmail.com</a></p>
     </section>
   </div>
-  <script
-    type="text/javascript"
-    src="https://pl28203657.effectivegatecpm.com/20/0c/22/200c228c3e54f168aababb866607dcd7.js"
-  ></script>
 </body>
 </html>

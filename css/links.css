@@ -318,22 +318,6 @@ body {
   gap: 6px;
 }
 
-/* ── Link Badges (public) ── */
-.link-badge {
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.75rem;
-  flex-shrink: 0;
-}
-
-.link-badge-verified {
-  color: #22c55e;
-}
-
-.link-badge-official {
-  color: #3b82f6;
-}
-
 .world-label {
   font-size: 0.72rem;
   color: var(--muted);

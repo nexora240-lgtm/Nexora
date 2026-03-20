@@ -131,7 +131,7 @@
           const apiRes = await fetch(LINKS_API, { signal: AbortSignal.timeout(5000) });
           if (apiRes.ok) {
             const data = await apiRes.json();
-            allLinks = (data.links || []).map(l => ({ name: l.name || l.domain, url: l.url, badge: l.badge || null }));
+            allLinks = (data.links || []).map(l => ({ name: l.name || l.domain, url: l.url }));
           }
           if (!apiRes.ok || allLinks.length === 0) {
             throw new Error('API returned empty or ' + apiRes.status);
@@ -200,13 +200,10 @@
         let html = '<div class="world-list">';
         pageLinks.forEach(link => {
           const domain = getMainDomain(link.url);
-          let badgeHtml = '';
-          if (link.badge === 'verified') badgeHtml = '<span class="link-badge link-badge-verified" title="Verified"><i class="fas fa-check-circle"></i></span>';
-          else if (link.badge === 'official') badgeHtml = '<span class="link-badge link-badge-official" title="Official"><i class="fas fa-certificate"></i></span>';
           html += `
             <div class="world-item">
               <div class="world-meta">
-                <span class="world-domain">${escapeHtml(domain)}${badgeHtml}</span>
+                <span class="world-domain">${escapeHtml(domain)}</span>
                 <span class="world-label">${escapeHtml(link.name)}</span>
               </div>
               <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="world-open-btn">
