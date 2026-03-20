@@ -69,12 +69,28 @@
         />
       </div>
 
+      <div class="links-filters" id="links-filters">
+        <button class="filter-btn active" data-sort="default"><i class="fas fa-list"></i> All</button>
+        <button class="filter-btn" data-sort="newest"><i class="fas fa-bolt"></i> Newest</button>
+        <button class="filter-btn" data-sort="oldest"><i class="fas fa-history"></i> Oldest</button>
+        <button class="filter-btn" data-sort="az"><i class="fas fa-sort-alpha-down"></i> A → Z</button>
+        <button class="filter-btn" data-sort="za"><i class="fas fa-sort-alpha-up"></i> Z → A</button>
+      </div>
+
+      <div class="submit-link-bar" id="submit-link-bar">
+        <input type="text" id="submit-url" class="search-input" placeholder="Submit a Nexora link (https://...)" autocomplete="off" />
+        <button id="submit-link-btn" class="world-open-btn"><i class="fas fa-plus"></i> Submit</button>
+      </div>
+      <p class="submit-status" id="submit-status"></p>
+
       <div id="links-content">
         <div class="links-loading">
           <div class="spinner"></div>
           <p>Loading links...</p>
         </div>
       </div>
+
+      <div class="links-pagination" id="links-pagination"></div>
     </div>
   </div>
 
@@ -85,130 +101,162 @@
 
   <script>
     (function() {
-      let linksData = null;
+      let allLinks = [];
+      let currentSort = 'default';
+      let currentPage = 1;
+      const PER_PAGE = 10;
+      const LINKS_API = 'https://2zpvhn3woh.execute-api.us-east-2.amazonaws.com/links';
 
-      // Fetch links data
-      async function loadLinks() {
-        try {
-          const response = await fetch('/links.json');
-          linksData = await response.json();
-          
-          // Update header
-          if (linksData.header) {
-            document.getElementById('page-title').textContent = linksData.header.title || 'Nexora Links';
-            document.getElementById('page-subtitle').textContent = linksData.header.subtitle || '';
-          }
-          
-          renderLinks(linksData.sections);
-        } catch (error) {
-          console.error('Failed to load links:', error);
-          document.getElementById('links-content').innerHTML = `
-            <div class="no-results">
-              <i class="fas fa-exclamation-circle"></i>
-              <p>Failed to load links. Please try again later.</p>
-            </div>
-          `;
-        }
+      // Flatten all non-resources links from static JSON
+      function flattenLinks(sections) {
+        const all = [];
+        sections.forEach(section => {
+          if (section.id === 'resources') return;
+          section.links.forEach(link => {
+            if (link.name === 'Coming Soon!') return;
+            all.push({ name: link.name, url: link.url });
+          });
+        });
+        return all;
       }
 
-      // Render links
-      function renderLinks(sections, filterText = '') {
-        const container = document.getElementById('links-content');
-        const filter = filterText.toLowerCase().trim();
-        
-        let html = '';
-        let hasResults = false;
-
-        // SVG icons for social media - matching website colors
-        const socialIcons = {
-          'Discord': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/></svg>`,
-          'TikTok': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74a2.89 2.89 0 0 1 2.31-4.64a2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>`,
-          'Twitter': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26l8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
-          'YouTube': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`,
-          'Instagram': `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07c3.252.148 4.771 1.691 4.919 4.919c.058 1.265.069 1.645.069 4.849c0 3.205-.012 3.584-.069 4.849c-.149 3.225-1.664 4.771-4.919 4.919c-1.266.058-1.644.07-4.85.07c-3.204 0-3.584-.012-4.849-.07c-3.26-.149-4.771-1.699-4.919-4.92c-.058-1.265-.07-1.644-.07-4.849c0-3.204.013-3.583.07-4.849c.149-3.227 1.664-4.771 4.919-4.919c1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072C2.695.272.273 2.69.073 7.052C.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948c.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072c4.354-.2 6.782-2.618 6.979-6.98c.059-1.28.073-1.689.073-4.948c0-3.259-.014-3.667-.072-4.947c-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324a6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8a4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881a1.44 1.44 0 0 0 0-2.881z"/></svg>`
-        };
-
-        sections.forEach(section => {
-          const filteredLinks = section.links.filter(link => {
-            if (!filter) return true;
-            return link.name.toLowerCase().includes(filter) ||
-                   link.url.toLowerCase().includes(filter);
-          });
-
-          if (filteredLinks.length === 0) return;
-          hasResults = true;
-
-          // Render resources section as social media bar
-          if (section.id === 'resources') {
-            html += `
-              <div class="links-section social-media-section" data-section="${section.id}">
-                <div class="section-header">
-                  <h2>${section.title}</h2>
-                </div>
-                <div class="social-media-bar">
-            `;
-
-            filteredLinks.forEach(link => {
-              const icon = socialIcons[link.name] || socialIcons['Discord'];
-              html += `
-                <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="social-btn" title="${escapeHtml(link.name)}">
-                  ${icon}
-                </a>
-              `;
-            });
-
-            html += `
-                </div>
-              </div>
-            `;
+      // Fetch links — try API first, fall back to static JSON
+      async function loadLinks() {
+        try {
+          // Try the live API
+          const apiRes = await fetch(LINKS_API, { signal: AbortSignal.timeout(5000) });
+          if (apiRes.ok) {
+            const data = await apiRes.json();
+            allLinks = (data.links || []).map(l => ({ name: l.name || l.domain, url: l.url }));
           } else {
-            // Regular sections
-            html += `
-              <div class="links-section" data-section="${section.id}">
-                <div class="section-header">
-                  <img src="${section.image || 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f517.svg'}" alt="${section.title}" />
-                  <h2>${section.title}</h2>
-                </div>
-                <div class="links-list">
-            `;
-
-            filteredLinks.forEach(link => {
-              html += `
-                <div class="link-item">
-                  <div class="link-info">
-                    <span class="link-name">${escapeHtml(link.name)}</span>
-                    <span class="link-url">${escapeHtml(link.url)}</span>
-                  </div>
-                  <div class="link-actions">
-                    <button class="link-btn copy-btn" data-url="${escapeHtml(link.url)}" title="Copy link">
-                      <i class="fas fa-copy"></i>
-                    </button>
-                    <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="link-btn visit-btn" title="Visit">
-                      <i class="fas fa-external-link-alt"></i>
-                    </a>
-                  </div>
-                </div>
-              `;
-            });
-
-            html += `
-                </div>
+            throw new Error('API returned ' + apiRes.status);
+          }
+        } catch (apiErr) {
+          console.warn('Links API unavailable, falling back to static JSON:', apiErr.message);
+          try {
+            const res = await fetch('/links.json');
+            const data = await res.json();
+            allLinks = flattenLinks(data.sections);
+          } catch (jsonErr) {
+            console.error('Failed to load links:', jsonErr);
+            document.getElementById('links-content').innerHTML = `
+              <div class="no-results">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Failed to load links. Please try again later.</p>
               </div>
             `;
+            return;
           }
-        });
-
-        if (!hasResults) {
-          html = `
-            <div class="no-results">
-              <i class="fas fa-search"></i>
-              <p>No links found matching "${escapeHtml(filter)}"</p>
-            </div>
-          `;
         }
 
+        renderLinks();
+      }
+
+      // Sort a flat array of links
+      function sortLinks(links, sort) {
+        const copy = [...links];
+        if (sort === 'newest') return copy.reverse();
+        if (sort === 'oldest') return copy;
+        if (sort === 'az') return copy.sort((a, b) => getMainDomain(a.url).localeCompare(getMainDomain(b.url)));
+        if (sort === 'za') return copy.sort((a, b) => getMainDomain(b.url).localeCompare(getMainDomain(a.url)));
+        return copy;
+      }
+
+      // Render current page
+      function renderLinks() {
+        if (!allLinks.length) return;
+        const filter = document.getElementById('search-input').value.toLowerCase().trim();
+        const container = document.getElementById('links-content');
+        const paginationEl = document.getElementById('links-pagination');
+
+        let all = [...allLinks];
+
+        // Filter
+        if (filter) {
+          all = all.filter(link =>
+            link.name.toLowerCase().includes(filter) ||
+            link.url.toLowerCase().includes(filter)
+          );
+        }
+
+        // Sort
+        all = sortLinks(all, currentSort);
+
+        const totalPages = Math.max(1, Math.ceil(all.length / PER_PAGE));
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const start = (currentPage - 1) * PER_PAGE;
+        const pageLinks = all.slice(start, start + PER_PAGE);
+
+        // Render items
+        if (all.length === 0) {
+          container.innerHTML = `
+            <div class="no-results">
+              <i class="fas fa-search"></i>
+              <p>No links found${filter ? ` matching "${escapeHtml(filter)}"` : ''}.</p>
+            </div>
+          `;
+          paginationEl.innerHTML = '';
+          return;
+        }
+
+        let html = '<div class="world-list">';
+        pageLinks.forEach(link => {
+          const domain = getMainDomain(link.url);
+          html += `
+            <div class="world-item">
+              <div class="world-meta">
+                <span class="world-domain">${escapeHtml(domain)}</span>
+                <span class="world-label">${escapeHtml(link.name)}</span>
+              </div>
+              <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="world-open-btn">
+                Open <i class="fas fa-arrow-right"></i>
+              </a>
+            </div>
+          `;
+        });
+        html += '</div>';
         container.innerHTML = html;
-        attachCopyHandlers();
+
+        // Render pagination
+        renderPagination(totalPages, paginationEl);
+      }
+
+      function renderPagination(totalPages, el) {
+        if (totalPages <= 1) { el.innerHTML = ''; return; }
+
+        const range = [];
+        for (let i = 1; i <= totalPages; i++) {
+          if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+            range.push(i);
+          } else if (range[range.length - 1] !== '...') {
+            range.push('...');
+          }
+        }
+
+        let html = `<button class="page-btn" data-page="prev" ${currentPage === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
+        range.forEach(item => {
+          if (item === '...') {
+            html += `<span class="page-ellipsis">...</span>`;
+          } else {
+            html += `<button class="page-btn ${item === currentPage ? 'active' : ''}" data-page="${item}">${item}</button>`;
+          }
+        });
+        html += `<button class="page-btn" data-page="next" ${currentPage === totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
+
+        el.innerHTML = html;
+      }
+
+      // Extract main domain (strip subdomains)
+      function getMainDomain(url) {
+        try {
+          const hostname = new URL(url).hostname;
+          const parts = hostname.split('.');
+          if (parts.length <= 2) return hostname;
+          return parts.slice(-2).join('.');
+        } catch (e) {
+          return url;
+        }
       }
 
       // Escape HTML to prevent XSS
@@ -218,68 +266,69 @@
         return div.innerHTML;
       }
 
-      // Copy functionality
-      function attachCopyHandlers() {
-        document.querySelectorAll('.copy-btn').forEach(btn => {
-          btn.addEventListener('click', async function() {
-            const url = this.dataset.url;
-            
-            try {
-              await navigator.clipboard.writeText(url);
-              
-              // Show success state on button
-              this.classList.add('copied');
-              const icon = this.querySelector('i');
-              icon.className = 'fas fa-check';
-              
-              // Show toast
-              showToast();
-              
-              // Reset after delay
-              setTimeout(() => {
-                this.classList.remove('copied');
-                icon.className = 'fas fa-copy';
-              }, 2000);
-            } catch (err) {
-              // Fallback for older browsers
-              const textArea = document.createElement('textarea');
-              textArea.value = url;
-              textArea.style.position = 'fixed';
-              textArea.style.opacity = '0';
-              document.body.appendChild(textArea);
-              textArea.select();
-              document.execCommand('copy');
-              document.body.removeChild(textArea);
-              
-              this.classList.add('copied');
-              showToast();
-              
-              setTimeout(() => {
-                this.classList.remove('copied');
-              }, 2000);
-            }
-          });
-        });
-      }
-
-      // Toast notification
-      function showToast() {
-        const toast = document.getElementById('copy-toast');
-        toast.classList.add('show');
-        
-        setTimeout(() => {
-          toast.classList.remove('show');
-        }, 2500);
-      }
-
-      // Search functionality
-      document.getElementById('search-input').addEventListener('input', function(e) {
-        if (linksData && linksData.sections) {
-          renderLinks(linksData.sections, e.target.value);
-        }
+      // Search
+      document.getElementById('search-input').addEventListener('input', function() {
+        currentPage = 1;
+        renderLinks();
       });
 
-      // Initialize
+      // Filter buttons
+      document.getElementById('links-filters').addEventListener('click', function(e) {
+        const btn = e.target.closest('.filter-btn');
+        if (!btn) return;
+        currentSort = btn.dataset.sort;
+        currentPage = 1;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderLinks();
+      });
+
+      // Pagination clicks
+      document.getElementById('links-pagination').addEventListener('click', function(e) {
+        const btn = e.target.closest('.page-btn');
+        if (!btn || btn.disabled) return;
+        const p = btn.dataset.page;
+        if (p === 'prev') currentPage--;
+        else if (p === 'next') currentPage++;
+        else currentPage = parseInt(p);
+        renderLinks();
+        document.querySelector('.links-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      // Submit link
+      document.getElementById('submit-link-btn').addEventListener('click', async function() {
+        const input = document.getElementById('submit-url');
+        const status = document.getElementById('submit-status');
+        const url = input.value.trim();
+        if (!url) { status.textContent = 'Enter a URL first.'; status.className = 'submit-status error'; return; }
+
+        status.textContent = 'Verifying...'; status.className = 'submit-status';
+        this.disabled = true;
+
+        try {
+          const res = await fetch(LINKS_API.replace(/\/links$/, '/links/submit'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url }),
+          });
+          const data = await res.json();
+          if (res.ok) {
+            status.textContent = data.message || 'Link added!';
+            status.className = 'submit-status success';
+            input.value = '';
+            loadLinks(); // refresh
+          } else {
+            status.textContent = data.error || 'Submission failed.';
+            if (data.reason) status.textContent += ' (' + data.reason + ')';
+            status.className = 'submit-status error';
+          }
+        } catch (err) {
+          status.textContent = 'Network error. Try again.';
+          status.className = 'submit-status error';
+        }
+        this.disabled = false;
+      });
+
       loadLinks();
     })();
   </script>
@@ -444,7 +493,7 @@
   <script>
     (function() {
       function attachMouseTracking() {
-        const linkItems = document.querySelectorAll('.link-item');
+        const linkItems = document.querySelectorAll('.world-item');
         if (!window.NexoraMouseTracking) return;
 
         linkItems.forEach(item => {

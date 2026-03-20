@@ -69,12 +69,28 @@
         />
       </div>
 
+      <div class="links-filters" id="links-filters">
+        <button class="filter-btn active" data-sort="default"><i class="fas fa-list"></i> All</button>
+        <button class="filter-btn" data-sort="newest"><i class="fas fa-bolt"></i> Newest</button>
+        <button class="filter-btn" data-sort="oldest"><i class="fas fa-history"></i> Oldest</button>
+        <button class="filter-btn" data-sort="az"><i class="fas fa-sort-alpha-down"></i> A → Z</button>
+        <button class="filter-btn" data-sort="za"><i class="fas fa-sort-alpha-up"></i> Z → A</button>
+      </div>
+
+      <div class="submit-link-bar" id="submit-link-bar">
+        <input type="text" id="submit-url" class="search-input" placeholder="Submit a Nexora link (https://...)" autocomplete="off" />
+        <button id="submit-link-btn" class="world-open-btn"><i class="fas fa-plus"></i> Submit</button>
+      </div>
+      <p class="submit-status" id="submit-status"></p>
+
       <div id="links-content">
         <div class="links-loading">
           <div class="spinner"></div>
           <p>Loading links...</p>
         </div>
       </div>
+
+      <div class="links-pagination" id="links-pagination"></div>
     </div>
   </div>
 
@@ -85,95 +101,162 @@
 
   <script>
     (function() {
-      let linksData = null;
+      let allLinks = [];
+      let currentSort = 'default';
+      let currentPage = 1;
+      const PER_PAGE = 10;
+      const LINKS_API = 'https://2zpvhn3woh.execute-api.us-east-2.amazonaws.com/links';
 
-      // Fetch links data
-      async function loadLinks() {
-        try {
-          const response = await fetch('/links.json');
-          linksData = await response.json();
-          
-          // Update header
-          if (linksData.header) {
-            document.getElementById('page-title').textContent = linksData.header.title || 'Nexora Links';
-            document.getElementById('page-subtitle').textContent = linksData.header.subtitle || '';
-          }
-          
-          renderLinks(linksData.sections);
-        } catch (error) {
-          console.error('Failed to load links:', error);
-          document.getElementById('links-content').innerHTML = `
-            <div class="no-results">
-              <i class="fas fa-exclamation-circle"></i>
-              <p>Failed to load links. Please try again later.</p>
-            </div>
-          `;
-        }
+      // Flatten all non-resources links from static JSON
+      function flattenLinks(sections) {
+        const all = [];
+        sections.forEach(section => {
+          if (section.id === 'resources') return;
+          section.links.forEach(link => {
+            if (link.name === 'Coming Soon!') return;
+            all.push({ name: link.name, url: link.url });
+          });
+        });
+        return all;
       }
 
-      // Render links
-      function renderLinks(sections, filterText = '') {
-        const container = document.getElementById('links-content');
-        const filter = filterText.toLowerCase().trim();
-        
-        let html = '';
-        let hasResults = false;
-
-        sections.forEach(section => {
-          const filteredLinks = section.links.filter(link => {
-            if (!filter) return true;
-            return link.name.toLowerCase().includes(filter) ||
-                   link.url.toLowerCase().includes(filter);
-          });
-
-          if (filteredLinks.length === 0) return;
-          hasResults = true;
-
-          html += `
-            <div class="links-section" data-section="${section.id}">
-              <div class="section-header">
-                <img src="${section.image || 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f517.svg'}" alt="${section.title}" />
-                <h2>${section.title}</h2>
-              </div>
-              <div class="links-list">
-          `;
-
-          filteredLinks.forEach(link => {
-            html += `
-              <div class="link-item">
-                <div class="link-info">
-                  <span class="link-name">${escapeHtml(link.name)}</span>
-                  <span class="link-url">${escapeHtml(link.url)}</span>
-                </div>
-                <div class="link-actions">
-                  <button class="link-btn copy-btn" data-url="${escapeHtml(link.url)}" title="Copy link">
-                    <i class="fas fa-copy"></i>
-                  </button>
-                  <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="link-btn visit-btn" title="Visit">
-                    <i class="fas fa-external-link-alt"></i>
-                  </a>
-                </div>
+      // Fetch links — try API first, fall back to static JSON
+      async function loadLinks() {
+        try {
+          // Try the live API
+          const apiRes = await fetch(LINKS_API, { signal: AbortSignal.timeout(5000) });
+          if (apiRes.ok) {
+            const data = await apiRes.json();
+            allLinks = (data.links || []).map(l => ({ name: l.name || l.domain, url: l.url }));
+          } else {
+            throw new Error('API returned ' + apiRes.status);
+          }
+        } catch (apiErr) {
+          console.warn('Links API unavailable, falling back to static JSON:', apiErr.message);
+          try {
+            const res = await fetch('/links.json');
+            const data = await res.json();
+            allLinks = flattenLinks(data.sections);
+          } catch (jsonErr) {
+            console.error('Failed to load links:', jsonErr);
+            document.getElementById('links-content').innerHTML = `
+              <div class="no-results">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Failed to load links. Please try again later.</p>
               </div>
             `;
-          });
+            return;
+          }
+        }
 
+        renderLinks();
+      }
+
+      // Sort a flat array of links
+      function sortLinks(links, sort) {
+        const copy = [...links];
+        if (sort === 'newest') return copy.reverse();
+        if (sort === 'oldest') return copy;
+        if (sort === 'az') return copy.sort((a, b) => getMainDomain(a.url).localeCompare(getMainDomain(b.url)));
+        if (sort === 'za') return copy.sort((a, b) => getMainDomain(b.url).localeCompare(getMainDomain(a.url)));
+        return copy;
+      }
+
+      // Render current page
+      function renderLinks() {
+        if (!allLinks.length) return;
+        const filter = document.getElementById('search-input').value.toLowerCase().trim();
+        const container = document.getElementById('links-content');
+        const paginationEl = document.getElementById('links-pagination');
+
+        let all = [...allLinks];
+
+        // Filter
+        if (filter) {
+          all = all.filter(link =>
+            link.name.toLowerCase().includes(filter) ||
+            link.url.toLowerCase().includes(filter)
+          );
+        }
+
+        // Sort
+        all = sortLinks(all, currentSort);
+
+        const totalPages = Math.max(1, Math.ceil(all.length / PER_PAGE));
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const start = (currentPage - 1) * PER_PAGE;
+        const pageLinks = all.slice(start, start + PER_PAGE);
+
+        // Render items
+        if (all.length === 0) {
+          container.innerHTML = `
+            <div class="no-results">
+              <i class="fas fa-search"></i>
+              <p>No links found${filter ? ` matching "${escapeHtml(filter)}"` : ''}.</p>
+            </div>
+          `;
+          paginationEl.innerHTML = '';
+          return;
+        }
+
+        let html = '<div class="world-list">';
+        pageLinks.forEach(link => {
+          const domain = getMainDomain(link.url);
           html += `
+            <div class="world-item">
+              <div class="world-meta">
+                <span class="world-domain">${escapeHtml(domain)}</span>
+                <span class="world-label">${escapeHtml(link.name)}</span>
               </div>
+              <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="world-open-btn">
+                Open <i class="fas fa-arrow-right"></i>
+              </a>
             </div>
           `;
         });
+        html += '</div>';
+        container.innerHTML = html;
 
-        if (!hasResults) {
-          html = `
-            <div class="no-results">
-              <i class="fas fa-search"></i>
-              <p>No links found matching "${escapeHtml(filter)}"</p>
-            </div>
-          `;
+        // Render pagination
+        renderPagination(totalPages, paginationEl);
+      }
+
+      function renderPagination(totalPages, el) {
+        if (totalPages <= 1) { el.innerHTML = ''; return; }
+
+        const range = [];
+        for (let i = 1; i <= totalPages; i++) {
+          if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+            range.push(i);
+          } else if (range[range.length - 1] !== '...') {
+            range.push('...');
+          }
         }
 
-        container.innerHTML = html;
-        attachCopyHandlers();
+        let html = `<button class="page-btn" data-page="prev" ${currentPage === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
+        range.forEach(item => {
+          if (item === '...') {
+            html += `<span class="page-ellipsis">...</span>`;
+          } else {
+            html += `<button class="page-btn ${item === currentPage ? 'active' : ''}" data-page="${item}">${item}</button>`;
+          }
+        });
+        html += `<button class="page-btn" data-page="next" ${currentPage === totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
+
+        el.innerHTML = html;
+      }
+
+      // Extract main domain (strip subdomains)
+      function getMainDomain(url) {
+        try {
+          const hostname = new URL(url).hostname;
+          const parts = hostname.split('.');
+          if (parts.length <= 2) return hostname;
+          return parts.slice(-2).join('.');
+        } catch (e) {
+          return url;
+        }
       }
 
       // Escape HTML to prevent XSS
@@ -183,68 +266,69 @@
         return div.innerHTML;
       }
 
-      // Copy functionality
-      function attachCopyHandlers() {
-        document.querySelectorAll('.copy-btn').forEach(btn => {
-          btn.addEventListener('click', async function() {
-            const url = this.dataset.url;
-            
-            try {
-              await navigator.clipboard.writeText(url);
-              
-              // Show success state on button
-              this.classList.add('copied');
-              const icon = this.querySelector('i');
-              icon.className = 'fas fa-check';
-              
-              // Show toast
-              showToast();
-              
-              // Reset after delay
-              setTimeout(() => {
-                this.classList.remove('copied');
-                icon.className = 'fas fa-copy';
-              }, 2000);
-            } catch (err) {
-              // Fallback for older browsers
-              const textArea = document.createElement('textarea');
-              textArea.value = url;
-              textArea.style.position = 'fixed';
-              textArea.style.opacity = '0';
-              document.body.appendChild(textArea);
-              textArea.select();
-              document.execCommand('copy');
-              document.body.removeChild(textArea);
-              
-              this.classList.add('copied');
-              showToast();
-              
-              setTimeout(() => {
-                this.classList.remove('copied');
-              }, 2000);
-            }
-          });
-        });
-      }
-
-      // Toast notification
-      function showToast() {
-        const toast = document.getElementById('copy-toast');
-        toast.classList.add('show');
-        
-        setTimeout(() => {
-          toast.classList.remove('show');
-        }, 2500);
-      }
-
-      // Search functionality
-      document.getElementById('search-input').addEventListener('input', function(e) {
-        if (linksData && linksData.sections) {
-          renderLinks(linksData.sections, e.target.value);
-        }
+      // Search
+      document.getElementById('search-input').addEventListener('input', function() {
+        currentPage = 1;
+        renderLinks();
       });
 
-      // Initialize
+      // Filter buttons
+      document.getElementById('links-filters').addEventListener('click', function(e) {
+        const btn = e.target.closest('.filter-btn');
+        if (!btn) return;
+        currentSort = btn.dataset.sort;
+        currentPage = 1;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderLinks();
+      });
+
+      // Pagination clicks
+      document.getElementById('links-pagination').addEventListener('click', function(e) {
+        const btn = e.target.closest('.page-btn');
+        if (!btn || btn.disabled) return;
+        const p = btn.dataset.page;
+        if (p === 'prev') currentPage--;
+        else if (p === 'next') currentPage++;
+        else currentPage = parseInt(p);
+        renderLinks();
+        document.querySelector('.links-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      // Submit link
+      document.getElementById('submit-link-btn').addEventListener('click', async function() {
+        const input = document.getElementById('submit-url');
+        const status = document.getElementById('submit-status');
+        const url = input.value.trim();
+        if (!url) { status.textContent = 'Enter a URL first.'; status.className = 'submit-status error'; return; }
+
+        status.textContent = 'Verifying...'; status.className = 'submit-status';
+        this.disabled = true;
+
+        try {
+          const res = await fetch(LINKS_API.replace(/\/links$/, '/links/submit'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url }),
+          });
+          const data = await res.json();
+          if (res.ok) {
+            status.textContent = data.message || 'Link added!';
+            status.className = 'submit-status success';
+            input.value = '';
+            loadLinks(); // refresh
+          } else {
+            status.textContent = data.error || 'Submission failed.';
+            if (data.reason) status.textContent += ' (' + data.reason + ')';
+            status.className = 'submit-status error';
+          }
+        } catch (err) {
+          status.textContent = 'Network error. Try again.';
+          status.className = 'submit-status error';
+        }
+        this.disabled = false;
+      });
+
       loadLinks();
     })();
   </script>
@@ -409,7 +493,7 @@
   <script>
     (function() {
       function attachMouseTracking() {
-        const linkItems = document.querySelectorAll('.link-item');
+        const linkItems = document.querySelectorAll('.world-item');
         if (!window.NexoraMouseTracking) return;
 
         linkItems.forEach(item => {
