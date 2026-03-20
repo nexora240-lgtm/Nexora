@@ -1,6 +1,6 @@
 self.__uv$config = {
 	prefix: "/s/ultraviolet/",
-	bare: "http://163.245.208.151:8080/",
+	bare: "",
 	encodeUrl: Ultraviolet.codec.xor.encode,
 	decodeUrl: Ultraviolet.codec.xor.decode,
 	handler: "/s/uv/uv.handler.js",
