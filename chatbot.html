@@ -74,6 +74,24 @@
         padding: 6px 10px;
       }
     }
+    .quota-info {
+      font-size: 11px;
+      color: var(--text-muted, #888);
+      text-align: right;
+      padding: 0 8px 4px;
+      opacity: 0.8;
+    }
+    .quota-info.quota-warn { color: var(--accent, orange); }
+    .quota-info.quota-empty { color: #e55; font-weight: 600; }
+    .msg.system-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted, #888);
+      padding: 4px 12px;
+      font-style: italic;
+      background: transparent;
+    }
+    .msg.system-note.error { color: #e75; }
   </style>
   <title>AI Chatbot</title>
 </head>
@@ -97,10 +115,9 @@
 
       <div class="footer">
         <div class="input-row">
-          <input id="prompt" class="input" placeholder="Message AI..." autocomplete="off" />
+          <input id="prompt" class="input" placeholder="Message AI..." autocomplete="off" maxlength="800" />
           <button id="send" class="send" title="Send" aria-label="Send message">↑</button>
-        </div>
-      </div>
+        </div>        <div id="quota-info" class="quota-info"></div>      </div>
     </div>
   </div>
 
@@ -129,7 +146,7 @@
       },
       coder: {
         name: "Code Assistant",
-        maxHistory: Infinity,
+        maxHistory: 20,
         systemPrompt: "You are an expert programming assistant specialized in helping with code. Focus on providing clean, efficient, and well-documented code solutions. Always use proper syntax highlighting by specifying the language in code blocks. Include comments explaining complex logic. Suggest best practices and potential optimizations. When debugging, explain the root cause and provide fixes. Support multiple programming languages including JavaScript, Python, Java, C++, and more."
       },
       writing: {
@@ -149,15 +166,15 @@
       },
       tutor: {
         name: "Educational Tutor",
-        maxHistory: Infinity,
+        maxHistory: 20,
         systemPrompt: "You are a patient and knowledgeable educational tutor. Break down complex topics into easy-to-understand explanations. Use examples, analogies, and step-by-step instructions to teach concepts. Adapt your teaching style to different learning levels. Encourage questions and provide practice exercises when appropriate. Cover subjects including mathematics, science, history, languages, and more. Use markdown formatting to create well-structured lessons with clear headings and organized content."
       }
     };
     // Client-side rate limiting
     const RATE_LIMIT = {
       cooldownMs: 5000,    // time between sends
-      perHour: 20,        // max requests per hour
-      perDay: 80          // max requests per day
+      perHour: 10,         // max requests per hour
+      perDay: 30           // max requests per day
     };
 
     function now(){ return Date.now(); }
@@ -699,6 +716,25 @@
       if(el && el.parentNode) el.parentNode.removeChild(el);
     }
 
+    function showSystemNote(text, root){
+      const { scrollEl } = getEls(root);
+      if(!scrollEl) return;
+      const div = document.createElement('div');
+      div.className = 'msg system-note';
+      div.textContent = text;
+      scrollEl.appendChild(div);
+      scrollEl.scrollTop = scrollEl.scrollHeight;
+    }
+
+    function updateQuotaDisplay(root){
+      const el = (root && root.querySelector) ? root.querySelector('#quota-info') : document.querySelector('#quota-info');
+      if(!el) return;
+      const lim = remainingLimits();
+      const d = lim.dayRemaining;
+      el.textContent = `${d} message${d !== 1 ? 's' : ''} left today`;
+      el.className = 'quota-info' + (d <= 5 ? ' quota-warn' : '') + (d === 0 ? ' quota-empty' : '');
+    }
+
     async function sendMessage(root){
       const els = getEls(root);
       const { introEl, promptEl, sendEl, scrollEl } = els;
@@ -713,11 +749,28 @@
       const gate = canSendNow();
       if(!gate.ok){
         const left = remainingLimits();
-        const reasons = [];
-        if(!gate.reason.cooldownOk) reasons.push(`cooldown ${Math.ceil(left.cooldownMsLeft/1000)}s`);
-        if(!gate.reason.hourOk)     reasons.push('hour cap reached');
-        if(!gate.reason.dayOk)      reasons.push('day cap reached');
-        addBotMessage(`<div class="bot-chunk"><strong>Rate limit:</strong> Please wait — ${escapeHtml(reasons.join(', '))}. Remaining: ${left.hourRemaining} this hour, ${left.dayRemaining} today.</div>`, root);
+        if(!gate.reason.cooldownOk){
+          // Show countdown in send button; re-enable when ready
+          let cdLeft = Math.ceil(left.cooldownMsLeft / 1000);
+          sendEl.disabled = true;
+          sendEl.textContent = `${cdLeft}s`;
+          const cdTimer = setInterval(() => {
+            cdLeft--;
+            if(cdLeft <= 0){
+              clearInterval(cdTimer);
+              sendEl.textContent = '↑';
+              if(!sendEl.classList.contains('typing')) sendEl.disabled = false;
+            } else {
+              sendEl.textContent = `${cdLeft}s`;
+            }
+          }, 1000);
+        } else {
+          const reasons = [];
+          if(!gate.reason.hourOk) reasons.push('hourly limit — try again in an hour');
+          if(!gate.reason.dayOk)  reasons.push('daily limit — try again tomorrow');
+          showSystemNote(`⚠ You've reached the ${reasons.join(' & ')}.`, root);
+          updateQuotaDisplay(root);
+        }
         return;
       }
 
@@ -740,6 +793,7 @@
       try {
         // Record request on send attempt
         recordSend();
+        updateQuotaDisplay(root);
         console.log('Sending to:', LAMBDA_ENDPOINT);
         console.log('Current origin:', window.location.origin);
         
@@ -877,6 +931,7 @@
       sendEl.dataset.nexoraAttached = "1";
 
       loadChatHistory(root);
+      updateQuotaDisplay(root);
       if(chatHistory.length === 0){
         startIntroLoop(root);
       }
