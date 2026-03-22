@@ -77,12 +77,6 @@
         <button class="filter-btn" data-sort="za"><i class="fas fa-sort-alpha-up"></i> Z → A</button>
       </div>
 
-      <div class="submit-link-bar" id="submit-link-bar">
-        <input type="text" id="submit-url" class="search-input" placeholder="Submit a Nexora link (https://...)" autocomplete="off" />
-        <button id="submit-link-btn" class="world-open-btn"><i class="fas fa-plus"></i> Submit</button>
-      </div>
-      <p class="submit-status" id="submit-status"></p>
-
       <div id="links-content">
         <div class="links-loading">
           <div class="spinner"></div>
@@ -131,7 +125,7 @@
           const apiRes = await fetch(LINKS_API, { signal: AbortSignal.timeout(5000) });
           if (apiRes.ok) {
             const data = await apiRes.json();
-            allLinks = (data.links || []).map(l => ({ name: l.name || l.domain, url: l.url }));
+            allLinks = (data.links || []).map((l, i) => ({ name: l.name || l.domain, url: l.url, addedAt: l.addedAt || l.createdAt || l.timestamp || null, _idx: i }));
           }
           if (!apiRes.ok || allLinks.length === 0) {
             throw new Error('API returned empty or ' + apiRes.status);
@@ -153,8 +147,14 @@
       // Sort a flat array of links
       function sortLinks(links, sort) {
         const copy = [...links];
-        if (sort === 'newest') return copy.reverse();
-        if (sort === 'oldest') return copy;
+        if (sort === 'newest') {
+          if (copy.length && copy[0].addedAt) return copy.sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt));
+          return copy.reverse();
+        }
+        if (sort === 'oldest') {
+          if (copy.length && copy[0].addedAt) return copy.sort((a, b) => new Date(a.addedAt) - new Date(b.addedAt));
+          return copy;
+        }
         if (sort === 'az') return copy.sort((a, b) => getMainDomain(a.url).localeCompare(getMainDomain(b.url)));
         if (sort === 'za') return copy.sort((a, b) => getMainDomain(b.url).localeCompare(getMainDomain(a.url)));
         return copy;
@@ -290,40 +290,6 @@
         else currentPage = parseInt(p);
         renderLinks();
         document.querySelector('.links-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-
-      // Submit link
-      document.getElementById('submit-link-btn').addEventListener('click', async function() {
-        const input = document.getElementById('submit-url');
-        const status = document.getElementById('submit-status');
-        const url = input.value.trim();
-        if (!url) { status.textContent = 'Enter a URL first.'; status.className = 'submit-status error'; return; }
-
-        status.textContent = 'Verifying...'; status.className = 'submit-status';
-        this.disabled = true;
-
-        try {
-          const res = await fetch(LINKS_API.replace(/\/links$/, '/links/submit'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url }),
-          });
-          const data = await res.json();
-          if (res.ok) {
-            status.textContent = data.message || 'Link added!';
-            status.className = 'submit-status success';
-            input.value = '';
-            loadLinks(); // refresh
-          } else {
-            status.textContent = data.error || 'Submission failed.';
-            if (data.reason) status.textContent += ' (' + data.reason + ')';
-            status.className = 'submit-status error';
-          }
-        } catch (err) {
-          status.textContent = 'Network error. Try again.';
-          status.className = 'submit-status error';
-        }
-        this.disabled = false;
       });
 
       loadLinks();
