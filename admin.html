@@ -221,8 +221,8 @@
             </div>
           </div>
           <div class="admin-table-wrap">
-            <table><thead><tr><th>URL</th><th>Domain</th><th>Added</th><th>Last Checked</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="adminLinksBody"><tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr></tbody></table>
+            <table><thead><tr><th>URL</th><th>Domain</th><th>Badge</th><th>Official</th><th>Added</th><th>Last Checked</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="adminLinksBody"><tr><td colspan="8" class="loading"><div class="spinner"></div></td></tr></tbody></table>
           </div>
         </div>
       </section>
@@ -1079,7 +1079,7 @@
 
   async function loadAdminLinks() {
     const body = document.getElementById('adminLinksBody');
-    body.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr>';
+    body.innerHTML = '<tr><td colspan="8" class="loading"><div class="spinner"></div></td></tr>';
     try {
       const data = await adminFetch('/admin/links');
       const links = data.links || [];
@@ -1087,7 +1087,7 @@
       if (countEl) countEl.textContent = `${links.length} link${links.length !== 1 ? 's' : ''}`;
 
       if (!links.length) {
-        body.innerHTML = '<tr><td colspan="6" class="empty-state">No links in directory</td></tr>';
+        body.innerHTML = '<tr><td colspan="8" class="empty-state">No links in directory</td></tr>';
         return;
       }
       body.innerHTML = links.map(l => {
@@ -1096,18 +1096,25 @@
           : '<span class="badge badge-success">Healthy</span>';
 
         const domain = l.domain || l.name || '—';
+        const badgeCol = l.badge ? `<span class="badge badge-muted">${esc(l.badge)}</span>` : '—';
+        const officialCol = l.official ? '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Official</span>' : '—';
+        const safeUrl = esc(l.url).replace(/'/g, "\\'");
+        const safeBadge = esc(l.badge || '').replace(/'/g, "\\'");
         return `<tr>
           <td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(l.url)}">${esc(l.url)}</td>
           <td><strong>${esc(domain)}</strong></td>
+          <td>${badgeCol}</td>
+          <td>${officialCol}</td>
           <td>${fmtRelative(l.addedAt)}</td>
           <td>${fmtRelative(l.lastChecked)}</td>
           <td>${statusBadge}</td>
           <td class="btn-group">
-            <button class="btn btn-danger btn-sm" onclick="doRemoveLink('${esc(l.url)}')" title="Remove link"><i class="fas fa-trash"></i></button>
+            <button class="btn btn-outline btn-sm" onclick="showEditLinkForm('${safeUrl}', '${safeBadge}', ${!!l.official})" title="Edit link"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="doRemoveLink('${safeUrl}')" title="Remove link"><i class="fas fa-trash"></i></button>
           </td></tr>`;
       }).join('');
     } catch (e) {
-      body.innerHTML = `<tr><td colspan="6" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
+      body.innerHTML = `<tr><td colspan="8" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
     }
   }
   window.loadAdminLinks = loadAdminLinks;
@@ -1121,6 +1128,14 @@
           <div class="form-group"><label>URL</label>
             <input type="text" class="form-input" id="addLinkUrl" placeholder="https://example.com" />
           </div>
+          <div class="form-group"><label>Badge (optional)</label>
+            <input type="text" class="form-input" id="addLinkBadge" placeholder="e.g. New, Fast, Popular" />
+          </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:8px">
+            <label class="toggle"><input type="checkbox" id="addLinkOfficial">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+            <label for="addLinkOfficial">Mark as Official</label>
+          </div>
           <div class="modal-actions">
             <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
             <button class="btn btn-primary" onclick="doAddLink()"><i class="fas fa-plus"></i> Add & Verify</button>
@@ -1132,9 +1147,44 @@
   window.doAddLink = async function() {
     const url = document.getElementById('addLinkUrl').value.trim();
     if (!url) { toast('URL is required', 'error'); return; }
+    const badge = document.getElementById('addLinkBadge').value.trim() || undefined;
+    const official = document.getElementById('addLinkOfficial').checked || undefined;
     try {
-      await adminFetch('/admin/links', 'POST', { url });
+      await adminFetch('/admin/links', 'POST', { url, badge, official });
       toast('Link added successfully');
+      closeModal();
+      loadAdminLinks();
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+  };
+
+  window.showEditLinkForm = function(url, badge, official) {
+    document.getElementById('adminModal').innerHTML = `
+      <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+        <div class="modal">
+          <h3><i class="fas fa-edit"></i> Edit Link</h3>
+          <p style="font-size:13px;color:var(--admin-muted);margin:0 0 16px">${esc(url)}</p>
+          <div class="form-group"><label>Badge (optional)</label>
+            <input type="text" class="form-input" id="editLinkBadge" value="${esc(badge)}" placeholder="e.g. New, Fast, Popular" />
+          </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:8px">
+            <label class="toggle"><input type="checkbox" id="editLinkOfficial" ${official ? 'checked' : ''}>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+            <label for="editLinkOfficial">Mark as Official</label>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="doEditLink('${esc(url).replace(/'/g, "\\'")}')"><i class="fas fa-save"></i> Save</button>
+          </div>
+        </div>
+      </div>`;
+  };
+
+  window.doEditLink = async function(url) {
+    const badge = document.getElementById('editLinkBadge').value.trim() || null;
+    const official = document.getElementById('editLinkOfficial').checked;
+    try {
+      await adminFetch('/admin/links', 'PUT', { url, badge, official });
+      toast('Link updated');
       closeModal();
       loadAdminLinks();
     } catch (e) { toast('Failed: ' + e.message, 'error'); }
@@ -1143,7 +1193,7 @@
   window.doRemoveLink = async function(url) {
     if (!confirm(`Remove ${url} from the directory?`)) return;
     try {
-      await adminFetch('/admin/links/' + encodeURIComponent(url), 'DELETE');
+      await adminFetch('/admin/links', 'DELETE', { url });
       toast('Link removed');
       loadAdminLinks();
     } catch (e) { toast('Failed: ' + e.message, 'error'); }

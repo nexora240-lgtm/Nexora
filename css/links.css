@@ -313,6 +313,31 @@ body {
   gap: 6px;
 }
 
+.world-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.world-official {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  border-radius: 20px;
+  background: color-mix(in srgb, #22c55e 18%, transparent);
+  color: #22c55e;
+  white-space: nowrap;
+}
+
 .world-label {
   font-size: 0.72rem;
   color: var(--muted);
