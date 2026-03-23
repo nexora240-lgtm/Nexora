@@ -1127,3 +1127,59 @@ html.performance-fast .section-game-card {
   opacity: 1 !important;
   transform: none !important;
 }
+
+
+/* ── Light Mode ── */
+.light-scheme .pagination button {
+  border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.6);
+}
+
+.light-scheme .favorite-star {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.light-scheme .favorite-star:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.light-scheme .suggestion-btn {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.light-scheme .suggestion-btn::before {
+  background: radial-gradient(
+    circle at var(--x, 50%) var(--y, 50%),
+    rgba(0,0,0,0.04) 0%,
+    transparent 70%
+  );
+}
+
+.light-scheme .suggestion-btn:hover {
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  border-color: rgba(0,0,0,0.12);
+}
+
+.light-scheme .continue-playing-thumbnail {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.light-scheme .continue-playing-overlay {
+  background: rgba(0,0,0,0.3);
+}
+
+.light-scheme .game-card:hover {
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+}
+
+.light-scheme .section-game-card .game-info {
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+}
+
+.light-scheme .banner-cards .section-game-card .game-info {
+  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.5) 60%, transparent 100%);
+}
+
+.light-scheme .no-results {
+  color: var(--muted);
+}

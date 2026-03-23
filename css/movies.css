@@ -2014,3 +2014,96 @@ body:has(.sidebar:hover) .player-modal .player-close {
     right: calc(12px - 82px);
   }
 }
+
+
+/* ── Light Mode ── */
+.light-scheme .netflix-container {
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.light-scheme .hero-title {
+  text-shadow: 1px 2px 6px rgba(0,0,0,0.15);
+}
+
+.light-scheme .hero-description {
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.1);
+}
+
+.light-scheme .hero-btn {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.light-scheme .search-input {
+  border: 1px solid rgba(0,0,0,0.1) !important;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.04) !important;
+  background: rgba(255,255,255,0.8) !important;
+}
+
+.light-scheme .search-input:focus {
+  border-color: var(--primary-accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-accent) 12%, transparent) !important;
+}
+
+.light-scheme .search-results {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  background: rgba(255,255,255,0.95);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.light-scheme .movie-card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.light-scheme .movie-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.light-scheme .recommendation-card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.light-scheme .player-wrapper {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
+
+.light-scheme .player-episode-sidebar {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.95);
+  border-left: 1px solid rgba(0,0,0,0.06);
+}
+
+.light-scheme .player-sidebar-toggle {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.light-scheme .info-modal {
+  background: rgba(0,0,0,0.4);
+}
+
+.light-scheme .info-modal-content {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  background: var(--surface, #fff);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.light-scheme .info-close {
+  background: rgba(0,0,0,0.06);
+  color: var(--text);
+}
+
+.light-scheme .info-close:hover {
+  background: rgba(0,0,0,0.1);
+}
+
+.light-scheme .info-title {
+  text-shadow: none;
+}
+
+.light-scheme .info-btn {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.light-scheme .episode-duration {
+  background: rgba(0,0,0,0.06);
+  color: var(--text);
+}

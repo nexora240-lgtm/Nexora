@@ -817,3 +817,16 @@ body:has(.sidebar:hover) .apploader-page {
     height: 52px;
   }
 }
+
+
+/* ── Light Mode ── */
+.light-scheme .back-btn,
+.light-scheme .fullscreen-btn {
+  border-color: rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.light-scheme .back-btn:hover,
+.light-scheme .fullscreen-btn:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}

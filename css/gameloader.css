@@ -862,3 +862,32 @@ html.performance-fast .loader-start {
     transition: none !important;
   }
 }
+
+
+/* ── Light Mode ── */
+.light-scheme #gameContainer::before {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0,0,0,0.02) 0%,
+    transparent 70%
+  );
+}
+
+.light-scheme .fullscreen-btn img {
+  filter: brightness(0) drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+}
+
+.light-scheme .back-btn,
+.light-scheme .fullscreen-btn {
+  border-color: rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.light-scheme .back-btn:hover,
+.light-scheme .fullscreen-btn:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.light-scheme .branding span {
+  color: var(--text, #1a1a1a);
+}

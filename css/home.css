@@ -296,3 +296,47 @@ html.performance-fast .home .play-button {
   .home h1 { font-size: 2.25rem; }
   .home h4 { font-size: 1rem; }
 }
+
+
+/* ── Light Mode ── */
+.light-scheme .home .vote-label {
+  color: var(--muted, #6b6b6b);
+}
+
+.light-scheme .home .social-link {
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.light-scheme .home .social-tiktok {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.1);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+
+.light-scheme .home .social-tiktok:hover {
+  background: rgba(0,0,0,0.08);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+}
+
+.light-scheme .home .play-button {
+  box-shadow: 0 3px 16px rgba(0,0,0,0.12);
+}
+
+.light-scheme .home .play-button::before {
+  background: radial-gradient(
+    var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
+    rgba(255,255,255,0.4) 0%,
+    rgba(255,255,255,0.15) 30%,
+    transparent 70%
+  );
+}
+
+.light-scheme .home .vote-button {
+  background: rgba(34,197,94,0.1);
+  border-color: rgba(34,197,94,0.2);
+  color: #16a34a;
+}
+
+.light-scheme .home .vote-button:hover {
+  background: rgba(34,197,94,0.18);
+}

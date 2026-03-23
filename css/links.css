@@ -741,3 +741,50 @@ body {
     height: 24px;
   }
 }
+
+
+/* ── Light Mode ── */
+.light-scheme .world-item {
+  border: 1px solid rgba(0,0,0,0.07);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(0,0,0,0.02);
+  background: rgba(255,255,255,0.6);
+}
+
+.light-scheme .world-item:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  border-color: rgba(0,0,0,0.1);
+}
+
+.light-scheme .filter-btn {
+  border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.6);
+}
+
+.light-scheme .filter-btn:hover,
+.light-scheme .filter-btn.active {
+  border-color: color-mix(in srgb, var(--primary-accent) 25%, transparent);
+}
+
+.light-scheme .links-info-overlay {
+  background: rgba(0,0,0,0.35);
+}
+
+.light-scheme .links-info-modal {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+  background: rgba(255,255,255,0.95);
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.light-scheme .copy-toast {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.9);
+}
+
+.light-scheme .submit-status.success {
+  color: #16a34a;
+}
+
+.light-scheme .submit-status.error {
+  color: #dc2626;
+}
