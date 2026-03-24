@@ -221,8 +221,8 @@
             </div>
           </div>
           <div class="admin-table-wrap">
-            <table><thead><tr><th>URL</th><th>Domain</th><th>Badge</th><th>Official</th><th>Added</th><th>Last Checked</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="adminLinksBody"><tr><td colspan="8" class="loading"><div class="spinner"></div></td></tr></tbody></table>
+            <table><thead><tr><th>URL</th><th>Domain</th><th>Badge</th><th>Official</th><th>Bypassed</th><th>Added</th><th>Last Checked</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="adminLinksBody"><tr><td colspan="9" class="loading"><div class="spinner"></div></td></tr></tbody></table>
           </div>
         </div>
       </section>
@@ -1079,7 +1079,7 @@
 
   async function loadAdminLinks() {
     const body = document.getElementById('adminLinksBody');
-    body.innerHTML = '<tr><td colspan="8" class="loading"><div class="spinner"></div></td></tr>';
+    body.innerHTML = '<tr><td colspan="9" class="loading"><div class="spinner"></div></td></tr>';
     try {
       const data = await adminFetch('/admin/links');
       const links = data.links || [];
@@ -1087,17 +1087,20 @@
       if (countEl) countEl.textContent = `${links.length} link${links.length !== 1 ? 's' : ''}`;
 
       if (!links.length) {
-        body.innerHTML = '<tr><td colspan="8" class="empty-state">No links in directory</td></tr>';
+        body.innerHTML = '<tr><td colspan="9" class="empty-state">No links in directory</td></tr>';
         return;
       }
       body.innerHTML = links.map(l => {
-        const statusBadge = l.healthy === false
-          ? '<span class="badge badge-danger">Down</span>'
-          : '<span class="badge badge-success">Healthy</span>';
+        const statusBadge = l.bypassed
+          ? '<span class="badge badge-warning">Bypassed</span>'
+          : l.healthy === false
+            ? '<span class="badge badge-danger">Down</span>'
+            : '<span class="badge badge-success">Healthy</span>';
 
         const domain = l.domain || l.name || '—';
         const badgeCol = l.badge ? `<span class="badge badge-muted">${esc(l.badge)}</span>` : '—';
         const officialCol = l.official ? '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Official</span>' : '—';
+        const bypassedCol = l.bypassed ? '<span class="badge badge-warning"><i class="fas fa-shield-alt"></i> Yes</span>' : '—';
         const safeUrl = esc(l.url).replace(/'/g, "\\'");
         const safeBadge = esc(l.badge || '').replace(/'/g, "\\'");
         return `<tr>
@@ -1105,16 +1108,17 @@
           <td><strong>${esc(domain)}</strong></td>
           <td>${badgeCol}</td>
           <td>${officialCol}</td>
+          <td>${bypassedCol}</td>
           <td>${fmtRelative(l.addedAt)}</td>
           <td>${fmtRelative(l.lastChecked)}</td>
           <td>${statusBadge}</td>
           <td class="btn-group">
-            <button class="btn btn-outline btn-sm" onclick="showEditLinkForm('${safeUrl}', '${safeBadge}', ${!!l.official})" title="Edit link"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-outline btn-sm" onclick="showEditLinkForm('${safeUrl}', '${safeBadge}', ${!!l.official}, ${!!l.bypassed})" title="Edit link"><i class="fas fa-edit"></i></button>
             <button class="btn btn-danger btn-sm" onclick="doRemoveLink('${safeUrl}')" title="Remove link"><i class="fas fa-trash"></i></button>
           </td></tr>`;
       }).join('');
     } catch (e) {
-      body.innerHTML = `<tr><td colspan="8" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
+      body.innerHTML = `<tr><td colspan="9" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
     }
   }
   window.loadAdminLinks = loadAdminLinks;
@@ -1157,7 +1161,7 @@
     } catch (e) { toast('Failed: ' + e.message, 'error'); }
   };
 
-  window.showEditLinkForm = function(url, badge, official) {
+  window.showEditLinkForm = function(url, badge, official, bypassed) {
     document.getElementById('adminModal').innerHTML = `
       <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
         <div class="modal">
@@ -1171,6 +1175,11 @@
               <span class="toggle-track"><span class="toggle-thumb"></span></span></label>
             <label for="editLinkOfficial">Mark as Official</label>
           </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:8px">
+            <label class="toggle"><input type="checkbox" id="editLinkBypassed" ${bypassed ? 'checked' : ''}>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+            <label for="editLinkBypassed">Bypass health checks</label>
+          </div>
           <div class="modal-actions">
             <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
             <button class="btn btn-primary" onclick="doEditLink('${esc(url).replace(/'/g, "\\'")}')"><i class="fas fa-save"></i> Save</button>
@@ -1182,8 +1191,9 @@
   window.doEditLink = async function(url) {
     const badge = document.getElementById('editLinkBadge').value.trim() || null;
     const official = document.getElementById('editLinkOfficial').checked;
+    const bypassed = document.getElementById('editLinkBypassed').checked;
     try {
-      await adminFetch('/admin/links', 'PUT', { url, badge, official });
+      await adminFetch('/admin/links', 'PUT', { url, badge, official, bypassed });
       toast('Link updated');
       closeModal();
       loadAdminLinks();
