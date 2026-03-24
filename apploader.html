@@ -20,7 +20,7 @@
   <meta name="referrer" content="no-referrer-when-downgrade" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>App Loader - Nexora</title>
-  <link rel="stylesheet" href="css/theme-tokens.css" />
+  <link rel="stylesheet" href="css/_tokens.css" />
   <link rel="stylesheet" href="css/apploader.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/nexora-amber.png">
@@ -114,6 +114,11 @@
 
         titleEl.textContent = appTitle;
         document.title = `${appTitle} - Nexora`;
+
+        // Apply thumbnail as blurred background
+        if (appThumb) {
+          appContainer.style.setProperty('--app-bg', `url("${appThumb}")`);
+        }
 
         appContainer.innerHTML = `
           <div class="app-start">

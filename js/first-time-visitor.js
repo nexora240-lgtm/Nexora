@@ -1198,6 +1198,7 @@
               iframe.style.top = '0';
               iframe.style.left = '0';
               iframe.src = window.location.origin;
+              iframe.name = 'nexora-cloaked';
               iframe.setAttribute('loading', 'eager');
               iframe.setAttribute('referrerpolicy', 'no-referrer');
               doc.body.style.margin = '0';

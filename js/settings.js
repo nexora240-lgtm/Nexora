@@ -780,9 +780,14 @@
     try { localStorage.setItem(ABOUT_KEY, JSON.stringify(!!enabled)); } catch (e) {}
     if (emitEvent) document.dispatchEvent(new CustomEvent('settings:aboutBlankToggled', { detail: { enabled: !!enabled } }));
 
+    // Don't lock disguise when running inside an about:blank iframe
+    var inAboutBlank = window.__nexoraIsAboutBlank || false;
+
     if (!!enabled) {
-      if (disguiseSelect) disguiseSelect.classList.add('locked');
-      if (disguiseLockedNote) { disguiseLockedNote.style.display = 'block'; disguiseLockedNote.setAttribute('aria-hidden', 'false'); }
+      if (!inAboutBlank) {
+        if (disguiseSelect) disguiseSelect.classList.add('locked');
+        if (disguiseLockedNote) { disguiseLockedNote.style.display = 'block'; disguiseLockedNote.setAttribute('aria-hidden', 'false'); }
+      }
       if (autoCloakStatus) { autoCloakStatus.style.display = 'block'; }
     } else {
       if (disguiseSelect) disguiseSelect.classList.remove('locked');
@@ -823,6 +828,24 @@
         try { localStorage.setItem(FAVICON_KEY, FALLBACK_NONE_FAVICON); setCookie(COOKIE_FAV, FALLBACK_NONE_FAVICON); } catch (e) {}
         setTimeout(() => { setFaviconFlexible(FALLBACK_NONE_FAVICON); }, 0);
       }
+      // Update parent about:blank tab title/favicon when disguise changes
+      try {
+        if (window.__nexoraIsAboutBlank && window.top && window.top.document) {
+          var parentDoc = window.top.document;
+          if (val && CODE_LEVEL_TITLES[val]) {
+            parentDoc.title = CODE_LEVEL_TITLES[val];
+          }
+          var favUrl = val && FAVICON_MAP[val] ? FAVICON_MAP[val] : '';
+          if (favUrl) {
+            var oldIcons = parentDoc.querySelectorAll('link[rel~="icon"]');
+            for (var i = 0; i < oldIcons.length; i++) oldIcons[i].remove();
+            var link = parentDoc.createElement('link');
+            link.rel = 'icon';
+            link.href = favUrl;
+            parentDoc.head.appendChild(link);
+          }
+        }
+      } catch (e) {}
     });
   }
 
@@ -1090,8 +1113,43 @@
       const win = window.open();
       if (!win) return null;
       try {
-        if (!win.document.body) win.document.documentElement.appendChild(win.document.createElement('body'));
-        const iframe = win.document.createElement('iframe');
+        // Apply disguise title and favicon to the about:blank window
+        var disguiseName = '';
+        try {
+          var ck = document.cookie.match('(?:^|; )nexora_disguise=([^;]*)');
+          disguiseName = ck ? decodeURIComponent(ck[1]) : '';
+          if (!disguiseName) disguiseName = localStorage.getItem('settings.disguise') || '';
+        } catch (e) {}
+        var TITLES = {
+          "Clever": "Clever | Portal", "Google Classroom": "Home", "Canvas": "Dashboard",
+          "Google Drive": "Home - Google Drive", "Seesaw": "Seesaw", "Edpuzzle": "Edpuzzle",
+          "Kahoot!": "Enter Game PIN - Kahoot!", "Quizlet": "Your Sets | Quizlet",
+          "Khan Academy": "Dashboard | Khan Academy"
+        };
+        var FAVICONS = {
+          "Clever": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/clever.ico",
+          "Google Classroom": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/classroom.ico",
+          "Canvas": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/canvas.png",
+          "Google Drive": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/drive.png",
+          "Seesaw": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/seesaw.jpg",
+          "Edpuzzle": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/edpuzzle.png",
+          "Kahoot!": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/kahoot.ico",
+          "Quizlet": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/quizlet.png",
+          "Khan Academy": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/khanacademy.ico"
+        };
+        var dTitle = (disguiseName && TITLES[disguiseName]) ? TITLES[disguiseName] : '';
+        var dFavicon = (disguiseName && FAVICONS[disguiseName]) ? FAVICONS[disguiseName] : '';
+
+        var doc = win.document;
+        doc.open();
+        var html = '<!DOCTYPE html><html><head>';
+        if (dTitle) html += '<title>' + dTitle + '</title>';
+        if (dFavicon) html += '<link rel="icon" href="' + dFavicon + '">';
+        html += '</head><body style="margin:0;padding:0;overflow:hidden;"></body></html>';
+        doc.write(html);
+        doc.close();
+
+        var iframe = doc.createElement('iframe');
         iframe.style.width = "100%";
         iframe.style.height = "100%";
         iframe.style.border = "none";
@@ -1101,12 +1159,10 @@
         iframe.style.top = "0";
         iframe.style.left = "0";
         iframe.src = target;
+        iframe.name = 'nexora-cloaked';
         iframe.setAttribute('loading', 'eager');
         iframe.setAttribute('referrerpolicy', 'no-referrer');
-        win.document.body.style.margin = "0";
-        win.document.body.style.padding = "0";
-        win.document.body.style.overflow = "hidden";
-        win.document.body.appendChild(iframe);
+        doc.body.appendChild(iframe);
       } catch (innerErr) {
         try { win.location.href = target; } catch (navErr) {}
       }
@@ -1151,6 +1207,7 @@
       iframe.style.height = "100%";
       iframe.style.border = "none";
       iframe.src = url;
+      iframe.name = 'nexora-cloaked';
       win.document.body.appendChild(iframe);
     } catch (e) {
       try { win.location.href = url; } catch (e) {}

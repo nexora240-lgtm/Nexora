@@ -17,6 +17,10 @@
   --glass-highlight: color-mix(in srgb, var(--al-text) 10%, transparent);
   --neu-shadow-light: color-mix(in srgb, var(--al-text) 5%, transparent);
   --neu-shadow-dark: rgba(0, 0, 0, 0.5);
+
+  --app-bg: none;
+  --app-bg-opacity: 0.45;
+  --app-bg-blur: 18px;
 }
 
 * { box-sizing: border-box; }
@@ -102,49 +106,6 @@ body {
   margin: 0;
   color: var(--al-text);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Inter, Arial, sans-serif;
-  animation: fadeIn 0.3s ease-out;
-  position: relative;
-  overflow: hidden;
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: 
-    radial-gradient(
-      circle at 30% 40%,
-      color-mix(in srgb, var(--al-accent) 12%, transparent) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 70% 70%,
-      color-mix(in srgb, var(--al-accent-deep) 8%, transparent) 0%,
-      transparent 50%
-    );
-  animation: ambientRotate 25s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 0;
-}
-
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: 
-    repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 60px,
-      color-mix(in srgb, var(--al-accent) 1%, transparent) 60px,
-      color-mix(in srgb, var(--al-accent) 1%, transparent) 61px
-    );
-  opacity: 0.3;
-  pointer-events: none;
-  z-index: 0;
 }
 
 html, body {
@@ -192,72 +153,19 @@ body:has(.sidebar:hover) .apploader-page {
   position: relative;
 }
 
-.apploader-wrapper::before,
-.apploader-wrapper::after {
-  content: "";
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: var(--al-accent);
-  border-radius: 50%;
-  filter: blur(1px);
-  opacity: 0.6;
-  pointer-events: none;
-  z-index: -1;
-  animation: particleFloat 6s ease-in-out infinite;
-}
-
-.apploader-wrapper::before {
-  top: 20%;
-  left: 10%;
-  animation-delay: 0s;
-}
-
-.apploader-wrapper::after {
-  top: 60%;
-  right: 15%;
-  animation-delay: 3s;
-}
-
 /* Header bar */
 .apploader-header {
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 12px 16px;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--al-panel) 60%, transparent),
-    color-mix(in srgb, var(--al-panel-2) 50%, transparent)
-  );
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
+  background: var(--al-panel);
   border: 1px solid var(--glass-border);
   border-bottom: none;
   border-radius: var(--al-radius) var(--al-radius) 0 0;
-  box-shadow:
-    -4px -4px 12px var(--neu-shadow-light),
-    4px 4px 16px var(--neu-shadow-dark),
-    inset 0 1px 0 color-mix(in srgb, var(--al-text) 8%, transparent);
-  animation: headerSlideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
-}
-
-.apploader-header::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--al-accent) 15%, transparent),
-    transparent
-  );
-  animation: shimmer 4s infinite;
 }
 
 .back-btn,
@@ -267,9 +175,6 @@ body:has(.sidebar:hover) .apploader-page {
   background: linear-gradient(145deg, 
     var(--al-accent),
     var(--al-accent-deep));
-  background-size: 200% 200%;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid color-mix(in srgb, var(--al-on-accent) 25%, transparent);
   border-radius: 50%;
   display: flex;
@@ -277,26 +182,17 @@ body:has(.sidebar:hover) .apploader-page {
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
-    -2px -2px 8px var(--neu-shadow-light),
-    2px 2px 12px var(--neu-shadow-dark),
-    inset 0 1px 0 color-mix(in srgb, var(--al-on-accent) 25%, transparent),
-    0 0 0 0 var(--al-shadow);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   color: var(--al-on-accent);
   font-size: 16px;
   position: relative;
   z-index: 1;
-  animation: gradientFlow 3s ease infinite;
 }
 
 .back-btn:hover,
 .fullscreen-btn:hover {
-  transform: scale(1.15) rotate(5deg);
-  box-shadow: 
-    -3px -3px 10px var(--neu-shadow-light),
-    3px 3px 14px var(--neu-shadow-dark),
-    0 0 25px var(--al-shadow),
-    0 0 0 4px color-mix(in srgb, var(--al-accent) 20%, transparent);
+  transform: scale(1.1);
+  box-shadow: 0 4px 16px var(--al-shadow);
 }
 
 .back-btn:active,
@@ -309,21 +205,10 @@ body:has(.sidebar:hover) .apploader-page {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
-  background: linear-gradient(
-    90deg,
-    var(--al-text),
-    var(--al-accent),
-    var(--al-text)
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--al-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  animation: gradientFlow 4s ease infinite;
-  filter: drop-shadow(0 0 8px var(--al-shadow));
   position: relative;
   z-index: 1;
 }
@@ -333,11 +218,7 @@ body:has(.sidebar:hover) .apploader-page {
   width: 100%;
   flex: 1;
   min-height: 0;
-  background: linear-gradient(
-    135deg,
-    var(--al-panel) 0%,
-    color-mix(in srgb, var(--al-panel-2) 95%, var(--al-accent)) 100%
-  );
+  background: var(--al-panel);
   border: 1px solid var(--glass-border);
   border-radius: 0 0 var(--al-radius) var(--al-radius);
   overflow: hidden;
@@ -345,25 +226,23 @@ body:has(.sidebar:hover) .apploader-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow:
-    -8px -8px 16px var(--neu-shadow-light),
-    8px 8px 24px var(--neu-shadow-dark),
-    0 0 60px var(--al-shadow),
-    inset 0 1px 0 color-mix(in srgb, var(--al-text) 5%, transparent);
-  animation: scaleIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
 }
 
 .app-container::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(
-    circle at 50% 0%,
-    color-mix(in srgb, var(--al-accent) 8%, transparent) 0%,
-    transparent 60%
-  );
-  pointer-events: none;
   z-index: 0;
+  background: var(--app-bg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(var(--app-bg-blur));
+  opacity: var(--app-bg-opacity);
+  transform: scale(1.08);
+  pointer-events: none;
+  transition: opacity 0.4s ease;
 }
 
 .app-iframe {
@@ -394,25 +273,10 @@ body:has(.sidebar:hover) .apploader-page {
   height: 160px;
   border-radius: 32px;
   overflow: hidden;
-  box-shadow: 
-    -6px -6px 16px var(--neu-shadow-light),
-    6px 6px 24px var(--neu-shadow-dark),
-    0 0 50px var(--al-shadow);
-  border: 2px solid transparent;
-  background: 
-    linear-gradient(var(--al-panel), var(--al-panel)) padding-box,
-    linear-gradient(
-      45deg,
-      var(--al-accent),
-      var(--al-accent-deep),
-      var(--al-accent)
-    ) border-box;
-  background-size: 100% 100%, 200% 200%;
-  animation: 
-    iconFloat 3.5s ease-in-out infinite, 
-    glowPulse 3.5s ease-in-out infinite;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+  border: 2px solid color-mix(in srgb, var(--al-accent) 40%, transparent);
+  background: var(--al-panel);
   position: relative;
-  transform-style: preserve-3d;
   transition: transform 0.3s ease;
 }
 
@@ -436,20 +300,7 @@ body:has(.sidebar:hover) .apploader-page {
   font-size: 1.75rem;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(
-    135deg,
-    var(--al-text) 0%,
-    var(--al-accent) 50%,
-    var(--al-text) 100%
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: 
-    titleSlide 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both,
-    gradientFlow 3s ease infinite;
-  filter: drop-shadow(0 2px 10px var(--al-shadow));
+  color: var(--al-text);
 }
 
 .launch-btn {
@@ -459,28 +310,16 @@ body:has(.sidebar:hover) .apploader-page {
   background: linear-gradient(
     135deg, 
     var(--al-accent),
-    var(--al-accent-deep),
-    var(--al-accent)
+    var(--al-accent-deep)
   );
-  background-size: 200% 200%;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   color: var(--al-on-accent);
-  border: 2px solid color-mix(in srgb, var(--al-on-accent) 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--al-on-accent) 25%, transparent);
   padding: 16px 40px;
   font-size: 1.25rem;
   font-weight: 700;
   border-radius: var(--al-radius);
   cursor: pointer;
-  box-shadow: 
-    -4px -4px 12px var(--neu-shadow-light),
-    4px 4px 16px var(--neu-shadow-dark),
-    inset 0 2px 0 color-mix(in srgb, var(--al-on-accent) 30%, transparent),
-    0 0 35px var(--al-shadow),
-    0 8px 20px color-mix(in srgb, var(--al-accent) 40%, transparent);
-  animation: 
-    btnPop 0.55s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both,
-    gradientFlow 3s ease infinite;
+  box-shadow: 0 4px 16px var(--al-shadow);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
@@ -509,12 +348,8 @@ body:has(.sidebar:hover) .apploader-page {
 }
 
 .launch-btn:hover {
-  transform: translateY(-4px) scale(1.05);
-  box-shadow: 
-    -6px -6px 16px var(--neu-shadow-light),
-    6px 6px 20px var(--neu-shadow-dark),
-    0 0 50px var(--al-shadow),
-    0 12px 30px color-mix(in srgb, var(--al-accent) 50%, transparent);
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 8px 24px var(--al-shadow);
 }
 
 .launch-btn:active {
@@ -549,23 +384,11 @@ body:has(.sidebar:hover) .apploader-page {
 .app-error i {
   font-size: 3rem;
   color: var(--al-accent);
-  animation: pulse 2s ease-in-out infinite;
-  filter: drop-shadow(0 0 15px var(--al-shadow));
 }
 
 .app-error h2 {
   margin: 0;
-  background: linear-gradient(
-    90deg,
-    var(--al-text),
-    var(--al-accent),
-    var(--al-text)
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: gradientFlow 3s ease infinite;
+  color: var(--al-text);
 }
 
 .app-error p {
@@ -653,8 +476,6 @@ body:has(.sidebar:hover) .apploader-page {
 
 .other-apps-title i {
   color: var(--al-accent);
-  animation: pulse 2s ease-in-out infinite;
-  filter: drop-shadow(0 0 8px var(--al-shadow));
 }
 
 .other-apps-grid {
@@ -776,7 +597,6 @@ body:has(.sidebar:hover) .apploader-page {
   
   .app-title {
     font-size: 1.1rem;
-    animation: gradientFlow 4s ease infinite;
   }
   
   .app-container {
