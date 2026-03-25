@@ -391,7 +391,11 @@
       const saved = cookieFav || localStorage.getItem(FAVICON_KEY) || '';
       if (!saved) {
         const existing = document.getElementById('page-favicon') || document.querySelector('link[rel~="icon"]');
-        if (!existing) applyFaviconHref(DEFAULT_FALLBACK);
+        if (!existing) {
+          applyFaviconHref(DEFAULT_FALLBACK);
+        } else {
+          notifyParentFavicon(existing.href || DEFAULT_FALLBACK);
+        }
         return;
       }
       if (/^https?:\/\//i.test(saved)) {
@@ -552,7 +556,14 @@
       attrObserver.observe(link, { attributes: true, attributeFilter: ['href'] });
     }
 
-    document.querySelectorAll('link[rel~="icon"]').forEach(watchLink);
+    document.querySelectorAll('link[rel~="icon"]').forEach(function (link) {
+      watchLink(link);
+      var href = link.href;
+      if (href && href !== lastHref && href.indexOf('blob:') !== 0) {
+        lastHref = href;
+        postFaviconToParent(href);
+      }
+    });
 
     new MutationObserver(function (mutations) {
       mutations.forEach(function (m) {
@@ -572,6 +583,14 @@
   } else {
     document.addEventListener('DOMContentLoaded', startFaviconObserver, { once: true });
   }
+
+  // Re-send current favicon after DOMContentLoaded to catch late changes
+  document.addEventListener('DOMContentLoaded', function () {
+    var icon = document.querySelector('link[rel~="icon"]');
+    if (icon && icon.href && icon.href.indexOf('blob:') !== 0) {
+      postFaviconToParent(icon.href);
+    }
+  }, { once: true });
 })();
 
 (function () {
