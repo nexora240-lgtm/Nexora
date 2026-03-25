@@ -334,6 +334,15 @@
     try { Array.from(document.querySelectorAll('link[rel~="icon"]')).forEach(n => n.remove()); } catch (e) {}
   }
 
+  function notifyParentFavicon(href) {
+    if (window.self === window.top || !href || /^blob:/i.test(href)) return;
+    try {
+      var msg = { type: 'nexora:faviconChange', href: href };
+      window.parent.postMessage(msg, '*');
+      if (window.top !== window.parent) window.top.postMessage(msg, '*');
+    } catch (e) {}
+  }
+
   function applyFaviconHref(href) {
     try {
       if (!href) href = DEFAULT_FALLBACK;
@@ -345,6 +354,7 @@
       else if (/\.png($|\?)/i.test(href) || /^data:image\/png/i.test(href)) link.type = 'image/png';
       link.href = href;
       document.head.appendChild(link);
+      notifyParentFavicon(href);
     } catch (e) {}
   }
 
@@ -360,6 +370,7 @@
       const sep = url.includes('?') ? '&' : '?';
       const persisted = url + sep + '_n=' + Date.now();
       try { localStorage.setItem(FAVICON_KEY, persisted); setCookie(COOKIE_FAV, persisted); } catch (e) {}
+      notifyParentFavicon(url);
       setTimeout(() => { try { URL.revokeObjectURL(blobUrl); } catch (e) {} }, 60_000);
     } catch (e) { applyFaviconHref(url); }
   }
@@ -532,7 +543,7 @@
         var el = m.target;
         if (el.tagName === 'LINK' && /\bicon\b/i.test(el.rel || '')) {
           var href = el.href;
-          if (href && href !== lastHref) { lastHref = href; postFaviconToParent(href); }
+          if (href && href !== lastHref && href.indexOf('blob:') !== 0) { lastHref = href; postFaviconToParent(href); }
         }
       });
     });
@@ -548,7 +559,7 @@
         m.addedNodes.forEach(function (node) {
           if (node.nodeType === 1 && node.tagName === 'LINK' && /\bicon\b/i.test(node.rel || '')) {
             var href = node.href;
-            if (href && href !== lastHref) { lastHref = href; postFaviconToParent(href); }
+            if (href && href !== lastHref && href.indexOf('blob:') !== 0) { lastHref = href; postFaviconToParent(href); }
             watchLink(node);
           }
         });
