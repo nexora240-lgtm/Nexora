@@ -18,6 +18,11 @@ const routes = {
 function navigate(path) {
   history.pushState({}, '', path);
   const routeKey = path.split('?')[0];
+
+  if (routeKey === '/chatroom' && window.NexoraCircleNotifications) {
+    window.NexoraCircleNotifications.dismissAll();
+  }
+
   const renderFn = routes[routeKey];
   if (renderFn) {
     renderFn();

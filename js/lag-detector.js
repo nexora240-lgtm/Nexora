@@ -4,13 +4,11 @@
 
   console.log('[LagDetector] script loaded');
 
-  // Don't run inside about:blank iframes
   if (window.self !== window.top) {
     console.log('[LagDetector] bailed — running inside an iframe');
     return;
   }
 
-  // Don't show if user has dismissed permanently
   try {
     if (localStorage.getItem(DISMISSED_KEY) === 'true') {
       console.log('[LagDetector] bailed — dismissed by user (nexora_lag_dismissed=true). Run: localStorage.removeItem("nexora_lag_dismissed") then reload.');
@@ -18,7 +16,6 @@
     }
   } catch (e) {}
 
-  // Don't show if already on the lowest (fast) preset
   try {
     if (localStorage.getItem(PRESET_KEY) === 'fast') {
       console.log('[LagDetector] bailed — already on fast preset');
@@ -27,88 +24,232 @@
   } catch (e) {}
 
   // ─── Tuning knobs ────────────────────────────────────────────────────────────
-  // How many frames to keep in the rolling window
-  var SAMPLE_WINDOW    = 60;
-  // A frame is considered "lagging" if it takes longer than this (ms)
-  // 33 ms ≈ 30 fps  |  50 ms ≈ 20 fps  |  100 ms ≈ 10 fps
-  var LAG_THRESHOLD_MS = 100;
-  // Trigger the banner when this many frames out of SAMPLE_WINDOW are laggy
-  // e.g. 30 out of 60 = 50% of frames must be slow
-  var LAG_RATIO        = 0.50;
-  // Wait this long after page load before measuring (ms) — avoids startup spikes
-  var WARMUP_MS        = 4000;
-  // ─────────────────────────────────────────────────────────────────────────────
-  var LAG_CONSECUTIVE  = Math.round(SAMPLE_WINDOW * LAG_RATIO); // derived, don't edit
+  // Total score needed to show the banner
+  var SCORE_THRESHOLD  = 5;
 
+  // LCP thresholds (ms) — Largest Contentful Paint
+  var LCP_WARN         = 1500;   // +2 pts
+  var LCP_POOR         = 4000;   // +5 pts (instant trigger)
+
+  // FCP thresholds (ms) — First Contentful Paint (earlier signal)
+  var FCP_WARN         = 1800;   // +1 pt
+  var FCP_POOR         = 3000;   // +3 pts
+
+  // INP thresholds (ms) — worst interaction-to-next-paint latency
+  var INP_WARN         = 200;    // +2 pts
+  var INP_POOR         = 500;    // +5 pts (instant trigger)
+
+  // TTFB thresholds (ms) — server + network latency from navigation timing
+  var TTFB_WARN        = 800;    // +1 pt
+  var TTFB_POOR        = 1800;   // +3 pts
+
+  // TBT — Total Blocking Time: sum of (task_duration - 50ms) for all long tasks
+  var TBT_WARN         = 300;    // +2 pts
+  var TBT_POOR         = 600;    // +4 pts (replaces warn)
+
+  // rAF: frame considered slow if longer than this (ms) — 42ms ≈ 24fps
+  var RAF_THRESHOLD_MS = 42;
+  var RAF_WINDOW       = 60;     // rolling window size in frames
+  var RAF_RATIO        = 0.75;   // 75% of window must be slow to score
+  // Re-evaluate every N frames after warmup; first hit = 3pts, subsequent = 1pt each
+  var RAF_RECHECK_EVERY = 30;
+  var RAF_MAX_PTS      = 5;      // rAF contribution cap
+
+  // Wait before rAF evaluation starts (ms)
+  var WARMUP_MS        = 10000;
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  var score = 0;
+  var shown = false;
+
+  // Per-signal score caps to prevent double-counting
+  var lcpScoreAdded  = 0;
+  var fcpScoreAdded  = 0;
+  var inpScoreAdded  = 0;
+  var ttfbScoreAdded = 0;
+  var tbtScoreAdded  = 0;
+  var rafScoreAdded  = 0;
+
+  function maybeShow(reason) {
+    if (shown) return;
+    if (score >= SCORE_THRESHOLD) {
+      shown = true;
+      console.log('[LagDetector] threshold reached (' + score + ' pts) — trigger:', reason);
+      showLagBanner();
+    }
+  }
+
+  function addScore(pts, cap, currentAdded, label) {
+    // cap per-signal contribution; returns new total added for this signal
+    var allowed = Math.min(pts, cap - currentAdded);
+    if (allowed <= 0) return currentAdded;
+    score += allowed;
+    console.log('[LagDetector] +' + allowed + ' pts (' + label + ') → total', score);
+    maybeShow(label);
+    return currentAdded + allowed;
+  }
+
+  if ('PerformanceObserver' in window) {
+
+    // ── 1. LCP — Largest Contentful Paint ─────────────────────────────────────
+    try {
+      new PerformanceObserver(function (list) {
+        var entries = list.getEntries();
+        var lcp = entries[entries.length - 1].startTime;
+        var target = lcp >= LCP_POOR ? 5 : lcp >= LCP_WARN ? 2 : 0;
+        if (target > lcpScoreAdded) {
+          lcpScoreAdded = addScore(target - lcpScoreAdded, 5, lcpScoreAdded,
+            'LCP ' + (lcp >= LCP_POOR ? 'poor' : 'warn') + ' (' + lcp.toFixed(0) + 'ms)');
+        } else {
+          console.log('[LagDetector] LCP good (' + lcp.toFixed(0) + 'ms)');
+        }
+      }).observe({ type: 'largest-contentful-paint', buffered: true });
+    } catch (e) { console.log('[LagDetector] LCP not supported'); }
+
+    // ── 2. FCP — First Contentful Paint ───────────────────────────────────────
+    try {
+      new PerformanceObserver(function (list) {
+        list.getEntries().forEach(function (e) {
+          if (e.name !== 'first-contentful-paint') return;
+          var fcp = e.startTime;
+          var target = fcp >= FCP_POOR ? 3 : fcp >= FCP_WARN ? 1 : 0;
+          if (target > fcpScoreAdded) {
+            fcpScoreAdded = addScore(target - fcpScoreAdded, 3, fcpScoreAdded,
+              'FCP ' + (fcp >= FCP_POOR ? 'poor' : 'warn') + ' (' + fcp.toFixed(0) + 'ms)');
+          } else {
+            console.log('[LagDetector] FCP good (' + fcp.toFixed(0) + 'ms)');
+          }
+        });
+      }).observe({ type: 'paint', buffered: true });
+    } catch (e) { console.log('[LagDetector] FCP not supported'); }
+
+    // ── 3. CLS skipped — sidebar navigation causes false positives ────────────
+
+    // ── 4. INP — interaction-to-next-paint latency ────────────────────────────
+    // e.duration = full time from input start to next paint frame (correct INP measure)
+    try {
+      new PerformanceObserver(function (list) {
+        list.getEntries().forEach(function (e) {
+          var dur = e.duration; // correct: full input → next paint
+          if (dur > (typeof worstInp !== 'undefined' ? worstInp : 0)) worstInp = dur;
+        });
+        var target = worstInp >= INP_POOR ? 5 : worstInp >= INP_WARN ? 2 : 0;
+        if (target > inpScoreAdded) {
+          inpScoreAdded = addScore(target - inpScoreAdded, 5, inpScoreAdded,
+            'INP ' + (worstInp >= INP_POOR ? 'poor' : 'warn') + ' (' + worstInp.toFixed(0) + 'ms)');
+        }
+      }).observe({ type: 'event', durationThreshold: INP_WARN, buffered: true });
+    } catch (e) { console.log('[LagDetector] INP not supported'); }
+    var worstInp = 0;
+
+    // ── 5. TBT — Total Blocking Time from long tasks ──────────────────────────
+    // TBT = Σ(task_duration - 50ms) for every long task > 50ms
+    var tbtAccum = 0;
+    try {
+      new PerformanceObserver(function (list) {
+        list.getEntries().forEach(function (e) {
+          tbtAccum += Math.max(0, e.duration - 50);
+        });
+        var target = tbtAccum >= TBT_POOR ? 4 : tbtAccum >= TBT_WARN ? 2 : 0;
+        if (target > tbtScoreAdded) {
+          tbtScoreAdded = addScore(target - tbtScoreAdded, 4, tbtScoreAdded,
+            'TBT ' + (tbtAccum >= TBT_POOR ? 'poor' : 'warn') + ' (' + tbtAccum.toFixed(0) + 'ms)');
+        }
+      }).observe({ type: 'longtask', buffered: true });
+    } catch (e) { console.log('[LagDetector] longtask not supported'); }
+  }
+
+  // ── 6. TTFB from Navigation Timing (no observer needed) ──────────────────────
+  function checkTTFB() {
+    try {
+      var nav = performance.getEntriesByType('navigation')[0];
+      if (!nav) return;
+      var ttfb = nav.responseStart - nav.requestStart;
+      var target = ttfb >= TTFB_POOR ? 3 : ttfb >= TTFB_WARN ? 1 : 0;
+      if (target > 0) {
+        ttfbScoreAdded = addScore(target, 3, ttfbScoreAdded,
+          'TTFB ' + (ttfb >= TTFB_POOR ? 'poor' : 'warn') + ' (' + ttfb.toFixed(0) + 'ms)');
+      } else {
+        console.log('[LagDetector] TTFB good (' + ttfb.toFixed(0) + 'ms)');
+      }
+    } catch (e) {}
+  }
+  if (document.readyState === 'complete') {
+    checkTTFB();
+  } else {
+    window.addEventListener('load', checkTTFB, { once: true });
+  }
+
+  // ── 7. rAF rolling frame-rate (ongoing monitor) ───────────────────────────────
   var frameDeltas = [];
   var lastTime = null;
   var startTime = performance.now();
-  var shown = false;
   var rafId = null;
+  var rafFramesSinceCheck = 0;
 
   function onFrame(now) {
-    if (shown) return; // stop once banner is shown
-
+    if (shown) return;
     if (lastTime !== null) {
       var delta = now - lastTime;
-      // Ignore huge gaps (tab was hidden, etc.)
       if (delta < 2000) {
         frameDeltas.push(delta);
-        if (frameDeltas.length > SAMPLE_WINDOW) {
-          frameDeltas.shift();
-        }
+        if (frameDeltas.length > RAF_WINDOW) frameDeltas.shift();
       }
     }
     lastTime = now;
 
-    // Only evaluate after warmup period
-    if (now - startTime >= WARMUP_MS && frameDeltas.length >= SAMPLE_WINDOW) {
-      var lagCount = 0;
-      for (var i = 0; i < frameDeltas.length; i++) {
-        if (frameDeltas[i] > LAG_THRESHOLD_MS) lagCount++;
-      }
-      if (lagCount >= LAG_CONSECUTIVE) {
-        shown = true;
-        showLagBanner();
-        return;
+    if (now - startTime >= WARMUP_MS && frameDeltas.length >= RAF_WINDOW) {
+      rafFramesSinceCheck++;
+      if (rafFramesSinceCheck >= RAF_RECHECK_EVERY) {
+        rafFramesSinceCheck = 0;
+        var slow = 0;
+        for (var i = 0; i < frameDeltas.length; i++) {
+          if (frameDeltas[i] > RAF_THRESHOLD_MS) slow++;
+        }
+        var ratio = slow / frameDeltas.length;
+        if (ratio >= RAF_RATIO && rafScoreAdded < RAF_MAX_PTS) {
+          var pts = rafScoreAdded === 0 ? 3 : 1; // first hit = 3pts, each subsequent = 1pt
+          rafScoreAdded = addScore(pts, RAF_MAX_PTS, rafScoreAdded,
+            'rAF ' + (ratio * 100).toFixed(1) + '% slow frames');
+        }
       }
     }
 
     rafId = requestAnimationFrame(onFrame);
   }
 
-  // Pause measurement while tab is hidden
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) {
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      lastTime = null; // reset so first frame after resume is clean
+      if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+      lastTime = null;
     } else if (!shown) {
       rafId = requestAnimationFrame(onFrame);
     }
   });
 
-  // --- Debug helpers (usable from browser console) ---
-  // window.__nexoraShowLagBanner()  → force-show the banner
-  // window.__nexoraLagDebug()       → print current detector state
+  // ── Debug helpers ──────────────────────────────────────────────────────────────
   window.__nexoraShowLagBanner = function () { shown = true; showLagBanner(); };
   window.__nexoraLagDebug = function () {
-    var dismissed = localStorage.getItem(DISMISSED_KEY);
-    var preset = localStorage.getItem(PRESET_KEY);
-    console.log('[LagDetector] dismissed:', dismissed, '| preset:', preset,
-      '| shown:', shown, '| frames collected:', frameDeltas.length,
-      '| LAG_CONSECUTIVE:', LAG_CONSECUTIVE,
-      '| sample avg ms:', frameDeltas.length
-        ? (frameDeltas.reduce(function(a,b){return a+b;},0)/frameDeltas.length).toFixed(2)
-        : 'n/a');
+    var avgMs = frameDeltas.length
+      ? (frameDeltas.reduce(function (a, b) { return a + b; }, 0) / frameDeltas.length).toFixed(2)
+      : 'n/a';
+    console.log(
+      '[LagDetector] score:', score, '/ threshold:', SCORE_THRESHOLD,
+      '\n  LCP pts:', lcpScoreAdded,
+      '| FCP pts:', fcpScoreAdded,
+      '| INP pts:', inpScoreAdded, '(worst:', worstInp.toFixed(0) + 'ms)',
+      '| TTFB pts:', ttfbScoreAdded,
+      '| TBT pts:', tbtScoreAdded, '(accum:', typeof tbtAccum !== 'undefined' ? tbtAccum.toFixed(0) + 'ms' : 'n/a)',
+      '| rAF pts:', rafScoreAdded, '(avg frame:', avgMs + 'ms)',
+      '\n  dismissed:', localStorage.getItem(DISMISSED_KEY),
+      '| preset:', localStorage.getItem(PRESET_KEY),
+      '| shown:', shown
+    );
   };
 
-  // Start after warmup so the initial page load burst doesn't count
   setTimeout(function () {
     if (!shown) {
-      console.log('[LagDetector] started — waiting for', SAMPLE_WINDOW, 'frames (WARMUP_MS:', WARMUP_MS, ')');
+      console.log('[LagDetector] rAF monitor started (WARMUP_MS:', WARMUP_MS, ')');
       rafId = requestAnimationFrame(onFrame);
     }
   }, 500);
@@ -152,7 +293,6 @@
 
     banner.innerHTML =
       '<div style="display:flex;align-items:flex-start;gap:10px">' +
-        '<span style="font-size:20px;line-height:1;flex-shrink:0;margin-top:1px">⚠️</span>' +
         '<div style="flex:1;min-width:0">' +
           '<div style="font-weight:700;font-size:13.5px;margin-bottom:3px;color:var(--text,#f1f5f9)">' +
             'Your device seems to be lagging' +

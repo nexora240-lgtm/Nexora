@@ -150,9 +150,6 @@
     }
 
     if (window.NexoraCircle && window.NexoraCircle.initialized) {
-                if (window.NexoraCircle.restoreChatroomState) {
-            window.NexoraCircle.restoreChatroomState();
-        }
         return;
     }
 
@@ -208,7 +205,7 @@ function restoreChatroomState() {
             if (messagesDiv) {
                 messagesDiv.innerHTML = state.messagesHTML;
                 setTimeout(() => {
-                    messagesDiv.scrollTop = state.scrollPosition;
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
                 }, 50);
             }
             
@@ -961,7 +958,34 @@ function sendMessage() {
 
 function displayMessage(username, message, timestamp, isOwn) {
     const messagesDiv = document.getElementById('messages');
-    if (!messagesDiv) return;
+
+    // If not on the chatroom page, save to sessionStorage and fire a notification
+    if (!messagesDiv) {
+        try {
+            const stateJSON = sessionStorage.getItem(CHATROOM_STATE_KEY);
+            if (stateJSON) {
+                const savedState = JSON.parse(stateJSON);
+                let msgTime = 'Now';
+                if (timestamp) {
+                    const dt = new Date(timestamp);
+                    if (!isNaN(dt.getTime())) msgTime = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+                const msgHtml = '<div class="message' + (isOwn ? ' own' : '') + '">' +
+                    '<div class="message-username">' + escapeHtml(username) + '</div>' +
+                    '<div class="message-content">' + escapeHtml(message) + '</div>' +
+                    '<div class="message-time">' + msgTime + '</div></div>';
+                savedState.messagesHTML += msgHtml;
+                savedState.timestamp = Date.now();
+                sessionStorage.setItem(CHATROOM_STATE_KEY, JSON.stringify(savedState));
+            }
+        } catch (e) {}
+        if (!isOwn) {
+            document.dispatchEvent(new CustomEvent('circle:notification', {
+                detail: { username: username, message: message }
+            }));
+        }
+        return;
+    }
     
     // Validate inputs
     if (!username || !message) {

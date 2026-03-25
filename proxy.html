@@ -15,6 +15,42 @@
   <title>Nexora Browser</title>
   
   <link rel="stylesheet" href="css/_tokens.css">
+  <script>
+    // Apply saved performance preset so _tokens.css rules take effect immediately
+    (function () {
+      var preset = null;
+      var settings = {};
+      try {
+        preset = localStorage.getItem('settings.performancePreset');
+        settings = {
+          mouseTracking: localStorage.getItem('settings.mouseTracking'),
+          animations:    localStorage.getItem('settings.animations'),
+          glow:          localStorage.getItem('settings.glow'),
+          blur:          localStorage.getItem('settings.blur'),
+          transforms:    localStorage.getItem('settings.transforms')
+        };
+      } catch (e) {}
+      var PRESETS = {
+        fast:   { mouseTracking: false, animations: false, glow: false, blur: false, transforms: false },
+        normal: { mouseTracking: false, animations: true,  glow: false, blur: true,  transforms: false },
+        fancy:  { mouseTracking: true,  animations: true,  glow: true,  blur: true,  transforms: true  }
+      };
+      var s = (preset && PRESETS[preset]) ? PRESETS[preset] : PRESETS.normal;
+      // Individual overrides take precedence over preset
+      if (settings.animations !== null)    s.animations    = settings.animations    !== 'false';
+      if (settings.glow !== null)          s.glow          = settings.glow          !== 'false';
+      if (settings.blur !== null)          s.blur          = settings.blur          !== 'false';
+      if (settings.transforms !== null)    s.transforms    = settings.transforms    !== 'false';
+      if (settings.mouseTracking !== null) s.mouseTracking = settings.mouseTracking !== 'false';
+      var cl = document.documentElement.classList;
+      if (preset === 'fast')       cl.add('performance-fast');
+      if (!s.animations)    cl.add('performance-no-animations');
+      if (!s.glow)          cl.add('performance-no-glow');
+      if (!s.blur)          cl.add('performance-no-blur');
+      if (!s.transforms)    cl.add('performance-no-transforms');
+      if (!s.mouseTracking) cl.add('performance-no-mouse-tracking');
+    })();
+  </script>
   <script src="/js/mouse-tracking.js"></script>
   <style>
     * {

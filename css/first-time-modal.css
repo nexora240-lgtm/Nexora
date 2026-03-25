@@ -1144,3 +1144,33 @@
   border-color: #dc2626;
   color: #b91c1c;
 }
+
+/* ── Performance overrides ──────────────────────────────────────────────────
+   When animations are disabled the overlay/modals start at opacity:0 and
+   never animate to 1, making them invisible but still blocking all clicks.
+   Force them visible immediately in no-animation / fast modes.
+   ────────────────────────────────────────────────────────────────────────── */
+html.performance-no-animations #first-time-overlay,
+html.performance-fast #first-time-overlay {
+  opacity: 1 !important;
+  animation: none !important;
+}
+
+html.performance-no-animations #first-time-modal,
+html.performance-fast #first-time-modal,
+html.performance-no-animations #cloaking-modal,
+html.performance-fast #cloaking-modal,
+html.performance-no-animations #panic-button-modal,
+html.performance-fast #panic-button-modal,
+html.performance-no-animations #cookie-consent-modal,
+html.performance-fast #cookie-consent-modal,
+html.performance-no-animations #welcome-choice-modal,
+html.performance-fast #welcome-choice-modal,
+html.performance-no-animations #login-form-modal,
+html.performance-fast #login-form-modal,
+html.performance-no-animations #account-prompt-modal,
+html.performance-fast #account-prompt-modal {
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
+}
