@@ -259,7 +259,7 @@
             if (disguiseFavicon) {
               htmlContent += `<link rel="icon" href="${disguiseFavicon}">`;
             }
-            htmlContent += `<script>window.addEventListener('message',function(e){if(!e.data||e.data.type!=='nexora:faviconChange'||!e.data.href)return;var old=document.querySelectorAll('link[rel~="icon"]');for(var i=0;i<old.length;i++)old[i].parentNode.removeChild(old[i]);var l=document.createElement('link');l.rel='icon';l.href=e.data.href;document.head.appendChild(l);});<\/script>`;
+            htmlContent += `<script>window.addEventListener('message',function(e){if(!e.data||e.data.type!=='nexora:faviconChange'||!e.data.href)return;var old=document.querySelectorAll('link[rel~="icon"]');for(var i=0;i<old.length;i++)old[i].parentNode.removeChild(old[i]);var l=document.createElement('link');l.rel='icon';l.href=e.data.href;document.head.appendChild(l);try{if(window.parent&&window.parent!==window)window.parent.postMessage(e.data,'*');}catch(x){}});<\/script>`;
             htmlContent += '</head><body style="margin:0;padding:0;overflow:hidden;"></body></html>';
             doc.write(htmlContent);
             doc.close();
@@ -517,7 +517,9 @@
   if (window.self === window.top) return;
 
   function postFaviconToParent(href) {
-    try { window.parent.postMessage({ type: 'nexora:faviconChange', href: href }, '*'); } catch (e) {}
+    var msg = { type: 'nexora:faviconChange', href: href };
+    try { window.parent.postMessage(msg, '*'); } catch (e) {}
+    try { if (window.top !== window.parent) window.top.postMessage(msg, '*'); } catch (e) {}
   }
 
   function startFaviconObserver() {
