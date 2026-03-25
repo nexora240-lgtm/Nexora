@@ -452,6 +452,14 @@ html.performance-fast .loader-start {
   animation: none !important;
 }
 
+html.performance-no-glow .fullscreen-btn img {
+  filter: brightness(0) invert(1) !important;
+}
+
+html.performance-no-glow.light-scheme .fullscreen-btn img {
+  filter: brightness(0) !important;
+}
+
 
 /* ===== EPISODE SIDEBAR ===== */
 .episode-sidebar {

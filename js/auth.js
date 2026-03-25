@@ -268,7 +268,8 @@
       
       if (reloadAfterRegister) {
         setTimeout(() => {
-          window.location.reload();
+          const currentRoute = window.location.pathname;
+          window.location.replace('/?route=' + encodeURIComponent(currentRoute));
         }, 500);
       }
     }
@@ -315,8 +316,11 @@
       // Reload page to apply all settings (theme, cloaking, etc.)
       if (reloadAfterLogin && cloudData && Object.keys(cloudData).length > 0) {
         // Small delay to show success message before reload
+        // Use SPA-aware redirect instead of reload to avoid server resolving
+        // standalone HTML files (e.g. settings.html) instead of the SPA shell
         setTimeout(() => {
-          window.location.reload();
+          const currentRoute = window.location.pathname;
+          window.location.replace('/?route=' + encodeURIComponent(currentRoute));
         }, 500);
       } else {
         startAutoSync();
