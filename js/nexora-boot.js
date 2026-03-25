@@ -259,6 +259,7 @@
             if (disguiseFavicon) {
               htmlContent += `<link rel="icon" href="${disguiseFavicon}">`;
             }
+            htmlContent += `<script>window.addEventListener('message',function(e){if(!e.data||e.data.type!=='nexora:faviconChange'||!e.data.href)return;var old=document.querySelectorAll('link[rel~="icon"]');for(var i=0;i<old.length;i++)old[i].parentNode.removeChild(old[i]);var l=document.createElement('link');l.rel='icon';l.href=e.data.href;document.head.appendChild(l);});<\/script>`;
             htmlContent += '</head><body style="margin:0;padding:0;overflow:hidden;"></body></html>';
             doc.write(htmlContent);
             doc.close();
@@ -509,6 +510,55 @@
     }
   }
 
+})();
+
+// Favicon change → postMessage to parent frame
+(function () {
+  if (window.self === window.top) return;
+
+  function postFaviconToParent(href) {
+    try { window.parent.postMessage({ type: 'nexora:faviconChange', href: href }, '*'); } catch (e) {}
+  }
+
+  function startFaviconObserver() {
+    var head = document.head;
+    if (!head) return;
+    var lastHref = '';
+
+    var attrObserver = new MutationObserver(function (mutations) {
+      mutations.forEach(function (m) {
+        var el = m.target;
+        if (el.tagName === 'LINK' && /\bicon\b/i.test(el.rel || '')) {
+          var href = el.href;
+          if (href && href !== lastHref) { lastHref = href; postFaviconToParent(href); }
+        }
+      });
+    });
+
+    function watchLink(link) {
+      attrObserver.observe(link, { attributes: true, attributeFilter: ['href'] });
+    }
+
+    document.querySelectorAll('link[rel~="icon"]').forEach(watchLink);
+
+    new MutationObserver(function (mutations) {
+      mutations.forEach(function (m) {
+        m.addedNodes.forEach(function (node) {
+          if (node.nodeType === 1 && node.tagName === 'LINK' && /\bicon\b/i.test(node.rel || '')) {
+            var href = node.href;
+            if (href && href !== lastHref) { lastHref = href; postFaviconToParent(href); }
+            watchLink(node);
+          }
+        });
+      });
+    }).observe(head, { childList: true });
+  }
+
+  if (document.head) {
+    startFaviconObserver();
+  } else {
+    document.addEventListener('DOMContentLoaded', startFaviconObserver, { once: true });
+  }
 })();
 
 (function () {
