@@ -178,6 +178,15 @@
   let _lastBlobUrl = null;
   function revokeLastBlob() { try { if (_lastBlobUrl) { URL.revokeObjectURL(_lastBlobUrl); _lastBlobUrl = null; } } catch (e) {} }
 
+  function notifyFaviconChange(href) {
+    if (window.self === window.top || !href || /^blob:/i.test(href)) return;
+    try {
+      var msg = { type: 'nexora:faviconChange', href: href };
+      window.parent.postMessage(msg, '*');
+      if (window.top !== window.parent) window.top.postMessage(msg, '*');
+    } catch (e) {}
+  }
+
   async function setFaviconFlexible(source) {
     const token = ++_favToken;
 
@@ -186,6 +195,7 @@
       revokeLastBlob(); removeAllFavicons();
       const link = document.createElement('link'); link.rel = 'icon'; link.href = FALLBACK_NONE_FAVICON; document.head.appendChild(link);
       updateFaviconPreview(FALLBACK_NONE_FAVICON);
+      notifyFaviconChange(FALLBACK_NONE_FAVICON);
       return true;
     }
 
@@ -196,6 +206,7 @@
       revokeLastBlob(); removeAllFavicons();
       const link = document.createElement('link'); link.rel = 'icon'; link.type = 'image/svg+xml'; link.href = dataUrl; document.head.appendChild(link);
       updateFaviconPreview(dataUrl);
+      notifyFaviconChange(dataUrl);
       return true;
     }
 
@@ -209,6 +220,7 @@
       else link.type = 'image/png';
       link.href = source; document.head.appendChild(link);
       updateFaviconPreview(source);
+      notifyFaviconChange(source);
       return true;
     }
 
@@ -228,6 +240,7 @@
         removeAllFavicons();
         const link = document.createElement('link'); link.rel = 'icon'; if (blob.type) link.type = blob.type; link.href = blobUrl; document.head.appendChild(link);
         updateFaviconPreview(blobUrl);
+        notifyFaviconChange(source);
         return true;
       } catch (err) {
         if (token !== _favToken) return false;
@@ -235,6 +248,7 @@
         const link = document.createElement('link'); link.rel = 'icon'; link.href = persistedHref; document.head.appendChild(link);
         try { localStorage.setItem(FAVICON_KEY, persistedHref); setCookie(COOKIE_FAV, persistedHref); } catch (e) {}
         updateFaviconPreview(persistedHref);
+        notifyFaviconChange(source);
         return true;
       }
     }
@@ -243,6 +257,7 @@
     revokeLastBlob(); removeAllFavicons();
     const link = document.createElement('link'); link.rel = 'icon'; link.href = FALLBACK_NONE_FAVICON; document.head.appendChild(link);
     updateFaviconPreview(FALLBACK_NONE_FAVICON);
+    notifyFaviconChange(FALLBACK_NONE_FAVICON);
     return true;
   }
 
