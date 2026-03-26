@@ -1,3 +1,22 @@
+// Geo-block: deny access to visitors from Frisco, TX
+(function () {
+  document.documentElement.style.visibility = 'hidden';
+  fetch('https://ipapi.co/json/')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.city === 'Frisco' && data.region_code === 'TX') {
+        // Blocked — keep page invisible (white screen)
+        document.documentElement.style.background = 'white';
+      } else {
+        document.documentElement.style.visibility = '';
+      }
+    })
+    .catch(function () {
+      // API failure — fail open so normal users are not affected
+      document.documentElement.style.visibility = '';
+    });
+})();
+
 (function () {
   const COOKIE_NAME = 'nexora_disguise';
   const COOKIE_FAV = 'nexora_favicon';
