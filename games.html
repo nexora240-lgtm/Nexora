@@ -46,6 +46,15 @@
   </style>
   <script src="config.js"></script>
   <script src="js/mouse-tracking.js"></script>
+
+  <style>
+    .taboola-ad-row {
+      grid-column: 1 / -1;
+      width: 100%;
+      min-height: 50px;
+      padding: 10px 0;
+    }
+  </style>
 </head>
 <body>
 
@@ -953,8 +962,34 @@
       // ⚡ RENDER PAGINATION IMMEDIATELY - Don't wait for views
       renderPagination(totalGames);
 
+      // Taboola: insert ad widgets every AD_INTERVAL cards
+      const AD_INTERVAL = 12;
+      let taboolaAdIndex = 0;
+
+      function insertTaboolaAd() {
+        taboolaAdIndex++;
+        const adContainer = document.createElement('div');
+        adContainer.className = 'taboola-ad-row';
+        const adId = 'taboola-games-feed-' + taboolaAdIndex;
+        adContainer.innerHTML = '<div id="' + adId + '"></div>';
+        grid.appendChild(adContainer);
+
+        window._taboola = window._taboola || [];
+        _taboola.push({
+          mode: 'alternating-thumbnails-a',
+          container: adId,
+          placement: 'Games Feed ' + taboolaAdIndex,
+          target_type: 'mix'
+        });
+      }
+
       // Render games for current page
       pageGames.forEach((cand, index) => {
+        // Insert a Taboola ad row after every AD_INTERVAL cards
+        if (index > 0 && index % AD_INTERVAL === 0) {
+          insertTaboolaAd();
+        }
+
         const game = cand.game;
         const card = document.createElement("div");
         card.className = "game-card";
@@ -1080,6 +1115,12 @@
             console.error('Failed to load view counts:', error);
           });
         }
+      }
+
+      // Flush Taboola after grid is built
+      if (taboolaAdIndex > 0) {
+        window._taboola = window._taboola || [];
+        _taboola.push({flush: true});
       }
 
       // Show no results message
