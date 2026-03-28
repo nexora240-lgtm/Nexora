@@ -1,6 +1,7 @@
-(function () {
+﻿(function () {
   'use strict';
 
+  /*  Constants  */
   const FIRST_VISIT_KEY = 'nexora_hasVisited';
   const DISGUISE_KEY = 'settings.disguise';
   const FAVICON_KEY = 'settings.faviconData';
@@ -13,1156 +14,764 @@
   const PANIC_URL_KEY = 'settings.panicUrl';
 
   const DISGUISE_OPTIONS = [
-    { 
-      name: "Clever", 
-      title: "Clever | Portal",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/clever.ico"
-    },
-    { 
-      name: "Google Classroom", 
-      title: "Home",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/classroom.ico"
-    },
-    { 
-      name: "Canvas", 
-      title: "Dashboard",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/canvas.png"
-    },
-    { 
-      name: "Google Drive", 
-      title: "Home - Google Drive",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/drive.png"
-    },
-    { 
-      name: "Seesaw", 
-      title: "Seesaw",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/seesaw.jpg"
-    },
-    { 
-      name: "Edpuzzle", 
-      title: "Edpuzzle",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/edpuzzle.png"
-    },
-    { 
-      name: "Kahoot!", 
-      title: "Enter Game PIN - Kahoot!",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/kahoot.ico"
-    },
-    { 
-      name: "Quizlet", 
-      title: "Your Sets | Quizlet",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/quizlet.png"
-    },
-    { 
-      name: "Khan Academy", 
-      title: "Dashboard | Khan Academy",
-      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/khanacademy.ico"
-    }
+    { name: "Clever",           title: "Clever | Portal",           icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/clever.ico" },
+    { name: "Google Classroom", title: "Home",                      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/classroom.ico" },
+    { name: "Canvas",           title: "Dashboard",                 icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/canvas.png" },
+    { name: "Google Drive",     title: "Home - Google Drive",       icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/drive.png" },
+    { name: "Seesaw",           title: "Seesaw",                    icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/seesaw.jpg" },
+    { name: "Edpuzzle",         title: "Edpuzzle",                  icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/edpuzzle.png" },
+    { name: "Kahoot!",          title: "Enter Game PIN - Kahoot!",  icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/kahoot.ico" },
+    { name: "Quizlet",          title: "Your Sets | Quizlet",       icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/quizlet.png" },
+    { name: "Khan Academy",     title: "Dashboard | Khan Academy",  icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/khanacademy.ico" }
   ];
 
-  let selectedDisguise = null;
+  const DISGUISE_URLS = {
+    "Clever": "https://clever.com/",
+    "Google Classroom": "https://classroom.google.com/",
+    "Canvas": "https://canvas.instructure.com/",
+    "Google Drive": "https://drive.google.com/",
+    "Seesaw": "https://web.seesaw.me/",
+    "Edpuzzle": "https://edpuzzle.com/",
+    "Kahoot!": "https://kahoot.com/",
+    "Quizlet": "https://quizlet.com/",
+    "Khan Academy": "https://www.khanacademy.org/"
+  };
 
-  function bindMouseTracking(element) {
-    if (!element || !window.NexoraMouseTracking) return;
-    window.NexoraMouseTracking.bindElement(element);
+  /* 4 setup steps: disguise, cloaking, panic, cookies */
+  const TOTAL_STEPS = 4;
+
+  /*  State  */
+  let currentStep = 0;
+  let selectedDisguise = null;
+  let selectedCloakingOption = null;
+  let selectedPanicKey = null;
+  let panicUrlValue = '';
+  let selectedCookieOption = null;
+  let setupEl = null;
+  let fillEl = null;
+  let progressBarEl = null;
+  let cardWrapper = null;
+  let stepDots = [];
+
+  /*  Helpers  */
+
+  function bindMouseTracking(el) {
+    if (!el || !window.NexoraMouseTracking) return;
+    window.NexoraMouseTracking.bindElement(el);
   }
 
   function getCookie(name) {
     try {
-      const match = document.cookie.match('(?:^|; )' + encodeURIComponent(name) + '=([^;]*)');
-      return match ? decodeURIComponent(match[1]) : '';
-    } catch (e) {
-      return '';
-    }
+      const m = document.cookie.match('(?:^|; )' + encodeURIComponent(name) + '=([^;]*)');
+      return m ? decodeURIComponent(m[1]) : '';
+    } catch (e) { return ''; }
   }
 
-  function setCookie(name, value, days = COOKIE_MAX_DAYS) {
+  function setCookie(name, value, days) {
+    days = days || COOKIE_MAX_DAYS;
     try {
       const expires = new Date(Date.now() + days * 864e5).toUTCString();
-      let cookie = encodeURIComponent(name) + '=' + encodeURIComponent(value) + 
-                   '; expires=' + expires + '; path=/; SameSite=Lax';
-      if (location.protocol === 'https:') cookie += '; Secure';
-      document.cookie = cookie;
-    } catch (e) {
-      
-    }
+      let c = encodeURIComponent(name) + '=' + encodeURIComponent(value) +
+              '; expires=' + expires + '; path=/; SameSite=Lax';
+      if (location.protocol === 'https:') c += '; Secure';
+      document.cookie = c;
+    } catch (e) {}
   }
 
   function isFirstVisit() {
-    try {
-
-      const hasVisitedFlag = localStorage.getItem(FIRST_VISIT_KEY);
-      if (hasVisitedFlag) {
-        return false; // User completed the first-time modal
-      }
-
-      return true;
-    } catch (e) {
-      return false;
-    }
+    try { return !localStorage.getItem(FIRST_VISIT_KEY); }
+    catch (e) { return false; }
   }
 
   function markAsVisited() {
-    try {
-      localStorage.setItem(FIRST_VISIT_KEY, 'true');
-    } catch (e) {
-      
-    }
+    try { localStorage.setItem(FIRST_VISIT_KEY, 'true'); } catch (e) {}
   }
 
-  function createModal() {
-
-    const overlay = document.createElement('div');
-    overlay.id = 'first-time-overlay';
-
-    const modal = document.createElement('div');
-    modal.id = 'first-time-modal';
-
-    bindMouseTracking(modal);
-
-    const header = document.createElement('div');
-    header.innerHTML = `
-      <h2>Pick your disguise</h2>
-      <p class="subtitle">
-        This changes what your browser tab looks like. Pick something that blends in so nobody knows what you're actually doing.
-      </p>
-    `;
-
-    const optionsContainer = document.createElement('div');
-    optionsContainer.className = 'disguise-options';
-
-    DISGUISE_OPTIONS.forEach((disguise) => {
-      const option = document.createElement('div');
-      option.className = 'disguise-option';
-      option.dataset.disguise = disguise.name;
-      
-      option.innerHTML = `
-        <div class="icon">
-          <img src="${disguise.icon}" alt="${disguise.name}" onerror="this.style.display='none'">
-        </div>
-        <p class="name">${disguise.name}</p>
-        <div class="checkmark">✓</div>
-      `;
-
-      option.addEventListener('click', () => {
-
-        optionsContainer.querySelectorAll('.disguise-option').forEach(opt => {
-          opt.classList.remove('selected');
-        });
-
-        option.classList.add('selected');
-        selectedDisguise = disguise;
-
-        continueBtn.disabled = false;
-      });
-
-      optionsContainer.appendChild(option);
-    });
-
-    const actions = document.createElement('div');
-    actions.className = 'modal-actions';
-
-    const continueBtn = document.createElement('button');
-    continueBtn.className = 'btn-continue';
-    continueBtn.textContent = "Let's go";
-    continueBtn.disabled = true;
-    continueBtn.addEventListener('click', handleContinue);
-
-    actions.appendChild(continueBtn);
-
-    modal.appendChild(header);
-    modal.appendChild(optionsContainer);
-    modal.appendChild(actions);
-    overlay.appendChild(modal);
-
-    return overlay;
+  function hasAccount() {
+    try { return localStorage.getItem('nexora.auth.credentials') !== null; }
+    catch (e) { return false; }
   }
 
-  function applyDisguise(disguise) {
+  /*  Apply settings  */
+
+  function applyDisguise(d) {
+    if (!d) return;
     try {
-
-      localStorage.setItem(DISGUISE_KEY, disguise.name);
-      localStorage.setItem(FAVICON_KEY, disguise.icon);
-
-      setCookie(COOKIE_NAME, disguise.name);
-      setCookie(COOKIE_FAV, disguise.icon);
-
-      document.title = disguise.title;
-
-      const existingFavicons = document.querySelectorAll('link[rel~="icon"]');
-      existingFavicons.forEach(link => link.remove());
-
+      localStorage.setItem(DISGUISE_KEY, d.name);
+      localStorage.setItem(FAVICON_KEY, d.icon);
+      setCookie(COOKIE_NAME, d.name);
+      setCookie(COOKIE_FAV, d.icon);
+      document.title = d.title;
+      document.querySelectorAll('link[rel~="icon"]').forEach(l => l.remove());
       const link = document.createElement('link');
       link.rel = 'icon';
-      link.href = disguise.icon;
-
-      if (disguise.icon.includes('.ico')) {
-        link.type = 'image/x-icon';
-      } else if (disguise.icon.includes('.png')) {
-        link.type = 'image/png';
-      } else if (disguise.icon.includes('.svg')) {
-        link.type = 'image/svg+xml';
-      }
-      
+      link.href = d.icon;
+      if (d.icon.includes('.ico')) link.type = 'image/x-icon';
+      else if (d.icon.includes('.png')) link.type = 'image/png';
+      else if (d.icon.includes('.svg')) link.type = 'image/svg+xml';
       document.head.appendChild(link);
-    } catch (e) {
-      
-    }
-  }
-
-  function handleSkip() {
-    markAsVisited();
-    closeModal();
-  }
-
-  function handleContinue() {
-    if (selectedDisguise) {
-      applyDisguise(selectedDisguise);
-      closeModal();
-
-      setTimeout(() => showCloakingModal(), 300);
-    }
-  }
-
-  function closeModal() {
-    const overlay = document.getElementById('first-time-overlay');
-    if (overlay) {
-      overlay.style.opacity = '0';
-      setTimeout(() => {
-        overlay.remove();
-      }, 300);
-    }
-  }
-
-  
-  let selectedCloakingOption = null;
-
-  function createCloakingModal() {
-
-    const overlay = document.createElement('div');
-    overlay.id = 'first-time-overlay';
-
-    const modal = document.createElement('div');
-    modal.id = 'cloaking-modal';
-
-    bindMouseTracking(modal);
-
-    const header = document.createElement('div');
-    header.innerHTML = `
-      <h2>Hide your screen and history?</h2>
-      <p class="subtitle">
-        When this is on, Nexora opens hidden inside a blank tab. Your browser history stays clean and nobody sees it on your screen.
-      </p>
-    `;
-
-    const optionsContainer = document.createElement('div');
-    optionsContainer.className = 'cloaking-options';
-
-    const enableOption = document.createElement('div');
-    enableOption.className = 'cloaking-option';
-    enableOption.dataset.value = 'enabled';
-    enableOption.innerHTML = `
-      <div class="option-header">
-        <h3 class="option-title">Yes, hide it <span style="font-size:11px;font-weight:500;opacity:0.6;margin-left:6px;">recommended</span></h3>
-      </div>
-      <p class="option-description">
-        Opens inside a hidden blank tab. Your browser history stays clean and nobody sees it on your screen.
-      </p>
-      <div class="checkmark-radio"></div>
-    `;
-
-    const disableOption = document.createElement('div');
-    disableOption.className = 'cloaking-option';
-    disableOption.dataset.value = 'disabled';
-    disableOption.innerHTML = `
-      <div class="option-header">
-        <h3 class="option-title">Nah, skip it</h3>
-      </div>
-      <p class="option-description" style="color: #f87171; font-weight: 600;">
-        Your screen is visible &amp; this site will appear in your browser history.
-      </p>
-      <div class="checkmark-radio"></div>
-    `;
-
-    [enableOption, disableOption].forEach(option => {
-      option.addEventListener('click', () => {
-        optionsContainer.querySelectorAll('.cloaking-option').forEach(opt => {
-          opt.classList.remove('selected');
-        });
-        option.classList.add('selected');
-        selectedCloakingOption = option.dataset.value;
-        continueBtn.disabled = false;
-      });
-    });
-
-    optionsContainer.appendChild(enableOption);
-    optionsContainer.appendChild(disableOption);
-
-    // Set "Enable Cloaking" as selected by default
-    enableOption.classList.add('selected');
-    selectedCloakingOption = 'enabled';
-
-    const actions = document.createElement('div');
-    actions.className = 'modal-actions';
-
-    const continueBtn = document.createElement('button');
-    continueBtn.className = 'btn-continue';
-    continueBtn.textContent = 'Continue';
-    continueBtn.disabled = false;
-    continueBtn.addEventListener('click', handleCloakingContinue);
-
-    actions.appendChild(continueBtn);
-
-    modal.appendChild(header);
-    modal.appendChild(optionsContainer);
-    modal.appendChild(actions);
-    overlay.appendChild(modal);
-
-    return overlay;
+    } catch (e) {}
   }
 
   function applyCloakingSetting(enabled) {
+    try { localStorage.setItem(ABOUT_KEY, JSON.stringify(!!enabled)); } catch (e) {}
+  }
+
+  function applyPanicSettings(key, url) {
     try {
-
-
-      localStorage.setItem(ABOUT_KEY, JSON.stringify(!!enabled));
-    } catch (e) {
-      
-    }
-  }
-
-  function redirectToDisguiseSite() {
-    if (!selectedDisguise) return;
-
-    const DISGUISE_URLS = {
-      "Clever": "https://clever.com/",
-      "Google Classroom": "https://classroom.google.com/",
-      "Canvas": "https://canvas.instructure.com/",
-      "Google Drive": "https://drive.google.com/",
-      "Seesaw": "https://web.seesaw.me/",
-      "Edpuzzle": "https://edpuzzle.com/",
-      "Kahoot!": "https://kahoot.com/",
-      "Quizlet": "https://quizlet.com/",
-      "Khan Academy": "https://www.khanacademy.org/"
-    };
-
-    const url = DISGUISE_URLS[selectedDisguise.name];
-    if (url) {
-      try {
-        window.location.href = url;
-      } catch (e) {
-        
-      }
-    }
-  }
-
-  function handleCloakingSkip() {
-    closeCloakingModal();
-
-    setTimeout(() => showPanicButtonModal(), 300);
-  }
-
-  function handleCloakingContinue() {
-    if (selectedCloakingOption) {
-      const enabled = selectedCloakingOption === 'enabled';
-      applyCloakingSetting(enabled);
-      closeCloakingModal();
-
-      setTimeout(() => showPanicButtonModal(), 300);
-    }
-  }
-
-  function closeCloakingModal() {
-    const overlay = document.getElementById('first-time-overlay');
-    if (overlay) {
-      overlay.style.opacity = '0';
-      setTimeout(() => {
-        overlay.remove();
-      }, 300);
-    }
-  }
-
-  function showCloakingModal() {
-    const modal = createCloakingModal();
-    document.body.appendChild(modal);
-  }
-
-
-  
-  let selectedPanicKey = null;
-  let panicUrlValue = '';
-
-  function createPanicButtonModal() {
-
-    const overlay = document.createElement('div');
-    overlay.id = 'first-time-overlay';
-
-    const modal = document.createElement('div');
-    modal.id = 'panic-button-modal';
-
-    bindMouseTracking(modal);
-
-    const header = document.createElement('div');
-    header.innerHTML = `
-      <h2>Set a panic key</h2>
-      <p class="subtitle">
-        Someone heading over? Press a hotkey and you instantly switch to a safe page — in under a second. You can skip this.
-      </p>
-    `;
-
-    const inputsContainer = document.createElement('div');
-    inputsContainer.className = 'panic-inputs';
-    inputsContainer.style.cssText = 'display: flex; flex-direction: column; gap: 16px; margin: 20px 0;';
-
-    const keyInputWrapper = document.createElement('div');
-    keyInputWrapper.innerHTML = `
-      <label style="display: block; margin-bottom: 8px; font-size: 14px; color: var(--muted, #9e8c80); font-weight: 500;">
-        Your hotkey — click the box, then press any key combo
-      </label>
-      <input 
-        id="panic-key-input-modal" 
-        type="text" 
-        placeholder="e.g. Ctrl + Q" 
-        readonly
-        style="width: 100%; padding: 12px 16px; border-radius: 10px; background: var(--surface-2, #261813); border: 1px solid rgba(255,255,255,0.08); color: var(--text, #f5f0ed); font-size: 15px; cursor: pointer; transition: border-color 0.2s ease;"
-      />
-    `;
-
-    const urlInputWrapper = document.createElement('div');
-    urlInputWrapper.innerHTML = `
-      <label style="display: block; margin-bottom: 8px; font-size: 14px; color: var(--muted, #9e8c80); font-weight: 500;">
-        Where to send you — paste any URL
-      </label>
-      <input 
-        id="panic-url-input-modal" 
-        type="url" 
-        placeholder="https://classroom.google.com" 
-        style="width: 100%; padding: 12px 16px; border-radius: 10px; background: var(--surface-2, #261813); border: 1px solid rgba(255,255,255,0.08); color: var(--text, #f5f0ed); font-size: 15px; transition: border-color 0.2s ease;"
-      />
-    `;
-
-    inputsContainer.appendChild(keyInputWrapper);
-    inputsContainer.appendChild(urlInputWrapper);
-
-    setTimeout(() => {
-      const keyInput = document.getElementById('panic-key-input-modal');
-      const urlInput = document.getElementById('panic-url-input-modal');
-      
-      if (keyInput) {
-        keyInput.addEventListener('keydown', (event) => {
-          event.preventDefault();
-
-          if (['Control', 'Alt', 'Shift', 'Meta'].includes(event.key)) {
-            return;
-          }
-          
-          const parts = [];
-          if (event.ctrlKey) parts.push('Ctrl');
-          if (event.altKey) parts.push('Alt');
-          if (event.shiftKey) parts.push('Shift');
-          if (event.metaKey) parts.push('Meta');
-          
-          const mainKey = event.key;
-          if (!['Control', 'Alt', 'Shift', 'Meta'].includes(mainKey)) {
-            parts.push(mainKey === ' ' ? 'Space' : mainKey);
-          }
-          
-          const keyCombo = parts.join(' + ');
-          selectedPanicKey = keyCombo;
-          keyInput.value = keyCombo;
-
-          if (window.NexoraPanicButton) {
-            window.NexoraPanicButton.setIsSettingKey(false);
-          }
-
-          if (panicUrlValue || urlInput.value.trim()) {
-            continueBtn.disabled = false;
-          }
-        });
-
-        keyInput.addEventListener('click', () => {
-
-          if (window.NexoraPanicButton) {
-            window.NexoraPanicButton.setIsSettingKey(true);
-          }
-          keyInput.value = 'Press a key...';
-        });
-
-        keyInput.addEventListener('blur', () => {
-
-          if (window.NexoraPanicButton) {
-            window.NexoraPanicButton.setIsSettingKey(false);
-          }
-          if (keyInput.value === 'Press a key...') {
-            keyInput.value = selectedPanicKey || '';
-          }
-        });
-      }
-      
-      if (urlInput) {
-        urlInput.addEventListener('input', () => {
-          panicUrlValue = urlInput.value.trim();
-
-          if (selectedPanicKey && panicUrlValue) {
-            continueBtn.disabled = false;
-          }
-        });
-      }
-    }, 0);
-
-    const actions = document.createElement('div');
-    actions.className = 'modal-actions';
-
-    const skipBtn = document.createElement('button');
-    skipBtn.className = 'btn-skip';
-    skipBtn.textContent = 'Skip for Now';
-    skipBtn.addEventListener('click', handlePanicSkip);
-
-    const continueBtn = document.createElement('button');
-    continueBtn.className = 'btn-continue';
-    continueBtn.textContent = 'Continue';
-    continueBtn.disabled = true;
-    continueBtn.addEventListener('click', handlePanicContinue);
-
-    actions.appendChild(skipBtn);
-    actions.appendChild(continueBtn);
-
-    modal.appendChild(header);
-    modal.appendChild(inputsContainer);
-    modal.appendChild(actions);
-    overlay.appendChild(modal);
-
-    return overlay;
-  }
-
-  function applyPanicSettings(keyCombo, url) {
-    try {
-      if (keyCombo && url) {
-        localStorage.setItem(PANIC_KEY_KEY, keyCombo);
+      if (key && url) {
+        localStorage.setItem(PANIC_KEY_KEY, key);
         localStorage.setItem(PANIC_URL_KEY, url);
       }
-    } catch (e) {
-      
-    }
-  }
-
-  function handlePanicSkip() {
-    closePanicModal();
-
-    setTimeout(() => showCookieConsentModal(), 300);
-  }
-
-  function handlePanicContinue() {
-    if (selectedPanicKey && panicUrlValue) {
-      applyPanicSettings(selectedPanicKey, panicUrlValue);
-    }
-    closePanicModal();
-
-    setTimeout(() => showCookieConsentModal(), 300);
-  }
-
-  function closePanicModal() {
-    const overlay = document.getElementById('first-time-overlay');
-    if (overlay) {
-      overlay.style.opacity = '0';
-      setTimeout(() => {
-        overlay.remove();
-      }, 300);
-    }
-  }
-
-  function showPanicButtonModal() {
-    const modal = createPanicButtonModal();
-    document.body.appendChild(modal);
-  }
-
-
-  
-  let selectedCookieOption = null;
-
-  function createCookieConsentModal() {
-
-    const overlay = document.createElement('div');
-    overlay.id = 'first-time-overlay';
-
-    const modal = document.createElement('div');
-    modal.id = 'cookie-consent-modal';
-
-    bindMouseTracking(modal);
-
-    const header = document.createElement('div');
-    header.innerHTML = `
-      <h2>Save your stuff?</h2>
-      <p class="subtitle">
-        We need your OK to remember things like your settings, disguise, and game progress. Takes one second.
-      </p>
-    `;
-
-    const optionsContainer = document.createElement('div');
-    optionsContainer.className = 'cookie-options';
-
-    const acceptOption = document.createElement('div');
-    acceptOption.className = 'cookie-option';
-    acceptOption.dataset.value = 'accept';
-    acceptOption.innerHTML = `
-      <div class="option-header">
-        <h3 class="option-title">Yes, save my stuff</h3>
-      </div>
-      <p class="option-description">
-        Everything works. Your settings, disguise, and progress all get remembered between visits.
-      </p>
-      <ul class="consequences-list">
-        <li>✓ Your disguise sticks every visit</li>
-        <li>✓ Game progress actually saves</li>
-        <li>✓ Settings don't reset</li>
-        <li>✓ Full site works properly</li>
-      </ul>
-      <div class="checkmark-radio"></div>
-    `;
-
-    const declineOption = document.createElement('div');
-    declineOption.className = 'cookie-option';
-    declineOption.dataset.value = 'decline';
-    declineOption.innerHTML = `
-      <div class="option-header">
-        <h3 class="option-title">No thanks</h3>
-      </div>
-      <p class="option-description">
-        Nothing gets saved. You'll have to redo your settings every single visit. Kind of annoying.
-      </p>
-      <ul class="consequences-list">
-        <li>✗ Game progress won't save</li>
-        <li>✗ Settings reset every time</li>
-        <li>✗ Disguise resets every time</li>
-        <li>✗ Some features won't work</li>
-      </ul>
-      <span class="warning-badge">Not recommended</span>
-      <div class="checkmark-radio"></div>
-    `;
-
-    [acceptOption, declineOption].forEach(option => {
-      option.addEventListener('click', () => {
-        optionsContainer.querySelectorAll('.cookie-option').forEach(opt => {
-          opt.classList.remove('selected');
-        });
-        option.classList.add('selected');
-        selectedCookieOption = option.dataset.value;
-        continueBtn.disabled = false;
-      });
-    });
-
-    optionsContainer.appendChild(acceptOption);
-    optionsContainer.appendChild(declineOption);
-
-    const actions = document.createElement('div');
-    actions.className = 'modal-actions';
-
-    const continueBtn = document.createElement('button');
-    continueBtn.className = 'btn-continue';
-    continueBtn.textContent = 'Done';
-    continueBtn.disabled = true;
-    continueBtn.addEventListener('click', handleCookieConsentContinue);
-
-    acceptOption.classList.add('selected');
-    selectedCookieOption = 'accept';
-    continueBtn.disabled = false;
-
-    actions.appendChild(continueBtn);
-
-    modal.appendChild(header);
-    modal.appendChild(optionsContainer);
-    modal.appendChild(actions);
-    overlay.appendChild(modal);
-
-    return overlay;
+    } catch (e) {}
   }
 
   function applyCookieConsent(accepted) {
     try {
       if (accepted) {
-
         localStorage.setItem(COOKIE_CONSENT_KEY, 'accepted');
-
       } else {
-
         localStorage.setItem(COOKIE_CONSENT_KEY, 'declined');
-
         try {
-
-          document.cookie.split(";").forEach(function(c) { 
-            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+          document.cookie.split(';').forEach(function (c) {
+            document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
           });
-
-          const itemsToKeep = [COOKIE_CONSENT_KEY, FIRST_VISIT_KEY];
-          Object.keys(localStorage).forEach(key => {
-            if (!itemsToKeep.includes(key)) {
-              localStorage.removeItem(key);
-            }
-          });
-        } catch (e) {
-          
-        }
+          const keep = [COOKIE_CONSENT_KEY, FIRST_VISIT_KEY];
+          Object.keys(localStorage).forEach(k => { if (!keep.includes(k)) localStorage.removeItem(k); });
+        } catch (e) {}
       }
-    } catch (e) {
-      
-    }
+    } catch (e) {}
   }
 
-  function handleCookieConsentContinue() {
-    if (!selectedCookieOption) return;
-    
-    const accepted = selectedCookieOption === 'accept';
-    applyCookieConsent(accepted);
+  /*  Progress / fill helpers  */
 
-    markAsVisited();
-
-    closeCookieConsentModal();
-
-    // Show account creation prompt after setup
-    setTimeout(() => showAccountPromptModal(true), 300);
+  function updateFill(step) {
+    const pct = Math.min((step / TOTAL_STEPS) * 100, 100);
+    if (fillEl) fillEl.style.height = pct + '%';
+    if (progressBarEl) progressBarEl.style.width = pct + '%';
+    stepDots.forEach((dot, i) => {
+      dot.classList.remove('active', 'done');
+      if (i < step) dot.classList.add('done');
+      else if (i === step) dot.classList.add('active');
+    });
   }
 
-  function closeCookieConsentModal() {
-    const overlay = document.getElementById('first-time-overlay');
-    if (overlay) {
-      overlay.style.opacity = '0';
+  /*  Transition card helper  */
+
+  function transitionCard(buildFn) {
+    const card = cardWrapper.querySelector('.setup-card');
+    if (card) {
+      card.classList.add('card-exit');
       setTimeout(() => {
-        overlay.remove();
-      }, 300);
-    }
-  }
-
-  function showCookieConsentModal() {
-    const modal = createCookieConsentModal();
-    document.body.appendChild(modal);
-  }
-
-
-  function showFirstTimeModal() {
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => {
-        const modal = createModal();
-        document.body.appendChild(modal);
-      });
+        cardWrapper.innerHTML = '';
+        const newCard = buildFn();
+        cardWrapper.appendChild(newCard);
+        bindMouseTracking(newCard);
+      }, 350);
     } else {
-      const modal = createModal();
-      document.body.appendChild(modal);
+      cardWrapper.innerHTML = '';
+      const newCard = buildFn();
+      cardWrapper.appendChild(newCard);
+      bindMouseTracking(newCard);
     }
   }
 
-  // =============================================
-  // WELCOME CHOICE MODAL (Login vs New Setup)
-  // =============================================
+  /* 
+     BUILD THE FULL-SCREEN SETUP SHELL
+      */
 
-  function createWelcomeChoiceModal() {
-    const overlay = document.createElement('div');
-    overlay.id = 'first-time-overlay';
+  function buildSetupShell() {
+    setupEl = document.createElement('div');
+    setupEl.id = 'nexora-setup';
 
-    const modal = document.createElement('div');
-    modal.id = 'welcome-choice-modal';
-    modal.className = 'ftm-modal';
+    // Background
+    const bg = document.createElement('div');
+    bg.className = 'setup-bg';
 
-    bindMouseTracking(modal);
+    // Water fill
+    fillEl = document.createElement('div');
+    fillEl.className = 'setup-fill';
 
-    const header = document.createElement('div');
-    header.innerHTML = `
-      <h2>Welcome to Nexora!</h2>
-      <p class="subtitle">
-        Already have an account? Log in to sync your settings. New here? Start fresh with a quick setup.
-      </p>
-    `;
+    // Ambient orbs
+    const orb1 = document.createElement('div');
+    orb1.className = 'setup-orb setup-orb-1';
+    const orb2 = document.createElement('div');
+    orb2.className = 'setup-orb setup-orb-2';
 
-    const optionsContainer = document.createElement('div');
-    optionsContainer.className = 'welcome-options';
+    // Progress bar
+    const progress = document.createElement('div');
+    progress.className = 'setup-progress';
+    progressBarEl = document.createElement('div');
+    progressBarEl.className = 'setup-progress-bar';
+    progress.appendChild(progressBarEl);
 
-    const loginOption = document.createElement('div');
-    loginOption.className = 'welcome-option';
-    loginOption.innerHTML = `
-      <div class="option-header">
-        <h3 class="option-title">Log In</h3>
-      </div>
-      <p class="option-description">
-        Sign in to your existing account to sync your settings, favorites, and progress across all devices.
-      </p>
-    `;
-
-    const newSetupOption = document.createElement('div');
-    newSetupOption.className = 'welcome-option';
-    newSetupOption.innerHTML = `
-      <div class="option-header">
-        <h3 class="option-title">New Setup</h3>
-      </div>
-      <p class="option-description">
-        First time here? Let's set up your disguise, privacy settings, and preferences.
-      </p>
-    `;
-
-    loginOption.addEventListener('click', () => {
-      closeWelcomeChoiceModal();
-      setTimeout(() => showLoginFormModal(), 300);
-    });
-
-    newSetupOption.addEventListener('click', () => {
-      closeWelcomeChoiceModal();
-      setTimeout(() => showFirstTimeModal(), 300);
-    });
-
-    optionsContainer.appendChild(loginOption);
-    optionsContainer.appendChild(newSetupOption);
-
-    modal.appendChild(header);
-    modal.appendChild(optionsContainer);
-    overlay.appendChild(modal);
-
-    return overlay;
-  }
-
-  function closeWelcomeChoiceModal() {
-    const overlay = document.getElementById('first-time-overlay');
-    if (overlay) {
-      overlay.style.opacity = '0';
-      setTimeout(() => {
-        overlay.remove();
-      }, 300);
+    // Step dots
+    const dotsWrap = document.createElement('div');
+    dotsWrap.className = 'setup-steps';
+    stepDots = [];
+    for (let i = 0; i < TOTAL_STEPS; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'setup-step-dot';
+      dotsWrap.appendChild(dot);
+      stepDots.push(dot);
     }
+
+    // Card wrapper
+    cardWrapper = document.createElement('div');
+    cardWrapper.className = 'setup-card-wrapper';
+
+    setupEl.appendChild(bg);
+    setupEl.appendChild(fillEl);
+    setupEl.appendChild(orb1);
+    setupEl.appendChild(orb2);
+    setupEl.appendChild(progress);
+    setupEl.appendChild(dotsWrap);
+    setupEl.appendChild(cardWrapper);
+
+    document.body.appendChild(setupEl);
   }
 
-  function showWelcomeChoiceModal() {
-    const modal = createWelcomeChoiceModal();
-    document.body.appendChild(modal);
+  /* 
+     WELCOME CHOICE (Login vs New Setup)  shown before shell
+      */
+
+  function showWelcomeChoice() {
+    buildSetupShell();
+    // Hide dots & progress for welcome
+    setupEl.querySelector('.setup-steps').style.display = 'none';
+    setupEl.querySelector('.setup-progress').style.display = 'none';
+    fillEl.style.height = '0%';
+
+    transitionCard(buildWelcomeCard);
   }
 
-  // =============================================
-  // LOGIN FORM MODAL
-  // =============================================
-
-  function createLoginFormModal() {
-    const overlay = document.createElement('div');
-    overlay.id = 'first-time-overlay';
-
-    const modal = document.createElement('div');
-    modal.id = 'login-form-modal';
-    modal.className = 'ftm-modal';
-
-    bindMouseTracking(modal);
-
-    const header = document.createElement('div');
-    header.innerHTML = `
-      <h2>Log In 👤</h2>
-      <p class="subtitle">
-        Sign in to sync your settings, favorites, and progress across all devices.
-      </p>
+  function buildWelcomeCard() {
+    const card = document.createElement('div');
+    card.className = 'setup-card';
+    card.innerHTML = `
+      <h2>Welcome to Nexora</h2>
+      <p class="subtitle">Already have an account? Log in to sync your stuff. New here? Let's get you set up.</p>
+      <div class="setup-welcome-options">
+        <div class="setup-welcome-opt" data-action="login">
+          <h3>Log In</h3>
+          <p>Sign in to sync settings across devices.</p>
+        </div>
+        <div class="setup-welcome-opt" data-action="setup">
+          <h3>New Setup</h3>
+          <p>First time? We'll walk you through it.</p>
+        </div>
+      </div>
     `;
 
-    const formContainer = document.createElement('div');
-    formContainer.className = 'auth-form-container';
-    formContainer.innerHTML = `
-      <div class="auth-input-group">
-        <label for="login-username-input">Username</label>
-        <input 
-          id="login-username-input" 
-          type="text" 
-          placeholder="Enter your username"
-          autocomplete="username"
-        />
-      </div>
-      <div class="auth-input-group">
-        <label for="login-password-input">Password</label>
-        <input 
-          id="login-password-input" 
-          type="password" 
-          placeholder="Enter your password"
-          autocomplete="current-password"
-        />
-      </div>
-      <div id="login-error-message" class="auth-error-message" style="display: none;"></div>
-    `;
-
-    const actions = document.createElement('div');
-    actions.className = 'modal-actions';
-
-    const backBtn = document.createElement('button');
-    backBtn.className = 'btn-skip';
-    backBtn.textContent = 'Back';
-    backBtn.addEventListener('click', () => {
-      closeLoginFormModal();
-      setTimeout(() => showWelcomeChoiceModal(), 300);
+    card.querySelector('[data-action="login"]').addEventListener('click', () => {
+      transitionCard(buildLoginCard);
+    });
+    card.querySelector('[data-action="setup"]').addEventListener('click', () => {
+      // Show dots & progress
+      setupEl.querySelector('.setup-steps').style.display = '';
+      setupEl.querySelector('.setup-progress').style.display = '';
+      currentStep = 0;
+      updateFill(0);
+      goToStep(0);
     });
 
-    const loginBtn = document.createElement('button');
-    loginBtn.className = 'btn-continue';
-    loginBtn.textContent = 'Log In';
-    loginBtn.addEventListener('click', async () => {
-      const username = document.getElementById('login-username-input').value.trim();
-      const password = document.getElementById('login-password-input').value;
-      const errorEl = document.getElementById('login-error-message');
-      
-      if (!username || !password) {
-        errorEl.textContent = 'Please enter username and password';
-        errorEl.style.display = 'block';
-        return;
-      }
-
-      loginBtn.disabled = true;
-      loginBtn.textContent = 'Logging in...';
-
-      try {
-        if (window.NexoraAuth) {
-          await window.NexoraAuth.login(username, password, true);
-          // If we get here, login succeeded - page will reload
-        } else {
-          throw new Error('Auth service not available');
-        }
-      } catch (e) {
-        errorEl.textContent = e.message || 'Login failed';
-        errorEl.style.display = 'block';
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'Log In';
-      }
-    });
-
-    actions.appendChild(backBtn);
-    actions.appendChild(loginBtn);
-
-    modal.appendChild(header);
-    modal.appendChild(formContainer);
-    modal.appendChild(actions);
-    overlay.appendChild(modal);
-
-    return overlay;
+    return card;
   }
 
-  function closeLoginFormModal() {
-    const overlay = document.getElementById('first-time-overlay');
-    if (overlay) {
-      overlay.style.opacity = '0';
-      setTimeout(() => {
-        overlay.remove();
-      }, 300);
-    }
-  }
+  /*  Login card  */
 
-  function showLoginFormModal() {
-    const modal = createLoginFormModal();
-    document.body.appendChild(modal);
-  }
-
-  // =============================================
-  // ACCOUNT CREATION MODAL (shown after setup)
-  // =============================================
-
-  function createAccountPromptModal(isAfterSetup = false) {
-    const overlay = document.createElement('div');
-    overlay.id = 'first-time-overlay';
-
-    const modal = document.createElement('div');
-    modal.id = 'account-prompt-modal';
-    modal.className = 'ftm-modal';
-
-    bindMouseTracking(modal);
-
-    const header = document.createElement('div');
-    header.innerHTML = `
-      <h2>Save Your Progress</h2>
-      <p class="subtitle">
-        ${isAfterSetup 
-          ? 'Create an account to save your settings and sync them across all your devices.' 
-          : 'Create an account to save your settings, favorites, and game progress across all devices.'}
-      </p>
-    `;
-
-    const formContainer = document.createElement('div');
-    formContainer.className = 'auth-form-container';
-
-    // Toggle between Create and Login
-    const toggleContainer = document.createElement('div');
-    toggleContainer.className = 'auth-toggle-container';
-    toggleContainer.innerHTML = `
-      <button class="auth-toggle-btn active" data-mode="register">Create Account</button>
-      <button class="auth-toggle-btn" data-mode="login">Log In</button>
-    `;
-
-    const registerForm = document.createElement('div');
-    registerForm.id = 'register-form-section';
-    registerForm.innerHTML = `
-      <div class="auth-input-group">
-        <label for="register-username-input">Username</label>
-        <input 
-          id="register-username-input" 
-          type="text" 
-          placeholder="Choose a username (min 3 characters)"
-          autocomplete="username"
-        />
+  function buildLoginCard() {
+    const card = document.createElement('div');
+    card.className = 'setup-card';
+    card.innerHTML = `
+      <h2>Log In</h2>
+      <p class="subtitle">Sign in to sync your settings and progress.</p>
+      <div class="setup-auth-form">
+        <div>
+          <label for="ftm-login-user">Username</label>
+          <input id="ftm-login-user" type="text" placeholder="Enter your username" autocomplete="username" />
+        </div>
+        <div>
+          <label for="ftm-login-pass">Password</label>
+          <input id="ftm-login-pass" type="password" placeholder="Enter your password" autocomplete="current-password" />
+        </div>
+        <div class="setup-auth-error" id="ftm-login-error"></div>
       </div>
-      <div class="auth-input-group">
-        <label for="register-password-input">Password</label>
-        <input 
-          id="register-password-input" 
-          type="password" 
-          placeholder="Choose a password (min 6 characters)"
-          autocomplete="new-password"
-        />
-      </div>
-      <div class="auth-input-group">
-        <label for="register-confirm-input">Confirm Password</label>
-        <input 
-          id="register-confirm-input" 
-          type="password" 
-          placeholder="Confirm your password"
-          autocomplete="new-password"
-        />
+      <div class="setup-actions">
+        <button class="setup-btn-secondary" id="ftm-login-back">Back</button>
+        <button class="setup-btn-primary" id="ftm-login-submit">Log In</button>
       </div>
     `;
 
-    const loginForm = document.createElement('div');
-    loginForm.id = 'login-form-section';
-    loginForm.style.display = 'none';
-    loginForm.innerHTML = `
-      <div class="auth-input-group">
-        <label for="prompt-login-username">Username</label>
-        <input 
-          id="prompt-login-username" 
-          type="text" 
-          placeholder="Enter your username"
-          autocomplete="username"
-        />
-      </div>
-      <div class="auth-input-group">
-        <label for="prompt-login-password">Password</label>
-        <input 
-          id="prompt-login-password" 
-          type="password" 
-          placeholder="Enter your password"
-          autocomplete="current-password"
-        />
-      </div>
-    `;
-
-    const errorMessage = document.createElement('div');
-    errorMessage.id = 'account-prompt-error';
-    errorMessage.className = 'auth-error-message';
-    errorMessage.style.display = 'none';
-
-    formContainer.appendChild(toggleContainer);
-    formContainer.appendChild(registerForm);
-    formContainer.appendChild(loginForm);
-    formContainer.appendChild(errorMessage);
-
-    // Toggle functionality
     setTimeout(() => {
-      const toggleBtns = toggleContainer.querySelectorAll('.auth-toggle-btn');
-      toggleBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          toggleBtns.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          const mode = btn.dataset.mode;
-          registerForm.style.display = mode === 'register' ? 'block' : 'none';
-          loginForm.style.display = mode === 'login' ? 'block' : 'none';
-          submitBtn.textContent = mode === 'register' ? 'Create Account' : 'Log In';
-          errorMessage.style.display = 'none';
-        });
+      const backBtn = card.querySelector('#ftm-login-back');
+      const submitBtn = card.querySelector('#ftm-login-submit');
+      if (backBtn) backBtn.addEventListener('click', () => transitionCard(buildWelcomeCard));
+      if (submitBtn) submitBtn.addEventListener('click', async () => {
+        const user = document.getElementById('ftm-login-user').value.trim();
+        const pass = document.getElementById('ftm-login-pass').value;
+        const err = document.getElementById('ftm-login-error');
+        if (!user || !pass) { err.textContent = 'Please enter username and password'; err.style.display = 'block'; return; }
+        submitBtn.disabled = true; submitBtn.textContent = 'Logging in...';
+        try {
+          if (window.NexoraAuth) { await window.NexoraAuth.login(user, pass, true); }
+          else throw new Error('Auth service not available');
+        } catch (e) {
+          err.textContent = e.message || 'Login failed'; err.style.display = 'block';
+          submitBtn.disabled = false; submitBtn.textContent = 'Log In';
+        }
       });
     }, 0);
 
-    const actions = document.createElement('div');
-    actions.className = 'modal-actions';
-
-    const skipBtn = document.createElement('button');
-    skipBtn.className = 'btn-skip';
-    skipBtn.textContent = 'Skip for Now';
-    skipBtn.addEventListener('click', () => {
-      // Mark that user skipped account creation
-      try { localStorage.setItem('nexora.skippedAccountPrompt', Date.now().toString()); } catch(e) {}
-      closeAccountPromptModal();
-      
-      // If this is after setup, trigger the about:blank flow if needed
-      if (isAfterSetup) {
-        handlePostSetupAboutBlank();
-      }
-    });
-
-    const submitBtn = document.createElement('button');
-    submitBtn.className = 'btn-continue';
-    submitBtn.textContent = 'Create Account';
-    submitBtn.addEventListener('click', async () => {
-      const isRegister = registerForm.style.display !== 'none';
-      const errorEl = document.getElementById('account-prompt-error');
-      
-      submitBtn.disabled = true;
-      submitBtn.textContent = isRegister ? 'Creating...' : 'Logging in...';
-      
-      try {
-        if (!window.NexoraAuth) {
-          throw new Error('Auth service not available');
-        }
-
-        if (isRegister) {
-          const username = document.getElementById('register-username-input').value.trim();
-          const password = document.getElementById('register-password-input').value;
-          const confirm = document.getElementById('register-confirm-input').value;
-
-          if (!username || username.length < 3) {
-            throw new Error('Username must be at least 3 characters');
-          }
-          if (!password || password.length < 6) {
-            throw new Error('Password must be at least 6 characters');
-          }
-          if (password !== confirm) {
-            throw new Error('Passwords do not match');
-          }
-
-          await window.NexoraAuth.register(username, password, false);
-          closeAccountPromptModal();
-          
-          // If after setup, handle the about:blank flow
-          if (isAfterSetup) {
-            handlePostSetupAboutBlank();
-          }
-        } else {
-          const username = document.getElementById('prompt-login-username').value.trim();
-          const password = document.getElementById('prompt-login-password').value;
-
-          if (!username || !password) {
-            throw new Error('Please enter username and password');
-          }
-
-          await window.NexoraAuth.login(username, password, true);
-          // Page will reload
-        }
-      } catch (e) {
-        errorEl.textContent = e.message || 'An error occurred';
-        errorEl.style.display = 'block';
-        submitBtn.disabled = false;
-        submitBtn.textContent = isRegister ? 'Create Account' : 'Log In';
-      }
-    });
-
-    actions.appendChild(skipBtn);
-    actions.appendChild(submitBtn);
-
-    modal.appendChild(header);
-    modal.appendChild(formContainer);
-    modal.appendChild(actions);
-    overlay.appendChild(modal);
-
-    return overlay;
+    return card;
   }
 
-  function closeAccountPromptModal() {
-    const overlay = document.getElementById('first-time-overlay');
-    if (overlay) {
-      overlay.style.opacity = '0';
-      setTimeout(() => {
-        overlay.remove();
-      }, 300);
+  /* 
+     STEP ROUTER
+      */
+
+  function goToStep(step) {
+    currentStep = step;
+    updateFill(step);
+    switch (step) {
+      case 0: transitionCard(buildDisguiseCard); break;
+      case 1: transitionCard(buildCloakingCard); break;
+      case 2: transitionCard(buildPanicCard); break;
+      case 3: transitionCard(buildCookieCard); break;
+      default: break;
     }
   }
 
-  function showAccountPromptModal(isAfterSetup = false) {
-    const modal = createAccountPromptModal(isAfterSetup);
-    document.body.appendChild(modal);
+  /* 
+     STEP 0  DISGUISE
+      */
+
+  function buildDisguiseCard() {
+    const card = document.createElement('div');
+    card.className = 'setup-card';
+
+    const header = document.createElement('div');
+    header.innerHTML = `
+      <h2>Pick your disguise</h2>
+      <p class="subtitle">Changes what your browser tab looks like so nobody knows what you're up to.</p>
+    `;
+
+    const grid = document.createElement('div');
+    grid.className = 'setup-disguise-grid';
+
+    DISGUISE_OPTIONS.forEach(d => {
+      const item = document.createElement('div');
+      item.className = 'setup-disguise-item';
+      if (selectedDisguise && selectedDisguise.name === d.name) item.classList.add('selected');
+      item.innerHTML = `
+        <div class="d-icon"><img src="${d.icon}" alt="${d.name}" onerror="this.style.display='none'"></div>
+        <p class="d-name">${d.name}</p>
+        <div class="d-check">\u2713</div>
+      `;
+      item.addEventListener('click', () => {
+        grid.querySelectorAll('.setup-disguise-item').forEach(el => el.classList.remove('selected'));
+        item.classList.add('selected');
+        selectedDisguise = d;
+        const btn = card.querySelector('.setup-btn-primary');
+        if (btn) btn.disabled = false;
+      });
+      grid.appendChild(item);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'setup-actions';
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'setup-btn-primary';
+    nextBtn.textContent = 'Next';
+    nextBtn.disabled = !selectedDisguise;
+    nextBtn.addEventListener('click', () => {
+      if (selectedDisguise) {
+        applyDisguise(selectedDisguise);
+        goToStep(1);
+      }
+    });
+    actions.appendChild(nextBtn);
+
+    card.appendChild(header);
+    card.appendChild(grid);
+    card.appendChild(actions);
+    return card;
   }
+
+  /* 
+     STEP 1  CLOAKING
+      */
+
+  function buildCloakingCard() {
+    selectedCloakingOption = selectedCloakingOption || 'enabled';
+
+    const card = document.createElement('div');
+    card.className = 'setup-card';
+    card.innerHTML = `
+      <h2>Hide your screen?</h2>
+      <p class="subtitle">Opens Nexora inside a blank tab. History stays clean.</p>
+      <div class="setup-option-group">
+        <div class="setup-option ${selectedCloakingOption === 'enabled' ? 'selected' : ''}" data-val="enabled">
+          <p class="opt-title">Yes, hide it <span class="opt-tag">recommended</span></p>
+          <p class="opt-desc">Opens in a hidden blank tab. Your activity stays invisible.</p>
+          <div class="opt-radio"></div>
+        </div>
+        <div class="setup-option ${selectedCloakingOption === 'disabled' ? 'selected' : ''}" data-val="disabled">
+          <p class="opt-title">No thanks</p>
+          <p class="opt-desc opt-warn">Site stays visible and appears in browser history.</p>
+          <div class="opt-radio"></div>
+        </div>
+      </div>
+      <div class="setup-actions">
+        <button class="setup-btn-secondary" id="cloak-back">Back</button>
+        <button class="setup-btn-primary" id="cloak-next">Next</button>
+      </div>
+    `;
+
+    setTimeout(() => {
+      const opts = card.querySelectorAll('.setup-option');
+      opts.forEach(o => o.addEventListener('click', () => {
+        opts.forEach(x => x.classList.remove('selected'));
+        o.classList.add('selected');
+        selectedCloakingOption = o.dataset.val;
+      }));
+      const back = card.querySelector('#cloak-back');
+      const next = card.querySelector('#cloak-next');
+      if (back) back.addEventListener('click', () => goToStep(0));
+      if (next) next.addEventListener('click', () => {
+        applyCloakingSetting(selectedCloakingOption === 'enabled');
+        goToStep(2);
+      });
+    }, 0);
+
+    return card;
+  }
+
+  /* 
+     STEP 2  PANIC BUTTON
+      */
+
+  function buildPanicCard() {
+    const card = document.createElement('div');
+    card.className = 'setup-card';
+    card.innerHTML = `
+      <h2>Set a panic key</h2>
+      <p class="subtitle">Press a hotkey to instantly switch to a safe page. You can skip this.</p>
+      <div class="setup-input-group">
+        <div>
+          <label>Hotkey  click the box, press any key combo</label>
+          <input id="ftm-panic-key" type="text" placeholder="e.g. Ctrl + Q" readonly value="${selectedPanicKey || ''}" />
+        </div>
+        <div>
+          <label>Safe URL  where to redirect</label>
+          <input id="ftm-panic-url" type="url" placeholder="https://classroom.google.com" value="${panicUrlValue || ''}" />
+        </div>
+      </div>
+      <div class="setup-actions">
+        <button class="setup-btn-secondary" id="panic-back">Back</button>
+        <button class="setup-btn-secondary" id="panic-skip">Skip</button>
+        <button class="setup-btn-primary" id="panic-next" ${(selectedPanicKey && panicUrlValue) ? '' : 'disabled'}>Next</button>
+      </div>
+    `;
+
+    setTimeout(() => {
+      const keyIn = document.getElementById('ftm-panic-key');
+      const urlIn = document.getElementById('ftm-panic-url');
+      const nextBtn = card.querySelector('#panic-next');
+
+      function checkReady() {
+        if (nextBtn) nextBtn.disabled = !(selectedPanicKey && panicUrlValue);
+      }
+
+      if (keyIn) {
+        keyIn.addEventListener('click', () => {
+          if (window.NexoraPanicButton) window.NexoraPanicButton.setIsSettingKey(true);
+          keyIn.value = 'Press a key...';
+        });
+        keyIn.addEventListener('keydown', e => {
+          e.preventDefault();
+          if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return;
+          const parts = [];
+          if (e.ctrlKey) parts.push('Ctrl');
+          if (e.altKey) parts.push('Alt');
+          if (e.shiftKey) parts.push('Shift');
+          if (e.metaKey) parts.push('Meta');
+          if (!['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) parts.push(e.key === ' ' ? 'Space' : e.key);
+          selectedPanicKey = parts.join(' + ');
+          keyIn.value = selectedPanicKey;
+          if (window.NexoraPanicButton) window.NexoraPanicButton.setIsSettingKey(false);
+          checkReady();
+        });
+        keyIn.addEventListener('blur', () => {
+          if (window.NexoraPanicButton) window.NexoraPanicButton.setIsSettingKey(false);
+          if (keyIn.value === 'Press a key...') keyIn.value = selectedPanicKey || '';
+        });
+      }
+
+      if (urlIn) {
+        urlIn.addEventListener('input', () => { panicUrlValue = urlIn.value.trim(); checkReady(); });
+      }
+
+      const back = card.querySelector('#panic-back');
+      const skip = card.querySelector('#panic-skip');
+      if (back) back.addEventListener('click', () => goToStep(1));
+      if (skip) skip.addEventListener('click', () => goToStep(3));
+      if (nextBtn) nextBtn.addEventListener('click', () => {
+        applyPanicSettings(selectedPanicKey, panicUrlValue);
+        goToStep(3);
+      });
+    }, 0);
+
+    return card;
+  }
+
+  /* 
+     STEP 3  COOKIES
+      */
+
+  function buildCookieCard() {
+    selectedCookieOption = selectedCookieOption || 'accept';
+
+    const card = document.createElement('div');
+    card.className = 'setup-card';
+    card.innerHTML = `
+      <h2>Save your stuff?</h2>
+      <p class="subtitle">We use cookies to remember your settings between visits.</p>
+      <div class="setup-option-group">
+        <div class="setup-option ${selectedCookieOption === 'accept' ? 'selected' : ''}" data-val="accept">
+          <p class="opt-title">Yes, remember me</p>
+          <p class="opt-desc">Settings, disguise, and progress stay saved.</p>
+          <div class="opt-radio"></div>
+        </div>
+        <div class="setup-option ${selectedCookieOption === 'decline' ? 'selected' : ''}" data-val="decline">
+          <p class="opt-title">No thanks</p>
+          <p class="opt-desc opt-warn">Nothing saves. You'll redo settings every visit.</p>
+          <div class="opt-radio"></div>
+        </div>
+      </div>
+      <div class="setup-actions">
+        <button class="setup-btn-secondary" id="cookie-back">Back</button>
+        <button class="setup-btn-primary" id="cookie-next">Next</button>
+      </div>
+    `;
+
+    setTimeout(() => {
+      const opts = card.querySelectorAll('.setup-option');
+      opts.forEach(o => o.addEventListener('click', () => {
+        opts.forEach(x => x.classList.remove('selected'));
+        o.classList.add('selected');
+        selectedCookieOption = o.dataset.val;
+      }));
+
+      const back = card.querySelector('#cookie-back');
+      const next = card.querySelector('#cookie-next');
+      if (back) back.addEventListener('click', () => goToStep(2));
+      if (next) next.addEventListener('click', () => {
+        applyCookieConsent(selectedCookieOption === 'accept');
+        markAsVisited();
+        updateFill(TOTAL_STEPS); // fill to 100%
+        showCompletion();
+      });
+    }, 0);
+
+    return card;
+  }
+
+  /* 
+     COMPLETION SCREEN
+      */
+
+  function showCompletion() {
+    // Hide step dots
+    const dotsEl = setupEl.querySelector('.setup-steps');
+    if (dotsEl) dotsEl.style.display = 'none';
+
+    transitionCard(() => {
+      const card = document.createElement('div');
+      card.className = 'setup-card';
+      card.innerHTML = `
+        <div class="setup-complete">
+          <div class="setup-checkmark-circle">
+            <svg viewBox="0 0 24 24"><polyline points="6 12 10 16 18 8"/></svg>
+          </div>
+          <h2>You're all set!</h2>
+          <p>Everything is configured. Enjoy Nexora.</p>
+          <div class="setup-actions" style="justify-content:center;border:none;padding-top:0;">
+            <button class="setup-btn-primary" id="setup-finish">Let's go</button>
+          </div>
+        </div>
+      `;
+
+      setTimeout(() => {
+        const fin = card.querySelector('#setup-finish');
+        if (fin) fin.addEventListener('click', () => {
+          finishSetup();
+        });
+      }, 0);
+
+      return card;
+    });
+  }
+
+  /* 
+     FINISH  fade out, show loader, then reveal site
+      */
+
+  function finishSetup() {
+    // Fade out the setup overlay
+    setupEl.style.transition = 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+    setupEl.style.opacity = '0';
+
+    setTimeout(() => {
+      setupEl.remove();
+      setupEl = null;
+
+      // Show fake loading screen
+      showFakeLoader(() => {
+        // After loading, show account prompt or handle about:blank
+        showAccountPromptOrFinish();
+      });
+    }, 600);
+  }
+
+  function showFakeLoader(callback) {
+    const loader = document.createElement('div');
+    loader.id = 'nexora-setup-loader';
+    loader.innerHTML = `
+      <div class="loader-ring"></div>
+      <div class="loader-text">Loading<span class="loader-dots"></span></div>
+    `;
+    document.body.appendChild(loader);
+
+    // Fake load for 1.8 seconds
+    setTimeout(() => {
+      loader.classList.add('loader-fade-out');
+      setTimeout(() => {
+        loader.remove();
+        if (callback) callback();
+      }, 800);
+    }, 1800);
+  }
+
+  /* 
+     ACCOUNT PROMPT (after setup)
+      */
+
+  function showAccountPromptOrFinish() {
+    markAsVisited();
+  }
+
+  function createAccountOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'nexora-setup';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;animation:setupFadeIn 0.4s ease forwards;';
+    return overlay;
+  }
+
+  function showAccountPromptModal(isAfterSetup) {
+    const overlay = createAccountOverlay();
+    const card = document.createElement('div');
+    card.className = 'setup-card';
+    card.style.maxWidth = '480px';
+    card.style.width = '90%';
+
+    bindMouseTracking(card);
+
+    // Toggle state
+    let mode = 'register';
+
+    card.innerHTML = `
+      <h2>Save Your Progress</h2>
+      <p class="subtitle">${isAfterSetup ? 'Create an account to save your settings across devices.' : 'Create an account to sync settings, favorites, and progress.'}</p>
+      <div class="setup-auth-tabs">
+        <button class="setup-auth-tab active" data-mode="register">Create Account</button>
+        <button class="setup-auth-tab" data-mode="login">Log In</button>
+      </div>
+      <div class="setup-auth-form">
+        <div id="ftm-reg-section">
+          <div><label for="ftm-reg-user">Username</label><input id="ftm-reg-user" type="text" placeholder="Min 3 characters" autocomplete="username" /></div>
+          <div style="margin-top:12px"><label for="ftm-reg-pass">Password</label><input id="ftm-reg-pass" type="password" placeholder="Min 6 characters" autocomplete="new-password" /></div>
+          <div style="margin-top:12px"><label for="ftm-reg-confirm">Confirm Password</label><input id="ftm-reg-confirm" type="password" placeholder="Re-enter password" autocomplete="new-password" /></div>
+        </div>
+        <div id="ftm-log-section" style="display:none">
+          <div><label for="ftm-log-user">Username</label><input id="ftm-log-user" type="text" placeholder="Your username" autocomplete="username" /></div>
+          <div style="margin-top:12px"><label for="ftm-log-pass">Password</label><input id="ftm-log-pass" type="password" placeholder="Your password" autocomplete="current-password" /></div>
+        </div>
+        <div class="setup-auth-error" id="ftm-acct-error"></div>
+      </div>
+      <div class="setup-actions">
+        <button class="setup-btn-secondary" id="ftm-acct-skip">Skip</button>
+        <button class="setup-btn-primary" id="ftm-acct-submit">Create Account</button>
+      </div>
+    `;
+
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    setTimeout(() => {
+      // Tab toggle
+      const tabs = card.querySelectorAll('.setup-auth-tab');
+      const regSec = card.querySelector('#ftm-reg-section');
+      const logSec = card.querySelector('#ftm-log-section');
+      const submitBtn = card.querySelector('#ftm-acct-submit');
+      const errEl = card.querySelector('#ftm-acct-error');
+
+      tabs.forEach(tab => tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        mode = tab.dataset.mode;
+        regSec.style.display = mode === 'register' ? '' : 'none';
+        logSec.style.display = mode === 'login' ? '' : 'none';
+        submitBtn.textContent = mode === 'register' ? 'Create Account' : 'Log In';
+        errEl.style.display = 'none';
+      }));
+
+      // Skip
+      card.querySelector('#ftm-acct-skip').addEventListener('click', () => {
+        try { localStorage.setItem('nexora.skippedAccountPrompt', Date.now().toString()); } catch(e) {}
+        fadeOutOverlay(overlay, () => {
+          if (isAfterSetup) handlePostSetupAboutBlank();
+        });
+      });
+
+      // Submit
+      submitBtn.addEventListener('click', async () => {
+        submitBtn.disabled = true;
+        submitBtn.textContent = mode === 'register' ? 'Creating...' : 'Logging in...';
+        try {
+          if (!window.NexoraAuth) throw new Error('Auth service not available');
+          if (mode === 'register') {
+            const user = document.getElementById('ftm-reg-user').value.trim();
+            const pass = document.getElementById('ftm-reg-pass').value;
+            const conf = document.getElementById('ftm-reg-confirm').value;
+            if (!user || user.length < 3) throw new Error('Username must be at least 3 characters');
+            if (!pass || pass.length < 6) throw new Error('Password must be at least 6 characters');
+            if (pass !== conf) throw new Error('Passwords do not match');
+            await window.NexoraAuth.register(user, pass, false);
+            fadeOutOverlay(overlay, () => { if (isAfterSetup) handlePostSetupAboutBlank(); });
+          } else {
+            const user = document.getElementById('ftm-log-user').value.trim();
+            const pass = document.getElementById('ftm-log-pass').value;
+            if (!user || !pass) throw new Error('Please enter username and password');
+            await window.NexoraAuth.login(user, pass, true);
+          }
+        } catch (e) {
+          errEl.textContent = e.message || 'An error occurred';
+          errEl.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.textContent = mode === 'register' ? 'Create Account' : 'Log In';
+        }
+      });
+    }, 0);
+  }
+
+  function fadeOutOverlay(overlay, cb) {
+    overlay.style.transition = 'opacity 0.4s ease';
+    overlay.style.opacity = '0';
+    setTimeout(() => { overlay.remove(); if (cb) cb(); }, 400);
+  }
+
+  /*  Post-setup about:blank redirect  */
 
   function handlePostSetupAboutBlank() {
     try {
@@ -1173,44 +782,24 @@
           if (win) {
             try {
               const doc = win.document;
-              
-              // Find the disguise data to get title and favicon
-              const disguiseData = DISGUISE_OPTIONS.find(d => d.name === selectedDisguise);
-              const disguiseTitle = disguiseData ? disguiseData.title : 'Loading...';
-              const disguiseFavicon = disguiseData ? disguiseData.icon : '';
-              
+              const dData = DISGUISE_OPTIONS.find(d => d.name === selectedDisguise.name);
+              const dTitle = dData ? dData.title : 'Loading...';
+              const dIcon = dData ? dData.icon : '';
               doc.open();
-              let htmlContent = `<!DOCTYPE html><html><head><title>${disguiseTitle}</title>`;
-              if (disguiseFavicon) {
-                htmlContent += `<link rel="icon" href="${disguiseFavicon}">`;
-              }
-              htmlContent += '</head><body style="margin:0;padding:0;overflow:hidden;"></body></html>';
-              doc.write(htmlContent);
+              let html = '<!DOCTYPE html><html><head><title>' + dTitle + '</title>';
+              if (dIcon) html += '<link rel="icon" href="' + dIcon + '">';
+              html += '</head><body style="margin:0;padding:0;overflow:hidden;"></body></html>';
+              doc.write(html);
               doc.close();
-
               const iframe = doc.createElement('iframe');
-              iframe.style.width = '100%';
-              iframe.style.height = '100%';
-              iframe.style.border = 'none';
-              iframe.style.margin = '0';
-              iframe.style.padding = '0';
-              iframe.style.position = 'absolute';
-              iframe.style.top = '0';
-              iframe.style.left = '0';
+              iframe.style.cssText = 'width:100%;height:100%;border:none;margin:0;padding:0;position:absolute;top:0;left:0;';
               iframe.src = window.location.origin;
               iframe.name = 'nexora-cloaked';
               iframe.setAttribute('loading', 'eager');
               iframe.setAttribute('referrerpolicy', 'no-referrer');
-              doc.body.style.margin = '0';
-              doc.body.style.padding = '0';
-              doc.body.style.overflow = 'hidden';
               doc.body.appendChild(iframe);
-
               window._aboutWin = win;
-
-              setTimeout(() => {
-                redirectToDisguiseSite();
-              }, 500);
+              setTimeout(() => redirectToDisguiseSite(), 500);
             } catch (err) {}
           }
         }, 400);
@@ -1218,50 +807,29 @@
     } catch (e) {}
   }
 
-  // =============================================
-  // CHECK IF USER HAS ACCOUNT
-  // =============================================
-
-  function hasAccount() {
-    try {
-      const credentials = localStorage.getItem('nexora.auth.credentials');
-      return credentials !== null;
-    } catch (e) {
-      return false;
+  function redirectToDisguiseSite() {
+    if (!selectedDisguise) return;
+    const url = DISGUISE_URLS[selectedDisguise.name];
+    if (url) {
+      try { window.location.href = url; } catch (e) {}
     }
   }
 
-  function hasSkippedRecently() {
-    try {
-      const skippedTime = localStorage.getItem('nexora.skippedAccountPrompt');
-      if (!skippedTime) return false;
-      
-      // Check if skipped within the last 24 hours
-      const hoursSinceSkip = (Date.now() - parseInt(skippedTime)) / (1000 * 60 * 60);
-      return hoursSinceSkip < 24;
-    } catch (e) {
-      return false;
-    }
-  }
+  /* 
+     INIT
+      */
 
   function init() {
+    if (window.self !== window.top) return;
 
-    if (window.self !== window.top) {
-      return;
-    }
-    
-    // If user has an account (logged in), they don't need the first-time flow
     if (hasAccount()) {
-      // Mark as visited so they don't see the flow again if they log out
       markAsVisited();
       return;
     }
-    
+
     if (isFirstVisit()) {
-      // First time visitor - show welcome choice (Login vs New Setup)
-      showWelcomeChoiceModal();
+      showWelcomeChoice();
     } else if (!hasAccount()) {
-      // Not first visit, but no account - always prompt to create account
       showAccountPromptModal(false);
     }
   }
@@ -1273,8 +841,8 @@
   }
 
   window.NexoraFirstTime = {
-    showModal: showFirstTimeModal,
-    showWelcomeChoiceModal: showWelcomeChoiceModal,
+    showModal: function () { showWelcomeChoice(); },
+    showWelcomeChoiceModal: showWelcomeChoice,
     showAccountPromptModal: showAccountPromptModal,
     isFirstVisit: isFirstVisit,
     hasAccount: hasAccount

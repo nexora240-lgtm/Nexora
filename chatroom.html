@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>
@@ -7,142 +7,170 @@
       window.location.replace('/?route=/chatroom' + (params ? '&' + params.substring(1) : ''));
     }
   </script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7925754855607435"
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7925754855607435"
      crossorigin="anonymous"></script>
-    <meta charset="UTF-8">
-    <meta name="referrer" content="no-referrer-when-downgrade" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Circle</title>
-    <link rel="stylesheet" href="css/_tokens.css">
-    <link rel="stylesheet" href="css/theme-tokens.css">
-    <link rel="stylesheet" href="css/chatroom.css">
-    <script src="/js/mouse-tracking.js"></script>
+  <meta charset="UTF-8">
+  <meta name="referrer" content="no-referrer-when-downgrade" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Circle</title>
+  <link rel="stylesheet" href="css/_tokens.css">
+  <link rel="stylesheet" href="css/theme-tokens.css">
+  <link rel="stylesheet" href="css/chatroom.css">
+  <script src="/js/mouse-tracking.js"></script>
 </head>
 <body>
-    <div class="nexora-chatroom">
-        <div class="app">
-            <div class="container">
-                <div class="container-glow"></div>
-                <div class="header">
-                    <button class="header-back-button" id="headerBackButton" onclick="leaveChat()" title="Leave Chat">← Back</button>
-                    <div class="header-content">
-                        <h1>Circle</h1>
-                        <div class="room-code" id="headerRoomCode" onclick="toggleRoomCodeOverlay()" title="Click to enlarge"></div>
-                    </div>
-                </div>
+  <div class="nexora-chatroom">
+    <div class="app">
 
-                
-                <div class="login-screen" id="loginScreen">
-                    <h2>Welcome to Circle!</h2>
-                    
-                    
-                    <div class="choice-screen" id="choiceScreen">
-                        <button class="choice-button" onclick="showJoinForm()">
-                            <span class="choice-button-title">Join a Circle</span>
-                            <span class="choice-button-desc">Enter an existing circle code to join a conversation</span>
-                        </button>
-                        <button class="choice-button" onclick="showCreateForm()">
-                            <span class="choice-button-title">Create New Circle</span>
-                            <span class="choice-button-desc">Start a new circle and invite others with a circle code</span>
-                        </button>
-                        <button class="choice-button" onclick="joinPublicChat()">
-                            <span class="choice-button-title">Public Circle</span>
-                            <span class="choice-button-desc">Join the global public circle to meet new people</span>
-                        </button>
-                    </div>
-
-                    
-                    <div class="form-screen" id="joinForm">
-                        <button class="back-button" onclick="showChoiceScreen()">
-                            ← Back
-                        </button>
-                        <div class="input-group">
-                            <input type="text" id="joinUsernameInput" placeholder="Enter your username" maxlength="20">
-                        </div>
-                        <div class="input-group">
-                            <input type="text" id="roomCodeInput" placeholder="Enter circle code" maxlength="6">
-                        </div>
-                        <button onclick="joinRoom()">Join Circle</button>
-                    </div>
-
-                    
-                    <div class="form-screen" id="createForm">
-                        <button class="back-button" onclick="showChoiceScreen()">
-                            ← Back
-                        </button>
-                        <div class="input-group">
-                            <input type="text" id="createUsernameInput" placeholder="Enter your username" maxlength="20">
-                        </div>
-                        <button onclick="createRoom()">Create Circle</button>
-                    </div>
-
-                    
-                    <div class="form-screen" id="publicForm">
-                        <button class="back-button" onclick="showChoiceScreen()">
-                            ← Back
-                        </button>
-                        <div class="input-group">
-                            <input type="text" id="publicUsernameInput" placeholder="Enter your username" maxlength="20">
-                        </div>
-                        <button onclick="joinPublicChatWithUsername()">Join Public Circle</button>
-                    </div>
-                </div>
-
-                
-                <div class="chat-screen" id="chatScreen">
-                    <div class="chat-content">
-                        <div class="messages" id="messages"></div>
-                    </div>
-                    <div class="input-area">
-                        <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
-                        <button onclick="sendMessage()">Send</button>
-                    </div>
-                </div>
-                
-                
-                <div class="waiting-screen" id="waitingScreen" style="display: none;">
-                    <div class="waiting-content">
-                        <div class="waiting-spinner"></div>
-                        <h2>Waiting for Approval</h2>
-                        <p>The circle host is reviewing your request to join...</p>
-                        <p class="waiting-timer">Time remaining: <span id="waitingTimer">60</span>s</p>
-                        <button class="cancel-button" onclick="cancelJoinRequest()">Cancel Request</button>
-                    </div>
-                </div>
-            </div>
-
-            
-            <div class="users-sidebar-external" id="usersSidebar">
-                <div class="users-sidebar-header">
-                    <h3>Users Online</h3>
-                    <span class="user-count" id="userCount">0</span>
-                </div>
-                <div class="users-list" id="usersList"></div>
-            </div>
+      <!-- Left rail: brand + users sidebar -->
+      <aside class="cr-rail" id="usersSidebar">
+        <div class="cr-rail-brand">
+          <h1>Circle</h1>
+          <button class="cr-back-btn" id="headerBackButton" onclick="leaveChat()" title="Leave Chat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
         </div>
+        <div class="cr-rail-room room-code" id="headerRoomCode" onclick="toggleRoomCodeOverlay()" title="Click to see room code"></div>
+        <div class="users-sidebar-header">
+          <span class="cr-rail-label">Online</span>
+          <span class="user-count" id="userCount">0</span>
+        </div>
+        <div class="users-list" id="usersList"></div>
+      </aside>
 
-        
-        <div class="approval-modal" id="approvalModal" style="display: none;">
-            <div class="approval-content">
-                <h3>Join Request</h3>
-                <p><strong id="approvalUsername"></strong> wants to join your circle</p>
-                <div class="approval-buttons">
-                    <button class="approve-button" onclick="approveUser()">Accept</button>
-                    <button class="deny-button" onclick="denyUser()">Decline</button>
+      <!-- Main area -->
+      <div class="cr-main">
+        <div class="container">
+          <div class="container-glow"></div>
+          <!-- Legacy header kept hidden for JS compat -->
+          <div class="header" style="display:none">
+            <button class="header-back-button" style="display:none"></button>
+            <div class="header-content"><h1>Circle</h1><div class="room-code"></div></div>
+          </div>
+
+          <!-- Login / lobby -->
+          <div class="login-screen" id="loginScreen">
+            <div class="cr-lobby">
+              <div class="cr-lobby-header">
+                <h2>Circle</h2>
+                <p class="cr-lobby-sub">Real-time chat rooms. Jump in, create, or explore.</p>
+              </div>
+
+              <div class="choice-screen" id="choiceScreen">
+                <button class="choice-button" onclick="showJoinForm()">
+                  <svg class="cr-choice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                  <div class="cr-choice-text">
+                    <span class="choice-button-title">Join a Circle</span>
+                    <span class="choice-button-desc">Enter an existing circle code</span>
+                  </div>
+                </button>
+                <button class="choice-button" onclick="showCreateForm()">
+                  <svg class="cr-choice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                  <div class="cr-choice-text">
+                    <span class="choice-button-title">Create New Circle</span>
+                    <span class="choice-button-desc">Start a circle and invite others</span>
+                  </div>
+                </button>
+                <button class="choice-button cr-choice-public" onclick="joinPublicChat()">
+                  <svg class="cr-choice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  <div class="cr-choice-text">
+                    <span class="choice-button-title">Public Circle</span>
+                    <span class="choice-button-desc">Open lobby  meet anyone</span>
+                  </div>
+                </button>
+              </div>
+
+              <!-- Join form -->
+              <div class="form-screen" id="joinForm">
+                <button class="back-button" onclick="showChoiceScreen()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  Back
+                </button>
+                <div class="input-group">
+                  <input type="text" id="joinUsernameInput" placeholder="Username" maxlength="20" autocomplete="off">
                 </div>
-            </div>
-        </div>
+                <div class="input-group">
+                  <input type="text" id="roomCodeInput" placeholder="Circle code" maxlength="6" autocomplete="off">
+                </div>
+                <button class="cr-submit-btn" onclick="joinRoom()">Join Circle</button>
+              </div>
 
-        
-        <div class="room-code-overlay" id="roomCodeOverlay" onclick="toggleRoomCodeOverlay()">
-            <div class="room-code-large">
-                <div class="room-code-large-title">CIRCLE CODE</div>
-                <div class="room-code-large-code" id="largeRoomCode"></div>
-                <div class="room-code-large-hint">👆 Click anywhere to close</div>
+              <!-- Create form -->
+              <div class="form-screen" id="createForm">
+                <button class="back-button" onclick="showChoiceScreen()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  Back
+                </button>
+                <div class="input-group">
+                  <input type="text" id="createUsernameInput" placeholder="Username" maxlength="20" autocomplete="off">
+                </div>
+                <button class="cr-submit-btn" onclick="createRoom()">Create Circle</button>
+              </div>
+
+              <!-- Public form -->
+              <div class="form-screen" id="publicForm">
+                <button class="back-button" onclick="showChoiceScreen()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  Back
+                </button>
+                <div class="input-group">
+                  <input type="text" id="publicUsernameInput" placeholder="Username" maxlength="20" autocomplete="off">
+                </div>
+                <button class="cr-submit-btn" onclick="joinPublicChatWithUsername()">Join Public Circle</button>
+              </div>
             </div>
+          </div>
+
+          <!-- Chat -->
+          <div class="chat-screen" id="chatScreen">
+            <div class="chat-content">
+              <div class="messages" id="messages"></div>
+            </div>
+            <div class="input-area">
+              <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeyPress(event)" autocomplete="off">
+              <button class="cr-send-btn" onclick="sendMessage()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Waiting -->
+          <div class="waiting-screen" id="waitingScreen" style="display: none;">
+            <div class="waiting-content">
+              <div class="waiting-spinner"></div>
+              <h2>Waiting for Approval</h2>
+              <p>The circle host is reviewing your request...</p>
+              <p class="waiting-timer">Time remaining: <span id="waitingTimer">60</span>s</p>
+              <button class="cancel-button" onclick="cancelJoinRequest()">Cancel</button>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
-    <script src="js/chatroom.js"></script>
+    <!-- Modals (all IDs preserved) -->
+    <div class="approval-modal" id="approvalModal" style="display: none;">
+      <div class="approval-content">
+        <h3>Join Request</h3>
+        <p><strong id="approvalUsername"></strong> wants to join your circle</p>
+        <div class="approval-buttons">
+          <button class="approve-button" onclick="approveUser()">Accept</button>
+          <button class="deny-button" onclick="denyUser()">Decline</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="room-code-overlay" id="roomCodeOverlay" onclick="toggleRoomCodeOverlay()">
+      <div class="room-code-large">
+        <div class="room-code-large-title">CIRCLE CODE</div>
+        <div class="room-code-large-code" id="largeRoomCode"></div>
+        <div class="room-code-large-hint">Click anywhere to close</div>
+      </div>
+    </div>
+
+
+  </div>
+
+  <script src="js/chatroom.js"></script>
 </body>
 </html>

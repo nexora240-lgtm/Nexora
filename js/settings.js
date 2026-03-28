@@ -892,7 +892,7 @@
         Object.keys(parsed.settings).forEach(k => { if (typeof k !== 'string' || !k.startsWith('settings.')) return; const v = parsed.settings[k]; try { localStorage.setItem(k, String(v)); } catch (e) {} });
         restoreSettingsUI();
         document.dispatchEvent(new CustomEvent('settings:imported', { detail: { sourceFile: file.name } }));
-      } catch (err) { try { alert('Failed to import settings: invalid file.'); } catch (e) {} }
+      } catch (err) { if (window.NexoraNotify) NexoraNotify.error('Failed to import settings: invalid file.'); }
     };
     reader.onerror = function () {};
     reader.readAsText(file);

@@ -686,15 +686,15 @@ html.performance-no-glow.light-scheme .fullscreen-btn img {
 .related-games-section {
   width: 100%;
   max-width: 1200px;
-  margin: 24px auto 40px;
-  padding: 0;
+  margin: 12px auto 40px;
+  padding: 0 20px;
 }
 
 .related-games-title {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--g-text);
-  margin: 0 0 24px 0;
+  margin: 0 0 16px 0;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -707,112 +707,293 @@ html.performance-no-glow.light-scheme .fullscreen-btn img {
 
 .related-games-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  overflow: visible;
 }
 
+/* --- Game Card (matching games.html homepage style) --- */
 .related-game-card {
-  background: linear-gradient(145deg, 
-    color-mix(in srgb, var(--g-panel-2) 70%, transparent), 
-    color-mix(in srgb, var(--g-panel) 70%, transparent));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
+  --border-thickness: 3px;
+  --border-thickness-hover: 6px;
+  --glow-size: 240px;
+  --glow-size-hover: 340px;
+  --glow-strength: 0.48;
+  --card-scale-hover: 1.06;
+
+  position: relative;
   border-radius: var(--g-radius);
-  overflow: hidden;
+  overflow: visible;
+  background: var(--g-panel);
+  box-shadow: 0 6px 26px var(--g-shadow-soft);
   cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 
-    -3px -3px 8px var(--neu-shadow-light),
-    3px 3px 12px var(--neu-shadow-dark);
+  transition:
+    transform 260ms cubic-bezier(.2,.9,.2,1),
+    box-shadow 260ms cubic-bezier(.2,.9,.2,1);
+  aspect-ratio: 16 / 9;
+  opacity: 0;
+  animation: relatedFadeUp 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  will-change: transform, box-shadow, opacity;
+  transform-origin: center;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  padding: 2px;
 }
 
-.related-game-card:hover,
-.related-game-card:focus {
-  transform: translateY(-4px) scale(1.02);
-  border-color: var(--g-accent);
-  box-shadow: 
-    -4px -4px 12px var(--neu-shadow-light),
-    4px 4px 20px var(--neu-shadow-dark),
-    0 0 30px var(--g-shadow-soft);
+@keyframes relatedFadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Back glow behind card */
+.related-game-card .back-glow {
+  position: absolute;
+  inset: -36px;
+  border-radius: calc(var(--g-radius) + 36px);
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(28px);
+  opacity: 0;
+  transition: opacity 220ms ease-out, transform 220ms cubic-bezier(.2,.9,.2,1);
+  background: radial-gradient(
+    circle at var(--x, 50%) var(--y, 50%),
+    color-mix(in srgb, var(--g-accent) var(--glow-strength), transparent) 0%,
+    color-mix(in srgb, var(--g-accent-deep) 28%, transparent) 35%,
+    transparent 70%
+  );
+  transform: scale(0.985);
+  will-change: opacity, transform, background-position;
+}
+
+/* Inner glow on hover */
+.related-game-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: var(--g-radius);
+  background-image:
+    radial-gradient(
+      var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--g-accent) 20%, transparent) 0%,
+      color-mix(in srgb, var(--g-accent) 10%, transparent) 30%,
+      transparent 68%
+    );
+  opacity: 0;
+  transition: opacity 140ms ease-out, background-position 160ms ease-out, transform 200ms ease-out;
+  will-change: background-position, opacity, transform;
+  z-index: 1;
+}
+
+/* Conic gradient border on hover */
+.related-game-card::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  pointer-events: none;
+  border-radius: calc(var(--g-radius) + 6px);
+  background: conic-gradient(
+    from 160deg at var(--x, 50%) var(--y, 50%),
+    color-mix(in srgb, var(--g-accent) 72%, transparent),
+    color-mix(in srgb, var(--g-accent-deep) 40%, transparent),
+    color-mix(in srgb, var(--g-accent) 52%, transparent)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  padding: 0;
+  opacity: 0;
+  transform: scale(0.995);
+  transition: opacity 160ms ease-out, transform 220ms cubic-bezier(.2,.9,.2,1), padding 200ms ease-out, background-position 200ms ease-out;
+  will-change: opacity, transform, padding, background-position;
+}
+
+/* Hover state */
+.related-game-card:hover {
+  transform:
+    translateY(-10px)
+    scale(var(--card-scale-hover))
+    rotateX(calc((var(--y, 50) - 50) * -0.15deg))
+    rotateY(calc((var(--x, 50) - 50) * 0.15deg));
+  box-shadow:
+    0 28px 72px color-mix(in srgb, var(--g-accent) 36%, transparent),
+    0 10px 40px rgba(0,0,0,0.5);
+  transition-duration: 240ms;
   outline: none;
 }
 
 .related-game-card:active {
-  transform: translateY(-2px) scale(1.01);
+  transform:
+    translateY(-6px) scale(1.08)
+    rotateX(calc((var(--y, 50) - 50) * -0.1deg))
+    rotateY(calc((var(--x, 50) - 50) * 0.1deg));
 }
 
-.related-game-img-wrapper {
-  position: relative;
-  aspect-ratio: 1;
-  overflow: hidden;
+.related-game-card:hover::before {
+  opacity: 1;
+  transform: scale(1.0);
+  background-image:
+    radial-gradient(
+      var(--glow-size-hover) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--g-accent) 45%, transparent) 0%,
+      color-mix(in srgb, var(--g-accent) 22%, transparent) 28%,
+      transparent 70%
+    );
 }
 
-.related-game-img-wrapper img {
+.related-game-card:hover::after {
+  opacity: 1;
+  transform: scale(1.01);
+  padding: var(--border-thickness-hover);
+  inset: calc(-6px - var(--border-thickness-hover));
+  background: conic-gradient(
+    from 160deg at var(--x, 50%) var(--y, 50%),
+    color-mix(in srgb, var(--g-accent) 88%, transparent),
+    color-mix(in srgb, var(--g-accent-deep) 60%, transparent),
+    color-mix(in srgb, var(--g-accent) 72%, transparent)
+  );
+}
+
+.related-game-card:hover .back-glow {
+  opacity: 1;
+  transform: scale(1.02);
+  background: radial-gradient(
+    circle at var(--x, 50%) var(--y, 50%),
+    color-mix(in srgb, var(--g-accent) calc(var(--glow-strength) + 0.12), transparent) 0%,
+    color-mix(in srgb, var(--g-accent-deep) 40%, transparent) 28%,
+    transparent 76%
+  );
+}
+
+/* Card image */
+.related-game-card > img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  border-radius: var(--g-radius);
+  transition: border-radius 180ms ease-out;
+  position: relative;
+  z-index: 0;
 }
 
-.related-game-card:hover .related-game-img-wrapper img {
-  transform: scale(1.1);
-}
-
-.related-game-overlay {
+/* Title overlay at bottom */
+.related-game-title {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    transparent 50%,
-    rgba(0, 0, 0, 0.7) 100%
-  );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.25s ease;
-}
-
-.related-game-card:hover .related-game-overlay,
-.related-game-card:focus .related-game-overlay {
-  opacity: 1;
-}
-
-.related-game-overlay i {
-  font-size: 2rem;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px 14px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
   color: var(--g-on-accent);
-  background: var(--g-accent);
-  width: 50px;
-  height: 50px;
+  background: linear-gradient(to top, color-mix(in srgb, black 85%, transparent), transparent);
+  text-shadow: 0 1px 2px color-mix(in srgb, black 60%, transparent);
+  font-size: 1.05rem;
+  z-index: 2;
+  border-radius: 0 0 var(--g-radius) var(--g-radius);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Favorite star on card */
+.related-game-card .favorite-star {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(145deg,
+    color-mix(in srgb, var(--g-accent) 80%, transparent),
+    color-mix(in srgb, var(--g-accent-deep) 80%, transparent));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--g-on-accent) 20%, transparent);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px var(--g-shadow-soft);
-  transform: scale(0.8);
-  transition: transform 0.25s ease;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+  box-shadow:
+    -4px -4px 10px color-mix(in srgb, var(--g-text) 5%, transparent),
+    4px 4px 14px rgba(0,0,0,0.5),
+    inset 0 1px 0 color-mix(in srgb, var(--g-on-accent) 20%, transparent);
 }
 
-.related-game-card:hover .related-game-overlay i {
-  transform: scale(1);
+.related-game-card .favorite-star:hover {
+  transform: scale(1.1);
 }
 
-.related-game-info {
-  padding: 10px 12px;
+.related-game-card .favorite-star svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--g-on-accent);
+  stroke-width: 2;
+  transition: all 0.2s ease;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
 }
 
-.related-game-title {
-  font-size: 0.85rem;
+.related-game-card .favorite-star.favorited svg {
+  fill: #ffd700;
+  stroke: #ffd700;
+}
+
+/* View count badge */
+.related-game-card .view-count {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: var(--g-text);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.related-game-card .view-count i {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+/* Ad row inside the grid */
+.related-games-grid .taboola-ad-row {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 50px;
+  padding: 10px 0;
+}
+
+/* Ad container between sections */
+.gameloader-ad-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 8px auto;
+  padding: 0 20px;
+  min-height: 90px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gameloader-ad-container ins {
+  display: block;
+  width: 100%;
 }
 
 /* Responsive adjustments for related games */
@@ -828,30 +1009,67 @@ html.performance-no-glow.light-scheme .fullscreen-btn img {
   }
 
   .related-games-grid {
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 12px;
-  }
-
-  .related-game-info {
-    padding: 8px 10px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
   }
 
   .related-game-title {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
+    padding: 8px 10px;
   }
 
-  .related-game-overlay i {
-    font-size: 1.5rem;
-    width: 40px;
-    height: 40px;
+  .related-game-card .favorite-star {
+    width: 28px;
+    height: 28px;
+  }
+
+  .related-game-card .favorite-star svg {
+    width: 16px;
+    height: 16px;
   }
 }
 
 @media (max-width: 480px) {
   .related-games-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
+
+  .related-game-title {
+    font-size: 0.8rem;
+    padding: 6px 8px;
+  }
+}
+
+/* Performance / reduced-motion overrides */
+@media (prefers-reduced-motion: reduce) {
+  .related-game-card,
+  .related-game-card::before,
+  .related-game-card::after,
+  .related-game-card .back-glow {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+  .related-game-card { opacity: 1 !important; }
+}
+
+html.performance-no-animations .related-game-card,
+html.performance-fast .related-game-card,
+html.performance-no-animations .related-game-card::before,
+html.performance-fast .related-game-card::before,
+html.performance-no-animations .related-game-card::after,
+html.performance-fast .related-game-card::after,
+html.performance-no-animations .related-game-card .back-glow,
+html.performance-fast .related-game-card .back-glow {
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+html.performance-no-animations .related-game-card,
+html.performance-fast .related-game-card {
+  opacity: 1 !important;
 }
 
 /* Responsive adjustments for sidebar margin */

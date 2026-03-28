@@ -96,8 +96,9 @@
   </script>
 
   <link rel="stylesheet" href="/css/sidebar.css" />
+  <link rel="stylesheet" href="/css/home.css" />
   <link rel="stylesheet" href="/css/auth.css" />
-  <link rel="stylesheet" href="/css/circle-notifications.css" />
+  <link rel="stylesheet" href="/css/nexora-notify.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <script type="application/ld+json">
@@ -154,6 +155,16 @@
       <a href="#" data-route="/settings" class="settings"><i class="fas fa-cog" aria-hidden="true"></i><span>Settings</span></a>
     </aside>
 
+    <div id="home-bg-visuals" aria-hidden="true">
+      <div class="home-visuals">
+        <div class="home-columns">
+          <div class="home-col home-c1"><div class="home-track" id="home-t1"></div></div>
+          <div class="home-col home-c2"><div class="home-track" id="home-t2"></div></div>
+          <div class="home-col home-c3"><div class="home-track" id="home-t3"></div></div>
+        </div>
+      </div>
+    </div>
+
     <main class="main-content" id="app" tabindex="-1" role="main"></main>
   </div>
 
@@ -163,8 +174,56 @@
   <script src="/js/app.js"></script>
   <script src="/js/mouse-tracking.js"></script>
   <script src="/js/first-time-visitor.js"></script>
-  <script src="/js/circle-notifications.js"></script>
+  <script src="/js/nexora-notify.js"></script>
   <script src="/js/lag-detector.js"></script>
+
+  <!-- Persistent home visuals: load once, scroll forever -->
+  <script>
+  (function() {
+    var loaded = false;
+    function initHomeVisuals() {
+      if (loaded) return;
+      loaded = true;
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '/game-info.json', true);
+      xhr.onload = function() {
+        if (xhr.status !== 200) return;
+        try {
+          var games = JSON.parse(xhr.responseText);
+          var withImages = games.filter(function(g) { return g.thumbnail && g.thumbnail.trim() !== ''; });
+          var shuffled = withImages.slice().sort(function() { return Math.random() - 0.5; }).slice(0, 24);
+          var third = Math.ceil(shuffled.length / 3);
+          function mkCard(item) {
+            return '<a href="#" class="home-card" data-route="/games" data-game="' + encodeURIComponent(item.title) + '">' +
+              '<div class="home-card-inner">' +
+                '<img src="' + item.thumbnail + '" loading="lazy" alt="" onerror="var c=this.closest(\'.home-card\');c.style.opacity=\'0\';c.style.pointerEvents=\'none\';">' +
+                '<div class="home-card-ov"><span>' + item.title + '</span></div>' +
+              '</div>' +
+            '</a>';
+          }
+          function fill(el, arr) {
+            if (!el) return;
+            var html = arr.map(mkCard).join('');
+            el.innerHTML = html + html;
+          }
+          fill(document.getElementById('home-t1'), shuffled.slice(0, third));
+          fill(document.getElementById('home-t2'), shuffled.slice(third, third * 2));
+          fill(document.getElementById('home-t3'), shuffled.slice(third * 2));
+          if (window.NexoraMouseTracking) {
+            var visuals = document.getElementById('home-bg-visuals');
+            if (visuals) window.NexoraMouseTracking.bindDelegated(visuals, '.home-card-inner');
+          }
+        } catch(e) {}
+      };
+      xhr.send();
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initHomeVisuals);
+    } else {
+      initHomeVisuals();
+    }
+  })();
+  </script>
 
   <script>
     window._nexoraTheme = {
@@ -499,44 +558,23 @@
       }
     }).catch(function(){});
 
-    // ── Announcement Notifications ──
+    // ── Announcement Notifications (unified) ──
     fetch(API + '/announcements/active').then(function(r) { return r.json(); }).then(function(data) {
       var list = data.announcements || [];
       if (!list.length) return;
-
-      // Stack offset for multiple announcements
-      var stackOffset = 0;
 
       list.forEach(function(a) {
         var dismissed = sessionStorage.getItem('ann_dismiss_' + a.id);
         if (dismissed) return;
 
-        var popup = document.createElement('div');
-        popup.className = 'nexora-announce';
-        popup.style.bottom = (20 + stackOffset) + 'px';
-
-        var safeTitle = (a.title || '').replace(/</g, '&lt;');
-        var safeMsg = (a.message || '').replace(/</g, '&lt;');
-
-        popup.innerHTML =
-          '<button class="announce-close" aria-label="Dismiss">&times;</button>' +
-          '<div class="announce-header">' +
-            '<i class="fas fa-bullhorn"></i>' +
-            '<strong>' + safeTitle + '</strong>' +
-          '</div>' +
-          '<p class="announce-body">' + safeMsg + '</p>';
-
-        popup.querySelector('.announce-close').onclick = function() {
-          sessionStorage.setItem('ann_dismiss_' + a.id, '1');
-          popup.classList.add('announce-out');
-          setTimeout(function() { popup.remove(); }, 300);
-        };
-
-        document.body.appendChild(popup);
-        // Trigger entrance animation
-        requestAnimationFrame(function() { popup.classList.add('announce-visible'); });
-
-        stackOffset += popup.offsetHeight + 12;
+        var notif = NexoraNotify.announce(a.title || '', a.message || '');
+        // Store dismiss in sessionStorage when user closes
+        var origClose = notif.el.querySelector('.nxn-close');
+        if (origClose) {
+          origClose.addEventListener('click', function() {
+            sessionStorage.setItem('ann_dismiss_' + a.id, '1');
+          });
+        }
       });
     }).catch(function(){});
   })();

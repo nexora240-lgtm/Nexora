@@ -87,92 +87,13 @@
   };
 
   function showPopupBlockedNotification() {
-    // Remove any existing notification
-    const existing = document.getElementById('popup-blocked-notification');
-    if (existing) {
-      existing.remove();
+    if (window.NexoraNotify) {
+      NexoraNotify.banner('Your screen is visible right now. Click the icon in your address bar, then allow pop-ups to fix it.', {
+        icon: '<span style="font-size:24px">🚫</span>',
+        title: 'Hide mode is blocked!',
+        duration: 10000
+      });
     }
-
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.id = 'popup-blocked-notification';
-    notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-      color: white;
-      padding: 24px 30px;
-      border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-      z-index: 999999;
-      font-family: 'Poppins', Arial, sans-serif;
-      max-width: 420px;
-      width: 90%;
-      box-sizing: border-box;
-      animation: slideDown 0.4s ease-out;
-      text-align: center;
-    `;
-
-    // Create animated arrow
-    const arrow = document.createElement('div');
-    arrow.id = 'popup-arrow';
-    arrow.style.cssText = `
-      position: fixed;
-      top: 10px;
-      right: 290px;
-      font-size: 48px;
-      z-index: 999998;
-      animation: bounce 1s infinite, glow 2s infinite;
-      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
-      pointer-events: none;
-    `;
-    arrow.innerHTML = '👆';
-
-    notification.innerHTML = `
-      <style>
-        @keyframes slideDown {
-          from { transform: translateX(-50%) translateY(-100px); opacity: 0; }
-          to { transform: translateX(-50%) translateY(0); opacity: 1; }
-        }
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-15px); }
-        }
-        @keyframes glow {
-          0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)); }
-          50% { filter: drop-shadow(0 0 20px rgba(255, 255, 255, 1)); }
-        }
-        #popup-blocked-notification h3 {
-          margin: 0 0 16px 0;
-          font-size: 24px;
-          font-weight: 700;
-        }
-        #popup-blocked-notification p {
-          margin: 0;
-          font-size: 16px;
-          line-height: 1.6;
-          font-weight: 500;
-        }
-        #popup-blocked-notification .big-emoji {
-          font-size: 64px;
-          margin: 10px 0;
-        }
-      </style>
-      <div class="big-emoji">🚫</div>
-      <h3>⚠ Hide mode is blocked!</h3>
-      <p>Your screen is <strong>visible</strong> right now.<br>Click the icon in your address bar, then <strong>allow pop-ups</strong> to fix it.</p>
-    `;
-
-    document.body.appendChild(notification);
-    document.body.appendChild(arrow);
-
-    // Auto-remove after showing for a while
-    setTimeout(() => {
-      if (notification.parentNode) notification.remove();
-      if (arrow.parentNode) arrow.remove();
-    }, 10000);
   }
 
   function isInAboutBlankIframe() {

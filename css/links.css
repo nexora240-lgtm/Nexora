@@ -509,38 +509,7 @@ body {
   user-select: none;
 }
 
-/* Toast Notification */
-.copy-toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%) translateY(100px);
-  background: color-mix(in srgb, var(--surface-2) 90%, transparent);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: var(--text);
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
-  opacity: 0;
-  transition: all 0.3s ease;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.copy-toast.show {
-  transform: translateX(-50%) translateY(0);
-  opacity: 1;
-}
-
-.copy-toast i {
-  color: #22c55e;
-}
+/* Toast styles moved to nexora-notify.css */
 
 /* Back Button */
 .back-link {
@@ -798,12 +767,6 @@ body {
   box-shadow: 0 4px 24px rgba(0,0,0,0.1);
   background: rgba(255,255,255,0.95);
   border: 1px solid rgba(0,0,0,0.08);
-}
-
-.light-scheme .copy-toast {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-  border: 1px solid rgba(0,0,0,0.06);
-  background: rgba(255,255,255,0.9);
 }
 
 .light-scheme .submit-status.success {

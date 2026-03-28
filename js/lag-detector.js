@@ -262,96 +262,44 @@
       if (localStorage.getItem(PRESET_KEY) === 'fast') return;
     } catch (e) {}
 
-    if (document.getElementById('nexora-lag-banner')) return;
+    if (!window.NexoraNotify) return;
 
-    var banner = document.createElement('div');
-    banner.id = 'nexora-lag-banner';
-    banner.setAttribute('role', 'alert');
-    banner.setAttribute('aria-live', 'polite');
-    banner.style.cssText = [
-      'position:fixed',
-      'bottom:20px',
-      'right:20px',
-      'z-index:999990',
-      'max-width:340px',
-      'width:calc(100% - 40px)',
-      'background:var(--surface-2,#1e1e2e)',
-      'border:1px solid var(--primary-accent,#f59e0b)',
-      'border-radius:var(--radius,12px)',
-      'padding:16px 18px',
-      'box-shadow:0 8px 32px rgba(0,0,0,0.45)',
-      'font-family:"Poppins",Arial,sans-serif',
-      'font-size:13px',
-      'color:var(--text,#f1f5f9)',
-      'backdrop-filter:blur(12px)',
-      '-webkit-backdrop-filter:blur(12px)',
-      'opacity:0',
-      'transform:translateY(12px)',
-      'transition:opacity 0.35s ease, transform 0.35s ease',
-      'box-sizing:border-box'
-    ].join(';');
-
-    banner.innerHTML =
-      '<div style="display:flex;align-items:flex-start;gap:10px">' +
-        '<div style="flex:1;min-width:0">' +
-          '<div style="font-weight:700;font-size:13.5px;margin-bottom:3px;color:var(--text,#f1f5f9)">' +
-            'Your device seems to be lagging' +
-          '</div>' +
-          '<div style="color:var(--muted,#94a3b8);font-size:12px;line-height:1.45">' +
-            'Consider switching to a lower performance preset to improve speed.' +
-          '</div>' +
-          '<div style="display:flex;gap:8px;margin-top:12px">' +
-            '<button id="nexora-lag-presets-btn" style="' +
+    var notif = NexoraNotify.show({
+      type: 'warning',
+      position: 'bottom-right',
+      duration: 0,
+      html:
+        '<div class="nxn-icon"><i class="fas fa-exclamation-triangle"></i></div>' +
+        '<div class="nxn-body">' +
+          '<div class="nxn-title">Your device seems to be lagging</div>' +
+          '<div class="nxn-text">Consider switching to a lower performance preset to improve speed.</div>' +
+          '<div style="display:flex;gap:8px;margin-top:10px">' +
+            '<button class="nxn-lag-presets" style="' +
               'flex:1;padding:7px 0;border:none;border-radius:7px;cursor:pointer;' +
               'background:var(--primary-accent,#f59e0b);color:#000;' +
               'font-family:inherit;font-size:12px;font-weight:700' +
             '">Presets</button>' +
-            '<button id="nexora-lag-dismiss-btn" style="' +
+            '<button class="nxn-lag-dismiss" style="' +
               'flex:1;padding:7px 0;border:1px solid var(--muted,#475569);border-radius:7px;cursor:pointer;' +
               'background:transparent;color:var(--muted,#94a3b8);' +
               'font-family:inherit;font-size:12px;font-weight:600' +
             '">Don\'t Show Again</button>' +
           '</div>' +
         '</div>' +
-        '<button id="nexora-lag-close-btn" aria-label="Close" style="' +
-          'background:none;border:none;cursor:pointer;padding:2px 4px;' +
-          'color:var(--muted,#94a3b8);font-size:16px;line-height:1;flex-shrink:0;margin-top:-2px' +
-        '">&times;</button>' +
-      '</div>';
-
-    document.body.appendChild(banner);
-
-    // Animate in
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () {
-        banner.style.opacity = '1';
-        banner.style.transform = 'translateY(0)';
-      });
+        '<button class="nxn-close" aria-label="Dismiss">&times;</button>'
     });
 
-    function removeBanner() {
-      banner.style.opacity = '0';
-      banner.style.transform = 'translateY(12px)';
-      setTimeout(function () {
-        if (banner.parentNode) banner.parentNode.removeChild(banner);
-      }, 350);
-    }
+    var el = notif.el;
 
-    document.getElementById('nexora-lag-close-btn').addEventListener('click', function () {
-      removeBanner();
-    });
-
-    document.getElementById('nexora-lag-dismiss-btn').addEventListener('click', function () {
+    el.querySelector('.nxn-lag-dismiss').addEventListener('click', function () {
       try { localStorage.setItem(DISMISSED_KEY, 'true'); } catch (e) {}
-      removeBanner();
+      NexoraNotify.dismiss(notif.id);
     });
 
-    document.getElementById('nexora-lag-presets-btn').addEventListener('click', function () {
-      removeBanner();
-      // Navigate to settings appearance tab
+    el.querySelector('.nxn-lag-presets').addEventListener('click', function () {
+      NexoraNotify.dismiss(notif.id);
       if (typeof window.navigate === 'function') {
         window.navigate('/settings');
-        // Wait for the settings view to render, then activate the appearance tab
         setTimeout(function () {
           var tab = document.querySelector('[data-target="appearance"]');
           if (tab) tab.click();

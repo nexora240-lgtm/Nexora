@@ -381,9 +381,12 @@ body {
   z-index: 1000;
   transition: left 0.3s ease;
   will-change: left;
-  /* Ensure pagination is always rendered */
   visibility: visible;
   opacity: 1;
+  /* Center to match .content-wrapper */
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .sidebar:hover ~ * .pagination,
@@ -875,11 +878,13 @@ html.performance-fast body {
 .section-scroll-container {
   position: relative;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   scroll-behavior: smooth;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
   -webkit-overflow-scrolling: touch;
+  padding: 18px 0;
+  margin: -18px 0;
 }
 
 .section-scroll-container::-webkit-scrollbar {
@@ -888,8 +893,8 @@ html.performance-fast body {
 
 .section-games {
   display: flex;
-  gap: 16px;
-  padding: 4px;
+  gap: 20px;
+  padding: 14px 6px;
 }
 
 .section-games::-webkit-scrollbar {
@@ -905,17 +910,89 @@ html.performance-fast body {
   border: 2px solid transparent;
   cursor: pointer;
   position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
+  overflow: visible;
+  transition: transform 260ms cubic-bezier(.2,.9,.2,1), box-shadow 260ms cubic-bezier(.2,.9,.2,1), border-color 260ms ease;
   display: flex;
   flex-direction: column;
+  padding: 2px;
+}
+
+/* Inner glow following mouse */
+.section-game-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: var(--g-radius);
+  background-image:
+    radial-gradient(
+      var(--glow-size, 240px) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--g-accent) 20%, transparent) 0%,
+      color-mix(in srgb, var(--g-accent) 10%, transparent) 30%,
+      transparent 68%
+    );
+  opacity: 0;
+  transition: opacity 140ms ease-out;
+  z-index: 3;
+}
+
+/* Conic-gradient border following mouse */
+.section-game-card::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  pointer-events: none;
+  border-radius: calc(var(--g-radius) + 4px);
+  background: conic-gradient(
+    from 160deg at var(--x, 50%) var(--y, 50%),
+    color-mix(in srgb, var(--g-accent) 72%, transparent),
+    color-mix(in srgb, var(--g-accent-deep) 40%, transparent),
+    color-mix(in srgb, var(--g-accent) 52%, transparent)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  padding: 0;
+  opacity: 0;
+  transform: scale(0.995);
+  transition: opacity 160ms ease-out, transform 220ms cubic-bezier(.2,.9,.2,1), padding 200ms ease-out;
+  z-index: -1;
 }
 
 .section-game-card:hover {
-  transform: scale(1.05) translateY(-4px);
-  border-color: var(--g-accent);
-  box-shadow: 0 8px 24px var(--g-shadow), 
-              0 0 32px color-mix(in srgb, var(--g-accent) 30%, transparent);
+  transform: translateY(-8px) scale(1.05);
+  box-shadow:
+    0 20px 50px color-mix(in srgb, var(--g-accent) 30%, transparent),
+    0 8px 30px rgba(0,0,0,0.4);
+}
+
+.section-game-card:hover::before {
+  opacity: 1;
+  background-image:
+    radial-gradient(
+      var(--glow-size-hover, 340px) circle at var(--x, 50%) var(--y, 50%),
+      color-mix(in srgb, var(--g-accent) 45%, transparent) 0%,
+      color-mix(in srgb, var(--g-accent) 22%, transparent) 28%,
+      transparent 70%
+    );
+}
+
+.section-game-card:hover::after {
+  opacity: 1;
+  transform: scale(1.01);
+  padding: var(--border-thickness-hover, 6px);
+  inset: calc(-4px - var(--border-thickness-hover, 6px));
+  background: conic-gradient(
+    from 160deg at var(--x, 50%) var(--y, 50%),
+    color-mix(in srgb, var(--g-accent) 88%, transparent),
+    color-mix(in srgb, var(--g-accent-deep) 60%, transparent),
+    color-mix(in srgb, var(--g-accent) 72%, transparent)
+  );
 }
 
 .section-game-card .game-thumbnail {
@@ -924,6 +1001,8 @@ html.performance-fast body {
   object-fit: cover;
   border-radius: var(--g-radius);
   background: linear-gradient(135deg, var(--g-panel-2), var(--g-panel));
+  position: relative;
+  z-index: 1;
 }
 
 .section-game-card .game-info {
@@ -932,8 +1011,9 @@ html.performance-fast body {
   left: 0;
   right: 0;
   padding: 12px;
-  background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-  backdrop-filter: blur(8px);
+  background: linear-gradient(to top, color-mix(in srgb, black 85%, transparent), transparent);
+  z-index: 2;
+  border-radius: 0 0 var(--g-radius) var(--g-radius);
 }
 
 .section-game-card .game-name {
@@ -972,7 +1052,7 @@ html.performance-fast body {
   align-items: center;
   justify-content: center;
   font-size: 0.85rem;
-  z-index: 2;
+  z-index: 4;
 }
 
 /* Loading Placeholder */
@@ -1015,7 +1095,7 @@ html.performance-fast body {
 
 .banner-cards .section-game-card .game-info {
   padding: 16px 20px;
-  background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 70%, transparent 100%);
+  background: linear-gradient(to top, color-mix(in srgb, black 90%, transparent) 0%, color-mix(in srgb, black 55%, transparent) 60%, transparent 100%);
 }
 
 .banner-cards .section-game-card .game-name {
@@ -1173,11 +1253,11 @@ html.performance-fast .section-game-card {
 }
 
 .light-scheme .section-game-card .game-info {
-  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+  background: linear-gradient(to top, color-mix(in srgb, black 75%, transparent) 0%, color-mix(in srgb, black 30%, transparent) 60%, transparent 100%);
 }
 
 .light-scheme .banner-cards .section-game-card .game-info {
-  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.5) 60%, transparent 100%);
+  background: linear-gradient(to top, color-mix(in srgb, black 80%, transparent) 0%, color-mix(in srgb, black 45%, transparent) 60%, transparent 100%);
 }
 
 .light-scheme .no-results {

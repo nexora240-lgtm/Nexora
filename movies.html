@@ -28,6 +28,13 @@
 <body>
   <!-- Netflix-style Movies Interface -->
   <div class="netflix-container">
+    <!-- Ambient Floating Orbs -->
+    <div class="ambient-bg">
+      <div class="ambient-orb"></div>
+      <div class="ambient-orb"></div>
+      <div class="ambient-orb"></div>
+    </div>
+
     <!-- Search Bar -->
     <div class="search-container">
       <div class="search-wrapper">
@@ -75,21 +82,6 @@
 
     <!-- Content Categories -->
     <div class="content-wrapper">
-      <!-- Category: Recommended For You (Personalized) -->
-      <div class="content-row" id="rowRecommended" style="display:none;">
-        <h2 class="row-title">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 8px;">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-          </svg>
-          Recommended For You
-        </h2>
-        <div class="row-container">
-          <button class="row-nav row-nav-left" aria-label="Scroll left">‹</button>
-          <div class="row-content" data-category="recommended"></div>
-          <button class="row-nav row-nav-right" aria-label="Scroll right">›</button>
-        </div>
-      </div>
-
       <!-- Category: Trending Now -->
       <div class="content-row" id="rowTrending">
         <h2 class="row-title">Trending Now</h2>
@@ -378,125 +370,50 @@
     }
 
     setCookie('nexora_watch_history', history, 365);
-    
-    // Update recommendations
-    updateRecommendedSection();
   }
 
-  // Get user's favorite genres based on watch history
-  function getFavoriteGenres() {
-    const history = getWatchHistory();
-    const genreCounts = {};
-
-    history.forEach(entry => {
-      if (entry.genres) {
-        entry.genres.forEach(genreId => {
-          genreCounts[genreId] = (genreCounts[genreId] || 0) + 1;
-        });
-      }
-    });
-
-    // Sort by count and return top genres
-    return Object.entries(genreCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([genreId]) => parseInt(genreId));
-  }
-
-  // Load personalized recommendations
-  async function loadRecommendedRow() {
-    const history = getWatchHistory();
-    const container = document.querySelector('[data-category="recommended"]');
-    const rowElement = document.getElementById('rowRecommended');
-
-    if (!container) return;
-
-    // Show row only if user has watch history
-    if (history.length === 0) {
-      rowElement.style.display = 'none';
-      return;
-    }
-
-    rowElement.style.display = 'block';
-    container.innerHTML = '<div class="loading-card">Loading your recommendations...</div>';
-
-    const favoriteGenres = getFavoriteGenres();
-    const recentWatches = history.slice(0, 5);
-
-    let allRecommendations = [];
-
-    // Get recommendations based on recent watches
-    for (const watch of recentWatches.slice(0, 3)) {
-      const endpoint = watch.type === 'movie'
-        ? `/movie/${watch.id}/recommendations?language=en-US&page=1`
-        : `/tv/${watch.id}/recommendations?language=en-US&page=1`;
-
-      const data = await fetchTMDB(endpoint);
-      if (data && data.results) {
-        allRecommendations.push(...data.results);
-      }
-    }
-
-    // Get content from favorite genres
-    if (favoriteGenres.length > 0) {
-      const genreEndpoint = `/discover/movie?language=en-US&with_genres=${favoriteGenres.join(',')}&sort_by=popularity.desc&page=1`;
-      const genreData = await fetchTMDB(genreEndpoint);
-      if (genreData && genreData.results) {
-        allRecommendations.push(...genreData.results);
-      }
-    }
-
-    // Remove duplicates and already watched
-    const watchedIds = new Set(history.map(w => `${w.type}_${w.id}`));
-    const uniqueRecommendations = [];
-    const seenIds = new Set();
-
-    for (const item of allRecommendations) {
-      const itemType = item.media_type || (item.title ? 'movie' : 'tv');
-      const itemKey = `${itemType}_${item.id}`;
-      
-      if (!seenIds.has(itemKey) && !watchedIds.has(itemKey)) {
-        seenIds.add(itemKey);
-        uniqueRecommendations.push(item);
-      }
-
-      if (uniqueRecommendations.length >= 20) break;
-    }
-
-    if (uniqueRecommendations.length === 0) {
-      rowElement.style.display = 'none';
-      return;
-    }
-
-    const fragment = document.createDocumentFragment();
-    uniqueRecommendations.forEach(item => {
-      fragment.appendChild(createCard(item, 'recommended'));
-    });
-    container.textContent = '';
-    container.appendChild(fragment);
-
-    setupScrollNav(rowElement);
-  }
-
-  function updateRecommendedSection() {
-    loadRecommendedRow();
-  }
-
-  // Image helpers
+  // Image helpers with fallback sizes
   const imgBase = (size) => `https://image.tmdb.org/t/p/${size}`;
+  const posterSizes = ['w342', 'w500', 'w185', 'original'];
   const poster = (path) => path ? imgBase('w342') + path : null;
   const backdrop = (path) => path ? imgBase('w1280') + path : null;
 
-  // Fetch helper
-  async function fetchTMDB(endpoint) {
-    try {
-      const res = await fetch(`${TMDB_BASE}${endpoint}`);
-      if (!res.ok) throw new Error('Failed to fetch');
-      return await res.json();
-    } catch (err) {
-      console.error('TMDB fetch error:', err);
-      return null;
+  // Retry image load with different CDN sizes before giving up
+  function handleImgError(img) {
+    const src = img.src;
+    const currentSize = posterSizes.find(s => src.includes(`/t/p/${s}/`));
+    const nextIdx = currentSize ? posterSizes.indexOf(currentSize) + 1 : posterSizes.length;
+    if (nextIdx < posterSizes.length) {
+      img.src = src.replace(`/t/p/${currentSize}/`, `/t/p/${posterSizes[nextIdx]}/`);
+    } else {
+      const placeholder = document.createElement('div');
+      placeholder.className = img.closest('.rec-poster') ? 'rec-placeholder' : 'card-placeholder';
+      placeholder.textContent = img.closest('.rec-poster') ? '?' : 'No Image';
+      img.replaceWith(placeholder);
     }
+  }
+
+  // Fetch helper with retry for 5xx errors
+  async function fetchTMDB(endpoint, retries = 3) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const res = await fetch(`${TMDB_BASE}${endpoint}`);
+        if (res.ok) return await res.json();
+        if (res.status >= 500 && i < retries - 1) {
+          await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+          continue;
+        }
+        throw new Error(`HTTP ${res.status}`);
+      } catch (err) {
+        if (i < retries - 1) {
+          await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+          continue;
+        }
+        console.error('TMDB fetch error:', err);
+        return null;
+      }
+    }
+    return null;
   }
 
   // Initialize hero section with trending content
@@ -703,6 +620,9 @@
         </div>
       </div>
     `;
+
+    const img = card.querySelector('.card-image img');
+    if (img) img.addEventListener('error', () => handleImgError(img), { once: false });
 
     const contentData = {
       id: item.id,
@@ -1010,6 +930,9 @@
         </div>
       `;
 
+      const recImg = card.querySelector('.rec-poster img');
+      if (recImg) recImg.addEventListener('error', () => handleImgError(recImg), { once: false });
+
       const contentData = {
         id: item.id,
         title: title,
@@ -1286,23 +1209,27 @@
     setupSearch();
     setupModals();
 
-    // Load personalized recommendations first
-    await loadRecommendedRow();
-
     // Load all content rows
     const rows = document.querySelectorAll('.row-content');
     rows.forEach(row => {
-      const category = row.dataset.category;
-      if (category !== 'recommended') {
-        loadRow(category, row);
-      }
+      loadRow(row.dataset.category, row);
     });
   }
 
-  // Mouse tracking for nemophoric effects
+  // Mouse tracking for neumorphic glow effects
   if (window.NexoraMouseTracking) {
-    const cleanup = window.NexoraMouseTracking.bindDocumentRoot(document.documentElement);
-    registerCleanup(() => cleanup());
+    const cleanupRoot = window.NexoraMouseTracking.bindDocumentRoot(document.documentElement);
+    registerCleanup(() => cleanupRoot());
+
+    // Delegated per-card glow tracking (sets --x/--y as % on each card)
+    const container = document.querySelector('.netflix-container');
+    if (container) {
+      const cleanupCards = window.NexoraMouseTracking.bindDelegated(
+        container,
+        '.movie-card, .recommendation-card, .content-row, .episode-card'
+      );
+      registerCleanup(() => cleanupCards());
+    }
   }
 
   // Start the app

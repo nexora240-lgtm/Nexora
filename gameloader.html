@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/nexora-amber.png">
   <script src="config.js"></script>
+  <script src="js/mouse-tracking.js"></script>
   <style>
     .favorite-star-btn {
       width: 32px;
@@ -119,6 +120,35 @@
     }
   </style>
   <style>
+    .view-count {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .view-count i {
+      font-size: 0.7rem;
+      opacity: 0.8;
+    }
+    .taboola-ad-row {
+      grid-column: 1 / -1;
+      width: 100%;
+      min-height: 50px;
+      padding: 10px 0;
+    }
+  </style>
+  <style>
     .loader-page .content-wrapper {
       display: flex;
       justify-content: center;
@@ -211,6 +241,16 @@
       </div>
     </div>
 
+    <!-- Mid-page Ad Placement (between game and related games) -->
+    <div class="gameloader-ad-container" id="midPageAd">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-7925754855607435"
+           data-ad-slot="auto"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>
+
     <!-- Related Games Section -->
     <section class="related-games-section">
       <h2 class="related-games-title">
@@ -221,6 +261,16 @@
         <!-- Games will be populated by JS -->
       </div>
     </section>
+
+    <!-- Bottom Ad Placement -->
+    <div class="gameloader-ad-container">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-7925754855607435"
+           data-ad-slot="auto"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>
   </div>
 
   <script>
@@ -948,30 +998,118 @@
         }
       }
       
-      // Filter out current game
+      // Filter out current game and games without a thumbnail
       const currentTitle = currentGame?.title || "";
-      const otherGames = games.filter(g => g.title !== currentTitle);
+      const otherGames = games.filter(g => g.title !== currentTitle && g.thumbnail && g.thumbnail.trim() !== "");
       
-      // Shuffle and pick 50 games
+      // Shuffle and pick 48 games
       const shuffled = otherGames.sort(() => Math.random() - 0.5);
-      const selectedGames = shuffled.slice(0, 49);
+      const selectedGames = shuffled.slice(0, 48);
       
-      // Render the games
+      // Fetch view counts for selected games using the same cache
+      const gameIds = selectedGames.map(g => g.title);
+      let viewCounts = {};
+      
+      // Try loading from shared stats cache
+      try {
+        const shared = sessionStorage.getItem('nexora_allStatsCache');
+        if (shared) {
+          const allStats = JSON.parse(shared);
+          gameIds.forEach(id => {
+            const stat = allStats[id];
+            viewCounts[id] = stat ? (typeof stat === 'object' ? stat.viewCount : stat) : 0;
+          });
+        }
+      } catch (e) { /* ignore */ }
+      
+      // Taboola ad insertion — every 12 cards
+      const AD_INTERVAL = 12;
+      if (typeof window._taboolaGlobalIndex === 'undefined') {
+        window._taboolaGlobalIndex = 0;
+      }
+      
+      function insertTaboolaAd() {
+        window._taboolaGlobalIndex++;
+        const adContainer = document.createElement('div');
+        adContainer.className = 'taboola-ad-row';
+        const adId = 'taboola-related-feed-' + window._taboolaGlobalIndex;
+        adContainer.innerHTML = '<div id="' + adId + '"></div>';
+        grid.appendChild(adContainer);
+        
+        window._taboola = window._taboola || [];
+        _taboola.push({
+          mode: 'alternating-thumbnails-a',
+          container: adId,
+          placement: 'Related Games Feed ' + window._taboolaGlobalIndex,
+          target_type: 'mix'
+        });
+      }
+      
+      let taboolaAdCount = 0;
+      
+      // Render the games in games.html homepage style
       selectedGames.forEach((game, index) => {
+        // Insert Taboola ad every AD_INTERVAL cards
+        if (index > 0 && index % AD_INTERVAL === 0) {
+          insertTaboolaAd();
+          taboolaAdCount++;
+        }
+        
         const card = document.createElement("div");
         card.className = "related-game-card";
+        card.style.setProperty("--card-index", index);
+        card.style.animationDelay = `${Math.min(index * 0.03, 0.6)}s`;
         card.tabIndex = 0;
+        
+        // Card image
+        const img = document.createElement("img");
+        img.src = game.thumbnail;
+        img.alt = game.title;
+        img.loading = "lazy";
+        
+        // Title overlay
+        const title = document.createElement("div");
+        title.className = "related-game-title";
+        title.textContent = game.title;
+        
+        // Favorite star
+        const star = document.createElement("div");
+        star.className = "favorite-star" + (FavoritesManager.isFavorited(game.title) ? " favorited" : "");
+        star.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+        star.onclick = (e) => {
+          e.stopPropagation();
+          const isFav = FavoritesManager.toggle(game.title);
+          star.classList.toggle('favorited', isFav);
+        };
+        
+        // View count badge
+        const viewCount = document.createElement("div");
+        viewCount.className = "view-count";
+        const count = viewCounts[game.title] || 0;
+        viewCount.innerHTML = '<i class="fas fa-eye"></i><span>' + formatViewCount(count) + '</span>';
+        viewCount.style.opacity = count > 0 ? '1' : '0.5';
+        
+        // Back glow element for mouse tracking
+        const backGlow = document.createElement("div");
+        backGlow.className = "back-glow";
+        
+        card.appendChild(backGlow);
+        card.appendChild(img);
+        card.appendChild(title);
+        card.appendChild(star);
+        card.appendChild(viewCount);
+        
+        // Bind mouse tracking for glow effect
+        if (window.NexoraMouseTracking) {
+          window.NexoraMouseTracking.bindElement(card);
+        }
         
         card.onclick = () => {
           const newGameData = JSON.stringify(game);
           const currentGameData = sessionStorage.getItem("currentGame");
           
-          console.log('Related game card clicked:', game.title);
-          console.log('Setting currentGame in sessionStorage:', newGameData);
-          
           // Check if this is a different game than what's currently loaded
           if (currentGameData !== newGameData) {
-            // Destroy the old game session completely when selecting a new game
             if (typeof window.destroyGameSession === 'function') {
               window.destroyGameSession();
             } else if (window.GameStateManager) {
@@ -989,22 +1127,10 @@
           
           sessionStorage.setItem("currentGame", newGameData);
           
-          // Verify it was saved
-          const saved = sessionStorage.getItem("currentGame");
-          console.log('Verified sessionStorage:', saved ? 'saved successfully' : 'FAILED TO SAVE');
-          
-          // keep your existing navigation behavior
           if (typeof navigate === 'function') {
-            console.log('Using navigate function to /loader');
             navigate('/loader');
           } else {
-            // fallback: try location change if navigate not defined
-            console.log('navigate function not found, using location.href');
-            try { 
-              location.href = 'gameloader.html'; 
-            } catch (e) {
-              console.error('Navigation failed:', e);
-            }
+            location.href = 'gameloader.html';
           }
         };
         
@@ -1015,37 +1141,47 @@
           }
         };
         
-        const imgWrapper = document.createElement("div");
-        imgWrapper.className = "related-game-img-wrapper";
-        
-        const img = document.createElement("img");
-        img.src = game.thumbnail;
-        img.alt = game.title;
-        img.loading = "lazy";
-        
-        const overlay = document.createElement("div");
-        overlay.className = "related-game-overlay";
-        overlay.innerHTML = '<i class="fas fa-play"></i>';
-        
-        imgWrapper.appendChild(img);
-        imgWrapper.appendChild(overlay);
-        
-        const info = document.createElement("div");
-        info.className = "related-game-info";
-        
-        const title = document.createElement("span");
-        title.className = "related-game-title";
-        title.textContent = game.title;
-        
-        info.appendChild(title);
-        
-        card.appendChild(imgWrapper);
-        card.appendChild(info);
         grid.appendChild(card);
       });
+      
+      // Flush Taboola after grid is built
+      if (taboolaAdCount > 0) {
+        window._taboola = window._taboola || [];
+        _taboola.push({ flush: true });
+      }
+      
+      // Try to fetch fresh view counts in background
+      if (_CONFIG.viewsApiUrl && !_CONFIG.viewsApiUrl.includes('YOUR-API-ID')) {
+        try {
+          const response = await fetchWithTimeout(`${_CONFIG.viewsApiUrl}/stats/all`, {}, 10000);
+          if (response.ok) {
+            const data = await response.json();
+            const stats = data.stats || {};
+            // Update view count badges in place
+            const cards = grid.querySelectorAll('.related-game-card');
+            selectedGames.forEach((game, idx) => {
+              const stat = stats[game.title];
+              const count = stat ? (typeof stat === 'object' ? stat.viewCount : stat) : 0;
+              if (cards[idx]) {
+                const vcEl = cards[idx].querySelector('.view-count span');
+                const vcDiv = cards[idx].querySelector('.view-count');
+                if (vcEl) vcEl.textContent = formatViewCount(count);
+                if (vcDiv) vcDiv.style.opacity = count > 0 ? '1' : '0.5';
+              }
+            });
+          }
+        } catch (e) { /* silently fail */ }
+      }
     }
     
     loadRelatedGames();
+    
+    // Initialize AdSense ads after page load
+    try {
+      (adsbygoogle = window.adsbygoogle || []).push({});
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    } catch(e) { /* ad blocker or not loaded */ }
+    
     })(); // Close IIFE
   </script>
 
@@ -1090,6 +1226,26 @@
       document.addEventListener('settings:colorSchemeChanged', updateFavicon);
       document.addEventListener('settings:themeChanged', updateFavicon);
     })();
+  </script>
+
+  <!-- Taboola Loader Script -->
+  <script type="text/javascript">
+    window._taboola = window._taboola || [];
+    _taboola.push({article:'auto'});
+    !function (e, f, u, i) {
+      if (!document.getElementById(i)){
+        e.async = 1;
+        e.src = u;
+        e.id = i;
+        f.parentNode.insertBefore(e, f);
+      }
+    }(document.createElement('script'),
+      document.getElementsByTagName('script')[0],
+      '//cdn.taboola.com/libtrc/adklip-thenexoraproject/loader.js',
+      'tb_loader_script');
+    if(window.performance && typeof window.performance.mark == 'function'){
+      window.performance.mark('tbl_ic');
+    }
   </script>
 </body>
 </html>

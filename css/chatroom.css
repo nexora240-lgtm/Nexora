@@ -1,2197 +1,1293 @@
+﻿/* 
+   Circle  Full-page chat UI
+   Matches Nexora design language (tokens, gradients,
+   glassmorphism). No centered card  edge-to-edge.
+    */
+
+/*  Reset  */
+.nexora-chatroom *, .nexora-chatroom *::before, .nexora-chatroom *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/*  Root  */
 .nexora-chatroom {
-    --page-bg: var(--page-bg, #0a0605);
-    --panel: var(--surface, #1a100d);
-    --panel-2: var(--surface-2, #1f1410);
+  --cr-bg: var(--page-bg, #0a0605);
+  --cr-surface: var(--surface, #1a100d);
+  --cr-surface-2: var(--surface-2, #1f1410);
+  --cr-accent: var(--primary, #d4550a);
+  --cr-accent-deep: var(--primary-deep, #992f05);
+  --cr-accent-shadow: var(--primary-shadow, rgba(212,85,10,0.5));
+  --cr-accent-grad: var(--accent-gradient, linear-gradient(135deg, var(--cr-accent-deep), var(--cr-accent)));
+  --cr-text: var(--text, #f8e7e0);
+  --cr-muted: var(--muted, #c9a08a);
+  --cr-on-accent: var(--on-primary, #fff0e8);
+  --cr-radius: 12px;
+  --cr-rail-w: 260px;
 
-    --orange: var(--primary, #d4550a);
-    --orange-deep: var(--primary-deep, #992f05);
-    --orange-shadow: var(--primary-shadow, rgba(212,85,10,0.5));
-
-    --accent: var(--orange);
-    --send-icon: var(--on-primary, #fff0e8);
-
-    --text: var(--text, #f8e7e0);
-    --muted: var(--muted, #c9a08a);
-
-    --radius: 14px;
-
-    box-sizing: border-box;
-    height: 100%;
-    color: var(--text);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Inter, Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    background: var(--page-bg);
+  height: 100%;
+  max-height: calc(100vh - 48px);
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: var(--cr-text);
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.nexora-chatroom *, .nexora-chatroom *::before, .nexora-chatroom *::after { 
-    box-sizing: inherit; 
-    margin: 0;
-    padding: 0;
-}
-
+/*  App wrapper  */
 .nexora-chatroom .app {
-    display: flex;
-    flex-direction: row;
-    height: 100%;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    position: relative;
-    gap: 20px;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  animation: none;
+  padding: 8px;
+  gap: 8px;
 }
 
+/*  Container (main panel host)  */
 .nexora-chatroom .container {
-    --x: 50%;
-    --y: 50%;
-    --glow-size: 300px;
-    --glow-size-hover: 400px;
-    --glow-strength: 0.35;
-    
-    position: relative;
-    background: linear-gradient(to bottom, 
-        color-mix(in srgb, var(--orange, #d4550a) 3%, transparent),
-        color-mix(in srgb, var(--panel, #1a100d) 12%, transparent) 50%,
-        color-mix(in srgb, var(--orange-deep, #992f05) 4%, transparent));
-    background-color: color-mix(in srgb, var(--panel) 8%, transparent);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 20px;
-    box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.3),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.03);
-    width: 100%;
-    max-width: 700px;
-    height: 85vh;
-    max-height: 700px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transition: transform 260ms cubic-bezier(.2,.9,.2,1), box-shadow 260ms cubic-bezier(.2,.9,.2,1);
-    will-change: transform;
-}
-
-
-.nexora-chatroom .container::before {
-    content: "";
-    position: absolute;
-    inset: 4px;
-    pointer-events: none;
-    border-radius: 16px;
-    background-image:
-        linear-gradient(135deg,
-            color-mix(in srgb, var(--orange) 8%, transparent) 0%,
-            color-mix(in srgb, var(--orange-deep) 5%, transparent) 40%,
-            transparent 100%),
-        radial-gradient(
-            var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
-            color-mix(in srgb, var(--orange) 10%, transparent) 0%,
-            color-mix(in srgb, var(--orange) 5%, transparent) 30%,
-            transparent 68%
-        );
-    background-blend-mode: screen, normal;
-    opacity: 0;
-    transition: opacity 140ms ease-out, background-position 160ms ease-out;
-    will-change: background-position, opacity;
-    z-index: 0;
-}
-
-
-.nexora-chatroom .container::after {
-    content: "";
-    position: absolute;
-    inset: -4px;
-    pointer-events: none;
-    border-radius: calc(20px + 4px);
-    background: conic-gradient(
-        from 180deg at var(--x, 50%) var(--y, 50%),
-        var(--orange),
-        color-mix(in srgb, var(--orange) 70%, var(--orange-deep) 30%),
-        var(--orange-deep),
-        color-mix(in srgb, var(--orange) 70%, var(--orange-deep) 30%),
-        var(--orange)
-    );
-    -webkit-mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-    mask-composite: exclude;
-    padding: 0;
-    opacity: 0 !important;
-    transform: scale(0.995);
-    transition: opacity 160ms ease-out, transform 220ms cubic-bezier(.2,.9,.2,1), padding 200ms ease-out, background-position 200ms ease-out;
-    will-change: opacity, transform, padding, background-position;
-    z-index: -1;
-}
-
-.nexora-chatroom .container .container-glow {
-    position: absolute;
-    inset: -24px;
-    border-radius: calc(20px + 24px);
-    pointer-events: none;
-    z-index: -1;
-    filter: blur(24px);
-    opacity: 0;
-    transition: opacity 220ms ease-out, transform 220ms cubic-bezier(.2,.9,.2,1);
-    background: radial-gradient(
-        circle at var(--x, 50%) var(--y, 50%),
-        color-mix(in srgb, var(--orange) var(--glow-strength), transparent) 0%,
-        color-mix(in srgb, var(--orange-deep) 20%, transparent) 35%,
-        transparent 70%
-    );
-    transform: scale(0.98);
-    will-change: opacity, transform, background-position;
-}
-
-
-.nexora-chatroom .container:hover::before {
-    opacity: 0.25;
-    background-image:
-        linear-gradient(135deg,
-            color-mix(in srgb, var(--orange) 12%, transparent) 0%,
-            color-mix(in srgb, var(--orange-deep) 8%, transparent) 40%,
-            transparent 100%),
-        radial-gradient(
-            var(--glow-size-hover) circle at var(--x, 50%) var(--y, 50%),
-            color-mix(in srgb, var(--orange) 16%, transparent) 0%,
-            color-mix(in srgb, var(--orange) 12%, transparent) 28%,
-            transparent 70%
-        );
-    transition: opacity 120ms ease-out, background-position 160ms ease-out;
-}
-
-.nexora-chatroom .container:hover::after {
-    opacity: 0 !important;
-    transform: scale(1.005);
-    padding: 4px;
-    inset: calc(-4px - 4px);
-    background: conic-gradient(
-        from 180deg at var(--x, 50%) var(--y, 50%),
-        var(--orange),
-        color-mix(in srgb, var(--orange) 60%, var(--orange-deep) 40%),
-        var(--orange-deep),
-        color-mix(in srgb, var(--orange) 60%, var(--orange-deep) 40%),
-        var(--orange)
-    );
-    transition: opacity 160ms ease-out, transform 200ms cubic-bezier(.2,.9,.2,1), padding 180ms ease-out, background-position 180ms ease-out, inset 180ms ease-out;
-}
-
-.nexora-chatroom .container:hover .container-glow {
-    opacity: 1;
-    transform: scale(1.01);
-    background: radial-gradient(
-        circle at var(--x, 50%) var(--y, 50%),
-        color-mix(in srgb, var(--orange) calc(var(--glow-strength) + 0.10), transparent) 0%,
-        color-mix(in srgb, var(--orange-deep) 28%, transparent) 28%,
-        transparent 76%
-    );
-}
-
-
-.nexora-chatroom .container {
-    animation: floatIn 1s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes floatIn {
-    from {
-        opacity: 0;
-        transform: translateY(40px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.nexora-chatroom .container:hover {
-    transform: translateY(-4px) scale(1.01);
-    box-shadow:
-        0 28px 72px color-mix(in srgb, var(--orange) 36%, transparent),
-        0 10px 40px rgba(0,0,0,0.6),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-}
-
-
-.nexora-chatroom .header {
-    position: relative;
-    background: transparent;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    color: var(--text);
-    padding: 20px;
-    text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    z-index: 10;
-    animation: slideDownFade 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 
-        inset 0 1px 2px rgba(255, 255, 255, 0.05),
-        inset 0 -1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.nexora-chatroom .header-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-}
-
-.nexora-chatroom .header-back-button {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: color-mix(in srgb, var(--panel-2) 40%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    color: var(--text);
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.18s ease;
-    width: auto;
-    opacity: 0;
-    pointer-events: none;
-    box-shadow: 
-        -2px -2px 6px rgba(255, 255, 255, 0.03),
-        2px 2px 6px rgba(0, 0, 0, 0.4),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-}
-
-.nexora-chatroom .chat-screen.active ~ .app .header-back-button,
-.nexora-chatroom .container:has(.chat-screen.active) .header-back-button {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.nexora-chatroom .header-back-button:hover {
-    background: color-mix(in srgb, var(--orange) 18%, color-mix(in srgb, var(--panel-2) 50%, transparent));
-    transform: translateY(-50%) scale(1.02);
-    box-shadow: 
-        -1px -1px 4px rgba(255, 255, 255, 0.04),
-        1px 1px 4px rgba(0, 0, 0, 0.5),
-        inset -2px -2px 6px rgba(0, 0, 0, 0.3),
-        inset 2px 2px 6px rgba(255, 255, 255, 0.02);
-    color: var(--orange);
-}
-
-.nexora-chatroom .header-back-button:active {
-    transform: translateY(-50%) scale(0.95);
-}
-
-@keyframes slideDownFade {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.nexora-chatroom .header h1 {
-    font-size: 24px;
-    margin: 0;
-    font-weight: 700;
-    background: var(--accent-gradient, linear-gradient(90deg, var(--orange-deep), var(--orange)));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: fadeInScale 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
-}
-
-@keyframes fadeInScale {
-    from {
-        opacity: 0;
-        transform: scale(0.8);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.nexora-chatroom .room-code {
-    font-size: 13px;
-    opacity: 0.9;
-    color: var(--send-icon);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    user-select: none;
-    padding: 4px 10px;
-    border-radius: 8px;
-    animation: pulse 2s ease-in-out infinite, fadeIn 0.6s ease-out 0.4s both;
-    display: none;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 0.95;
-    }
-    50% {
-        opacity: 1;
-        text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-    }
-}
-
-.nexora-chatroom .room-code:hover {
-    background: color-mix(in srgb, var(--send-icon) 15%, transparent);
-    transform: scale(1.05);
-}
-
-
-.nexora-chatroom .room-code-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    cursor: pointer;
-}
-
-.nexora-chatroom .room-code-overlay.active {
-    display: flex;
-    animation: overlayFadeIn 0.3s ease-out;
-}
-
-@keyframes overlayFadeIn {
-    from {
-        opacity: 0;
-        backdrop-filter: blur(0px);
-        -webkit-backdrop-filter: blur(0px);
-    }
-    to {
-        opacity: 1;
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-    }
-}
-
-.nexora-chatroom .room-code-large {
-    text-align: center;
-    animation: roomCodeAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes roomCodeAppear {
-    0% {
-        opacity: 0;
-        transform: scale(0.5) rotate(-10deg);
-    }
-    60% {
-        transform: scale(1.1) rotate(2deg);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) rotate(0deg);
-    }
-}
-
-.nexora-chatroom .room-code-large-title {
-    font-size: 2rem;
-    color: var(--muted);
-    margin-bottom: 30px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    border-radius: 8px;
-}
-
-.nexora-chatroom .room-code-large-code {
-    font-size: 8rem;
-    font-weight: 900;
-    background: var(--accent-gradient, linear-gradient(90deg, var(--orange-deep), var(--orange)));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    letter-spacing: 20px;
-    text-shadow: 0 0 80px var(--orange-shadow);
-    font-family: 'Courier New', monospace;
-    margin-bottom: 30px;
-    animation: codePulse 2s ease-in-out infinite;
-    border-radius: 12px;
-}
-
-@keyframes codePulse {
-    0%, 100% {
-        transform: scale(1);
-        filter: brightness(1);
-    }
-    50% {
-        transform: scale(1.05);
-        filter: brightness(1.2);
-    }
-}
-
-.nexora-chatroom .room-code-large-hint {
-    font-size: 1.2rem;
-    color: var(--muted);
-    opacity: 0.7;
-    font-weight: 400;
-    border-radius: 8px;
-}
-
-.nexora-chatroom .room-code-large-title {
-    animation: fadeIn 0.4s ease-out 0.1s both;
-}
-
-.nexora-chatroom .room-code-large-hint {
-    animation: fadeIn 0.4s ease-out 0.3s both;
-}
-
-@keyframes fadeIn {
-    from { 
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to { 
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-
-@media (max-width: 768px) {
-    .nexora-chatroom .room-code-large-code {
-        font-size: 4rem;
-        letter-spacing: 10px;
-    }
-
-    .nexora-chatroom .room-code-large-title {
-        font-size: 1.5rem;
-    }
-
-    .nexora-chatroom .room-code-large-hint {
-        font-size: 1rem;
-    }
-}
-
-
-.nexora-chatroom .login-screen {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 40px;
-    position: relative;
-    z-index: 1;
-}
-
-.nexora-chatroom .login-screen h2 {
-    background: var(--accent-gradient, linear-gradient(90deg, var(--orange-deep), var(--orange)));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 30px;
-    font-size: 2rem;
-    font-weight: 700;
-    animation: fadeInUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-
-.nexora-chatroom .choice-screen {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.nexora-chatroom .choice-screen .choice-button:nth-child(1) {
-    animation: slideInLeft 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
-}
-
-.nexora-chatroom .choice-screen .choice-button:nth-child(2) {
-    animation: slideInLeft 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
-}
-
-.nexora-chatroom .choice-screen .choice-button:nth-child(3) {
-    animation: slideInLeft 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s both;
-}
-
-@keyframes slideInLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-40px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.nexora-chatroom .choice-screen.hidden {
-    display: none;
-}
-
-.nexora-chatroom .choice-button {
-    --x: 50%;
-    --y: 50%;
-    --glow-size: 200px;
-    --glow-size-hover: 280px;
-    --glow-strength: 0.25;
-
-    width: 100%;
-    padding: 24px 20px;
-    background: color-mix(in srgb, var(--panel-2) 40%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: var(--radius);
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text);
-    cursor: pointer;
-    transition: all 0.18s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 
-        -3px -3px 8px rgba(255, 255, 255, 0.03),
-        3px 3px 8px rgba(0, 0, 0, 0.4),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-}
-
-.nexora-chatroom .choice-button-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--orange);
-    pointer-events: none;
-}
-
-.nexora-chatroom .choice-button-desc {
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--muted);
-    opacity: 0.85;
-    pointer-events: none;
-}
-
-
-.nexora-chatroom .choice-button::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    border-radius: var(--radius);
-    background-image:
-        radial-gradient(
-            var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
-            color-mix(in srgb, var(--orange) 10%, transparent) 0%,
-            color-mix(in srgb, var(--orange) 5%, transparent) 30%,
-            transparent 68%
-        );
-    opacity: 0;
-    transition: opacity 140ms ease-out, background-position 160ms ease-out;
-    will-change: background-position, opacity;
-    z-index: 0;
-}
-
-.nexora-chatroom .choice-button:hover {
-    background: color-mix(in srgb, var(--orange) 18%, color-mix(in srgb, var(--panel-2) 50%, transparent));
-    transform: scale(1.02);
-    box-shadow: 
-        -1px -1px 4px rgba(255, 255, 255, 0.04),
-        1px 1px 4px rgba(0, 0, 0, 0.5),
-        inset -2px -2px 6px rgba(0, 0, 0, 0.3),
-        inset 2px 2px 6px rgba(255, 255, 255, 0.02),
-        0 4px 16px var(--orange-shadow);
-}
-
-.nexora-chatroom .choice-button:hover::before {
-    opacity: 0.6;
-    background-image:
-        radial-gradient(
-            var(--glow-size-hover) circle at var(--x, 50%) var(--y, 50%),
-            color-mix(in srgb, var(--orange) 20%, transparent) 0%,
-            color-mix(in srgb, var(--orange) 10%, transparent) 28%,
-            transparent 70%
-        );
-}
-
-.nexora-chatroom .choice-button:active {
-    transform: translateY(0) scale(0.98);
-    transition: transform 0.1s ease;
-}
-
-.nexora-chatroom .choice-button > * {
-    position: relative;
-    z-index: 1;
-    pointer-events: none;
-}
-
-
-.nexora-chatroom .form-screen {
-    width: 100%;
-    display: none;
-    flex-direction: column;
-}
-
-.nexora-chatroom .form-screen.active {
-    display: flex;
-    animation: fadeInScale 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.nexora-chatroom .back-button {
-    align-self: flex-start;
-    background: color-mix(in srgb, var(--panel-2) 40%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    color: var(--text);
-    font-size: 14px;
-    padding: 8px 12px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.18s ease;
-    width: auto;
-    box-shadow: 
-        -2px -2px 6px rgba(255, 255, 255, 0.03),
-        2px 2px 6px rgba(0, 0, 0, 0.4),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-}
-
-.nexora-chatroom .back-button:hover {
-    color: var(--orange);
-    background: color-mix(in srgb, var(--orange) 18%, color-mix(in srgb, var(--panel-2) 50%, transparent));
-    transform: scale(1.02);
-    box-shadow: 
-        -1px -1px 4px rgba(255, 255, 255, 0.04),
-        1px 1px 4px rgba(0, 0, 0, 0.5),
-        inset -2px -2px 6px rgba(0, 0, 0, 0.3),
-        inset 2px 2px 6px rgba(255, 255, 255, 0.02);
-}
-
-.nexora-chatroom .input-group {
-    width: 100%;
-    margin-bottom: 20px;
-}
-
-.nexora-chatroom .input-group input {
-    width: 100%;
-    padding: 15px;
-    background: color-mix(in srgb, var(--panel-2) 40%, transparent);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: var(--radius);
-    font-size: 16px;
-    color: var(--text);
-    transition: all 0.18s ease;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 
-        -3px -3px 8px rgba(255, 255, 255, 0.03),
-        3px 3px 8px rgba(0, 0, 0, 0.4),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-}
-
-.nexora-chatroom .input-group input::placeholder {
-    color: var(--muted);
-    opacity: 0.7;
-}
-
-.nexora-chatroom .input-group input:focus {
-    outline: none;
-    border-color: color-mix(in srgb, var(--orange) 40%, transparent);
-    background: color-mix(in srgb, var(--orange) 8%, color-mix(in srgb, var(--panel-2) 50%, transparent));
-    box-shadow: 
-        -1px -1px 4px rgba(255, 255, 255, 0.04),
-        1px 1px 4px rgba(0, 0, 0, 0.5),
-        inset -2px -2px 6px rgba(0, 0, 0, 0.3),
-        inset 2px 2px 6px rgba(255, 255, 255, 0.02),
-        0 0 0 3px color-mix(in srgb, var(--orange) 12%, transparent);
-    animation: inputFocus 0.3s ease;
-}
-
-@keyframes inputFocus {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.02);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-.nexora-chatroom button {
-    --x: 50%;
-    --y: 50%;
-    --glow-size: 180px;
-    --glow-size-hover: 240px;
-    --glow-strength: 0.18;
-
-    width: 100%;
-    padding: 15px;
-    background: var(--accent-gradient, linear-gradient(90deg, var(--orange-deep), var(--orange)));
-    color: var(--send-icon);
-    border: none;
-    border-radius: var(--radius);
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 16px var(--orange-shadow);
-    position: relative;
-    overflow: hidden;
-}
-
-.nexora-chatroom button::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    border-radius: var(--radius);
-    background-image:
-        radial-gradient(
-            var(--glow-size) circle at var(--x, 50%) var(--y, 50%),
-            color-mix(in srgb, #ffffff 8%, transparent) 0%,
-            color-mix(in srgb, #ffffff 4%, transparent) 30%,
-            transparent 68%
-        );
-    opacity: 0;
-    transition: opacity 140ms ease-out, background-position 160ms ease-out;
-    will-change: background-position, opacity;
-    z-index: 1;
-}
-
-.nexora-chatroom button:hover::before {
-    opacity: 0.2;
-    background-image:
-        radial-gradient(
-            var(--glow-size-hover) circle at var(--x, 50%) var(--y, 50%),
-            color-mix(in srgb, #ffffff 14%, transparent) 0%,
-            color-mix(in srgb, #ffffff 7%, transparent) 28%,
-            transparent 70%
-        );
-}
-
-.nexora-chatroom button::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s ease, height 0.6s ease;
-    z-index: 0;
-}
-
-.nexora-chatroom button:active::after {
-    width: 300px;
-    height: 300px;
-}
-
-.nexora-chatroom button:hover {
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 8px 32px var(--orange-shadow);
-    animation: buttonShine 0.6s ease;
-}
-
-@keyframes buttonShine {
-    0% {
-        filter: brightness(1);
-    }
-    50% {
-        filter: brightness(1.15);
-    }
-    100% {
-        filter: brightness(1);
-    }
-}
-
-.nexora-chatroom button:active {
-    transform: translateY(0) scale(0.98);
-}
-
-.nexora-chatroom button > * {
-    position: relative;
-    z-index: 2;
-    pointer-events: none;
-}
-
-.nexora-chatroom button:focus {
-    outline: none;
-    box-shadow: 0 0 0 4px var(--focus-color, rgba(212,85,10,0.18));
-}
-
-.nexora-chatroom .divider {
-    display: flex;
-    align-items: center;
-    margin: 20px 0;
-    color: var(--muted);
-}
-
-.nexora-chatroom .divider::before,
-.nexora-chatroom .divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: color-mix(in srgb, var(--text) 20%, transparent);
-}
-
-.nexora-chatroom .divider span {
-    padding: 0 15px;
-    font-size: 14px;
-}
-
-
-.nexora-chatroom .chat-screen {
-    flex: 1;
-    display: none;
-    flex-direction: column;
-    min-height: 0;
-    overflow: hidden;
-    position: relative;
-    z-index: 1;
-}
-
-.nexora-chatroom .chat-screen.active {
-    display: flex;
-    animation: fadeInScale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.nexora-chatroom .chat-content {
-    flex: 1;
-    display: flex;
-    min-height: 0;
-    overflow: visible;
-    position: relative;
-    gap: 0;
-}
-
-.nexora-chatroom .messages {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    background: transparent;
-    min-height: 0;
-}
-
-.nexora-chatroom .messages::-webkit-scrollbar {
-    width: 8px;
-}
-
-.nexora-chatroom .messages::-webkit-scrollbar-track {
-    background: color-mix(in srgb, var(--panel) 30%, transparent);
-    border-radius: 4px;
-}
-
-.nexora-chatroom .messages::-webkit-scrollbar-thumb {
-    background: var(--orange);
-    border-radius: 4px;
-    transition: background 0.3s;
-}
-
-.nexora-chatroom .messages::-webkit-scrollbar-thumb:hover {
-    background: var(--orange-deep);
-}
-
-.nexora-chatroom .message {
-    margin-bottom: 15px;
-    animation: messageSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes messageSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.nexora-chatroom .message.own {
-    text-align: right;
-}
-
-.nexora-chatroom .message-content {
-    display: inline-block;
-    max-width: 70%;
-    padding: 12px 16px;
-    border-radius: 18px;
-    word-wrap: break-word;
-    background: color-mix(in srgb, var(--panel-2) 40%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    box-shadow: 
-        -3px -3px 8px rgba(255, 255, 255, 0.03),
-        3px 3px 8px rgba(0, 0, 0, 0.4),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-}
-
-.nexora-chatroom .message.own .message-content {
-    background: var(--accent-gradient, linear-gradient(135deg, var(--orange), var(--orange-deep)));
-    color: var(--send-icon);
-    border: 1px solid color-mix(in srgb, var(--orange) 40%, transparent);
-    box-shadow: 
-        -2px -2px 6px rgba(255, 255, 255, 0.1),
-        2px 2px 6px rgba(0, 0, 0, 0.4),
-        0 4px 16px var(--orange-shadow),
-        inset -1px -1px 3px rgba(0, 0, 0, 0.2),
-        inset 1px 1px 3px rgba(255, 255, 255, 0.1);
-    animation: messageBounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-@keyframes messageBounceIn {
-    0% {
-        opacity: 0;
-        transform: scale(0.3) translateX(20px);
-    }
-    50% {
-        transform: scale(1.05) translateX(-5px);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) translateX(0);
-    }
-}
-
-.nexora-chatroom .message:not(.own) .message-content {
-    background: color-mix(in srgb, var(--panel-2) 80%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
-    color: var(--text);
-}
-
-.nexora-chatroom .message-username {
-    font-size: 12px;
-    font-weight: bold;
-    margin-bottom: 4px;
-    color: var(--orange);
-}
-
-.nexora-chatroom .message.own .message-username {
-    color: var(--orange-deep);
-}
-
-.nexora-chatroom .message-time {
-    font-size: 10px;
-    opacity: 0.7;
-    margin-top: 4px;
-    color: var(--muted);
-}
-
-.nexora-chatroom .input-area {
-    padding: 20px;
-    background: transparent;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-top: 1px solid color-mix(in srgb, var(--text) 15%, transparent);
-    display: flex;
-    gap: 10px;
-    flex-shrink: 0;
-    position: relative;
-    z-index: 10;
-}
-
-.nexora-chatroom .input-area input {
-    flex: 1;
-    padding: 12px 18px;
-    background: color-mix(in srgb, var(--panel) 40%, transparent);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: 25px;
-    font-size: 14px;
-    color: var(--text);
-    transition: all 0.18s ease;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 
-        -3px -3px 8px rgba(255, 255, 255, 0.03),
-        3px 3px 8px rgba(0, 0, 0, 0.4),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-}
-
-.nexora-chatroom .input-area input::placeholder {
-    color: var(--muted);
-    opacity: 0.7;
-}
-
-.nexora-chatroom .input-area input:focus {
-    outline: none;
-    border-color: color-mix(in srgb, var(--orange) 40%, transparent);
-    background: color-mix(in srgb, var(--orange) 8%, color-mix(in srgb, var(--panel) 50%, transparent));
-    box-shadow: 
-        -1px -1px 4px rgba(255, 255, 255, 0.04),
-        1px 1px 4px rgba(0, 0, 0, 0.5),
-        inset -2px -2px 6px rgba(0, 0, 0, 0.3),
-        inset 2px 2px 6px rgba(255, 255, 255, 0.02),
-        0 0 0 3px color-mix(in srgb, var(--orange) 12%, transparent);
-    animation: inputFocus 0.3s ease;
-}
-
-.nexora-chatroom .input-area button {
-    width: auto;
-    padding: 12px 30px;
-    border-radius: 25px;
-}
-
-.nexora-chatroom .hidden {
-    display: none;
-}
-
-
-.nexora-chatroom .users-sidebar-external {
-    width: 280px;
-    height: 85vh;
-    max-height: 700px;
-    background: color-mix(in srgb, var(--panel) 45%, transparent);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 20px;
-    box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.4),
-        0 20px 60px var(--orange-shadow),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-    display: none; 
-    flex-direction: column;
-    overflow: hidden;
-    z-index: 100;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-
-.nexora-chatroom:has(.chat-screen.active) .users-sidebar-external {
-    display: flex;
-    animation: slideInRight 400ms cubic-bezier(.34,.56,.64,1) forwards;
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(40px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-
-
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  border-radius: 14px;
+  box-shadow: none;
+  max-width: none;
+  max-height: none;
+  transition: none;
+  animation: none;
+}
+.nexora-chatroom .container-glow,
+.nexora-chatroom .container::before,
+.nexora-chatroom .container::after { display: none; }
+.nexora-chatroom .container:hover { transform: none; box-shadow: none; }
+
+/* Apply panel background only when chat is active */
+.nexora-chatroom:has(.chat-screen.active) .container {
+  background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--cr-accent) 4%, transparent),
+    color-mix(in srgb, var(--cr-surface) 25%, transparent) 50%,
+    color-mix(in srgb, var(--cr-accent-deep) 6%, transparent));
+  background-color: color-mix(in srgb, var(--cr-surface) 20%, transparent);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.3),
+    inset 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+/* Stretch chatroom to fill main-content when chat is active */
+.nexora-chatroom:has(.chat-screen.active) {
+  max-height: 100%;
+  align-self: stretch;
+}
+
+
+/* 
+   LEFT RAIL
+    */
+
+.nexora-chatroom .cr-rail {
+  width: var(--cr-rail-w);
+  min-width: var(--cr-rail-w);
+  height: 100%;
+  display: none;             /* hidden until chat is active */
+  flex-direction: column;
+  background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--cr-accent) 4%, transparent),
+    color-mix(in srgb, var(--cr-surface) 25%, transparent) 50%,
+    color-mix(in srgb, var(--cr-accent-deep) 6%, transparent));
+  background-color: color-mix(in srgb, var(--cr-surface) 20%, transparent);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.3),
+    inset 0 0 0 1px rgba(255,255,255,0.03);
+  z-index: 10;
+  overflow: hidden;
+}
+.nexora-chatroom:has(.chat-screen.active) .cr-rail {
+  display: flex;
+  animation: crSlideIn 0.3s ease-out;
+}
+@keyframes crSlideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Brand row */
+.nexora-chatroom .cr-rail-brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 18px 14px;
+}
+.nexora-chatroom .cr-rail-brand h1 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  background: var(--cr-accent-grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Back button */
+.nexora-chatroom .cr-back-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: color-mix(in srgb, var(--cr-surface-2) 60%, transparent);
+  color: var(--cr-muted);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  padding: 0;
+}
+.nexora-chatroom .cr-back-btn svg { width: 16px; height: 16px; }
+.nexora-chatroom .cr-back-btn:hover {
+  color: var(--cr-accent);
+  background: color-mix(in srgb, var(--cr-accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--cr-accent) 20%, transparent);
+}
+
+/* Room code pill */
+.nexora-chatroom .cr-rail-room {
+  margin: 0 18px 14px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--cr-muted);
+  background: color-mix(in srgb, var(--cr-surface-2) 50%, transparent);
+  border: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  display: none;
+}
+.nexora-chatroom .cr-rail-room:not(:empty) { display: block; }
+.nexora-chatroom .cr-rail-room:hover {
+  background: color-mix(in srgb, var(--cr-accent) 10%, transparent);
+  color: var(--cr-text);
+}
+
+/* Users header */
 .nexora-chatroom .users-sidebar-header {
-    padding: 16px;
-    background: linear-gradient(135deg, 
-        color-mix(in srgb, var(--orange) 12%, transparent),
-        color-mix(in srgb, var(--orange-deep) 8%, transparent));
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 
-        inset 0 1px 2px rgba(255, 255, 255, 0.05),
-        inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  margin: 8px 0;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
 }
-
-.nexora-chatroom .users-sidebar-header h3 {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--orange);
-    margin: 0;
+.nexora-chatroom .cr-rail-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--cr-muted);
 }
-
 .nexora-chatroom .user-count {
-    background: var(--accent-gradient, linear-gradient(90deg, var(--orange-deep), var(--orange)));
-    color: var(--send-icon);
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 700;
-    box-shadow: 
-        -2px -2px 4px rgba(255, 255, 255, 0.1),
-        2px 2px 4px rgba(0, 0, 0, 0.4),
-        inset -1px -1px 2px rgba(0, 0, 0, 0.2),
-        inset 1px 1px 2px rgba(255, 255, 255, 0.1);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--cr-on-accent);
+  background: var(--cr-accent-grad);
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 
+/* Users list */
 .nexora-chatroom .users-list {
-    flex: 1 !important;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 8px;
-    min-height: 100px !important;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 10px;
 }
-
-.nexora-chatroom .users-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.nexora-chatroom .users-list::-webkit-scrollbar-track {
-    background: color-mix(in srgb, var(--panel) 30%, transparent);
-    border-radius: 3px;
-}
-
+.nexora-chatroom .users-list::-webkit-scrollbar { width: 4px; }
+.nexora-chatroom .users-list::-webkit-scrollbar-track { background: transparent; }
 .nexora-chatroom .users-list::-webkit-scrollbar-thumb {
-    background: var(--orange);
-    border-radius: 3px;
-    transition: background 0.3s;
-}
-
-.nexora-chatroom .users-list::-webkit-scrollbar-thumb:hover {
-    background: var(--orange-deep);
+  background: color-mix(in srgb, var(--cr-accent) 40%, transparent);
+  border-radius: 2px;
 }
 
 .nexora-chatroom .user-item {
-    display: flex !important;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    background: color-mix(in srgb, var(--panel-2) 40%, transparent) !important;
-    border: 1px solid rgba(255, 255, 255, 0.04) !important;
-    border-radius: 10px;
-    transition: all 0.18s ease;
-    animation: userItemFadeIn 0.3s ease-out;
-    gap: 8px;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 
-        -3px -3px 8px rgba(255, 255, 255, 0.03),
-        3px 3px 8px rgba(0, 0, 0, 0.4),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  animation: crFadeUp 0.25s ease-out;
 }
-
-.nexora-chatroom .user-item.owner {
-    background: color-mix(in srgb, #fbbf24 15%, color-mix(in srgb, var(--panel-2) 50%, transparent)) !important;
-    border: 1px solid color-mix(in srgb, #fbbf24 30%, transparent) !important;
-    box-shadow: 
-        -2px -2px 6px rgba(251, 191, 36, 0.1),
-        2px 2px 6px rgba(0, 0, 0, 0.4),
-        inset -1px -1px 3px rgba(0, 0, 0, 0.2),
-        inset 1px 1px 3px rgba(251, 191, 36, 0.1);
+@keyframes crFadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
-.nexora-chatroom .user-item.current-user {
-    background: color-mix(in srgb, var(--orange) 20%, color-mix(in srgb, var(--panel-2) 50%, transparent)) !important;
-    border: 1px solid color-mix(in srgb, var(--orange) 40%, transparent) !important;
-    box-shadow: 
-        -2px -2px 6px rgba(255, 255, 255, 0.05),
-        2px 2px 6px rgba(0, 0, 0, 0.4),
-        inset -1px -1px 3px rgba(0, 0, 0, 0.2),
-        inset 1px 1px 3px rgba(255, 255, 255, 0.05);
-}
-
-@keyframes userItemFadeIn {
-    from {
-        opacity: 0;
-        transform: translateX(20px);
-    }
-    to {
-        opacity: 1 !important;
-        transform: translateX(0);
-    }
-}
-
 .nexora-chatroom .user-item:hover {
-    background: color-mix(in srgb, var(--orange) 18%, color-mix(in srgb, var(--panel-2) 50%, transparent)) !important;
-    transform: scale(1.02);
-    box-shadow: 
-        -1px -1px 4px rgba(255, 255, 255, 0.04),
-        1px 1px 4px rgba(0, 0, 0, 0.5),
-        inset -2px -2px 6px rgba(0, 0, 0, 0.3),
-        inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--cr-accent) 8%, transparent);
+  border-color: rgba(255,255,255,0.06);
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.04),
+    0 2px 8px rgba(0,0,0,0.12);
+}
+.nexora-chatroom .user-item.owner {
+  background: color-mix(in srgb, #fbbf24 8%, transparent);
+}
+.nexora-chatroom .user-item.current-user {
+  background: color-mix(in srgb, var(--cr-accent) 10%, transparent);
 }
 
 .nexora-chatroom .user-name {
-    font-size: 14px;
-    color: #f8e7e0 !important;
-    font-weight: 500;
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: flex !important;
-    align-items: center;
-    gap: 6px;
+  font-size: 0.82rem;
+  color: var(--cr-text);
+  font-weight: 500;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
-
 .nexora-chatroom .user-name::before {
-    content: '•';
-    color: var(--muted);
-    font-size: 18px;
-    line-height: 1;
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cr-accent);
+  flex-shrink: 0;
+  opacity: 0.7;
 }
-
 .nexora-chatroom .user-name.owner::before {
-    content: '⭐';
-    color: #fbbf24;
-    font-size: 16px;
+  background: #fbbf24;
+  opacity: 1;
 }
-
 .nexora-chatroom .user-name.current-user {
-    color: var(--orange);
-    font-weight: 700;
+  color: var(--cr-accent);
+  font-weight: 700;
 }
-
 .nexora-chatroom .user-name.current-user::before {
-    color: var(--orange);
+  background: var(--cr-accent);
+  opacity: 1;
 }
 
-.nexora-chatroom .user-name.owner.current-user::before {
-    content: '⭐';
-    color: #fbbf24;
-}
-
+/* Kick / allow / deny inline buttons */
 .nexora-chatroom .kick-button {
-    padding: 5px 14px;
-    background: color-mix(in srgb, #dc3545 20%, color-mix(in srgb, var(--panel-2) 50%, transparent));
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    color: #ff6b7a;
-    border: 1px solid color-mix(in srgb, #dc3545 30%, transparent);
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.18s ease;
-    width: auto;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 
-        -2px -2px 4px rgba(255, 255, 255, 0.02),
-        2px 2px 4px rgba(0, 0, 0, 0.4),
-        inset 0 0 0 1px rgba(220, 53, 69, 0.1);
+  padding: 4px 10px;
+  background: color-mix(in srgb, #dc3545 15%, transparent);
+  color: #ff6b7a;
+  border: 1px solid color-mix(in srgb, #dc3545 25%, transparent);
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: auto;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
-
 .nexora-chatroom .kick-button:hover {
-    background: color-mix(in srgb, #dc3545 35%, color-mix(in srgb, var(--panel-2) 50%, transparent));
-    color: #fff;
-    transform: scale(1.05);
-    box-shadow: 
-        -1px -1px 3px rgba(255, 255, 255, 0.05),
-        1px 1px 3px rgba(0, 0, 0, 0.5),
-        inset -1px -1px 3px rgba(0, 0, 0, 0.3),
-        inset 1px 1px 3px rgba(255, 255, 255, 0.05),
-        0 2px 8px rgba(220, 53, 69, 0.4);
-    border-color: color-mix(in srgb, #dc3545 50%, transparent);
+  background: color-mix(in srgb, #dc3545 30%, transparent);
+  color: #fff;
 }
-
-.nexora-chatroom .kick-button:active {
-    transform: scale(0.95);
-}
-
-/* Pending user styles */
-.nexora-chatroom .user-item.pending-user {
-    background: color-mix(in srgb, #3b82f6 15%, color-mix(in srgb, var(--panel-2) 50%, transparent)) !important;
-    border: 1px solid color-mix(in srgb, #3b82f6 30%, transparent) !important;
-    box-shadow: 
-        -2px -2px 6px rgba(59, 130, 246, 0.1),
-        2px 2px 6px rgba(0, 0, 0, 0.4),
-        inset -1px -1px 3px rgba(0, 0, 0, 0.2),
-        inset 1px 1px 3px rgba(59, 130, 246, 0.1);
-    animation: pendingPulse 2s ease-in-out infinite;
-}
-
-@keyframes pendingPulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.85;
-    }
-}
-
-.nexora-chatroom .pending-name {
-    color: #93c5fd !important;
-    font-weight: 600;
-}
-
-.nexora-chatroom .pending-name::before {
-    content: '⏳';
-    color: #3b82f6;
-    font-size: 14px;
-}
-
-.nexora-chatroom .approval-countdown {
-    font-size: 12px;
-    font-weight: 700;
-    color: #3b82f6;
-    background: color-mix(in srgb, #3b82f6 20%, transparent);
-    padding: 4px 8px;
-    border-radius: 6px;
-    min-width: 32px;
-    text-align: center;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
-}
+.nexora-chatroom .kick-button:active { transform: scale(0.95); }
 
 .nexora-chatroom .allow-button {
-    padding: 5px 16px;
-    background: linear-gradient(90deg, #2563eb, #3b82f6);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    color: #fff;
-    border: 1px solid color-mix(in srgb, #3b82f6 40%, transparent);
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.18s ease;
-    width: auto;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 
-        -2px -2px 4px rgba(59, 130, 246, 0.2),
-        2px 2px 4px rgba(0, 0, 0, 0.4),
-        0 2px 8px rgba(59, 130, 246, 0.3),
-        inset -1px -1px 2px rgba(0, 0, 0, 0.2),
-        inset 1px 1px 2px rgba(255, 255, 255, 0.2);
+  padding: 4px 12px;
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: auto;
 }
-
-.nexora-chatroom .allow-button:hover {
-    background: linear-gradient(90deg, #1d4ed8, #2563eb);
-    transform: scale(1.05);
-    box-shadow: 
-        -2px -2px 4px rgba(59, 130, 246, 0.25),
-        2px 2px 4px rgba(0, 0, 0, 0.5),
-        0 3px 12px rgba(59, 130, 246, 0.5),
-        inset -1px -1px 2px rgba(0, 0, 0, 0.25),
-        inset 1px 1px 2px rgba(255, 255, 255, 0.25);
-}
-
-.nexora-chatroom .allow-button:active {
-    transform: scale(0.95);
-}
+.nexora-chatroom .allow-button:hover { filter: brightness(1.15); }
+.nexora-chatroom .allow-button:active { transform: scale(0.95); }
 
 .nexora-chatroom .deny-inline-button {
-    padding: 4px 8px;
-    background: color-mix(in srgb, #dc3545 20%, color-mix(in srgb, var(--panel-2) 50%, transparent));
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    color: #ff6b7a;
-    border: 1px solid color-mix(in srgb, #dc3545 30%, transparent);
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.18s ease;
-    width: auto;
-    line-height: 1;
-    box-shadow: 
-        -2px -2px 4px rgba(255, 255, 255, 0.02),
-        2px 2px 4px rgba(0, 0, 0, 0.4),
-        inset 0 0 0 1px rgba(220, 53, 69, 0.1);
+  padding: 3px 6px;
+  background: color-mix(in srgb, #dc3545 15%, transparent);
+  color: #ff6b7a;
+  border: 1px solid color-mix(in srgb, #dc3545 25%, transparent);
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: auto;
+  line-height: 1;
 }
-
 .nexora-chatroom .deny-inline-button:hover {
-    background: color-mix(in srgb, #dc3545 35%, color-mix(in srgb, var(--panel-2) 50%, transparent));
-    color: #fff;
-    transform: scale(1.1);
-    box-shadow: 
-        -1px -1px 3px rgba(255, 255, 255, 0.05),
-        1px 1px 3px rgba(0, 0, 0, 0.5),
-        inset -1px -1px 2px rgba(0, 0, 0, 0.3),
-        inset 1px 1px 2px rgba(255, 255, 255, 0.05),
-        0 2px 8px rgba(220, 53, 69, 0.4);
+  background: color-mix(in srgb, #dc3545 30%, transparent);
+  color: #fff;
 }
 
-.nexora-chatroom .deny-inline-button:active {
-    transform: scale(0.9);
+.nexora-chatroom .user-item.pending-user {
+  background: color-mix(in srgb, #3b82f6 10%, transparent);
+  border-color: color-mix(in srgb, #3b82f6 20%, transparent);
+  animation: crPendingPulse 2s ease-in-out infinite;
+}
+@keyframes crPendingPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+.nexora-chatroom .pending-name {
+  color: #93c5fd !important;
+  font-weight: 600;
+}
+.nexora-chatroom .pending-name::before {
+  background: #3b82f6 !important;
+}
+.nexora-chatroom .approval-countdown {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #3b82f6;
+  background: color-mix(in srgb, #3b82f6 15%, transparent);
+  padding: 2px 6px;
+  border-radius: 5px;
+  min-width: 28px;
+  text-align: center;
 }
 
 
+/* 
+   MAIN AREA
+    */
+
+.nexora-chatroom .cr-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  position: relative;
+}
+
+
+/* 
+   LOBBY (login screen)
+    */
+
+.nexora-chatroom .login-screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  position: relative;
+  z-index: 1;
+}
+.nexora-chatroom .login-screen h2 { display: none; }  /* old h2 hidden */
+
+.nexora-chatroom .cr-lobby {
+  width: 100%;
+  max-width: 420px;
+}
+
+.nexora-chatroom .cr-lobby-header {
+  margin-bottom: 36px;
+  text-align: center;
+}
+.nexora-chatroom .cr-lobby-header h2 {
+  display: block !important;
+  font-size: 2.4rem;
+  font-weight: 800;
+  background: var(--cr-accent-grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 8px;
+  animation: crFadeIn 0.6s ease-out;
+}
+.nexora-chatroom .cr-lobby-sub {
+  font-size: 0.95rem;
+  color: var(--cr-muted);
+  line-height: 1.5;
+  animation: crFadeIn 0.6s 0.1s ease-out both;
+}
+
+@keyframes crFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Choice buttons */
+.nexora-chatroom .choice-screen {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.nexora-chatroom .choice-screen.hidden { display: none; }
+
+.nexora-chatroom .choice-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: color-mix(in srgb, var(--cr-surface) 50%, transparent);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--cr-radius);
+  color: var(--cr-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+  font-family: inherit;
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.05),
+    inset -1px -1px 0 rgba(0,0,0,0.15),
+    0 4px 16px rgba(0,0,0,0.2);
+}
+.nexora-chatroom .choice-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    300px circle at var(--x, 50%) var(--y, 50%),
+    color-mix(in srgb, var(--cr-accent) 14%, transparent) 0%,
+    color-mix(in srgb, var(--cr-accent) 6%, transparent) 35%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.nexora-chatroom .choice-button:hover::before {
+  opacity: 1;
+}
+.nexora-chatroom .choice-button > * { position: relative; z-index: 1; }
+
+.nexora-chatroom .choice-screen .choice-button:nth-child(1) { animation: crFadeIn 0.35s 0.15s ease-out both; }
+.nexora-chatroom .choice-screen .choice-button:nth-child(2) { animation: crFadeIn 0.35s 0.25s ease-out both; }
+.nexora-chatroom .choice-screen .choice-button:nth-child(3) { animation: crFadeIn 0.35s 0.35s ease-out both; }
+
+.nexora-chatroom .cr-choice-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--cr-accent);
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+.nexora-chatroom .cr-choice-text { display: flex; flex-direction: column; gap: 2px; }
+.nexora-chatroom .choice-button-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--cr-text);
+}
+.nexora-chatroom .choice-button-desc {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--cr-muted);
+}
+
+.nexora-chatroom .choice-button:hover {
+  background: color-mix(in srgb, var(--cr-accent) 10%, color-mix(in srgb, var(--cr-surface) 60%, transparent));
+  border-color: color-mix(in srgb, var(--cr-accent) 25%, transparent);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.08),
+    inset -1px -1px 0 rgba(0,0,0,0.1),
+    0 8px 32px color-mix(in srgb, var(--cr-accent) 18%, transparent),
+    0 2px 8px rgba(0,0,0,0.3);
+}
+.nexora-chatroom .choice-button:active {
+  transform: translateY(0) scale(0.98);
+  transition: transform 0.08s ease;
+}
+
+
+/*  Forms  */
+.nexora-chatroom .form-screen {
+  width: 100%;
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+.nexora-chatroom .form-screen.active {
+  display: flex;
+  animation: crFadeIn 0.3s ease-out;
+}
+
+.nexora-chatroom .back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  color: var(--cr-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 0;
+  margin-bottom: 4px;
+  transition: color 0.15s ease;
+  font-family: inherit;
+  width: auto;
+}
+.nexora-chatroom .back-button svg { width: 14px; height: 14px; }
+.nexora-chatroom .back-button:hover { color: var(--cr-accent); }
+
+.nexora-chatroom .input-group { width: 100%; }
+
+.nexora-chatroom .input-group input {
+  width: 100%;
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--cr-surface-2) 40%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--cr-radius);
+  font-size: 0.92rem;
+  color: var(--cr-text);
+  font-family: inherit;
+  transition: all 0.15s ease;
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.04),
+    inset -1px -1px 0 rgba(0,0,0,0.12),
+    0 2px 8px rgba(0,0,0,0.15);
+}
+.nexora-chatroom .input-group input::placeholder { color: var(--cr-muted); opacity: 0.6; }
+.nexora-chatroom .input-group input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--cr-accent) 50%, transparent);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--cr-accent) 12%, transparent),
+    inset 1px 1px 0 rgba(255,255,255,0.06),
+    0 4px 16px color-mix(in srgb, var(--cr-accent) 10%, transparent);
+}
+
+/* Submit buttons */
+.nexora-chatroom .cr-submit-btn,
+.nexora-chatroom button:not(.cr-back-btn):not(.back-button):not(.cr-send-btn):not(.choice-button):not(.kick-button):not(.allow-button):not(.deny-inline-button):not(.approve-button):not(.deny-button):not(.cancel-button):not(.room-closed-btn) {
+  width: 100%;
+  padding: 14px;
+  background: var(--cr-accent-grad);
+  color: var(--cr-on-accent);
+  border: none;
+  border-radius: var(--cr-radius);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  box-shadow:
+    0 4px 16px var(--cr-accent-shadow),
+    inset 0 1px 0 rgba(255,255,255,0.15);
+  position: relative;
+  overflow: hidden;
+}
+.nexora-chatroom .cr-submit-btn:hover,
+.nexora-chatroom .form-screen button:not(.back-button):hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 28px var(--cr-accent-shadow);
+  filter: brightness(1.08);
+}
+.nexora-chatroom .cr-submit-btn:active,
+.nexora-chatroom .form-screen button:not(.back-button):active {
+  transform: translateY(0) scale(0.98);
+  transition: transform 0.06s ease;
+}
+
+/* Mouse-tracking glow on submit buttons */
+.nexora-chatroom .cr-submit-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    250px circle at var(--x, 50%) var(--y, 50%),
+    rgba(255,255,255,0.18) 0%,
+    rgba(255,255,255,0.06) 40%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.nexora-chatroom .cr-submit-btn:hover::before {
+  opacity: 1;
+}
+
+/* Mouse-tracking glow on send button */
+.nexora-chatroom .cr-send-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    120px circle at var(--x, 50%) var(--y, 50%),
+    rgba(255,255,255,0.2) 0%,
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.nexora-chatroom .cr-send-btn:hover::before {
+  opacity: 1;
+}
+
+
+/* 
+   CHAT SCREEN
+    */
+
+.nexora-chatroom .chat-screen {
+  flex: 1;
+  display: none;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  margin: 20px 0;
+}
+.nexora-chatroom .chat-screen.active {
+  display: flex;
+  animation: crFadeIn 0.35s ease-out;
+}
+
+.nexora-chatroom .chat-content {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: visible;
+  position: relative;
+}
+
+.nexora-chatroom .messages {
+  flex: 1;
+  padding: 16px 20px;
+  margin: 8px 8px 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  border-radius: 12px;
+}
+.nexora-chatroom .messages::-webkit-scrollbar { width: 5px; }
+.nexora-chatroom .messages::-webkit-scrollbar-track { background: transparent; }
+.nexora-chatroom .messages::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--cr-accent) 35%, transparent);
+  border-radius: 3px;
+}
+
+/* Messages */
+.nexora-chatroom .message {
+  margin-bottom: 14px;
+  animation: crMsgIn 0.3s ease-out;
+}
+@keyframes crMsgIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.nexora-chatroom .message.own { text-align: right; }
+
+.nexora-chatroom .message-content {
+  display: inline-block;
+  max-width: 65%;
+  padding: 10px 16px;
+  border-radius: 16px;
+  word-wrap: break-word;
+  background: color-mix(in srgb, var(--cr-surface-2) 55%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.04),
+    inset -1px -1px 0 rgba(0,0,0,0.1),
+    0 2px 10px rgba(0,0,0,0.15);
+}
+
+.nexora-chatroom .message.own .message-content {
+  background: var(--cr-accent-grad);
+  color: var(--cr-on-accent);
+  border: none;
+  box-shadow:
+    0 3px 14px color-mix(in srgb, var(--cr-accent) 25%, transparent),
+    inset 0 1px 0 rgba(255,255,255,0.12);
+}
+
+.nexora-chatroom .message:not(.own) .message-content {
+  background: color-mix(in srgb, var(--cr-surface-2) 80%, transparent);
+  color: var(--cr-text);
+}
+
+.nexora-chatroom .message-username {
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-bottom: 3px;
+  color: var(--cr-accent);
+}
+.nexora-chatroom .message.own .message-username {
+  color: color-mix(in srgb, var(--cr-on-accent) 70%, transparent);
+}
+
+.nexora-chatroom .message-time {
+  font-size: 0.62rem;
+  opacity: 0.5;
+  margin-top: 3px;
+  color: var(--cr-muted);
+}
+
+/* System message */
 .nexora-chatroom .system-message {
-    text-align: center;
-    padding: 8px 16px;
-    margin: 12px auto;
-    color: var(--muted);
-    font-size: 13px;
-    background: color-mix(in srgb, var(--panel-2) 40%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: 20px;
-    max-width: 80%;
-    animation: systemMessageSlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 
-        -2px -2px 4px rgba(255, 255, 255, 0.02),
-        2px 2px 4px rgba(0, 0, 0, 0.3),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  text-align: center;
+  padding: 6px 14px;
+  margin: 10px auto;
+  color: var(--cr-muted);
+  font-size: 0.78rem;
+  background: color-mix(in srgb, var(--cr-surface-2) 35%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 16px;
+  max-width: 75%;
+  animation: crFadeIn 0.3s ease-out;
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.03),
+    0 1px 4px rgba(0,0,0,0.1);
 }
-
-@keyframes systemMessageSlide {
-    from {
-        opacity: 0;
-        transform: translateY(-10px) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.nexora-chatroom .system-icon {
-    margin-right: 6px;
-}
-
+.nexora-chatroom .system-icon { margin-right: 5px; }
 .nexora-chatroom .status-message {
-    text-align: center;
-    padding: 10px;
-    color: var(--muted);
-    font-size: 14px;
-    font-style: italic;
-    animation: fadeIn 0.5s ease-out;
+  text-align: center;
+  padding: 10px;
+  color: var(--cr-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* Input area */
+.nexora-chatroom .input-area {
+  padding: 10px 14px;
+  margin: 0 8px 8px;
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--cr-surface) 45%, transparent);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+}
+
+.nexora-chatroom .input-area input {
+  flex: 1;
+  padding: 12px 18px;
+  background: color-mix(in srgb, var(--cr-surface) 40%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  font-size: 0.88rem;
+  color: var(--cr-text);
+  font-family: inherit;
+  transition: all 0.15s ease;
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.04),
+    inset -1px -1px 0 rgba(0,0,0,0.12);
+}
+.nexora-chatroom .input-area input::placeholder { color: var(--cr-muted); opacity: 0.6; }
+.nexora-chatroom .input-area input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--cr-accent) 45%, transparent);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--cr-accent) 12%, transparent),
+    inset 1px 1px 0 rgba(255,255,255,0.06);
+}
+
+/* Send button */
+.nexora-chatroom .cr-send-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: var(--cr-accent-grad);
+  color: var(--cr-on-accent);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow:
+    0 2px 10px var(--cr-accent-shadow),
+    inset 0 1px 0 rgba(255,255,255,0.15);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+.nexora-chatroom .cr-send-btn svg { width: 18px; height: 18px; }
+.nexora-chatroom .cr-send-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 20px var(--cr-accent-shadow);
+}
+.nexora-chatroom .cr-send-btn:active {
+  transform: scale(0.94);
+  transition: transform 0.06s ease;
+}
+
+/* Also style .input-area button (the original selector) */
+.nexora-chatroom .input-area button {
+  width: auto;
+  padding: 0;
+  border-radius: 50%;
 }
 
 
-.nexora-chatroom .app {
-    animation: subtleFloat 6s ease-in-out infinite;
-}
-
-@keyframes subtleFloat {
-    0%, 100% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-8px);
-    }
-}
-
-
-@media (prefers-reduced-motion: reduce) {
-    .nexora-chatroom .container,
-    .nexora-chatroom .container::before,
-    .nexora-chatroom .container::after,
-    .nexora-chatroom button,
-    .nexora-chatroom .input-group input,
-    .nexora-chatroom .message,
-    .nexora-chatroom .app,
-    .nexora-chatroom .header,
-    .nexora-chatroom .choice-button,
-    .nexora-chatroom .form-screen,
-    .nexora-chatroom .room-code,
-    .nexora-chatroom .room-code-large-code {
-        transition: none !important;
-        animation: none !important;
-    }
-    
-    .nexora-chatroom .message {
-        opacity: 1 !important;
-    }
-}
-
-
-@media (max-width: 768px) {
-    .nexora-chatroom .users-sidebar-external {
-        display: none !important; 
-    }
-    
-    .nexora-chatroom .messages {
-        width: 100%;
-    }
-}
-
-
-@media (max-width: 1100px) {
-    .nexora-chatroom .users-sidebar-external {
-        display: none !important; 
-    }
-}
-
-
-.nexora-chatroom .approval-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(10, 6, 5, 0.85);
-    backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-    animation: fadeIn 0.3s ease-out;
-}
-
-.nexora-chatroom .approval-content {
-    background: color-mix(in srgb, var(--panel) 50%, transparent);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: var(--radius);
-    padding: 32px;
-    min-width: 320px;
-    max-width: 440px;
-    box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.4),
-        0 20px 60px var(--orange-shadow),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-    animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes scaleIn {
-    0% {
-        transform: scale(0.9);
-        opacity: 0;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-.nexora-chatroom .approval-content h3 {
-    font-size: 24px;
-    margin-bottom: 16px;
-    color: var(--text);
-    font-weight: 600;
-    border-radius: 8px;
-}
-
-.nexora-chatroom .approval-content p {
-    font-size: 16px;
-    margin-bottom: 24px;
-    color: var(--muted);
-    border-radius: 8px;
-}
-
-.nexora-chatroom .approval-content p strong {
-    color: var(--orange);
-    font-weight: 600;
-}
-
-.nexora-chatroom .approval-buttons {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-}
-
-.nexora-chatroom .approve-button,
-.nexora-chatroom .deny-button {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: inherit;
-}
-
-.nexora-chatroom .approve-button {
-    background: var(--accent-gradient, linear-gradient(90deg, var(--orange-deep), var(--orange)));
-    color: var(--send-icon);
-    box-shadow: 
-        -2px -2px 6px rgba(255, 255, 255, 0.1),
-        2px 2px 6px rgba(0, 0, 0, 0.4),
-        0 4px 16px var(--orange-shadow),
-        inset -1px -1px 3px rgba(0, 0, 0, 0.2),
-        inset 1px 1px 3px rgba(255, 255, 255, 0.1);
-}
-
-.nexora-chatroom .approve-button:hover {
-    background: var(--accent-gradient, linear-gradient(90deg, var(--orange-deep), var(--orange)));
-    filter: brightness(1.15);
-    transform: scale(1.05);
-    box-shadow: 
-        -2px -2px 6px rgba(255, 255, 255, 0.12),
-        2px 2px 6px rgba(0, 0, 0, 0.5),
-        0 6px 20px var(--orange-shadow),
-        inset -1px -1px 3px rgba(0, 0, 0, 0.25),
-        inset 1px 1px 3px rgba(255, 255, 255, 0.12);
-}
-
-.nexora-chatroom .approve-button:active {
-    transform: scale(0.95);
-}
-
-.nexora-chatroom .deny-button {
-    background: color-mix(in srgb, var(--panel-2) 40%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    color: var(--muted);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    box-shadow: 
-        -3px -3px 8px rgba(255, 255, 255, 0.03),
-        3px 3px 8px rgba(0, 0, 0, 0.4),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-}
-
-.nexora-chatroom .deny-button:hover {
-    background: color-mix(in srgb, #dc3545 18%, color-mix(in srgb, var(--panel-2) 50%, transparent));
-    color: #ff6b7a;
-    transform: scale(1.05);
-    box-shadow: 
-        -1px -1px 4px rgba(255, 255, 255, 0.04),
-        1px 1px 4px rgba(0, 0, 0, 0.5),
-        inset -2px -2px 6px rgba(0, 0, 0, 0.3),
-        inset 2px 2px 6px rgba(255, 255, 255, 0.02);
-}
-
-.nexora-chatroom .deny-button:active {
-    transform: scale(0.95);
-}
-
+/* 
+   WAITING SCREEN
+    */
 
 .nexora-chatroom .waiting-screen {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--panel);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--cr-bg) 80%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  border-radius: 14px;
 }
-
 .nexora-chatroom .waiting-content {
-    text-align: center;
-    padding: 40px;
-    max-width: 400px;
+  text-align: center;
+  padding: 40px;
+  max-width: 380px;
+  background: color-mix(in srgb, var(--cr-surface) 50%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  box-shadow:
+    0 8px 40px rgba(0,0,0,0.3),
+    inset 1px 1px 0 rgba(255,255,255,0.05);
 }
-
 .nexora-chatroom .waiting-spinner {
-    width: 64px;
-    height: 64px;
-    border: 4px solid color-mix(in srgb, var(--orange) 20%, transparent);
-    border-top-color: var(--orange);
-    border-radius: 50%;
-    margin: 0 auto 24px;
-    animation: spin 1s linear infinite;
+  width: 48px;
+  height: 48px;
+  border: 3px solid color-mix(in srgb, var(--cr-accent) 20%, transparent);
+  border-top-color: var(--cr-accent);
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  animation: crSpin 0.8s linear infinite;
 }
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
+@keyframes crSpin { to { transform: rotate(360deg); } }
 
 .nexora-chatroom .waiting-content h2 {
-    font-size: 24px;
-    margin-bottom: 12px;
-    color: var(--text);
-    border-radius: 8px;
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  color: var(--cr-text);
 }
-
 .nexora-chatroom .waiting-content p {
-    font-size: 16px;
-    color: var(--muted);
-    margin-bottom: 8px;
-    border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--cr-muted);
+  margin-bottom: 6px;
 }
-
 .nexora-chatroom .waiting-timer {
-    font-size: 14px;
-    color: var(--orange);
-    font-weight: 600;
-    margin-top: 16px;
-    margin-bottom: 24px;
-    border-radius: 8px;
+  font-size: 0.82rem;
+  color: var(--cr-accent);
+  font-weight: 600;
+  margin-top: 12px;
+  margin-bottom: 20px;
 }
-
 .nexora-chatroom .cancel-button {
-    padding: 12px 28px;
-    background: color-mix(in srgb, var(--panel-2) 40%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    color: var(--text);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.18s ease;
-    font-family: inherit;
-    box-shadow: 
-        -3px -3px 8px rgba(255, 255, 255, 0.03),
-        3px 3px 8px rgba(0, 0, 0, 0.4),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  padding: 10px 24px;
+  background: transparent;
+  color: var(--cr-muted);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  width: auto;
 }
-
 .nexora-chatroom .cancel-button:hover {
-    background: color-mix(in srgb, #dc3545 18%, color-mix(in srgb, var(--panel-2) 50%, transparent));
-    color: #ff6b7a;
-    transform: scale(1.05);
-    box-shadow: 
-        -1px -1px 4px rgba(255, 255, 255, 0.04),
-        1px 1px 4px rgba(0, 0, 0, 0.5),
-        inset -2px -2px 6px rgba(0, 0, 0, 0.3),
-        inset 2px 2px 6px rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, #dc3545 12%, transparent);
+  color: #ff6b7a;
+  border-color: color-mix(in srgb, #dc3545 25%, transparent);
 }
 
 
-/* Account Prompt Modal */
-.nexora-chatroom .account-prompt-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.90);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 999999;
-    animation: overlayFadeIn 0.3s ease-out;
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
+/* 
+   ROOM CODE OVERLAY
+    */
+
+.nexora-chatroom .room-code-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  cursor: pointer;
+}
+.nexora-chatroom .room-code-overlay.active {
+  display: flex;
+  animation: crOverlayIn 0.25s ease-out;
+}
+@keyframes crOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-.nexora-chatroom .account-prompt-content {
-    background: linear-gradient(to bottom, 
-        color-mix(in srgb, var(--orange, #d4550a) 3%, transparent),
-        color-mix(in srgb, var(--panel, #1a100d) 12%, transparent) 50%,
-        color-mix(in srgb, var(--orange-deep, #992f05) 4%, transparent));
-    background-color: color-mix(in srgb, var(--panel) 40%, transparent);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
-    padding: 32px;
-    max-width: 450px;
-    width: 90%;
-    box-shadow: 
-        0 16px 64px rgba(0, 0, 0, 0.5),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-    animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+.nexora-chatroom .room-code-large {
+  text-align: center;
+  animation: crCodePop 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes crCodePop {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.nexora-chatroom .room-code-large-title {
+  font-size: 1rem;
+  color: var(--cr-muted);
+  margin-bottom: 16px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+.nexora-chatroom .room-code-large-code {
+  font-size: 5rem;
+  font-weight: 900;
+  background: var(--cr-accent-grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: 14px;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 20px;
+}
+.nexora-chatroom .room-code-large-hint {
+  font-size: 0.85rem;
+  color: var(--cr-muted);
+  opacity: 0.5;
 }
 
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-30px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+
+/* 
+   APPROVAL MODAL
+    */
+
+.nexora-chatroom .approval-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: crOverlayIn 0.25s ease-out;
+}
+.nexora-chatroom .approval-content {
+  background: color-mix(in srgb, var(--cr-surface) 80%, transparent);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 28px;
+  min-width: 300px;
+  max-width: 400px;
+  box-shadow:
+    0 12px 48px rgba(0,0,0,0.4),
+    inset 1px 1px 0 rgba(255,255,255,0.06);
+  animation: crCodePop 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nexora-chatroom .approval-content h3 {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+  color: var(--cr-text);
+  font-weight: 700;
+}
+.nexora-chatroom .approval-content p {
+  font-size: 0.92rem;
+  margin-bottom: 20px;
+  color: var(--cr-muted);
+}
+.nexora-chatroom .approval-content p strong { color: var(--cr-accent); }
+.nexora-chatroom .approval-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.nexora-chatroom .approve-button,
+.nexora-chatroom .deny-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+.nexora-chatroom .approve-button {
+  background: var(--cr-accent-grad);
+  color: var(--cr-on-accent);
+  box-shadow: 0 2px 10px var(--cr-accent-shadow);
+}
+.nexora-chatroom .approve-button:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+.nexora-chatroom .deny-button {
+  background: color-mix(in srgb, var(--cr-surface-2) 70%, transparent);
+  color: var(--cr-muted);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.nexora-chatroom .deny-button:hover {
+  background: color-mix(in srgb, #dc3545 15%, transparent);
+  color: #ff6b7a;
 }
 
-.nexora-chatroom .account-prompt-content h3 {
-    font-size: 24px;
-    font-weight: 700;
-    background: var(--accent-gradient, linear-gradient(90deg, var(--orange-deep), var(--orange)));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 16px;
-}
 
-.nexora-chatroom .account-prompt-content p {
-    color: var(--text);
-    font-size: 15px;
-    margin-bottom: 16px;
-    line-height: 1.5;
-}
-
-.nexora-chatroom .account-prompt-content ul {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 24px 0;
-}
-
-.nexora-chatroom .account-prompt-content ul li {
-    color: var(--muted);
-    font-size: 14px;
-    padding: 8px 0;
-    line-height: 1.4;
-}
-
-.nexora-chatroom .account-prompt-buttons {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.nexora-chatroom .create-account-button,
-.nexora-chatroom .continue-guest-button {
-    flex: 1;
-    padding: 14px 20px;
-    border-radius: 10px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.18s ease;
-    font-family: inherit;
-    border: none;
-}
-
-.nexora-chatroom .create-account-button {
-    background: linear-gradient(135deg, var(--orange-deep), var(--orange));
-    color: var(--send-icon);
-    box-shadow: 
-        0 4px 12px var(--orange-shadow),
-        inset 0 1px 2px rgba(255, 255, 255, 0.2);
-}
-
-.nexora-chatroom .create-account-button:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 
-        0 6px 20px var(--orange-shadow),
-        inset 0 1px 2px rgba(255, 255, 255, 0.2);
-}
-
-.nexora-chatroom .create-account-button:active {
-    transform: translateY(0) scale(0.98);
-}
-
-.nexora-chatroom .continue-guest-button {
-    background: color-mix(in srgb, var(--panel-2) 40%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    color: var(--text);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 
-        -2px -2px 6px rgba(255, 255, 255, 0.03),
-        2px 2px 6px rgba(0, 0, 0, 0.4);
-}
-
-.nexora-chatroom .continue-guest-button:hover {
-    background: color-mix(in srgb, var(--panel-2) 60%, transparent);
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 
-        -1px -1px 4px rgba(255, 255, 255, 0.04),
-        1px 1px 4px rgba(0, 0, 0, 0.5);
-}
-
-.nexora-chatroom .continue-guest-button:active {
-    transform: translateY(0) scale(0.98);
-}
-
-.nexora-chatroom .dont-show-again {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--muted);
-    cursor: pointer;
-    user-select: none;
-}
-
-.nexora-chatroom .dont-show-again input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-    accent-color: var(--orange);
-}
-
-.nexora-chatroom .dont-show-again span {
-    cursor: pointer;
-}
-
-/* ── Room Closed Overlay (admin close) ── */
+/* 
+   ROOM CLOSED OVERLAY
+    */
 
 .room-closed-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-    animation: roomClosedFadeIn 0.35s ease;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: crOverlayIn 0.25s ease;
 }
-
-@keyframes roomClosedFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
 .room-closed-card {
-    text-align: center;
-    padding: 48px 40px;
-    border-radius: 20px;
-    background: var(--surface, #1a100d);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
-    max-width: 420px;
-    width: 90%;
-    animation: roomClosedCardIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+  text-align: center;
+  padding: 40px 36px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--cr-surface, #1a100d) 80%, transparent);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow:
+    0 16px 60px rgba(0,0,0,0.5),
+    inset 1px 1px 0 rgba(255,255,255,0.06);
+  max-width: 400px;
+  width: 90%;
+  animation: crCodePop 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
-
-@keyframes roomClosedCardIn {
-    from { opacity: 0; transform: scale(0.9) translateY(20px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-.room-closed-icon {
-    font-size: 48px;
-    color: #e53935;
-    margin-bottom: 16px;
-}
-
-.room-closed-card h2 {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--text, #f8e7e0);
-    margin: 0 0 12px;
-}
-
-.room-closed-card p {
-    font-size: 15px;
-    color: var(--muted, #c9a08a);
-    line-height: 1.5;
-    margin: 0 0 8px;
-}
-
-.room-closed-admin {
-    font-size: 13px !important;
-    opacity: 0.7;
-}
-
+.room-closed-icon { font-size: 40px; color: #e53935; margin-bottom: 14px; }
+.room-closed-card h2 { font-size: 1.3rem; font-weight: 700; color: var(--cr-text, #f8e7e0); margin: 0 0 10px; }
+.room-closed-card p { font-size: 0.9rem; color: var(--cr-muted, #c9a08a); line-height: 1.5; margin: 0 0 6px; }
+.room-closed-admin { font-size: 0.78rem !important; opacity: 0.6; }
 .room-closed-btn {
-    margin-top: 24px;
-    padding: 12px 32px;
-    border: none;
-    border-radius: 12px;
-    background: var(--accent-gradient, linear-gradient(135deg, var(--primary-deep, #992f05), var(--primary, #d4550a)));
-    color: var(--on-primary, #fff0e8);
-    font-size: 15px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: transform 0.15s, opacity 0.2s;
-    box-shadow: 0 4px 16px var(--primary-shadow, rgba(212, 85, 10, 0.4));
+  margin-top: 20px;
+  padding: 10px 28px;
+  border: none;
+  border-radius: 10px;
+  background: var(--cr-accent-grad);
+  color: var(--cr-on-accent, #fff0e8);
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.12s, opacity 0.15s;
+  box-shadow: 0 3px 14px var(--cr-accent-shadow);
+}
+.room-closed-btn:hover { transform: translateY(-1px); }
+.room-closed-btn:active { transform: scale(0.97); }
+
+
+/* 
+   HIDDEN / DIVIDER
+    */
+
+.nexora-chatroom .hidden { display: none; }
+.nexora-chatroom .divider { display: none; }
+
+
+/* 
+   FOCUS
+    */
+
+.nexora-chatroom a:focus-visible,
+.nexora-chatroom button:focus-visible,
+.nexora-chatroom input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cr-accent) 18%, transparent);
 }
 
-.room-closed-btn:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
+
+/* 
+   REDUCED MOTION
+    */
+
+@media (prefers-reduced-motion: reduce) {
+  .nexora-chatroom *,
+  .nexora-chatroom *::before,
+  .nexora-chatroom *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-.room-closed-btn:active {
-    transform: scale(0.97);
+
+/* 
+   RESPONSIVE
+    */
+
+@media (max-width: 1100px) {
+  .nexora-chatroom .cr-rail { display: none !important; }
+}
+
+@media (max-width: 768px) {
+  .nexora-chatroom .cr-rail { display: none !important; }
+  .nexora-chatroom .app { padding: 6px; gap: 6px; }
+  .nexora-chatroom .login-screen { padding: 24px 16px; }
+  .nexora-chatroom .cr-lobby-header h2 { font-size: 2rem; }
+  .nexora-chatroom .messages { padding: 14px; margin: 6px 6px 0; }
+  .nexora-chatroom .input-area { padding: 10px 12px; margin: 0 6px 6px; }
+  .nexora-chatroom .room-code-large-code { font-size: 3.5rem; letter-spacing: 8px; }
+}
+
+@media (max-width: 420px) {
+  .nexora-chatroom .app { padding: 4px; gap: 4px; }
+  .nexora-chatroom .cr-lobby-header h2 { font-size: 1.7rem; }
+  .nexora-chatroom .choice-button { padding: 14px 14px; }
+  .nexora-chatroom .input-group input { padding: 12px 14px; }
+  .nexora-chatroom .messages { margin: 4px 4px 0; }
+  .nexora-chatroom .input-area { margin: 0 4px 4px; }
+  .nexora-chatroom .container { border-radius: 10px; }
 }
 
 
-/* ── Light Mode ── */
-.light-scheme .nexora-chatroom .container {
+/* 
+   LIGHT SCHEME
+    */
+
+.light-scheme .nexora-chatroom {
+  --cr-bg: var(--page-bg, #f7f7f8);
+  --cr-surface: var(--surface, #fff);
+  --cr-surface-2: var(--surface-2, #f0f0f2);
+  --cr-text: var(--text, #1a1a1a);
+  --cr-muted: var(--muted, #6b6b6b);
+  --cr-on-accent: var(--on-primary, #fff);
+}
+
+.light-scheme .nexora-chatroom .cr-rail {
   border: 1px solid rgba(0,0,0,0.08);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.06), inset 0 0 0 1px rgba(0,0,0,0.03);
-  background-color: rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.65);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.06);
 }
 
-.light-scheme .nexora-chatroom .container:hover {
-  box-shadow: 0 6px 24px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(0,0,0,0.04);
+.light-scheme .nexora-chatroom:has(.chat-screen.active) .container {
+  background: rgba(255,255,255,0.65);
+  border-color: rgba(0,0,0,0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.06);
 }
 
-.light-scheme .nexora-chatroom .header {
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  box-shadow: inset 0 -1px 2px rgba(0,0,0,0.04), inset 0 1px 2px rgba(255,255,255,0.4);
+.light-scheme .nexora-chatroom .input-area {
+  background: rgba(255,255,255,0.7);
+  border-color: rgba(0,0,0,0.06);
 }
 
-.light-scheme .nexora-chatroom .header-back-button {
-  border: 1px solid rgba(0,0,0,0.08);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+.light-scheme .nexora-chatroom .choice-button {
+  border-color: rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.7);
 }
-
-.light-scheme .nexora-chatroom .header-back-button:hover {
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-
-.light-scheme .nexora-chatroom .choice-button,
-.light-scheme .nexora-chatroom .back-button {
-  border: 1px solid rgba(0,0,0,0.08);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-  background: rgba(255,255,255,0.6);
-}
-
-.light-scheme .nexora-chatroom .choice-button:hover,
-.light-scheme .nexora-chatroom .back-button:hover {
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-  background: rgba(255,255,255,0.8);
+.light-scheme .nexora-chatroom .choice-button:hover {
+  background: rgba(255,255,255,0.9);
+  border-color: color-mix(in srgb, var(--cr-accent) 15%, transparent);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
 }
 
 .light-scheme .nexora-chatroom .input-group input,
 .light-scheme .nexora-chatroom .input-area input {
-  border: 1px solid rgba(0,0,0,0.1);
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
-  background: rgba(255,255,255,0.7);
+  border-color: rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.8);
 }
-
 .light-scheme .nexora-chatroom .input-group input:focus,
 .light-scheme .nexora-chatroom .input-area input:focus {
-  border-color: var(--primary-accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-accent) 12%, transparent);
+  border-color: var(--cr-accent);
   background: #fff;
 }
 
-.light-scheme .nexora-chatroom .users-sidebar-external {
-  border: 1px solid rgba(0,0,0,0.08);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.06), inset 0 0 0 1px rgba(0,0,0,0.02);
-  background-color: rgba(255,255,255,0.85);
+.light-scheme .nexora-chatroom .message-content {
+  border-color: rgba(0,0,0,0.05);
+  background: rgba(0,0,0,0.03);
 }
-
-.light-scheme .nexora-chatroom .users-sidebar-header {
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  box-shadow: inset 0 -1px 2px rgba(0,0,0,0.04), inset 0 1px 2px rgba(255,255,255,0.4);
-}
-
-.light-scheme .nexora-chatroom .user-count {
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-}
-
-.light-scheme .nexora-chatroom .user-item {
-  border: 1px solid rgba(0,0,0,0.06) !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  background: rgba(255,255,255,0.5);
-}
-
-.light-scheme .nexora-chatroom .user-item.owner,
-.light-scheme .nexora-chatroom .user-item.current-user {
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-  background: color-mix(in srgb, var(--primary-accent) 5%, #fff);
+.light-scheme .nexora-chatroom .message.own .message-content {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .light-scheme .nexora-chatroom .user-item:hover {
-  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-  background: rgba(255,255,255,0.7);
-}
-
-.light-scheme .nexora-chatroom .user-name {
-  color: var(--text, #1a1a1a) !important;
-}
-
-.light-scheme .nexora-chatroom .message-content {
-  border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  background: rgba(255,255,255,0.5);
-}
-
-.light-scheme .nexora-chatroom .message.own .message-content {
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-  background: color-mix(in srgb, var(--primary-accent) 6%, #fff);
-  border-color: color-mix(in srgb, var(--primary-accent) 12%, transparent);
+  background: rgba(0,0,0,0.03);
 }
 
 .light-scheme .nexora-chatroom .system-message {
-  border: 1px solid rgba(0,0,0,0.05);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
   background: rgba(0,0,0,0.02);
+  border-color: rgba(0,0,0,0.04);
 }
 
 .light-scheme .nexora-chatroom .approval-content {
-  border: 1px solid rgba(0,0,0,0.08);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(0,0,0,0.03);
-  background-color: rgba(255,255,255,0.9);
-}
-
-.light-scheme .nexora-chatroom .approve-button {
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-
-.light-scheme .nexora-chatroom .approve-button:hover {
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  background: rgba(255,255,255,0.95);
+  border-color: rgba(0,0,0,0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
 }
 
 .light-scheme .nexora-chatroom .deny-button,
 .light-scheme .nexora-chatroom .cancel-button {
-  border: 1px solid rgba(0,0,0,0.08);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  background: rgba(255,255,255,0.6);
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.08);
 }
 
-.light-scheme .nexora-chatroom .deny-button:hover,
-.light-scheme .nexora-chatroom .cancel-button:hover {
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-  background: rgba(255,255,255,0.8);
-}
-
-.light-scheme .nexora-chatroom .kick-button,
-.light-scheme .nexora-chatroom .deny-inline-button {
-  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-}
-
-.light-scheme .nexora-chatroom .kick-button:hover,
-.light-scheme .nexora-chatroom .deny-inline-button:hover {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-}
-
-.light-scheme .nexora-chatroom .account-prompt-content {
-  border: 1px solid rgba(0,0,0,0.08);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(0,0,0,0.03);
-  background-color: rgba(255,255,255,0.92);
-}
-
-.light-scheme .nexora-chatroom .continue-guest-button {
-  border: 1px solid rgba(0,0,0,0.08);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-}
-
-.light-scheme .nexora-chatroom .continue-guest-button:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-.light-scheme .nexora-chatroom .create-account-button {
-  box-shadow: 0 2px 8px var(--primary-shadow, rgba(0,0,0,0.1));
-}
-
-.light-scheme .nexora-chatroom .create-account-button:hover {
-  box-shadow: 0 4px 14px var(--primary-shadow, rgba(0,0,0,0.12));
-}
-
-.light-scheme .nexora-chatroom .allow-button {
-  box-shadow: 0 2px 6px rgba(59,130,246,0.15);
-}
-
-.light-scheme .nexora-chatroom .allow-button:hover {
-  box-shadow: 0 3px 10px rgba(59,130,246,0.2);
-}
-
-.light-scheme .nexora-chatroom button::after {
-  background: rgba(0,0,0,0.08);
-}
-
-.light-scheme .nexora-chatroom .account-prompt-modal {
-  background: rgba(0,0,0,0.4);
-}
-
-.light-scheme .nexora-chatroom .room-code-overlay {
-  background: rgba(0,0,0,0.5);
-}
-
-.light-scheme .nexora-chatroom .approval-modal {
-  background: rgba(0,0,0,0.35);
-}
-
-.light-scheme .room-closed-overlay {
-  background: rgba(0,0,0,0.35);
-}
-
+.light-scheme .nexora-chatroom .room-code-overlay { background: rgba(0,0,0,0.5); }
+.light-scheme .nexora-chatroom .approval-modal { background: rgba(0,0,0,0.35); }
+.light-scheme .room-closed-overlay { background: rgba(0,0,0,0.3); }
 .light-scheme .room-closed-card {
-  border: 1px solid rgba(0,0,0,0.08);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.1);
-  background: rgba(255,255,255,0.92);
+  background: rgba(255,255,255,0.95);
+  border-color: rgba(0,0,0,0.08);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
 }

@@ -28,6 +28,13 @@
 </head>
 <body>
 
+  <!-- Ambient background orbs -->
+  <div class="apps-bg-orbs" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+  </div>
+
   <div class="apps-container">
     <div class="apps-header">
       <h1 class="apps-title">Apps</h1>
@@ -36,14 +43,17 @@
 
     <div class="search-bar">
       <div class="container">
-        <div class="input-row">
+        <div class="input-row" id="searchRow">
           <input
             class="input"
             id="searchInput"
             type="text"
-            placeholder="Search Apps..."
+            placeholder="Search apps..."
             autocomplete="off"
           />
+          <button class="search-clear" id="searchClear" aria-label="Clear search">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -57,6 +67,8 @@
     let filteredApps = [];
     const grid = document.getElementById('appsGrid');
     const searchInput = document.getElementById('searchInput');
+    const searchRow  = document.getElementById('searchRow');
+    const searchClear = document.getElementById('searchClear');
 
     // Mouse tracking highlight for app cards
     function bindCardHighlight(card) {
@@ -64,8 +76,22 @@
       window.NexoraMouseTracking.bindElement(card);
     }
 
+    // Render skeleton while loading
+    function showSkeletons(count = 12) {
+      grid.innerHTML = '';
+      const frag = document.createDocumentFragment();
+      for (let i = 0; i < count; i++) {
+        const s = document.createElement('div');
+        s.className = 'skeleton';
+        s.innerHTML = '<div class="skeleton-icon"></div><div class="skeleton-label"></div>';
+        frag.appendChild(s);
+      }
+      grid.appendChild(frag);
+    }
+
     // Load apps from JSON
     async function loadApps() {
+      showSkeletons();
       try {
         const response = await fetch('/app-info.json');
         allApps = await response.json();
@@ -73,7 +99,7 @@
         renderApps();
       } catch (error) {
         console.error('Failed to load apps:', error);
-        grid.innerHTML = '<div class="no-results">Failed to load apps. Please try again later.</div>';
+        grid.innerHTML = '<div class="no-results"><div class="no-results-icon">⚠️</div>Failed to load apps. Please try again later.</div>';
       }
     }
 
@@ -81,12 +107,14 @@
       const card = document.createElement('div');
       card.className = 'app-card';
       card.innerHTML = `
+        <div class="app-card-ring"></div>
         <div class="app-icon-wrapper">
           <img 
             class="app-icon" 
             src="${app.thumbnail}" 
             alt="${app.title}"
             onerror="this.src='https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/apps/default.png'"
+            loading="lazy"
           />
         </div>
         <span class="app-name">${app.title}</span>
@@ -112,8 +140,9 @@
       const card = document.createElement('div');
       card.className = 'app-card add-app-card';
       card.innerHTML = `
+        <div class="app-card-ring"></div>
         <div class="app-icon-wrapper">
-          <div class="add-icon">+</div>
+          <div class="add-icon"></div>
         </div>
         <span class="app-name">Add App</span>
       `;
@@ -138,8 +167,10 @@
       }
 
       const fragment = document.createDocumentFragment();
-      filteredApps.forEach(app => {
-        fragment.appendChild(createAppCard(app));
+      filteredApps.forEach((app, i) => {
+        const card = createAppCard(app);
+        card.style.setProperty('--card-index', i);
+        fragment.appendChild(card);
       });
 
       // Add the "Add App" card at the end
@@ -149,21 +180,29 @@
 
     function filterApps(query) {
       const searchTerm = query.toLowerCase().trim();
-      
       if (!searchTerm) {
         filteredApps = [...allApps];
       } else {
-        filteredApps = allApps.filter(app => 
+        filteredApps = allApps.filter(app =>
           app.title.toLowerCase().includes(searchTerm)
         );
       }
-      
       renderApps();
     }
 
-    // Search functionality
+    // Search
     searchInput.addEventListener('input', (e) => {
-      filterApps(e.target.value);
+      const val = e.target.value;
+      searchRow.classList.toggle('has-value', val.length > 0);
+      filterApps(val);
+    });
+
+    // Clear button
+    searchClear.addEventListener('click', () => {
+      searchInput.value = '';
+      searchRow.classList.remove('has-value');
+      filterApps('');
+      searchInput.focus();
     });
 
     // Load apps on init

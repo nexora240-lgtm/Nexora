@@ -71,38 +71,13 @@
      * Show account creation prompt modal for guest users
      */
     function showAccountPrompt() {
-        // Don't show if user is logged in or has dismissed it
-        if (isUsingAccountUsername() || hasUserDismissedAccountPrompt()) {
-            return;
-        }
-        
-        const modal = document.getElementById('accountPromptModal');
-        if (modal) {
-            // Ensure modal is visible even in iframe/about:blank context
-            modal.style.display = 'flex';
-            modal.style.position = 'fixed';
-            modal.style.inset = '0';
-            modal.style.zIndex = '999999';
-            
-            // If we're in an iframe, ensure the modal covers the entire viewport
-            if (window.self !== window.top) {
-                modal.style.width = '100vw';
-                modal.style.height = '100vh';
-            }
-        }
+        // Account prompt removed  no-op
+        return;
     }
 
     function loadSavedUsername() {
         const defaultUsername = getDefaultUsername();
         const isFromAccount = isUsingAccountUsername();
-        
-        // Show account prompt for guest users (only once when they first interact)
-        if (!isFromAccount && !hasUserDismissedAccountPrompt()) {
-            // Show prompt after a short delay to not interrupt user flow
-            // Use longer delay if in iframe to ensure everything is loaded
-            const delay = (window.self !== window.top) ? 2500 : 1500;
-            setTimeout(showAccountPrompt, delay);
-        }
         
         if (defaultUsername) {
             const joinInput = document.getElementById('joinUsernameInput');
@@ -150,7 +125,11 @@
     }
 
     if (window.NexoraCircle && window.NexoraCircle.initialized) {
-        return;
+        // Clean up old WebSocket before re-initializing
+        if (typeof window.NexoraCircle._cleanup === 'function') {
+            window.NexoraCircle._cleanup();
+        }
+        window.NexoraCircle.initialized = false;
     }
 
 function saveChatroomState() {
@@ -223,10 +202,13 @@ function restoreChatroomState() {
 
             updateUsersList();
 
-            connectWebSocket(false, true);
-                        setTimeout(() => {
+            // Delay WS connect to let server process old connection disconnect
+            setTimeout(() => {
+                connectWebSocket(false, true);
+            }, 400);
+            setTimeout(() => {
                 isRestoringState = false;
-                            }, 500);
+            }, 1200);
             
             return true;
         }
@@ -318,7 +300,7 @@ function joinPublicChatWithUsername() {
     }
     
     if (!username) {
-        alert('Please enter a username');
+        if (window.NexoraNotify) NexoraNotify.warning('Please enter a username');
         return;
     }
     
@@ -344,7 +326,7 @@ function createRoom() {
     }
     
     if (!username) {
-        alert('Please enter a username');
+        if (window.NexoraNotify) NexoraNotify.warning('Please enter a username');
         return;
     }
 
@@ -374,7 +356,7 @@ function joinRoom() {
     const roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
     
     if (!username || !roomCode) {
-        alert('Please enter both username and circle code');
+        if (window.NexoraNotify) NexoraNotify.warning('Please enter both username and circle code');
         return;
     }
 
@@ -391,17 +373,47 @@ function joinRoom() {
 }
 
 function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoining = false) {
+    let _wsOpened = false;
 
     if (ws) {
         if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+            // Silence old handlers before closing to prevent stale error/close events
+            ws.onerror = null;
+            ws.onclose = null;
+            ws.onmessage = null;
             ws.close();
         }
         ws = null;
     }
     
-    ws = new WebSocket(WS_URL);
+    // Reuse existing WebSocket if returning to chatroom (e.g., via notification click)
+    if (isReconnecting && window._nexoraCirclePendingWs && 
+        window._nexoraCirclePendingWs.readyState === WebSocket.OPEN) {
+        ws = window._nexoraCirclePendingWs;
+        window._nexoraCirclePendingWs = null;
+        // Already in the room — just send a presence ping
+        setTimeout(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    action: 'sendMessage',
+                    roomCode: currentRoomCode,
+                    username: currentUsername,
+                    message: `::PRESENCE::${roomOwner || ''}::${userJoinTimes[currentUsername]}`
+                }));
+            }
+        }, 100);
+    } else {
+        if (window._nexoraCirclePendingWs) {
+            window._nexoraCirclePendingWs.onerror = null;
+            window._nexoraCirclePendingWs.onclose = null;
+            window._nexoraCirclePendingWs.onmessage = null;
+            try { window._nexoraCirclePendingWs.close(); } catch(e) {}
+            window._nexoraCirclePendingWs = null;
+        }
+        ws = new WebSocket(WS_URL);
     
     ws.onopen = () => {
+        _wsOpened = true;
                 const joinStatus = (isJoining && currentRoomCode !== PUBLIC_ROOM_CODE) ? 'PENDING' : 'ACTIVE';
         
         ws.send(JSON.stringify({
@@ -435,7 +447,7 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                         roomValidationTimeout = setTimeout(() => {
 
                 if (roomUsers.length === 1 && roomUsers[0] === currentUsername) {
-                                        alert(`Circle code "${currentRoomCode}" does not exist. Please check the code and try again.`);
+                                        if (window.NexoraNotify) NexoraNotify.error('Circle code "' + currentRoomCode + '" does not exist. Please check the code and try again.');
                     if (ws) {
                         ws.close();
                     }
@@ -465,11 +477,13 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
             }, 300); // Small delay to ensure chat screen is visible first
         }
     };
+    } // end else (new WebSocket)
     
+    // Always rebind handlers to current closure (whether reused or new WS)
     ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
 
-        if (isRestoringState) {
+        if (isRestoringState && data.type !== 'error') {
                         return;
         }
         
@@ -478,7 +492,7 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                                 const conflictingUsername = currentUsername;
                 const conflictingRoomCode = currentRoomCode;
                 
-                alert(data.message);
+                if (window.NexoraNotify) NexoraNotify.error(data.message);
 
                 if (ws) {
                     ws.close();
@@ -654,7 +668,7 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                                 
                 if (currentUsername === deniedUser) {
                     hideWaitingScreen();
-                    alert('Your request to join was declined by the host.');
+                    if (window.NexoraNotify) NexoraNotify.error('Your request to join was declined by the host.');
                     if (ws) {
                         ws.close();
                     }
@@ -765,7 +779,7 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
             if (messageText.startsWith('::KICK::')) {
                 const kickedUsername = messageText.split('::KICK::')[1];
                                 if (kickedUsername === currentUsername) {
-                    alert('You have been kicked from the circle.');
+                    if (window.NexoraNotify) NexoraNotify.error('You have been kicked from the circle.');
                     leaveChat();
                     return;
                 }
@@ -793,15 +807,18 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
                 console.error('[Chatroom] Invalid username in message:', data);
                 return;
             }
+
+            // Skip echo of own messages — already displayed optimistically when sent
+            if (username === currentUsername) return;
             
-            displayMessage(username, messageText, data.timestamp, username === currentUsername);
+            displayMessage(username, messageText, data.timestamp, false);
         }
     };
     
     ws.onerror = (error) => {
-
-        if (!isReconnecting) {
-                        alert('Connection error. Please try again.');
+        // Only show error if the connection never successfully opened
+        if (!isReconnecting && !_wsOpened) {
+            if (window.NexoraNotify) NexoraNotify.error('Connection error. Please try again.');
         }
     };
     
@@ -900,14 +917,17 @@ function showChatScreen() {
     
     const roomCodeElement = document.getElementById('headerRoomCode');
 
+    const railTitle = document.querySelector('.cr-rail-brand h1');
     if (currentRoomCode === PUBLIC_ROOM_CODE) {
         roomCodeElement.textContent = '';  // Hide room code for public chat
         roomCodeElement.style.display = 'none';
         document.getElementById('largeRoomCode').textContent = 'PUBLIC CIRCLE';
+        if (railTitle) railTitle.textContent = 'Public Circle';
     } else {
         roomCodeElement.textContent = `Circle Code: ${currentRoomCode}`;
         roomCodeElement.style.display = 'inline-block';
         document.getElementById('largeRoomCode').textContent = currentRoomCode;
+        if (railTitle) railTitle.textContent = 'Private Circle';
     }
 
     if (!roomUsers.includes(currentUsername)) {
@@ -944,15 +964,17 @@ function sendMessage() {
             message: message
         }));
 
+        // Display own message immediately (don't wait for server echo)
+        displayMessage(currentUsername, message, Date.now(), true);
+
         if (!roomUsers.includes(currentUsername)) {
             roomUsers.push(currentUsername);
             updateUsersList();
         }
         
-        // Remove local display - message will be displayed when server echoes it back
-        input.value = '';
+        input.value = ''
     } else {
-        alert('Not connected. Please refresh and try again.');
+        if (window.NexoraNotify) NexoraNotify.error('Not connected. Please refresh and try again.');
     }
 }
 
@@ -1169,17 +1191,17 @@ function updateUsersList() {
 function kickUser(username) {
     // No kicking in public chat
     if (currentRoomCode === PUBLIC_ROOM_CODE) {
-        alert('Kicking is not allowed in the public circle.');
+        if (window.NexoraNotify) NexoraNotify.warning('Kicking is not allowed in the public circle.');
         return;
     }
 
     if (currentUsername !== roomOwner) {
-        alert('Only the circle owner can kick users.');
+        if (window.NexoraNotify) NexoraNotify.warning('Only the circle owner can kick users.');
         return;
     }
     
     if (username === roomOwner) {
-        alert('Cannot kick the circle owner.');
+        if (window.NexoraNotify) NexoraNotify.warning('Cannot kick the circle owner.');
         return;
     }
     
@@ -1207,7 +1229,7 @@ function kickUser(username) {
             kickerUsername: currentUsername
         }));
     } else {
-        alert('Not connected. Cannot kick user.');
+        if (window.NexoraNotify) NexoraNotify.error('Not connected. Cannot kick user.');
     }
 }
 
@@ -1338,7 +1360,7 @@ function showWaitingScreen() {
         if (timeLeft <= 0) {
             clearInterval(waitingTimerInterval);
             hideWaitingScreen();
-            alert('Your request timed out. The host did not respond.');
+            if (window.NexoraNotify) NexoraNotify.warning('Your request timed out. The host did not respond.');
             if (ws) {
                 ws.close();
             }
@@ -1371,40 +1393,11 @@ function cancelJoinRequest() {
 }
 
 function redirectToCreateAccount() {
-    const modal = document.getElementById('accountPromptModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-    
-    // Save current state before redirecting
-    saveChatroomState();
-    
-    // If in iframe (about:blank context), redirect the top window
-    if (window.self !== window.top) {
-        try {
-            window.top.location.href = '/?route=/settings';
-        } catch (e) {
-            // Fallback if cross-origin prevents access to top
-            window.location.href = '/?route=/settings';
-        }
-    } else {
-        // Normal redirect
-        window.location.href = '/?route=/settings';
-    }
+    // Account prompt removed  no-op
 }
 
 function continueAsGuest() {
-    const modal = document.getElementById('accountPromptModal');
-    const checkbox = document.getElementById('dontShowAgainCheckbox');
-    
-    if (modal) {
-        modal.style.display = 'none';
-    }
-    
-    // Save preference if checkbox is checked
-    if (checkbox && checkbox.checked) {
-        localStorage.setItem('nexora_circle_dismissed_account_prompt', 'true');
-    }
+    // Account prompt removed  no-op
 }
 
 (function() {
@@ -1429,7 +1422,26 @@ function continueAsGuest() {
     window.NexoraCircle = {
         initialized: true,
         saveChatroomState: saveChatroomState,
-        restoreChatroomState: restoreChatroomState
+        restoreChatroomState: restoreChatroomState,
+        _cleanup: function() {
+            // Save open WS for reuse instead of closing (avoids USERNAME_CONFLICT on reconnect)
+            if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+                window._nexoraCirclePendingWs = ws;
+            } else {
+                if (ws) try { ws.close(); } catch(e) {}
+                window._nexoraCirclePendingWs = null;
+            }
+            ws = null;
+            if (chatroomMouseTrackingObserver) {
+                chatroomMouseTrackingObserver.disconnect();
+                chatroomMouseTrackingObserver = null;
+            }
+            chatroomMouseTrackingInitialized = false;
+            trackedMouseElements.forEach(function(el) {
+                if (typeof el._mouseTrackingCleanup === 'function') el._mouseTrackingCleanup();
+            });
+            trackedMouseElements.clear();
+        }
     };
 
     window.saveChatroomState = saveChatroomState;

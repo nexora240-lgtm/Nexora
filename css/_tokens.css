@@ -262,70 +262,7 @@ html.app-shell body {
   50%      { opacity: .4; transform: scale(1.6); }
 }
 
-/* ── Announcement Popups ── */
-.nexora-announce {
-  position: fixed;
-  right: 20px;
-  z-index: 9999;
-  width: 340px;
-  max-width: calc(100vw - 40px);
-  padding: 16px 18px;
-  background: var(--surface);
-  border: 1px solid rgba(128,128,128,0.15);
-  border-radius: var(--radius);
-  box-shadow: 0 8px 28px rgba(0,0,0,0.18);
-  opacity: 0;
-  transform: translateX(100%);
-  transition: opacity .3s ease, transform .3s ease;
-}
-
-.nexora-announce.announce-visible {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.nexora-announce.announce-out {
-  opacity: 0;
-  transform: translateX(100%);
-}
-
-.announce-close {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  background: none;
-  border: none;
-  font-size: 1.25rem;
-  color: var(--muted);
-  cursor: pointer;
-  line-height: 1;
-  padding: 0;
-}
-
-.announce-close:hover {
-  color: var(--text);
-}
-
-.announce-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-  color: var(--primary-accent);
-  font-size: 0.9rem;
-}
-
-.announce-header strong {
-  color: var(--text);
-  font-size: 0.95rem;
-}
-
-.announce-body {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.88rem;
-  line-height: 1.5;
-}
+/* Announcement styles moved to nexora-notify.css */
 
 
 button:focus,

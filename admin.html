@@ -311,14 +311,13 @@
     return data;
   }
 
-  // ─── Toast ───
+  // ─── Toast (unified) ───
 
   function toast(msg, type = 'success') {
-    const el = document.createElement('div');
-    el.className = `toast toast-${type}`;
-    el.textContent = msg;
-    document.getElementById('adminRoot').appendChild(el);
-    setTimeout(() => el.remove(), 3200);
+    if (window.NexoraNotify) {
+      if (type === 'error') NexoraNotify.error(msg);
+      else NexoraNotify.success(msg);
+    }
   }
 
   // ─── Tabs ───

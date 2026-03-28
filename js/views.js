@@ -1,5 +1,7 @@
 const VIEW_CLASS_PREFIX = 'view-';
 let currentViewAssets = [];
+let currentViewScripts = [];
+let currentNavId = 0;
 
 // GameStateManager - tracks game state for "Continue Playing" feature
 window.GameStateManager = {
@@ -93,6 +95,12 @@ function clearViewAssets() {
     }
   });
   currentViewAssets = [];
+  currentViewScripts.forEach(node => {
+    if (node && node.parentNode) {
+      node.parentNode.removeChild(node);
+    }
+  });
+  currentViewScripts = [];
 }
 
 function normalizeViewName(file) {
@@ -293,6 +301,11 @@ function resumeIframeAudio(iframe) {
 
 function loadView(file) {
   // Call cleanup functions before loading new view
+  if (typeof window.homeCleanup === 'function') {
+    window.homeCleanup();
+    window.homeCleanup = null;
+  }
+
   if (typeof window.moviesCleanup === 'function') {
     window.moviesCleanup();
     window.moviesCleanup = null;
@@ -369,6 +382,9 @@ function loadView(file) {
   // Remove assets for the previous non-persistent view
   clearViewAssets();
   
+  // Track this navigation so stale fetches are ignored
+  const navId = ++currentNavId;
+
   // Add loading class to prevent FOUC
   const targetContainer = persistentConfig ? (persistentConfig.stash || app) : app;
   targetContainer.classList.add('view-loading');
@@ -376,6 +392,9 @@ function loadView(file) {
   fetch('/' + file)
     .then(res => res.text())
     .then(html => {
+      // If a newer navigation started, discard this response
+      if (navId !== currentNavId) return;
+
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
       const viewName = normalizeViewName(file);
@@ -466,17 +485,17 @@ function loadView(file) {
       });
 
       loadScriptsSequentially(scripts)
+        .then(() => {
+          if (file === 'chatroom.html' && typeof restoreChatroomState === 'function') {
+            requestAnimationFrame(() => {
+              restoreChatroomState();
+            });
+          }
+        })
         .catch(err => console.error('Failed to load view scripts', err));
 
       if (window.NexoraChat && typeof window.NexoraChat.init === 'function') {
         try { window.NexoraChat.init(persistentConfig ? persistentConfig.stash : app); } catch (e) {  }
-      }
-
-      if (file === 'chatroom.html' && typeof restoreChatroomState === 'function') {
-        // Use requestAnimationFrame for faster, smoother restoration
-        requestAnimationFrame(() => {
-          restoreChatroomState();
-        });
       }
     })
     .catch(() => {
@@ -509,6 +528,7 @@ function loadScriptsSequentially(scripts) {
 function appendScriptNode(scriptNode) {
   return new Promise(resolve => {
     const newScript = document.createElement('script');
+    newScript.dataset.viewScript = 'true';
     Array.from(scriptNode.attributes).forEach(attr => {
       newScript.setAttribute(attr.name, attr.value);
     });
@@ -519,6 +539,7 @@ function appendScriptNode(scriptNode) {
     if (!hasSrc) {
       newScript.textContent = scriptNode.textContent;
       document.body.appendChild(newScript);
+      currentViewScripts.push(newScript);
       resolve();
       return;
     }
@@ -534,6 +555,7 @@ function appendScriptNode(scriptNode) {
     }, { once: true });
 
     document.body.appendChild(newScript);
+    currentViewScripts.push(newScript);
   });
 }
 

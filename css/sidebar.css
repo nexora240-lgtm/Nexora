@@ -563,6 +563,31 @@ body {
   #cookie-popup, #cookie-actions button { transition: none !important; }
 }
 
+/* Home view: remove padding so the full-bleed background fills edge-to-edge.
+   pointer-events: none lets clicks pass through to the background game cards
+   while .home-content (pointer-events: auto) keeps the left-side UI interactive. */
+body.view-home .main-content {
+  padding: 0;
+  pointer-events: none;
+}
+
+/* Chatbot view: remove padding and disable container scroll so the input bar sits at the bottom */
+body.view-chatbot .main-content {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Circle view: centered within the content area */
+body.view-chatroom .main-content {
+  padding: 40px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: unset;
+}
+
 /* View Loading Transition - Prevent FOUC */
 .main-content.view-loading {
   opacity: 0;
