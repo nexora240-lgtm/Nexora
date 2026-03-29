@@ -209,20 +209,21 @@
         </div>
       </section>
 
-      <!-- ═══ LINKS MANAGEMENT ═══ -->
+      <!-- ═══ LINKS MANAGEMENT (Link Finder AI) ═══ -->
       <section id="links-mgmt" class="panel" role="tabpanel">
         <div class="panel-card">
           <div class="section-header">
-            <h2>Links Directory</h2>
+            <h2>Link Finder — Links Database</h2>
             <span class="meta-count" id="linksCount"></span>
             <div class="search-bar">
               <button class="btn btn-primary btn-sm" onclick="showAddLinkForm()"><i class="fas fa-plus"></i> Add Link</button>
               <button class="btn btn-outline btn-sm" onclick="loadAdminLinks()"><i class="fas fa-sync"></i> Refresh</button>
             </div>
           </div>
+          <p class="text-muted" style="font-size:13px;margin:-8px 0 12px">These links are served by the AI Link Finder chat. The AI recommends links based on the user's strictness level, blockers, and hosting preferences.</p>
           <div class="admin-table-wrap">
-            <table><thead><tr><th>URL</th><th>Domain</th><th>Badge</th><th>Official</th><th>Bypassed</th><th>Added</th><th>Last Checked</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="adminLinksBody"><tr><td colspan="9" class="loading"><div class="spinner"></div></td></tr></tbody></table>
+            <table><thead><tr><th>Domain</th><th>URL</th><th>Hosting</th><th>Strictness</th><th>Bypasses</th><th>Added</th><th>Actions</th></tr></thead>
+            <tbody id="adminLinksBody"><tr><td colspan="7" class="loading"><div class="spinner"></div></td></tr></tbody></table>
           </div>
         </div>
       </section>
@@ -373,6 +374,14 @@
     if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
     if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
     return Math.floor(diff/86400000) + 'd ago';
+  }
+
+  function getDomain(url) {
+    try {
+      const host = new URL(url).hostname;
+      const parts = host.split('.');
+      return parts.length > 2 ? parts.slice(-2).join('.') : host;
+    } catch { return url || ''; }
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -1071,139 +1080,195 @@
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // LINKS MANAGEMENT
+  // LINKS MANAGEMENT (Link Finder AI)
   // ═══════════════════════════════════════════════════════════════
 
-  const LINKS_API_BASE = (typeof _CONFIG !== 'undefined' && _CONFIG.adminApiUrl) || API;
+  const LF_API_KEY = (typeof _CONFIG !== 'undefined' && _CONFIG.linkAdminApiKey) || '';
+  const LF_API_BASE = (typeof _CONFIG !== 'undefined' && _CONFIG.linkFinderApiUrl) || '';
+
+  const BLOCKER_LIST = ['fortiguard', 'lightspeed', 'palo alto', 'blocksi web', 'blocksi ai', 'linewize', 'cisco umbrella', 'securly', 'goguardian', 'lanschool', 'contentkeeper', 'aristotlek12', 'senso cloud', 'deledao', 'iboss', 'sophos', 'barracuda', 'qustodio', 'dns filter'];
+
+  async function lfFetch(method, body) {
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+    };
+    if (LF_API_KEY) opts.headers['X-Api-Key'] = LF_API_KEY;
+    if (body && method !== 'GET') opts.body = JSON.stringify(body);
+    const resp = await fetch(`${LF_API_BASE}/admin/links`, opts);
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Request failed');
+    return data;
+  }
 
   async function loadAdminLinks() {
     const body = document.getElementById('adminLinksBody');
-    body.innerHTML = '<tr><td colspan="9" class="loading"><div class="spinner"></div></td></tr>';
+    body.innerHTML = '<tr><td colspan="7" class="loading"><div class="spinner"></div></td></tr>';
+
+    if (!LF_API_BASE) {
+      body.innerHTML = '<tr><td colspan="7" class="empty-state">Link Finder API not configured. Set <code>linkFinderApiUrl</code> and <code>linkAdminApiKey</code> in config.js after deploying <code>aws/deploy.ps1</code>.</td></tr>';
+      return;
+    }
+
     try {
-      const data = await adminFetch('/admin/links');
+      const data = await lfFetch('GET');
       const links = data.links || [];
       const countEl = document.getElementById('linksCount');
       if (countEl) countEl.textContent = `${links.length} link${links.length !== 1 ? 's' : ''}`;
 
       if (!links.length) {
-        body.innerHTML = '<tr><td colspan="9" class="empty-state">No links in directory</td></tr>';
+        body.innerHTML = '<tr><td colspan="7" class="empty-state">No links yet. Click "Add Link" to get started.</td></tr>';
         return;
       }
-      body.innerHTML = links.map(l => {
-        const statusBadge = l.bypassed
-          ? '<span class="badge badge-warning">Bypassed</span>'
-          : l.healthy === false
-            ? '<span class="badge badge-danger">Down</span>'
-            : '<span class="badge badge-success">Healthy</span>';
 
-        const domain = l.domain || l.name || '—';
-        const badgeCol = l.badge ? `<span class="badge badge-muted">${esc(l.badge)}</span>` : '—';
-        const officialCol = l.official ? '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Official</span>' : '—';
-        const bypassedCol = l.bypassed ? '<span class="badge badge-warning"><i class="fas fa-shield-alt"></i> Yes</span>' : '—';
-        const safeUrl = esc(l.url).replace(/'/g, "\\'");
-        const safeBadge = esc(l.badge || '').replace(/'/g, "\\'");
+      body.innerHTML = links.map(l => {
+        const blockerStr = (l.blockers || []).join(', ') || '—';
+        const safeId = esc(l.linkId).replace(/'/g, "\\'");
+        const domain = esc(l.name || getDomain(l.url));
         return `<tr>
+          <td><strong>${domain}</strong></td>
           <td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(l.url)}">${esc(l.url)}</td>
-          <td><strong>${esc(domain)}</strong></td>
-          <td>${badgeCol}</td>
-          <td>${officialCol}</td>
-          <td>${bypassedCol}</td>
-          <td>${fmtRelative(l.addedAt)}</td>
-          <td>${fmtRelative(l.lastChecked)}</td>
-          <td>${statusBadge}</td>
+          <td><span class="badge badge-muted">${esc(l.hostingType || 'custom')}</span></td>
+          <td>${l.strictnessMin || 1}–${l.strictnessMax || 10}</td>
+          <td style="font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(blockerStr)}">${esc(blockerStr)}</td>
+          <td>${fmtRelative(l.addedDate)}</td>
           <td class="btn-group">
-            <button class="btn btn-outline btn-sm" onclick="showEditLinkForm('${safeUrl}', '${safeBadge}', ${!!l.official}, ${!!l.bypassed})" title="Edit link"><i class="fas fa-edit"></i></button>
-            <button class="btn btn-danger btn-sm" onclick="doRemoveLink('${safeUrl}')" title="Remove link"><i class="fas fa-trash"></i></button>
+            <button class="btn btn-outline btn-sm" onclick="showEditLinkForm('${safeId}')" title="Edit"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="doRemoveLink('${safeId}', '${domain.replace(/'/g, "\\'")}')" title="Delete"><i class="fas fa-trash"></i></button>
           </td></tr>`;
       }).join('');
     } catch (e) {
-      body.innerHTML = `<tr><td colspan="9" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
+      body.innerHTML = `<tr><td colspan="7" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
     }
   }
   window.loadAdminLinks = loadAdminLinks;
 
-  window.showAddLinkForm = function() {
+  // Cache links for edit form lookups
+  let _lfLinksCache = [];
+  async function _getLfLinks() {
+    try {
+      const data = await lfFetch('GET');
+      _lfLinksCache = data.links || [];
+    } catch { /* use stale cache */ }
+    return _lfLinksCache;
+  }
+
+  window.showAddLinkForm = function () {
+    const blockerCheckboxes = BLOCKER_LIST.map(b =>
+      `<label class="lf-blocker-label"><input type="checkbox" value="${esc(b)}" class="lf-blocker-cb"> ${esc(b)}</label>`
+    ).join('');
+
     document.getElementById('adminModal').innerHTML = `
       <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-        <div class="modal">
+        <div class="modal" style="max-width:520px">
           <h3><i class="fas fa-plus-circle"></i> Add Link</h3>
-          <p style="font-size:13px;color:var(--admin-muted);margin:0 0 16px">Add a URL directly to the links directory. The system will verify it contains Nexora files.</p>
           <div class="form-group"><label>URL</label>
-            <input type="text" class="form-input" id="addLinkUrl" placeholder="https://example.com" />
+            <input type="text" class="form-input" id="lfUrl" placeholder="https://example.web.app" />
           </div>
-          <div class="form-group"><label>Badge (optional)</label>
-            <input type="text" class="form-input" id="addLinkBadge" placeholder="e.g. New, Fast, Popular" />
+          <div class="form-group"><label>Hosting Type</label>
+            <input type="text" class="form-input" id="lfHosting" placeholder="e.g. firebase, cloudflare, freedns" />
           </div>
-          <div class="form-group" style="display:flex;align-items:center;gap:8px">
-            <label class="toggle"><input type="checkbox" id="addLinkOfficial">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span></label>
-            <label for="addLinkOfficial">Mark as Official</label>
+          <div class="form-group">
+            <label>Strictness Range (works for levels…)</label>
+            <div style="display:flex;gap:10px;align-items:center">
+              <input type="number" class="form-input" id="lfStrictMin" value="1" min="1" max="10" style="width:70px" />
+              <span style="color:var(--admin-muted)">to</span>
+              <input type="number" class="form-input" id="lfStrictMax" value="10" min="1" max="10" style="width:70px" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Bypasses these blockers:</label>
+            <div class="lf-blocker-grid">${blockerCheckboxes}</div>
           </div>
           <div class="modal-actions">
             <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="doAddLink()"><i class="fas fa-plus"></i> Add & Verify</button>
+            <button class="btn btn-primary" onclick="doAddLink()"><i class="fas fa-plus"></i> Add Link</button>
           </div>
         </div>
       </div>`;
   };
 
-  window.doAddLink = async function() {
-    const url = document.getElementById('addLinkUrl').value.trim();
+  window.doAddLink = async function () {
+    const url = document.getElementById('lfUrl').value.trim();
     if (!url) { toast('URL is required', 'error'); return; }
-    const badge = document.getElementById('addLinkBadge').value.trim() || undefined;
-    const official = document.getElementById('addLinkOfficial').checked || undefined;
+
+    const name = getDomain(url);
+    const hostingType = document.getElementById('lfHosting').value.trim() || 'custom';
+    const strictnessMin = parseInt(document.getElementById('lfStrictMin').value) || 1;
+    const strictnessMax = parseInt(document.getElementById('lfStrictMax').value) || 10;
+    const blockers = Array.from(document.querySelectorAll('.lf-blocker-cb:checked')).map(cb => cb.value);
+
     try {
-      await adminFetch('/admin/links', 'POST', { url, badge, official });
-      toast('Link added successfully');
+      await lfFetch('POST', { name, url, hostingType, strictnessMin, strictnessMax, blockers });
+      toast('Link added');
       closeModal();
       loadAdminLinks();
     } catch (e) { toast('Failed: ' + e.message, 'error'); }
   };
 
-  window.showEditLinkForm = function(url, badge, official, bypassed) {
+  window.showEditLinkForm = async function (linkId) {
+    const links = await _getLfLinks();
+    const link = links.find(l => l.linkId === linkId);
+    if (!link) { toast('Link not found', 'error'); return; }
+
+    const blockerCheckboxes = BLOCKER_LIST.map(b => {
+      const checked = (link.blockers || []).includes(b) ? 'checked' : '';
+      return `<label class="lf-blocker-label"><input type="checkbox" value="${esc(b)}" class="lf-blocker-cb" ${checked}> ${esc(b)}</label>`;
+    }).join('');
+
     document.getElementById('adminModal').innerHTML = `
       <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-        <div class="modal">
+        <div class="modal" style="max-width:520px">
           <h3><i class="fas fa-edit"></i> Edit Link</h3>
-          <p style="font-size:13px;color:var(--admin-muted);margin:0 0 16px">${esc(url)}</p>
-          <div class="form-group"><label>Badge (optional)</label>
-            <input type="text" class="form-input" id="editLinkBadge" value="${esc(badge)}" placeholder="e.g. New, Fast, Popular" />
+          <div class="form-group"><label>URL</label>
+            <input type="text" class="form-input" id="lfUrl" value="${esc(link.url)}" />
           </div>
-          <div class="form-group" style="display:flex;align-items:center;gap:8px">
-            <label class="toggle"><input type="checkbox" id="editLinkOfficial" ${official ? 'checked' : ''}>
-              <span class="toggle-track"><span class="toggle-thumb"></span></span></label>
-            <label for="editLinkOfficial">Mark as Official</label>
+          <div class="form-group"><label>Hosting Type</label>
+            <input type="text" class="form-input" id="lfHosting" value="${esc(link.hostingType || '')}" placeholder="e.g. firebase, cloudflare, freedns" />
           </div>
-          <div class="form-group" style="display:flex;align-items:center;gap:8px">
-            <label class="toggle"><input type="checkbox" id="editLinkBypassed" ${bypassed ? 'checked' : ''}>
-              <span class="toggle-track"><span class="toggle-thumb"></span></span></label>
-            <label for="editLinkBypassed">Bypass health checks</label>
+          <div class="form-group">
+            <label>Strictness Range</label>
+            <div style="display:flex;gap:10px;align-items:center">
+              <input type="number" class="form-input" id="lfStrictMin" value="${link.strictnessMin || 1}" min="1" max="10" style="width:70px" />
+              <span style="color:var(--admin-muted)">to</span>
+              <input type="number" class="form-input" id="lfStrictMax" value="${link.strictnessMax || 10}" min="1" max="10" style="width:70px" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Bypasses these blockers:</label>
+            <div class="lf-blocker-grid">${blockerCheckboxes}</div>
           </div>
           <div class="modal-actions">
             <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="doEditLink('${esc(url).replace(/'/g, "\\'")}')"><i class="fas fa-save"></i> Save</button>
+            <button class="btn btn-primary" onclick="doEditLink('${esc(linkId).replace(/'/g, "\\'")}')"><i class="fas fa-save"></i> Save</button>
           </div>
         </div>
       </div>`;
   };
 
-  window.doEditLink = async function(url) {
-    const badge = document.getElementById('editLinkBadge').value.trim() || null;
-    const official = document.getElementById('editLinkOfficial').checked;
-    const bypassed = document.getElementById('editLinkBypassed').checked;
+  window.doEditLink = async function (linkId) {
+    const url = document.getElementById('lfUrl').value.trim();
+    if (!url) { toast('URL is required', 'error'); return; }
+
+    const name = getDomain(url);
+    const hostingType = document.getElementById('lfHosting').value.trim() || 'custom';
+    const strictnessMin = parseInt(document.getElementById('lfStrictMin').value) || 1;
+    const strictnessMax = parseInt(document.getElementById('lfStrictMax').value) || 10;
+    const blockers = Array.from(document.querySelectorAll('.lf-blocker-cb:checked')).map(cb => cb.value);
+
     try {
-      await adminFetch('/admin/links', 'PUT', { url, badge, official, bypassed });
+      await lfFetch('PUT', { linkId, name, url, hostingType, strictnessMin, strictnessMax, blockers });
       toast('Link updated');
       closeModal();
       loadAdminLinks();
     } catch (e) { toast('Failed: ' + e.message, 'error'); }
   };
 
-  window.doRemoveLink = async function(url) {
-    if (!confirm(`Remove ${url} from the directory?`)) return;
+  window.doRemoveLink = async function (linkId, name) {
+    if (!confirm(`Delete link "${name}"?`)) return;
     try {
-      await adminFetch('/admin/links', 'DELETE', { url });
-      toast('Link removed');
+      await lfFetch('DELETE', { linkId });
+      toast('Link deleted');
       loadAdminLinks();
     } catch (e) { toast('Failed: ' + e.message, 'error'); }
   };

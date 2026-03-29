@@ -577,6 +577,12 @@ body.view-chatbot .main-content {
   overflow: hidden;
 }
 
+/* Link Finder view: same full-height chat layout as chatbot */
+body.view-linkfinder .main-content {
+  padding: 0;
+  overflow: hidden;
+}
+
 /* Circle view: centered within the content area */
 body.view-chatroom .main-content {
   padding: 40px 0;

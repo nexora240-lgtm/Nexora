@@ -658,19 +658,5 @@
   }
 })();
 
-// Auto-register this domain in the Nexora Links directory
-(function () {
-  var REG_KEY = 'nexora.domain.registered';
-  try {
-    if (localStorage.getItem(REG_KEY)) return;
-    var origin = location.origin;
-    if (!origin || origin === 'null' || location.protocol !== 'https:') return;
-    localStorage.setItem(REG_KEY, '1');
-    fetch('https://2zpvhn3woh.execute-api.us-east-2.amazonaws.com/links/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: origin })
-    }).catch(function () {});
-  } catch (e) {}
-})();
+
 

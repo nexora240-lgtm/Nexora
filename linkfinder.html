@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    if (window.location.pathname.endsWith('/linkfinder.html')) {
+      const params = window.location.search;
+      window.location.replace('/?route=/links' + (params ? '&' + params.substring(1) : ''));
+    }
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/css/_tokens.css" />
+  <link rel="stylesheet" href="/css/linkfinder.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <title>Link Finder</title>
+</head>
+<body>
+
+<div class="lf">
+  <div class="lf-app">
+    <div class="lf-chat">
+      <!-- Intro screen -->
+      <div class="lf-intro" id="lf-intro">
+        <div class="lf-intro-content">
+          <h1>Link Finder</h1>
+          <p>Tell me about your school's internet restrictions and I'll find links that work for you.</p>
+          <div class="lf-quick-start">
+            <p class="lf-quick-label">What's your school's strictness level?</p>
+            <div class="lf-strictness-picker" id="lf-strictness-picker">
+              <button class="lf-strict-btn" data-level="1">1</button>
+              <button class="lf-strict-btn" data-level="2">2</button>
+              <button class="lf-strict-btn" data-level="3">3</button>
+              <button class="lf-strict-btn" data-level="4">4</button>
+              <button class="lf-strict-btn" data-level="5">5</button>
+              <button class="lf-strict-btn" data-level="6">6</button>
+              <button class="lf-strict-btn" data-level="7">7</button>
+              <button class="lf-strict-btn" data-level="8">8</button>
+              <button class="lf-strict-btn" data-level="9">9</button>
+              <button class="lf-strict-btn" data-level="10">10</button>
+            </div>
+            <div class="lf-scale-labels">
+              <span>Barely blocked</span>
+              <span>Maximum filtering</span>
+            </div>
+          </div>
+          <div class="lf-blocker-chips" id="lf-blocker-chips">
+            <p class="lf-quick-label">Does your school use any of these? <span class="lf-optional">(optional)</span></p>
+            <div class="lf-chips">
+              <button class="lf-chip" data-blocker="fortiguard">FortiGuard</button>
+              <button class="lf-chip" data-blocker="lightspeed">Lightspeed</button>
+              <button class="lf-chip" data-blocker="palo alto">Palo Alto</button>
+              <button class="lf-chip" data-blocker="blocksi web">Blocksi Web</button>
+              <button class="lf-chip" data-blocker="blocksi ai">Blocksi AI</button>
+              <button class="lf-chip" data-blocker="linewize">Linewize</button>
+              <button class="lf-chip" data-blocker="cisco umbrella">Cisco Umbrella</button>
+              <button class="lf-chip" data-blocker="securly">Securly</button>
+              <button class="lf-chip" data-blocker="goguardian">GoGuardian</button>
+              <button class="lf-chip" data-blocker="lanschool">LanSchool</button>
+              <button class="lf-chip" data-blocker="contentkeeper">ContentKeeper</button>
+              <button class="lf-chip" data-blocker="aristotlek12">AristotleK12</button>
+              <button class="lf-chip" data-blocker="senso cloud">Senso Cloud</button>
+              <button class="lf-chip" data-blocker="deledao">Deledao</button>
+              <button class="lf-chip" data-blocker="iboss">iBoss</button>
+              <button class="lf-chip" data-blocker="sophos">Sophos</button>
+              <button class="lf-chip" data-blocker="barracuda">Barracuda</button>
+              <button class="lf-chip" data-blocker="qustodio">Qustodio</button>
+              <button class="lf-chip" data-blocker="dns filter">DNS Filter</button>
+            </div>
+          </div>
+          <button class="lf-go-btn" id="lf-go-btn" disabled>
+            <i class="fas fa-search"></i> Find Links
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat messages -->
+      <div class="lf-scroll" id="lf-scroll" aria-live="polite"></div>
+    </div>
+
+    <!-- Input footer -->
+    <div class="lf-footer">
+      <div class="lf-input-row">
+        <input id="lf-prompt" class="lf-input" placeholder="Describe your school's setup..." autocomplete="off" maxlength="500" />
+        <button id="lf-send" class="lf-send" title="Send" aria-label="Send message">
+          <i class="fas fa-arrow-up"></i>
+        </button>
+      </div>
+      <div class="lf-hint">Tip: mention your strictness level (1-10) and blocker name for best results</div>
+    </div>
+  </div>
+</div>
+
+<script src="/config.js"></script>
+<script src="/js/linkfinder.js"></script>
+
+</body>
+</html>

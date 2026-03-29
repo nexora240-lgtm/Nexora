@@ -798,6 +798,26 @@
 .admin-root .chip-remove:hover {
   opacity: 1;
 }
+
+/* ── Link Finder Blocker Grid (in modals) ── */
+.admin-root .lf-blocker-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding: 4px 0;
+}
+.admin-root .lf-blocker-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  padding: 3px 0;
+}
+.admin-root .lf-blocker-label input[type="checkbox"] {
+  accent-color: var(--admin-accent);
+}
 .admin-root .chat-msg-flagged {
   border-left: 3px solid var(--admin-danger);
   padding-left: 10px;
