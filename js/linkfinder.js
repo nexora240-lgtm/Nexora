@@ -17,6 +17,7 @@
   let userContext = { strictness: null, blockers: [] };
   let isWaiting = false;
   let cooldownUntil = 0;
+  let pendingLinks = []; // Queue of validated links to drip-feed one at a time
 
   // Session ID for rate limiting
   const SESSION_ID = sessionStorage.getItem('lf-session') || (() => {
@@ -80,8 +81,9 @@
     }
     msg += ' What links work for me?';
 
-    // Hide intro, show chat
+    // Hide intro, show chat, reset link queue for fresh search
     intro.classList.add('hidden');
+    pendingLinks = [];
     sendMessage(msg);
   });
 
@@ -109,7 +111,46 @@
       intro.classList.add('hidden');
     }
 
+    // Check if user is asking for the next link and we have queued links
+    if (pendingLinks.length > 0 && isNextLinkRequest(text)) {
+      serveNextLink(text);
+      return;
+    }
+
     sendMessage(text);
+  }
+
+  /** Detect if the user is asking for another/next link */
+  function isNextLinkRequest(text) {
+    const t = text.toLowerCase();
+    const phrases = [
+      'didn\'t work', 'didnt work', 'doesn\'t work', 'doesnt work',
+      'not work', 'blocked', 'another', 'next', 'try again',
+      'give me another', 'next one', 'another one', 'new link',
+      'different link', 'different one', 'still blocked', 'nope',
+      'no luck', 'failed', 'got blocked',
+    ];
+    return phrases.some(p => t.includes(p));
+  }
+
+  /** Serve the next queued link without an API call */
+  function serveNextLink(userText) {
+    appendMessage('user', userText);
+    conversationHistory.push({ role: 'user', content: userText });
+
+    const nextLink = pendingLinks.shift();
+    const remaining = pendingLinks.length;
+    let reply = 'Here\'s another link to try:';
+    if (remaining > 0) {
+      reply += ` I still have **${remaining}** more if this one doesn't work.`;
+    } else {
+      reply += ' This is the last one I have for your setup.';
+    }
+
+    appendMessage('bot', reply, [nextLink]);
+    conversationHistory.push({ role: 'assistant', content: reply });
+    input.value = '';
+    input.focus();
   }
 
   async function sendMessage(text) {
@@ -129,9 +170,12 @@
       // Remove typing
       typing.remove();
 
-      // Add bot response
-      appendMessage('bot', result.reply, result.links);
-      conversationHistory.push({ role: 'assistant', content: result.reply });
+      // ── Client-side validation: strictly enforce blocker list ──
+      const validated = validateLinks(result.links, result.reply);
+
+      // Add bot response (using validated data)
+      appendMessage('bot', validated.reply, validated.links);
+      conversationHistory.push({ role: 'assistant', content: validated.reply });
 
       // Handle cooldown from server
       if (result.cooldown) {
@@ -159,6 +203,62 @@
 
   // ─── API Call ─────────────────────────────────────────────
 
+  /**
+   * Validate links returned by the API against the user's actual blocker list.
+   * Strips out false bypass claims and replaces the reply if the AI lied.
+   */
+  function validateLinks(links, reply) {
+    if (!links || links.length === 0) return { links: [], reply };
+
+    const selectedBlockers = userContext.blockers.map(b => b.toLowerCase().trim());
+
+    // If user didn't select any blockers, pass through (no claims to verify)
+    if (selectedBlockers.length === 0) return { links, reply };
+
+    // For each link, filter its bypasses to only include things actually in its data
+    // AND only show bypass claims for things the user asked about
+    const validatedLinks = [];
+
+    for (const link of links) {
+      const linkBypasses = (link.bypasses || []).map(b => b.toLowerCase().trim());
+
+      // Check: does this link's bypass data include ANY of the user's blockers?
+      const matchedBlockers = selectedBlockers.filter(b => linkBypasses.includes(b));
+
+      if (matchedBlockers.length > 0) {
+        // Link truly bypasses at least one of the user's blockers — keep it,
+        // but only show the bypasses that match the user's selected blockers
+        validatedLinks.push({
+          ...link,
+          bypasses: matchedBlockers.map(b => b.charAt(0).toUpperCase() + b.slice(1)),
+        });
+      }
+      // If no match, drop the link entirely — it was a false recommendation
+    }
+
+    // If all links were filtered out, the AI lied — replace the reply
+    if (validatedLinks.length === 0 && links.length > 0) {
+      const blockerNames = userContext.blockers.join(', ');
+      pendingLinks = [];
+      return {
+        links: [],
+        reply: `I don't currently have any verified links that bypass **${blockerNames}**. I won't recommend links unless they're confirmed to work with your specific blocker. If you'd like, you can ask again later — new links are added regularly.`,
+      };
+    }
+
+    // Drip-feed: show only the first link, queue the rest
+    const firstLink = validatedLinks[0];
+    pendingLinks = validatedLinks.slice(1);
+
+    const remaining = pendingLinks.length;
+    let adjustedReply = reply;
+    if (remaining > 0) {
+      adjustedReply += `\n\nIf this link doesn't work, just let me know and I'll give you another one. I have **${remaining}** more to try.`;
+    }
+
+    return { links: [firstLink], reply: adjustedReply };
+  }
+
   async function callAPI(message) {
     if (!API_URL) {
       return {
@@ -176,6 +276,7 @@
         conversationHistory: conversationHistory.slice(-20),
         userContext,
         sessionId: SESSION_ID,
+        instructions: 'STRICT RULES: 1) Only recommend links whose blockers array explicitly includes the user\'s selected blockers. Never claim a link bypasses a blocker unless that blocker is in the link\'s verified data. If no links match, say so honestly instead of guessing. 2) Only return ONE link at a time. If the user says it does not work, return the next single link. Never return multiple links in one response.',
       }),
     });
 
