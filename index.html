@@ -195,9 +195,9 @@
           var shuffled = withImages.slice().sort(function() { return Math.random() - 0.5; }).slice(0, 24);
           var third = Math.ceil(shuffled.length / 3);
           function mkCard(item) {
-            return '<a href="#" class="home-card" data-route="/games" data-game="' + encodeURIComponent(item.title) + '">' +
+            return '<a href="#" class="home-card" style="opacity:0;transition:opacity .3s ease;" data-route="/games" data-game="' + encodeURIComponent(item.title) + '">' +
               '<div class="home-card-inner">' +
-                '<img src="' + item.thumbnail + '" loading="lazy" alt="" onerror="var c=this.closest(\'.home-card\');c.style.opacity=\'0\';c.style.pointerEvents=\'none\';">' +
+                '<img src="' + item.thumbnail + '" alt="" onload="this.closest(\'.home-card\').style.opacity=\'\';" onerror="var c=this.closest(\'.home-card\');c.style.display=\'none\';">' +
                 '<div class="home-card-ov"><span>' + item.title + '</span></div>' +
               '</div>' +
             '</a>';
