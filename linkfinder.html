@@ -18,33 +18,15 @@
 
 <div class="lf">
   <div class="lf-app">
-    <div class="lf-chat">
-      <!-- Intro screen -->
-      <div class="lf-intro" id="lf-intro">
-        <div class="lf-intro-content">
+    <div class="lf-content">
+      <!-- Selector screen -->
+      <div class="lf-selector" id="lf-selector">
+        <div class="lf-selector-content">
           <h1>Link Finder</h1>
-          <p>Tell me about your school's internet restrictions and I'll find links that work for you.</p>
-          <div class="lf-quick-start">
-            <p class="lf-quick-label">What's your school's strictness level?</p>
-            <div class="lf-strictness-picker" id="lf-strictness-picker">
-              <button class="lf-strict-btn" data-level="1">1</button>
-              <button class="lf-strict-btn" data-level="2">2</button>
-              <button class="lf-strict-btn" data-level="3">3</button>
-              <button class="lf-strict-btn" data-level="4">4</button>
-              <button class="lf-strict-btn" data-level="5">5</button>
-              <button class="lf-strict-btn" data-level="6">6</button>
-              <button class="lf-strict-btn" data-level="7">7</button>
-              <button class="lf-strict-btn" data-level="8">8</button>
-              <button class="lf-strict-btn" data-level="9">9</button>
-              <button class="lf-strict-btn" data-level="10">10</button>
-            </div>
-            <div class="lf-scale-labels">
-              <span>Barely blocked</span>
-              <span>Maximum filtering</span>
-            </div>
-          </div>
+          <p>Select your school's blocker and we'll find a link that works for you.</p>
+
           <div class="lf-blocker-chips" id="lf-blocker-chips">
-            <p class="lf-quick-label">Does your school use any of these? <span class="lf-optional">(optional)</span></p>
+            <p class="lf-quick-label">What blocker does your school use?</p>
             <div class="lf-chips">
               <button class="lf-chip" data-blocker="fortiguard">FortiGuard</button>
               <button class="lf-chip" data-blocker="lightspeed">Lightspeed</button>
@@ -67,25 +49,32 @@
               <button class="lf-chip" data-blocker="dns filter">DNS Filter</button>
             </div>
           </div>
+
           <button class="lf-go-btn" id="lf-go-btn" disabled>
             <i class="fas fa-search"></i> Find Links
           </button>
         </div>
       </div>
 
-      <!-- Chat messages -->
-      <div class="lf-scroll" id="lf-scroll" aria-live="polite"></div>
-    </div>
-
-    <!-- Input footer -->
-    <div class="lf-footer">
-      <div class="lf-input-row">
-        <input id="lf-prompt" class="lf-input" placeholder="Describe your school's setup..." autocomplete="off" maxlength="500" />
-        <button id="lf-send" class="lf-send" title="Send" aria-label="Send message">
-          <i class="fas fa-arrow-up"></i>
-        </button>
+      <!-- Results area -->
+      <div class="lf-results" id="lf-results">
+        <div class="lf-results-header">
+          <h2 id="lf-results-title">Your Links</h2>
+          <p class="lf-results-usage" id="lf-results-usage"></p>
+        </div>
+        <div class="lf-link-cards" id="lf-link-cards"></div>
+        <button class="lf-back-btn" id="lf-back-btn"><i class="fas fa-arrow-left"></i> Search Again</button>
       </div>
-      <div class="lf-hint">Tip: mention your strictness level (1-10) and blocker name for best results</div>
+
+      <!-- Limit reached -->
+      <div class="lf-limit" id="lf-limit">
+        <div class="lf-limit-content">
+          <i class="fas fa-clock lf-limit-icon"></i>
+          <h2>Daily Limit Reached</h2>
+          <p>You've used your <strong>3 searches</strong> for today. Come back tomorrow for more links!</p>
+          <p class="lf-limit-reset" id="lf-limit-reset"></p>
+        </div>
+      </div>
     </div>
   </div>
 </div>
