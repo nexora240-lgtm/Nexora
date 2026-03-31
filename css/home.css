@@ -104,7 +104,7 @@ body.view-home #home-bg-visuals {
 /*  Title  */
 
 .home h1 {
-  font-size: clamp(3rem, 5.5vw, 4.5rem);
+  font-size: clamp(2rem, 5.5vw, 4.5rem);
   line-height: 1;
   font-weight: 800;
   margin: 0 0 16px 0;
@@ -578,36 +578,88 @@ html.performance-fast #home-bg-visuals {
 
 /*  Responsive  */
 
-@media (max-width: 1100px) {
-  .home-visuals { width: 32vw; right: 2%; opacity: 0.5; }
+@media (max-width: 1366px) {
+  .home-visuals { width: 34vw; right: 2%; opacity: 0.6; }
   .home-layout { padding: 0 5%; }
-  #home-bg-visuals { left: 68px; }
+  .home-content { max-width: 480px; }
+  .home-desc { font-size: 1rem; max-width: 400px; }
+  #home-bg-visuals { left: 74px; }
+  .sidebar:hover ~ #home-bg-visuals { left: 236px; }
+}
+
+@media (max-width: 1100px) {
+  .home-visuals { width: 30vw; right: 2%; opacity: 0.45; }
+  .home-layout { padding: 0 4%; }
+  .home-content { max-width: 440px; }
+  .home h1 { font-size: clamp(2rem, 4.5vw, 3.2rem); }
+  .home-desc { font-size: 0.95rem; max-width: 380px; margin-bottom: 24px; }
+  .home-cta { padding: 13px 28px; font-size: 0.95rem; }
+  .home-download-btn { padding: 13px 18px; font-size: 0.95rem; }
+  .home-links { gap: 6px; }
+  .home-link { padding: 8px 12px; font-size: 0.78rem; }
+  #home-bg-visuals { left: 64px; }
+  .sidebar:hover ~ #home-bg-visuals { left: 212px; }
+}
+
+@media (max-width: 900px) {
+  .home-visuals { width: 28vw; opacity: 0.35; }
+  .home-content { max-width: 400px; }
+  .home h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+  .home-desc { font-size: 0.9rem; max-width: 360px; margin-bottom: 20px; }
+  .home-cta { padding: 12px 24px; font-size: 0.9rem; border-radius: 12px; }
+  .home-download-btn { padding: 12px 16px; font-size: 0.9rem; border-radius: 12px; }
+  .home-links { flex-wrap: wrap; gap: 6px; }
+  .home-link { padding: 7px 10px; font-size: 0.75rem; }
+  .home-link svg { width: 13px; height: 13px; }
+  .home-social-link { width: 30px; height: 30px; }
+  .home-social-link svg { width: 14px; height: 14px; }
 }
 
 @media (max-width: 768px) {
   .home-layout {
     justify-content: center;
-    padding: 40px 24px;
+    padding: 32px 20px;
   }
   .home-content {
     align-items: center;
     text-align: center;
     max-width: 100%;
   }
-  .home-desc { max-width: 100%; }
-  .home-cta { align-self: center; }
-  .home-links { justify-content: center; }
+  .home h1 { font-size: clamp(1.7rem, 5vw, 2.6rem); }
+  .home-desc { max-width: 100%; font-size: 0.9rem; margin-bottom: 20px; }
+  .home-cta { align-self: center; padding: 12px 24px; }
+  .home-cta-row { justify-content: center; }
+  .home-links { justify-content: center; flex-wrap: wrap; }
   .home-socials { justify-content: center; }
   .home-visuals { display: none; }
   #home-bg-visuals { display: none; }
-  .home h1 { font-size: 2.6rem; }
+}
+
+@media (max-width: 580px) {
+  .home-layout { padding: 24px 16px; }
+  .home h1 { font-size: clamp(1.5rem, 6vw, 2.2rem); }
+  .home-desc { font-size: 0.85rem; line-height: 1.55; margin-bottom: 18px; }
+  .home-cta { padding: 11px 20px; font-size: 0.88rem; border-radius: 10px; }
+  .home-download-btn { padding: 11px 14px; font-size: 0.88rem; border-radius: 10px; }
+  .home-cta-row { gap: 8px; }
+  .home-links { gap: 5px; margin-top: 16px; margin-bottom: 18px; }
+  .home-link { padding: 6px 10px; font-size: 0.72rem; border-radius: 8px; gap: 4px; }
+  .home-link svg { width: 12px; height: 12px; }
+  .home-socials { gap: 6px; }
+  .home-social-link { width: 28px; height: 28px; }
+  .home-social-link svg { width: 13px; height: 13px; }
 }
 
 @media (max-width: 420px) {
-  .home h1 { font-size: 2.1rem; }
-  .home-layout { padding: 24px 16px; }
-  .home-cta { padding: 13px 26px; font-size: 0.95rem; }
-  .home-link { padding: 8px 12px; font-size: 0.78rem; }
+  .home-layout { padding: 20px 12px; }
+  .home h1 { font-size: clamp(1.3rem, 7vw, 1.9rem); }
+  .home-desc { font-size: 0.82rem; line-height: 1.5; margin-bottom: 16px; }
+  .home-cta { padding: 10px 18px; font-size: 0.85rem; }
+  .home-download-btn { padding: 10px 12px; font-size: 0.85rem; }
+  .home-download-btn span { display: none; }
+  .home-cta-row { gap: 6px; }
+  .home-links { gap: 4px; margin-top: 14px; margin-bottom: 14px; }
+  .home-link { padding: 6px 8px; font-size: 0.7rem; }
 }
 
 /*  Light scheme  */

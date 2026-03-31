@@ -683,3 +683,138 @@ body.view-chatroom .main-content {
 .light-scheme #cookie-actions button:focus-visible {
   box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
 }
+
+/* ── Responsive: Small laptops / Chromebooks (≤1366px) ── */
+@media (max-width: 1366px) {
+  .sidebar {
+    width: 58px;
+    top: 8px !important;
+    left: 8px !important;
+    height: calc(100vh - 16px) !important;
+    border-radius: 16px;
+    padding-top: 14px;
+  }
+  .sidebar:hover {
+    width: 220px;
+  }
+  .main-content {
+    left: 74px;
+    padding: 16px;
+  }
+  .sidebar:hover ~ .main-content {
+    left: 236px;
+  }
+  .sidebar-title {
+    height: 60px;
+    min-height: 60px;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .sidebar-title img {
+    width: 32px;
+    height: 32px;
+  }
+  .sidebar a {
+    padding: 10px;
+    margin: 3px 6px;
+    font-size: 14px;
+  }
+  .sidebar a i {
+    width: 22px;
+    height: 22px;
+    font-size: 18px;
+  }
+}
+
+/* ── Responsive: Small screens (≤1024px) ── */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 52px;
+    top: 6px !important;
+    left: 6px !important;
+    height: calc(100vh - 12px) !important;
+    border-radius: 14px;
+    padding-top: 12px;
+  }
+  .sidebar:hover {
+    width: 200px;
+  }
+  .main-content {
+    left: 64px;
+    padding: 12px;
+  }
+  .sidebar:hover ~ .main-content {
+    left: 212px;
+  }
+  .sidebar-title {
+    height: 52px;
+    min-height: 52px;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .sidebar-title img {
+    width: 28px;
+    height: 28px;
+  }
+  .sidebar a {
+    padding: 8px;
+    margin: 2px 5px;
+    font-size: 13px;
+  }
+  .sidebar a i {
+    width: 20px;
+    height: 20px;
+    font-size: 16px;
+  }
+}
+
+/* ── Responsive: Tablets / very small laptops (≤768px) ── */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 48px;
+    top: 4px !important;
+    left: 4px !important;
+    height: calc(100vh - 8px) !important;
+    border-radius: 12px;
+    padding-top: 10px;
+  }
+  .sidebar:hover {
+    width: 180px;
+  }
+  .main-content {
+    left: 56px;
+    padding: 10px;
+  }
+  .sidebar:hover ~ .main-content {
+    left: 188px;
+  }
+  .sidebar-title {
+    height: 44px;
+    min-height: 44px;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .sidebar-title img {
+    width: 24px;
+    height: 24px;
+  }
+  .sidebar a {
+    padding: 7px;
+    margin: 2px 4px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+  .sidebar a i {
+    width: 18px;
+    height: 18px;
+    font-size: 15px;
+  }
+  #cookie-popup {
+    right: 16px;
+    bottom: 16px;
+    max-width: 360px;
+  }
+  .sidebar:hover ~ #cookie-popup {
+    right: 196px;
+  }
+}
