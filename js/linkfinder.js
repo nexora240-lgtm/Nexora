@@ -171,11 +171,6 @@
       `;
       cardsWrap.appendChild(a);
     });
-
-    // If that was the last search, auto-show limit after a delay
-    if (remaining <= 0) {
-      setTimeout(() => showLimitScreen(), 0);
-    }
   }
 
   // ─── Limit screen ─────────────────────────────────────────

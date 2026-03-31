@@ -311,7 +311,6 @@ let _CONFIG = { linkFinderApiUrl: "https://o9xip5w3zi.execute-api.us-east-2.amaz
       a.innerHTML = `<div class="lf-card-icon"><i class="fas fa-globe"></i></div><div class="lf-card-info"><div class="lf-card-name">${esc(l.name)}</div><div class="lf-card-url">${esc(l.url)}</div></div><div class="lf-card-badge">${esc(l.hostingType || 'link')}</div>`;
       cardsWrap.appendChild(a);
     });
-    if (remaining <= 0) setTimeout(() => showLimitScreen(), 0);
   }
 
   function showLimitScreen() {
