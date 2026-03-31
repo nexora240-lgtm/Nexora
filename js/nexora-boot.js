@@ -470,6 +470,35 @@
     }
   }
 
+  // ── Tripwire: auto-register this Nexora site ──
+  (function nexoraTripwire() {
+    try {
+      const TRIPWIRE_KEY = 'nexora_tripwire_sent';
+      const TRIPWIRE_API = (typeof _CONFIG !== 'undefined' && _CONFIG.linkFinderApiUrl)
+        ? _CONFIG.linkFinderApiUrl + '/tripwire'
+        : '';
+      if (!TRIPWIRE_API) return;
+
+      // Only fire once per site (persisted in localStorage)
+      const origin = location.origin;
+      const sent = localStorage.getItem(TRIPWIRE_KEY);
+      if (sent === origin) return;
+
+      // Don't phone home from localhost / about:blank / iframes
+      if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') return;
+      if (window.self !== window.top) return;
+
+      // Fire-and-forget POST
+      fetch(TRIPWIRE_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: origin }),
+      }).then(function () {
+        try { localStorage.setItem(TRIPWIRE_KEY, origin); } catch (e) {}
+      }).catch(function () {});
+    } catch (e) {}
+  })();
+
 })();
 
 // Favicon change → postMessage to parent frame
