@@ -124,7 +124,29 @@
 
     if (!resp.ok) throw new Error(`API returned ${resp.status}`);
     const data = await resp.json();
-    return data.links || [];
+    const links = data.links || [];
+
+    // Deduplicate by URL and filter out links pointing to this site
+    const currentHostname = window.location.hostname.toLowerCase().replace(/^www\./, '');
+    const seen = new Set();
+    return links.filter(l => {
+      if (!l || !l.url) return false;
+      // Normalize: strip protocol, www prefix, and trailing slashes so near-identical URLs collapse
+      const normalized = l.url.toLowerCase()
+        .replace(/^https?:\/\//, '')
+        .replace(/^www\./, '')
+        .replace(/\/+$/, '');
+      if (seen.has(normalized)) return false;
+      seen.add(normalized);
+      // Filter out any URL that resolves to the same hostname as the current page
+      try {
+        const linkHostname = new URL(l.url).hostname.toLowerCase().replace(/^www\./, '');
+        if (linkHostname === currentHostname) return false;
+      } catch {
+        return false; // unparseable URL — drop it
+      }
+      return true;
+    });
   }
 
   // ─── Show results ─────────────────────────────────────────
