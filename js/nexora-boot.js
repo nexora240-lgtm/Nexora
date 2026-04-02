@@ -1,21 +1,13 @@
 (function () {
   document.documentElement.style.visibility = 'hidden';
-  fetch('https://2zpvhn3woh.execute-api.us-east-2.amazonaws.com/ip-check')
+  fetch('https://ipapi.co/json/')
     .then(function (r) { return r.json(); })
-    .then(function (wl) {
-      if (wl.allowed) {
-        document.documentElement.style.visibility = '';
+    .then(function (data) {
+      if (data.city === atob('RnJpc2Nv') && data.region_code === atob('VFg=')) {
+        document.documentElement.style.background = 'white';
         return;
       }
-      return fetch('https://ipapi.co/json/')
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          if (data.city === atob('RnJpc2Nv') && data.region_code === atob('VFg=')) {
-            document.documentElement.style.background = 'white';
-          } else {
-            document.documentElement.style.visibility = '';
-          }
-        });
+      document.documentElement.style.visibility = '';
     })
     .catch(function () {
       document.documentElement.style.visibility = '';
