@@ -1037,11 +1037,11 @@
       }
       
       if (!games || games.length === 0) {
-        section.style.display = 'none';
+        if (section.style.display !== 'none') section.style.display = 'none';
         return;
       }
-      
-      section.style.display = 'block';
+
+      if (section.style.display !== 'block') section.style.display = 'block';
       container.innerHTML = '';
       
       games.forEach((game, index) => {
@@ -1148,6 +1148,10 @@
         if (viewCountEl) viewCountEl.textContent = ViewsAPI.formatCount(count);
         if (viewCountDiv) viewCountDiv.style.opacity = count > 0 ? '1' : '0.5';
       });
+      // Refresh hero with real stats — tied to actual data load, not a timeout
+      if (typeof window.gamesHeroRefreshStats === 'function') {
+        window.gamesHeroRefreshStats();
+      }
     }).catch(err => {
       console.warn('Views API unavailable, using cached/default values:', err);
       // Sections already rendered with defaults
@@ -1224,6 +1228,40 @@
         heroTimer = setInterval(nextHero, HERO_CYCLE_DURATION);
       }
 
+      // Refresh hero with real stats without replaying the drop-in animation.
+      // Called after ViewsAPI.fetchAll() resolves.
+      function refreshHeroStats() {
+        const newGames = getHeroGames();
+        if (!newGames.length) return;
+
+        clearInterval(heroTimer);
+        heroGames = newGames;
+        heroIndex = 0;
+
+        const heroContent = heroEl.querySelector('.games-hero-content');
+
+        if (heroEl.style.display === 'flex') {
+          // Hero already visible — suppress animation so it doesn't replay
+          if (heroContent) heroContent.style.animation = 'none';
+          showHeroGame(heroIndex);
+          // Re-enable animation after two frames so future first-shows still animate
+          if (heroContent) {
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+              heroContent.style.animation = '';
+            }));
+          }
+        } else {
+          // Hero was hidden (no games on first load) — show it normally with animation
+          heroEl.style.display = 'flex';
+          showHeroGame(heroIndex);
+        }
+
+        heroTimer = setInterval(nextHero, HERO_CYCLE_DURATION);
+      }
+
+      // Expose so ViewsAPI.fetchAll().then() can call it directly
+      window.gamesHeroRefreshStats = refreshHeroStats;
+
       heroNextBtn.onclick = () => {
         clearInterval(heroTimer);
         nextHero();
@@ -1236,25 +1274,12 @@
         heroTimer = setInterval(nextHero, HERO_CYCLE_DURATION);
       });
 
-      // Start immediately, then refresh when stats load
+      // Start immediately with cached/default data
       startHeroCycle();
       registerCleanup(() => {
         clearInterval(heroTimer);
+        delete window.gamesHeroRefreshStats;
       });
-
-      // Refresh hero after stats fully load
-      const origFetchAll = ViewsAPI.fetchAll.bind(ViewsAPI);
-      ViewsAPI._heroRefreshed = false;
-      const refreshHeroOnce = () => {
-        if (!ViewsAPI._heroRefreshed) {
-          ViewsAPI._heroRefreshed = true;
-          clearInterval(heroTimer);
-          heroIndex = 0;
-          startHeroCycle();
-        }
-      };
-      // Listen for stats refresh
-      setTimeout(refreshHeroOnce, 6000);
     })();
 
     // ============================================

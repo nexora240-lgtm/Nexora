@@ -56,14 +56,30 @@
         </div>
       </div>
 
-      <!-- Results area -->
+      <!-- Results area — one link at a time -->
       <div class="lf-results" id="lf-results">
-        <div class="lf-results-header">
-          <h2 id="lf-results-title">Your Links</h2>
-          <p class="lf-results-usage" id="lf-results-usage"></p>
+        <div class="lf-single-wrap">
+          <div class="lf-single-top">
+            <div class="lf-single-counter" id="lf-counter"></div>
+            <h2 class="lf-single-title" id="lf-single-title"></h2>
+            <div class="lf-single-badge" id="lf-single-badge"></div>
+          </div>
+
+          <div class="lf-single-mid" id="lf-single-mid">
+            <a class="lf-big-link-btn" id="lf-big-link" href="#" target="_blank" rel="noopener noreferrer">
+              <i class="fas fa-globe"></i>
+              <span>Open Link</span>
+            </a>
+            <div class="lf-single-nav" id="lf-single-nav" style="display:none;">
+              <button class="lf-nav-btn" id="lf-next-btn"><i class="fas fa-forward"></i> Try Another Link</button>
+            </div>
+          </div>
+
+          <div class="lf-single-bottom">
+            <p class="lf-results-usage" id="lf-results-usage"></p>
+            <button class="lf-back-btn" id="lf-back-btn"><i class="fas fa-arrow-left"></i> Search Again</button>
+          </div>
         </div>
-        <div class="lf-link-cards" id="lf-link-cards"></div>
-        <button class="lf-back-btn" id="lf-back-btn"><i class="fas fa-arrow-left"></i> Search Again</button>
       </div>
 
       <!-- Limit reached -->

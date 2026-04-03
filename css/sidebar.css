@@ -692,137 +692,49 @@ body.view-chatroom .main-content {
   box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
 }
 
-/* ── Responsive: Small laptops / Chromebooks (≤1366px) ── */
+/* Responsive sidebar breakpoints removed — sidebar stays at 1920×1080 size on all devices */
+
+/* Scale sidebar down on small screens so it fits like it would at 1920×1080 */
+/* ── Discord button ── */
+.sidebar a[href*="discord"] {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, #5865F2 22%, color-mix(in srgb, var(--sb-surface) 60%, transparent)),
+    color-mix(in srgb, #5865F2 14%, color-mix(in srgb, var(--sb-surface) 50%, transparent)));
+  border-color: color-mix(in srgb, #7289da 30%, transparent);
+  color: #c9d1ff;
+}
+.sidebar a[href*="discord"] i {
+  color: #7289da;
+}
+.sidebar a[href*="discord"]:hover,
+.sidebar a[href*="discord"]:focus {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, #5865F2 38%, color-mix(in srgb, var(--sb-surface) 50%, transparent)),
+    color-mix(in srgb, #5865F2 28%, color-mix(in srgb, var(--sb-surface) 40%, transparent)));
+  border-color: color-mix(in srgb, #7289da 55%, transparent);
+  box-shadow:
+    0 6px 20px color-mix(in srgb, #5865F2 30%, transparent),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: #e0e3ff;
+}
+.sidebar a[href*="discord"]:hover i {
+  color: #c9d1ff;
+}
+
 @media (max-width: 1366px) {
   .sidebar {
-    width: 58px;
-    top: 8px !important;
-    left: 8px !important;
-    height: calc(100vh - 16px) !important;
-    border-radius: 16px;
-    padding-top: 14px;
-  }
-  .sidebar:hover {
-    width: 220px;
+    zoom: 0.8;
+    /* Compensate height/position: zoom shrinks rendered output by 0.8,
+       so multiply internal values by 1/0.8 = 1.25 to restore visual size */
+    top: 15px !important;           /* 15 * 0.8 = 12px visual */
+    left: 15px !important;          /* 15 * 0.8 = 12px visual */
+    height: calc(125vh - 30px) !important; /* (125vh-30px)*0.8 = 100vh-24px visual */
   }
   .main-content {
-    left: 74px;
-    padding: 16px;
+    left: calc(92px * 0.8);
   }
   .sidebar:hover ~ .main-content {
-    left: 236px;
-  }
-  .sidebar-title {
-    height: 60px;
-    min-height: 60px;
-    gap: 10px;
-    margin-bottom: 14px;
-  }
-  .sidebar-title img {
-    width: 32px;
-    height: 32px;
-  }
-  .sidebar a {
-    padding: 10px;
-    margin: 3px 6px;
-    font-size: 14px;
-  }
-  .sidebar a i {
-    width: 22px;
-    height: 22px;
-    font-size: 18px;
-  }
-}
-
-/* ── Responsive: Small screens (≤1024px) ── */
-@media (max-width: 1024px) {
-  .sidebar {
-    width: 52px;
-    top: 6px !important;
-    left: 6px !important;
-    height: calc(100vh - 12px) !important;
-    border-radius: 14px;
-    padding-top: 12px;
-  }
-  .sidebar:hover {
-    width: 200px;
-  }
-  .main-content {
-    left: 64px;
-    padding: 12px;
-  }
-  .sidebar:hover ~ .main-content {
-    left: 212px;
-  }
-  .sidebar-title {
-    height: 52px;
-    min-height: 52px;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-  .sidebar-title img {
-    width: 28px;
-    height: 28px;
-  }
-  .sidebar a {
-    padding: 8px;
-    margin: 2px 5px;
-    font-size: 13px;
-  }
-  .sidebar a i {
-    width: 20px;
-    height: 20px;
-    font-size: 16px;
-  }
-}
-
-/* ── Responsive: Tablets / very small laptops (≤768px) ── */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 48px;
-    top: 4px !important;
-    left: 4px !important;
-    height: calc(100vh - 8px) !important;
-    border-radius: 12px;
-    padding-top: 10px;
-  }
-  .sidebar:hover {
-    width: 180px;
-  }
-  .main-content {
-    left: 56px;
-    padding: 10px;
-  }
-  .sidebar:hover ~ .main-content {
-    left: 188px;
-  }
-  .sidebar-title {
-    height: 44px;
-    min-height: 44px;
-    gap: 6px;
-    margin-bottom: 8px;
-  }
-  .sidebar-title img {
-    width: 24px;
-    height: 24px;
-  }
-  .sidebar a {
-    padding: 7px;
-    margin: 2px 4px;
-    font-size: 12px;
-    border-radius: 8px;
-  }
-  .sidebar a i {
-    width: 18px;
-    height: 18px;
-    font-size: 15px;
-  }
-  #cookie-popup {
-    right: 16px;
-    bottom: 16px;
-    max-width: 360px;
-  }
-  .sidebar:hover ~ #cookie-popup {
-    right: 196px;
+    left: calc(274px * 0.8);
   }
 }

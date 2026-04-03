@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Link Finder — Standalone</title>
+  <title>Link Finder — Nexora</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
-/* Theme Tokens */
+/* ── Theme tokens (inline) ── */
 :root {
   --page-bg: #ffffff; --surface: #f7f7f8; --surface-2: #efefef;
   --primary: #d4550a; --primary-deep: #992f05; --primary-shadow: rgba(212,85,10,0.5);
@@ -32,13 +32,21 @@
   --focus-color: rgba(179,136,255,0.16);
 }
 html, body { margin: 0; padding: 0; height: 100%; background: var(--page-bg); color: var(--text); font-family: 'Poppins', Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
-:focus { outline: none; box-shadow: 0 0 0 var(--focus-ring) var(--focus-color); border-radius: calc(var(--radius) - 2px); }
 
-/* Link Finder v2 */
+/* ═══════════════════════════════════════════════════════════════
+   Nexora Link Finder — Neumorphic + Glassmorphic UI
+   ═══════════════════════════════════════════════════════════════ */
+
 .lf {
-  --lf-panel: var(--surface, #1a100d); --lf-accent: var(--primary, #d4550a);
-  --lf-accent-deep: var(--primary-deep, #992f05); --lf-accent-shadow: var(--primary-shadow, rgba(212,85,10,0.5));
-  --lf-text: var(--text, #f8e7e0); --lf-muted: var(--muted, #c9a08a); --lf-on-accent: var(--on-primary, #fff0e8);
+  --lf-panel: var(--surface, #1a100d);
+  --lf-panel-2: var(--surface-2, #1f1410);
+  --lf-accent: var(--primary, #d4550a);
+  --lf-accent-deep: var(--primary-deep, #992f05);
+  --lf-accent-shadow: var(--primary-shadow, rgba(212,85,10,0.5));
+  --lf-text: var(--text, #f8e7e0);
+  --lf-muted: var(--muted, #c9a08a);
+  --lf-on-accent: var(--on-primary, #fff0e8);
+  --lf-radius: var(--radius, 10px);
   --lf-glass: color-mix(in srgb, var(--lf-panel) 45%, transparent);
   --lf-glass-border: color-mix(in srgb, var(--lf-muted) 18%, transparent);
   --lf-glass-blur: 18px;
@@ -49,9 +57,11 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--page-bg); co
   display: flex; flex-direction: column; background: transparent;
 }
 .lf *, .lf *::before, .lf *::after { box-sizing: inherit; }
+
 .lf-app { display: flex; flex-direction: column; height: 100%; }
 .lf-content { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; }
 
+/* ── Selector ── */
 .lf-selector { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 5; overflow-y: auto; }
 .lf-selector.hidden { display: none; }
 .lf-selector-content {
@@ -66,6 +76,8 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--page-bg); co
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
 }
 .lf-selector-content > p { margin: 0 0 28px; font-size: 14px; color: var(--lf-muted); }
+
+/* Chips */
 .lf-blocker-chips { margin-bottom: 24px; }
 .lf-quick-label { font-size: 13px; font-weight: 600; color: var(--lf-muted); margin: 0 0 10px; }
 .lf-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
@@ -81,6 +93,8 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--page-bg); co
   border-color: var(--lf-accent); color: var(--lf-accent);
   box-shadow: inset 2px 2px 4px color-mix(in srgb, var(--lf-panel) 50%, transparent), 0 0 12px color-mix(in srgb, var(--lf-accent) 15%, transparent);
 }
+
+/* Go button */
 .lf-go-btn {
   padding: 12px 32px; border: 1px solid color-mix(in srgb, var(--lf-text) 10%, transparent); border-radius: 14px;
   background: linear-gradient(135deg, var(--lf-accent), var(--lf-accent-deep));
@@ -90,52 +104,76 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--page-bg); co
 .lf-go-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .lf-go-btn:not(:disabled):hover { transform: translateY(-2px); }
 
-.lf-results { display: none; flex-direction: column; padding: 24px 20px; overflow-y: auto; flex: 1; animation: lf-fadeIn 0.4s ease; }
+/* ── Results — single link at a time ── */
+.lf-results { display: none; flex-direction: column; flex: 1; animation: lf-fadeIn 0.4s ease; }
 .lf-results.visible { display: flex; }
-.lf-results-header { text-align: center; margin-bottom: 20px; }
-.lf-results-header h2 {
-  margin: 0 0 6px; font-size: 22px; font-weight: 800;
+
+.lf-single-wrap {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: space-between;
+  padding: 36px 24px 28px; text-align: center;
+}
+
+.lf-single-top { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 480px; }
+.lf-single-counter { font-size: 12px; font-weight: 700; color: var(--lf-muted); letter-spacing: 0.4px; min-height: 18px; }
+.lf-single-title {
+  margin: 0; font-size: clamp(22px, 5vw, 30px); font-weight: 800; line-height: 1.2;
   background: linear-gradient(90deg, var(--lf-accent), var(--lf-accent-deep));
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
 }
-.lf-results-usage { margin: 0; font-size: 13px; color: var(--lf-muted); }
-
-.lf-link-cards { display: flex; flex-direction: column; gap: 10px; max-width: 560px; margin: 0 auto; width: 100%; }
-.lf-link-card {
-  display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-  background: var(--lf-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--lf-glass-border); border-radius: 14px; transition: all 0.25s ease;
-  text-decoration: none; color: inherit;
-  box-shadow: 3px 3px 10px var(--lf-neu-dark), -2px -2px 6px var(--lf-neu-light);
-  animation: lf-slideUp 0.4s ease backwards;
-}
-.lf-link-card:hover { border-color: color-mix(in srgb, var(--lf-muted) 30%, transparent); transform: translateX(4px); }
-.lf-link-card .lf-card-icon {
-  width: 36px; height: 36px; border-radius: 10px;
-  background: color-mix(in srgb, var(--lf-accent) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--lf-text) 5%, transparent);
-  display: flex; align-items: center; justify-content: center; color: var(--lf-accent); font-size: 14px; flex-shrink: 0;
-}
-.lf-link-card .lf-card-info { flex: 1; min-width: 0; }
-.lf-link-card .lf-card-name { font-weight: 700; font-size: 13px; color: var(--lf-text); }
-.lf-link-card .lf-card-url { font-size: 11px; color: var(--lf-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lf-link-card .lf-card-badge {
-  padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+.lf-single-badge {
+  display: inline-block; padding: 4px 12px; border-radius: 10px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
   background: color-mix(in srgb, var(--lf-accent) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--lf-text) 5%, transparent); color: var(--lf-accent); flex-shrink: 0;
+  border: 1px solid color-mix(in srgb, var(--lf-text) 5%, transparent); color: var(--lf-accent);
 }
-.lf-empty {
-  text-align: center; padding: 24px; color: var(--lf-muted); font-size: 14px;
-  background: var(--lf-glass); backdrop-filter: blur(var(--lf-glass-blur)); -webkit-backdrop-filter: blur(var(--lf-glass-blur));
-  border: 1px solid var(--lf-glass-border); border-radius: 14px;
-}
-.lf-back-btn {
-  margin: 20px auto 0; padding: 10px 24px; border: 1px solid var(--lf-glass-border); border-radius: 12px;
-  background: var(--lf-glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  color: var(--lf-muted); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s ease;
-}
-.lf-back-btn:hover { color: var(--lf-accent); }
 
+.lf-single-mid { display: flex; flex-direction: column; align-items: center; gap: 18px; width: 100%; max-width: 480px; }
+
+.lf-big-link-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  width: 100%; padding: 44px 28px;
+  background: linear-gradient(135deg, var(--lf-accent), var(--lf-accent-deep));
+  color: var(--lf-on-accent); border-radius: 24px; text-decoration: none;
+  font-size: 20px; font-weight: 700;
+  box-shadow: 0 8px 32px var(--lf-accent-shadow), 5px 5px 14px var(--lf-neu-dark);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: lf-fadeIn 0.35s ease;
+}
+.lf-big-link-btn i { font-size: 38px; }
+.lf-big-link-btn:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 16px 48px var(--lf-accent-shadow), 5px 5px 14px var(--lf-neu-dark);
+}
+
+.lf-single-nav { display: flex; gap: 10px; }
+.lf-nav-btn {
+  padding: 9px 22px; border: 1px solid var(--lf-glass-border); border-radius: 12px;
+  background: var(--lf-glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  color: var(--lf-muted); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+  box-shadow: 3px 3px 8px var(--lf-neu-dark), -2px -2px 6px var(--lf-neu-light);
+}
+.lf-nav-btn:hover:not(:disabled) { color: var(--lf-accent); border-color: color-mix(in srgb, var(--lf-accent) 30%, transparent); }
+.lf-nav-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+
+.lf-single-bottom { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 480px; }
+.lf-results-usage { margin: 0; font-size: 13px; color: var(--lf-muted); }
+.lf-back-btn {
+  width: 100%; padding: 12px 28px; border: 1px solid var(--lf-glass-border); border-radius: 14px;
+  background: var(--lf-glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  color: var(--lf-muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.25s ease;
+  box-shadow: 3px 3px 8px var(--lf-neu-dark), -2px -2px 6px var(--lf-neu-light);
+}
+.lf-back-btn:hover { color: var(--lf-accent); border-color: color-mix(in srgb, var(--lf-accent) 30%, transparent); }
+
+.lf-empty {
+  text-align: center; padding: 32px 20px; color: var(--lf-muted); font-size: 14px; line-height: 1.7;
+  background: var(--lf-glass); backdrop-filter: blur(var(--lf-glass-blur)); -webkit-backdrop-filter: blur(var(--lf-glass-blur));
+  border: 1px solid var(--lf-glass-border); border-radius: 18px; width: 100%; max-width: 480px;
+}
+.lf-empty i { display: block; font-size: 32px; margin-bottom: 12px; opacity: 0.4; }
+
+/* ── Limit screen ── */
 .lf-limit { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; padding: 20px; z-index: 6; }
 .lf-limit.visible { display: flex; }
 .lf-limit-content {
@@ -150,12 +188,13 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--page-bg); co
 .lf-limit-content strong { color: var(--lf-accent); }
 .lf-limit-reset { font-size: 13px; font-weight: 600; color: #fbbf24; margin-top: 12px; }
 
+/* ── Animations ── */
 @keyframes lf-fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes lf-slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
+/* ── Responsive ── */
 @media (max-width: 640px) {
   .lf-selector-content h1 { font-size: 24px; }
-  .lf-results { padding: 16px 12px; }
 }
   </style>
 </head>
@@ -164,6 +203,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--page-bg); co
 <div class="lf">
   <div class="lf-app">
     <div class="lf-content">
+      <!-- Selector screen -->
       <div class="lf-selector" id="lf-selector">
         <div class="lf-selector-content">
           <h1>Link Finder</h1>
@@ -192,19 +232,37 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--page-bg); co
               <button class="lf-chip" data-blocker="dns filter">DNS Filter</button>
             </div>
           </div>
-          <button class="lf-go-btn" id="lf-go-btn" disabled><i class="fas fa-search"></i> Find Links</button>
+          <button class="lf-go-btn" id="lf-go-btn" disabled>
+            <i class="fas fa-search"></i> Find Links
+          </button>
         </div>
       </div>
 
+      <!-- Results — one link at a time -->
       <div class="lf-results" id="lf-results">
-        <div class="lf-results-header">
-          <h2 id="lf-results-title">Your Links</h2>
-          <p class="lf-results-usage" id="lf-results-usage"></p>
+        <div class="lf-single-wrap">
+          <div class="lf-single-top">
+            <div class="lf-single-counter" id="lf-counter"></div>
+            <h2 class="lf-single-title" id="lf-single-title"></h2>
+            <div class="lf-single-badge" id="lf-single-badge"></div>
+          </div>
+          <div class="lf-single-mid" id="lf-single-mid">
+            <a class="lf-big-link-btn" id="lf-big-link" href="#" target="_blank" rel="noopener noreferrer">
+              <i class="fas fa-globe"></i>
+              <span>Open Link</span>
+            </a>
+            <div class="lf-single-nav" id="lf-single-nav" style="display:none;">
+              <button class="lf-nav-btn" id="lf-next-btn"><i class="fas fa-forward"></i> Try Another Link</button>
+            </div>
+          </div>
+          <div class="lf-single-bottom">
+            <p class="lf-results-usage" id="lf-results-usage"></p>
+            <button class="lf-back-btn" id="lf-back-btn"><i class="fas fa-arrow-left"></i> Search Again</button>
+          </div>
         </div>
-        <div class="lf-link-cards" id="lf-link-cards"></div>
-        <button class="lf-back-btn" id="lf-back-btn"><i class="fas fa-arrow-left"></i> Search Again</button>
       </div>
 
+      <!-- Limit reached -->
       <div class="lf-limit" id="lf-limit">
         <div class="lf-limit-content">
           <i class="fas fa-clock lf-limit-icon"></i>
@@ -218,19 +276,44 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--page-bg); co
 </div>
 
 <script>
-let _CONFIG = { linkFinderApiUrl: "https://o9xip5w3zi.execute-api.us-east-2.amazonaws.com" };
+/* ── Config (inline) ── */
+var _CONFIG = {
+  linkFinderApiUrl: "https://o9xip5w3zi.execute-api.us-east-2.amazonaws.com"
+};
 
+/* ══════════════════════════════════════════════════════════════
+   Nexora Link Finder — One link at a time, each costs a point
+   ══════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
 
   const API_URL = _CONFIG.linkFinderApiUrl;
   const DAILY_LIMIT = 3;
   const STORAGE_KEY = 'lf-daily';
+  const SHOWN_KEY = 'lf-shown-domains';
+
+  // ─── Shown-domains tracking ───────────────────────────────
+
+  function getShownDomains() {
+    try {
+      const raw = JSON.parse(sessionStorage.getItem(SHOWN_KEY) || '[]');
+      return Array.isArray(raw) ? raw : [];
+    } catch { return []; }
+  }
+
+  function addShownDomains(domains) {
+    const existing = new Set(getShownDomains());
+    domains.forEach(d => existing.add(d));
+    sessionStorage.setItem(SHOWN_KEY, JSON.stringify([...existing]));
+  }
+
+  // ─── Daily usage tracking ─────────────────────────────────
 
   function getTodayKey() {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
+
   function getUsage() {
     try {
       const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -238,26 +321,60 @@ let _CONFIG = { linkFinderApiUrl: "https://o9xip5w3zi.execute-api.us-east-2.amaz
       return raw;
     } catch { return { date: getTodayKey(), count: 0 }; }
   }
-  function saveUsage(u) { localStorage.setItem(STORAGE_KEY, JSON.stringify(u)); }
+
+  function saveUsage(usage) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(usage));
+  }
+
+  // ─── State ─────────────────────────────────────────────────
 
   let userContext = { blockers: [] };
   let isSearching = false;
+  let currentBlockers = [];
 
-  const selector  = document.getElementById('lf-selector');
-  const results   = document.getElementById('lf-results');
-  const limitView = document.getElementById('lf-limit');
-  const goBtn     = document.getElementById('lf-go-btn');
-  const chipWrap  = document.getElementById('lf-blocker-chips');
-  const cardsWrap = document.getElementById('lf-link-cards');
-  const usageEl   = document.getElementById('lf-results-usage');
-  const backBtn   = document.getElementById('lf-back-btn');
-  const resetEl   = document.getElementById('lf-limit-reset');
+  // ─── DOM refs ──────────────────────────────────────────────
+
+  const selector   = document.getElementById('lf-selector');
+  const results    = document.getElementById('lf-results');
+  const limitView  = document.getElementById('lf-limit');
+  const goBtn      = document.getElementById('lf-go-btn');
+  const chipWrap   = document.getElementById('lf-blocker-chips');
+  const usageEl    = document.getElementById('lf-results-usage');
+  const backBtn    = document.getElementById('lf-back-btn');
+  const resetEl    = document.getElementById('lf-limit-reset');
+  const singleMid  = document.getElementById('lf-single-mid');
+  const titleEl    = document.getElementById('lf-single-title');
+  const badgeEl    = document.getElementById('lf-single-badge');
+  const counterEl  = document.getElementById('lf-counter');
+  const bigLink    = document.getElementById('lf-big-link');
+  const nextBtn    = document.getElementById('lf-next-btn');
+  const navBar     = document.getElementById('lf-single-nav');
+
+  // ─── Render one link ──────────────────────────────────────
+
+  function renderLink(link) {
+    titleEl.textContent = link.name || 'Link';
+    badgeEl.textContent = link.hostingType || 'link';
+    bigLink.href = link.url;
+    bigLink.style.animation = 'none';
+    void bigLink.offsetWidth;
+    bigLink.style.animation = '';
+  }
+
+  // ─── Limit check ──────────────────────────────────────────
 
   function checkLimit() {
     const usage = getUsage();
     if (usage.count >= DAILY_LIMIT) { showLimitScreen(); return true; }
     return false;
   }
+
+  // Clear stale shown domains on new day
+  (function () {
+    try { if (getUsage().count === 0) sessionStorage.removeItem(SHOWN_KEY); } catch {}
+  })();
+
+  // ─── Blocker chips ────────────────────────────────────────
 
   chipWrap.addEventListener('click', (e) => {
     const chip = e.target.closest('.lf-chip'); if (!chip) return;
@@ -269,58 +386,176 @@ let _CONFIG = { linkFinderApiUrl: "https://o9xip5w3zi.execute-api.us-east-2.amaz
     goBtn.disabled = userContext.blockers.length === 0;
   });
 
+  // ─── Find Links button ────────────────────────────────────
+
   goBtn.addEventListener('click', async () => {
     if (!userContext.blockers.length || isSearching) return;
     if (checkLimit()) return;
-    isSearching = true; goBtn.disabled = true;
+
+    isSearching = true;
+    goBtn.disabled = true;
     goBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+
     try {
-      const links = await searchLinks(userContext.blockers);
-      const usage = getUsage(); usage.count++; saveUsage(usage);
-      showResults(links, usage.count);
-    } catch (err) { console.error(err); showResults([], getUsage().count, true); }
-    isSearching = false; goBtn.disabled = false;
+      currentBlockers = [...userContext.blockers];
+      sessionStorage.removeItem(SHOWN_KEY);
+      const link = await searchOneLink(currentBlockers);
+
+      const usage = getUsage();
+      usage.count++;
+      saveUsage(usage);
+
+      showResult(link, usage.count);
+    } catch (err) {
+      console.error('Link Finder error:', err);
+      showResult(null, getUsage().count, true);
+    }
+
+    isSearching = false;
+    goBtn.disabled = false;
     goBtn.innerHTML = '<i class="fas fa-search"></i> Find Links';
   });
 
+  // ─── Back button ──────────────────────────────────────────
+
   backBtn.addEventListener('click', () => {
     if (checkLimit()) return;
-    results.classList.remove('visible'); selector.classList.remove('hidden');
+    results.classList.remove('visible');
+    selector.classList.remove('hidden');
   });
 
-  async function searchLinks(blockers) {
+  // ─── Next button — costs 1 search point ───────────────────
+
+  nextBtn.addEventListener('click', async () => {
+    if (isSearching) return;
+    if (checkLimit()) return;
+
+    isSearching = true;
+    nextBtn.disabled = true;
+    nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finding...';
+
+    try {
+      const link = await searchOneLink(currentBlockers);
+
+      const usage = getUsage();
+      usage.count++;
+      saveUsage(usage);
+
+      const remaining = DAILY_LIMIT - usage.count;
+      usageEl.textContent = remaining > 0
+        ? `${remaining} search${remaining !== 1 ? 'es' : ''} remaining today`
+        : 'No searches remaining today';
+      counterEl.textContent = '';
+      backBtn.style.display = remaining > 0 ? '' : 'none';
+      navBar.style.display = remaining > 0 ? 'flex' : 'none';
+
+      if (!link) {
+        showError('No more new links found. Try a different blocker.');
+      } else {
+        hideError();
+        bigLink.style.display = '';
+        renderLink(link);
+      }
+    } catch (err) {
+      console.error('Next link error:', err);
+      showError('Something went wrong. Please try again.');
+    }
+
+    isSearching = false;
+    nextBtn.disabled = false;
+    nextBtn.innerHTML = '<i class="fas fa-forward"></i> Try Another Link';
+  });
+
+  // ─── API — fetch exactly one link ─────────────────────────
+
+  async function searchOneLink(blockers) {
+    if (!API_URL) throw new Error('API not configured');
+
+    const currentHostname = window.location.hostname.toLowerCase().replace(/^www\./, '');
+    const shownDomains = getShownDomains();
+    const excludeDomains = [...new Set([currentHostname, ...shownDomains].filter(Boolean))];
+
     const resp = await fetch(`${API_URL}/search`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ blockers }),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ blockers, excludeDomains }),
     });
-    if (!resp.ok) throw new Error(`API ${resp.status}`);
-    return (await resp.json()).links || [];
+
+    if (!resp.ok) throw new Error(`API returned ${resp.status}`);
+    const data = await resp.json();
+    const links = data.links || [];
+
+    const seen = new Set(shownDomains.map(d => d.toLowerCase()));
+    seen.add(currentHostname);
+
+    for (const l of links) {
+      if (!l || !l.url) continue;
+      let host;
+      try { host = new URL(l.url).hostname.toLowerCase().replace(/^www\./, ''); } catch { continue; }
+      if (seen.has(host)) continue;
+      addShownDomains([host]);
+      return l;
+    }
+
+    return null;
   }
 
-  function showResults(links, usedCount, error) {
-    selector.classList.add('hidden'); limitView.classList.remove('visible'); results.classList.add('visible');
+  // ─── Show result ──────────────────────────────────────────
+
+  function showResult(link, usedCount, error) {
+    selector.classList.add('hidden');
+    limitView.classList.remove('visible');
+    results.classList.add('visible');
+
     const remaining = DAILY_LIMIT - usedCount;
-    usageEl.textContent = remaining > 0 ? `${remaining} search${remaining !== 1 ? 'es' : ''} remaining today` : 'No searches remaining today';
+    usageEl.textContent = remaining > 0
+      ? `${remaining} search${remaining !== 1 ? 'es' : ''} remaining today`
+      : 'No searches remaining today';
     backBtn.style.display = remaining > 0 ? '' : 'none';
-    cardsWrap.innerHTML = '';
-    if (error) { cardsWrap.innerHTML = '<div class="lf-empty">Something went wrong. Please try again later.</div>'; return; }
-    if (links.length === 0) { cardsWrap.innerHTML = '<div class="lf-empty">No links found for your blocker. Try selecting a different one.</div>'; return; }
-    links.forEach(l => {
-      const a = document.createElement('a'); a.className = 'lf-link-card';
-      a.href = l.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-      a.innerHTML = `<div class="lf-card-icon"><i class="fas fa-globe"></i></div><div class="lf-card-info"><div class="lf-card-name">${esc(l.name)}</div><div class="lf-card-url">${esc(l.url)}</div></div><div class="lf-card-badge">${esc(l.hostingType || 'link')}</div>`;
-      cardsWrap.appendChild(a);
-    });
+    counterEl.textContent = '';
+
+    if (error || !link) {
+      bigLink.style.display = 'none';
+      navBar.style.display = 'none';
+      showError(error
+        ? 'Something went wrong. Please try again later.'
+        : 'No links found for your blocker. Try selecting a different one.');
+      return;
+    }
+
+    hideError();
+    bigLink.style.display = '';
+    navBar.style.display = remaining > 0 ? 'flex' : 'none';
+    renderLink(link);
   }
+
+  function showError(msg) {
+    let errEl = singleMid.querySelector('.lf-empty');
+    if (!errEl) {
+      errEl = document.createElement('div');
+      errEl.className = 'lf-empty';
+      singleMid.insertBefore(errEl, bigLink);
+    }
+    errEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i>' + msg;
+    errEl.style.display = '';
+  }
+
+  function hideError() {
+    const errEl = singleMid.querySelector('.lf-empty');
+    if (errEl) errEl.style.display = 'none';
+  }
+
+  // ─── Limit screen ─────────────────────────────────────────
 
   function showLimitScreen() {
-    selector.classList.add('hidden'); results.classList.remove('visible'); limitView.classList.add('visible');
-    const now = new Date(); const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    selector.classList.add('hidden');
+    results.classList.remove('visible');
+    limitView.classList.add('visible');
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     const msLeft = tomorrow - now;
     resetEl.textContent = `Resets in ${Math.floor(msLeft / 3600000)}h ${Math.floor((msLeft % 3600000) / 60000)}m`;
   }
-
-  function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
 
   checkLimit();
   window.NexoraLinkFinder = { version: '2.0.0' };

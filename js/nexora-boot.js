@@ -1,20 +1,4 @@
 (function () {
-  document.documentElement.style.visibility = 'hidden';
-  fetch('https://ipapi.co/json/')
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      if (data.city === atob('RnJpc2Nv') && data.region_code === atob('VFg=')) {
-        document.documentElement.style.background = 'white';
-        return;
-      }
-      document.documentElement.style.visibility = '';
-    })
-    .catch(function () {
-      document.documentElement.style.visibility = '';
-    });
-})();
-
-(function () {
   const COOKIE_NAME = 'nexora_disguise';
   const COOKIE_FAV = 'nexora_favicon';
   const THEME_KEY = 'settings.theme';

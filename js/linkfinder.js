@@ -11,6 +11,22 @@
 
   const DAILY_LIMIT = 3;
   const STORAGE_KEY = 'lf-daily';
+  const SHOWN_KEY = 'lf-shown-domains';
+
+  // ─── Shown-domains tracking (prevents repeats) ────────────
+
+  function getShownDomains() {
+    try {
+      const raw = JSON.parse(sessionStorage.getItem(SHOWN_KEY) || '[]');
+      return Array.isArray(raw) ? raw : [];
+    } catch { return []; }
+  }
+
+  function addShownDomains(domains) {
+    const existing = new Set(getShownDomains());
+    domains.forEach(d => existing.add(d));
+    sessionStorage.setItem(SHOWN_KEY, JSON.stringify([...existing]));
+  }
 
   // ─── Daily usage tracking ─────────────────────────────────
 
@@ -35,6 +51,7 @@
 
   let userContext = { blockers: [] };
   let isSearching = false;
+  let currentBlockers = []; // remembered for Next calls
 
   // ─── DOM refs ──────────────────────────────────────────────
 
@@ -43,10 +60,28 @@
   const limitView  = document.getElementById('lf-limit');
   const goBtn      = document.getElementById('lf-go-btn');
   const chipWrap   = document.getElementById('lf-blocker-chips');
-  const cardsWrap  = document.getElementById('lf-link-cards');
   const usageEl    = document.getElementById('lf-results-usage');
   const backBtn    = document.getElementById('lf-back-btn');
   const resetEl    = document.getElementById('lf-limit-reset');
+  const singleMid  = document.getElementById('lf-single-mid');
+  const titleEl    = document.getElementById('lf-single-title');
+  const badgeEl    = document.getElementById('lf-single-badge');
+  const counterEl  = document.getElementById('lf-counter');
+  const bigLink    = document.getElementById('lf-big-link');
+  const nextBtn    = document.getElementById('lf-next-btn');
+  const navBar     = document.getElementById('lf-single-nav');
+
+  // ─── Render a single link object ──────────────────────────
+
+  function renderLink(link) {
+    titleEl.textContent = link.name || 'Link';
+    badgeEl.textContent = link.hostingType || 'link';
+    bigLink.href = link.url;
+    // Replay fade animation so each link feels fresh
+    bigLink.style.animation = 'none';
+    void bigLink.offsetWidth;
+    bigLink.style.animation = '';
+  }
 
   // ─── Init: check daily limit on load ──────────────────────
 
@@ -58,6 +93,15 @@
     }
     return false;
   }
+
+  // ─── Reset shown domains on new session ───────────────────
+  // Clear when daily usage resets (new day)
+  (function cleanStaleShown() {
+    try {
+      const usage = getUsage();
+      if (usage.count === 0) sessionStorage.removeItem(SHOWN_KEY);
+    } catch {}
+  })();
 
   // ─── Blocker chips ────────────────────────────────────────
 
@@ -85,17 +129,19 @@
     goBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
 
     try {
-      const links = await searchLinks(userContext.blockers);
+      currentBlockers = [...userContext.blockers];
+      // Clear shown domains so a fresh "Find Links" always works
+      sessionStorage.removeItem(SHOWN_KEY);
+      const link = await searchOneLink(currentBlockers);
 
-      // Increment usage
       const usage = getUsage();
       usage.count++;
       saveUsage(usage);
 
-      showResults(links, usage.count);
+      showResult(link, usage.count);
     } catch (err) {
       console.error('Link Finder error:', err);
-      showResults([], getUsage().count, true);
+      showResult(null, getUsage().count, true);
     }
 
     isSearching = false;
@@ -111,47 +157,88 @@
     selector.classList.remove('hidden');
   });
 
-  // ─── API call ─────────────────────────────────────────────
+  // ─── Next button — costs 1 search point ───────────────────
 
-  async function searchLinks(blockers) {
+  nextBtn.addEventListener('click', async () => {
+    if (isSearching) return;
+    if (checkLimit()) return;
+
+    isSearching = true;
+    nextBtn.disabled = true;
+    nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finding...';
+
+    try {
+      const link = await searchOneLink(currentBlockers);
+
+      const usage = getUsage();
+      usage.count++;
+      saveUsage(usage);
+
+      // Update usage text and show/hide next based on remaining
+      const remaining = DAILY_LIMIT - usage.count;
+      usageEl.textContent = remaining > 0
+        ? `${remaining} search${remaining !== 1 ? 'es' : ''} remaining today`
+        : 'No searches remaining today';
+      counterEl.textContent = '';
+      backBtn.style.display = remaining > 0 ? '' : 'none';
+      navBar.style.display = remaining > 0 ? 'flex' : 'none';
+
+      if (!link) {
+        showError('No more new links found. Try a different blocker.');
+      } else {
+        hideError();
+        bigLink.style.display = '';
+        renderLink(link);
+      }
+    } catch (err) {
+      console.error('Next link error:', err);
+      showError('Something went wrong. Please try again.');
+    }
+
+    isSearching = false;
+    nextBtn.disabled = false;
+    nextBtn.innerHTML = '<i class="fas fa-forward"></i> Try Another Link';
+  });
+
+  // ─── API call — fetch exactly one link ───────────────────
+
+  async function searchOneLink(blockers) {
     if (!API_URL) throw new Error('API not configured');
+
+    const currentHostname = window.location.hostname.toLowerCase().replace(/^www\./, '');
+    const shownDomains = getShownDomains();
+    const excludeDomains = [...new Set([currentHostname, ...shownDomains].filter(Boolean))];
 
     const resp = await fetch(`${API_URL}/search`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ blockers }),
+      body: JSON.stringify({ blockers, excludeDomains }),
     });
 
     if (!resp.ok) throw new Error(`API returned ${resp.status}`);
     const data = await resp.json();
     const links = data.links || [];
 
-    // Deduplicate by URL and filter out links pointing to this site
-    const currentHostname = window.location.hostname.toLowerCase().replace(/^www\./, '');
-    const seen = new Set();
-    return links.filter(l => {
-      if (!l || !l.url) return false;
-      // Normalize: strip protocol, www prefix, and trailing slashes so near-identical URLs collapse
-      const normalized = l.url.toLowerCase()
-        .replace(/^https?:\/\//, '')
-        .replace(/^www\./, '')
-        .replace(/\/+$/, '');
-      if (seen.has(normalized)) return false;
-      seen.add(normalized);
-      // Filter out any URL that resolves to the same hostname as the current page
-      try {
-        const linkHostname = new URL(l.url).hostname.toLowerCase().replace(/^www\./, '');
-        if (linkHostname === currentHostname) return false;
-      } catch {
-        return false; // unparseable URL — drop it
-      }
-      return true;
-    });
+    // Pick the first link not already shown
+    const seen = new Set(shownDomains.map(d => d.toLowerCase()));
+    seen.add(currentHostname);
+
+    for (const l of links) {
+      if (!l || !l.url) continue;
+      let host;
+      try { host = new URL(l.url).hostname.toLowerCase().replace(/^www\./, ''); } catch { continue; }
+      if (seen.has(host)) continue;
+      // Mark as shown immediately
+      addShownDomains([host]);
+      return l;
+    }
+
+    return null; // nothing new
   }
 
-  // ─── Show results ─────────────────────────────────────────
+  // ─── Show initial result ───────────────────────────────────
 
-  function showResults(links, usedCount, error) {
+  function showResult(link, usedCount, error) {
     selector.classList.add('hidden');
     limitView.classList.remove('visible');
     results.classList.add('visible');
@@ -160,39 +247,38 @@
     usageEl.textContent = remaining > 0
       ? `${remaining} search${remaining !== 1 ? 'es' : ''} remaining today`
       : 'No searches remaining today';
-
-    // Hide back button if no searches left
     backBtn.style.display = remaining > 0 ? '' : 'none';
+    counterEl.textContent = '';
 
-    cardsWrap.innerHTML = '';
-
-    if (error) {
-      cardsWrap.innerHTML = '<div class="lf-empty">Something went wrong. Please try again later.</div>';
+    if (error || !link) {
+      bigLink.style.display = 'none';
+      navBar.style.display = 'none';
+      showError(error
+        ? 'Something went wrong. Please try again later.'
+        : 'No links found for your blocker. Try selecting a different one.');
       return;
     }
 
-    if (links.length === 0) {
-      cardsWrap.innerHTML = '<div class="lf-empty">No links found for your blocker. Try selecting a different one.</div>';
-      return;
+    hideError();
+    bigLink.style.display = '';
+    navBar.style.display = remaining > 0 ? 'flex' : 'none';
+    renderLink(link);
+  }
+
+  function showError(msg) {
+    let errEl = singleMid.querySelector('.lf-empty');
+    if (!errEl) {
+      errEl = document.createElement('div');
+      errEl.className = 'lf-empty';
+      singleMid.insertBefore(errEl, bigLink);
     }
+    errEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i>${msg}`;
+    errEl.style.display = '';
+  }
 
-    links.forEach(l => {
-      const a = document.createElement('a');
-      a.className = 'lf-link-card';
-      a.href = l.url;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-
-      a.innerHTML = `
-        <div class="lf-card-icon"><i class="fas fa-globe"></i></div>
-        <div class="lf-card-info">
-          <div class="lf-card-name">${esc(l.name)}</div>
-          <div class="lf-card-url">${esc(l.url)}</div>
-        </div>
-        <div class="lf-card-badge">${esc(l.hostingType || 'link')}</div>
-      `;
-      cardsWrap.appendChild(a);
-    });
+  function hideError() {
+    const errEl = singleMid.querySelector('.lf-empty');
+    if (errEl) errEl.style.display = 'none';
   }
 
   // ─── Limit screen ─────────────────────────────────────────
