@@ -378,20 +378,20 @@
   // Performance preset configurations
   const PERFORMANCE_PRESETS = {
     fast: {
-      particles: false,
-      mouseTracking: false,
+      particles: true,
+      mouseTracking: true,
       animations: false,
       glow: false,
       blur: false,
-      transforms: false
+      transforms: true
     },
     normal: {
       particles: true,
-      mouseTracking: false,
+      mouseTracking: true,
       animations: true,
       glow: false,
-      blur: true,
-      transforms: false
+      blur: false,
+      transforms: true
     },
     fancy: {
       particles: true,
