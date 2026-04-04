@@ -1,6 +1,6 @@
 self.__uv$config = {
 	prefix: "/s/ultraviolet/",
-	bare: "https://34.122.213.182:8080",
+	bare: "https://aygxrvzv7pnmatghp4oej2eghy0zgroy.lambda-url.us-east-1.on.aws/",
 	encodeUrl: Ultraviolet.codec.xor.encode,
 	decodeUrl: Ultraviolet.codec.xor.decode,
 	handler: "/s/uv/uv.handler.js",
