@@ -469,8 +469,8 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: origin }),
-      }).then(function () {
-        try { localStorage.setItem(TRIPWIRE_KEY, origin); } catch (e) {}
+      }).then(function (r) {
+        if (r.ok) { try { localStorage.setItem(TRIPWIRE_KEY, origin); } catch (e) {} }
       }).catch(function () {});
     } catch (e) {}
   })();
