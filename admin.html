@@ -38,6 +38,7 @@
           <button class="nav-btn" data-target="announcements" role="tab"><i class="fas fa-bullhorn"></i> Announcements</button>
           <button class="nav-btn" data-target="site-settings" role="tab"><i class="fas fa-sliders-h"></i> Settings</button>
           <button class="nav-btn" data-target="moderation" role="tab"><i class="fas fa-flag"></i> Moderation</button>
+          <button class="nav-btn" data-target="game-reports" role="tab"><i class="fas fa-exclamation-triangle"></i> Game Reports</button>
           <button class="nav-btn" data-target="links-mgmt" role="tab"><i class="fas fa-globe"></i> Links</button>
           <button class="nav-btn" data-target="audit-log" role="tab"><i class="fas fa-clipboard-list"></i> Audit Log</button>
         </nav>
@@ -209,6 +210,30 @@
         </div>
       </section>
 
+      <!-- ═══ GAME REPORTS ═══ -->
+      <section id="game-reports" class="panel" role="tabpanel">
+        <div class="stat-grid" id="reportStats">
+          <div class="loading"><div class="spinner"></div> Loading report stats…</div>
+        </div>
+        <div class="panel-card">
+          <div class="section-header">
+            <h2>Reports by Reason</h2>
+          </div>
+          <div class="report-reason-bars" id="reportReasonBars">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="section-header">
+            <h2>Most Reported Games</h2>
+          </div>
+          <div class="admin-table-wrap">
+            <table><thead><tr><th>#</th><th>Game</th><th>Reports</th></tr></thead>
+            <tbody id="topReportedGamesBody"><tr><td colspan="3" class="loading"><div class="spinner"></div></td></tr></tbody></table>
+          </div>
+        </div>
+      </section>
+
       <!-- ═══ LINKS MANAGEMENT (Link Finder AI) ═══ -->
       <section id="links-mgmt" class="panel" role="tabpanel">
         <div class="panel-card">
@@ -284,6 +309,7 @@
         loadAuditLog();
         loadModeration();
         loadAdminLinks();
+        loadGameReports();
       }
     }
 
@@ -344,6 +370,7 @@
         else if (t === 'announcements') loadAnnouncements();
         else if (t === 'site-settings') loadSettings();
         else if (t === 'moderation')    loadModeration();
+        else if (t === 'game-reports')  loadGameReports();
         else if (t === 'links-mgmt')    loadAdminLinks();
         else if (t === 'audit-log') loadAuditLog();
       });
@@ -1078,6 +1105,66 @@
   document.getElementById('historyRoomCode')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') lookupChatHistory();
   });
+
+  // ═══════════════════════════════════════════════════════════════
+  // GAME REPORTS
+  // ═══════════════════════════════════════════════════════════════
+
+  async function loadGameReports() {
+    try {
+      const data = await adminFetch('/admin/reports');
+      const reports = data.reports || [];
+      const stats = data.stats || {};
+
+      // Render stat cards
+      document.getElementById('reportStats').innerHTML = `
+        <div class="stat-card"><div class="stat-value">${stats.total || 0}</div><div class="stat-label">Total Reports</div></div>
+      `;
+
+      // Render reason breakdown bars
+      const byReason = stats.byReason || {};
+      const reasonEntries = Object.entries(byReason).sort((a, b) => b[1] - a[1]);
+      const maxReasonCount = Math.max(1, ...reasonEntries.map(e => e[1]));
+      const reasonColors = {
+        "Game doesn't load": '#ef4444',
+        "Game is broken": '#f97316',
+        "Wrong description": '#eab308',
+        "Other issue": '#8b5cf6'
+      };
+
+      if (reasonEntries.length) {
+        document.getElementById('reportReasonBars').innerHTML = reasonEntries.map(([reason, count]) => {
+          const pct = Math.max(4, (count / maxReasonCount) * 100);
+          const color = reasonColors[reason] || '#6b7280';
+          return `<div class="report-bar-row">
+            <span class="report-bar-label">${esc(reason)}</span>
+            <div class="report-bar-track">
+              <div class="report-bar-fill" style="width:${pct}%;background:${color}"></div>
+            </div>
+            <span class="report-bar-count">${count}</span>
+          </div>`;
+        }).join('');
+      } else {
+        document.getElementById('reportReasonBars').innerHTML = '<div class="empty-state">No reports yet</div>';
+      }
+
+      // Render top reported games
+      const byGame = stats.byGame || {};
+      const gameEntries = Object.entries(byGame).sort((a, b) => b[1] - a[1]).slice(0, 15);
+      const topGamesBody = document.getElementById('topReportedGamesBody');
+      if (gameEntries.length) {
+        topGamesBody.innerHTML = gameEntries.map(([game, count], i) =>
+          `<tr><td class="meta-count">${i + 1}</td><td>${esc(game)}</td><td><strong>${count}</strong></td></tr>`
+        ).join('');
+      } else {
+        topGamesBody.innerHTML = '<tr><td colspan="3" class="empty-state">No reports</td></tr>';
+      }
+
+    } catch (e) {
+      document.getElementById('reportStats').innerHTML = `<div class="empty-state">Error: ${esc(e.message)}</div>`;
+    }
+  }
+  window.loadGameReports = loadGameReports;
 
   // ═══════════════════════════════════════════════════════════════
   // LINKS MANAGEMENT (Link Finder AI)

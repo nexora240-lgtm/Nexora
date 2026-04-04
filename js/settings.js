@@ -468,7 +468,7 @@
       mouseTracking: settings.mouseTracking !== undefined ? !!settings.mouseTracking : true,
       animations: settings.animations !== undefined ? !!settings.animations : true,
       glow: settings.glow !== undefined ? !!settings.glow : true,
-      blur: settings.blur !== undefined ? !!settings.blur : true,
+      blur: isEdge ? false : (settings.blur !== undefined ? !!settings.blur : true),
       transforms: settings.transforms !== undefined ? !!settings.transforms : true
     };
 
@@ -595,6 +595,16 @@
   attachPerformanceToggle(blurToggle, blurInput, 'blur');
   attachPerformanceToggle(transformsToggle, transformsInput, 'transforms');
   attachPerformanceToggle(particlesToggle, particlesInput, 'particles');
+
+  // Disable backdrop blur on Microsoft Edge (not properly supported)
+  const isEdge = /Edg\//.test(navigator.userAgent);
+  if (isEdge && blurToggle && blurInput) {
+    blurToggle.classList.add('locked');
+    blurToggle.setAttribute('tabindex', '-1');
+    blurToggle.setAttribute('aria-disabled', 'true');
+    const edgeNote = document.getElementById('blurEdgeNote');
+    if (edgeNote) edgeNote.style.display = '';
+  }
 
   function activate(section) {
     tabs.forEach(t => {

@@ -7,8 +7,6 @@
       window.location.replace('/?route=/loader' + (params ? '&' + params.substring(1) : ''));
     }
   </script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7925754855607435"
-     crossorigin="anonymous"></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-H5VGHQJKD8"></script>
   <script>
   window.dataLayer = window.dataLayer || [];
@@ -149,6 +147,134 @@
     }
   </style>
   <style>
+    /* Game Info Section */
+    .game-info-section {
+      margin-top: 16px;
+      padding: 20px 24px;
+      background: color-mix(in srgb, var(--glass-bg, var(--g-panel)) 80%, transparent);
+      backdrop-filter: blur(12px) saturate(160%);
+      -webkit-backdrop-filter: blur(12px) saturate(160%);
+      border: 1px solid var(--glass-border, var(--g-border));
+      border-radius: var(--g-radius, 12px);
+      animation: fadeInUp 0.4s ease-out;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .game-info-header {
+      margin-bottom: 12px;
+    }
+    .game-info-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--g-text, #fff);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .game-info-title::before {
+      content: '\f11b';
+      font-family: 'Font Awesome 5 Free';
+      font-weight: 900;
+      font-size: 1rem;
+      color: var(--g-accent, #d4550a);
+    }
+    .game-short-desc {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--g-text, #fff);
+      margin: 0 0 10px;
+      line-height: 1.5;
+    }
+    .game-long-desc {
+      font-size: 0.88rem;
+      color: var(--g-muted, #999);
+      line-height: 1.65;
+      margin: 0 0 16px;
+    }
+    .game-tags-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .game-tag-chip {
+      padding: 5px 14px;
+      background: color-mix(in srgb, var(--g-accent, #d4550a) 15%, transparent);
+      color: var(--g-accent, #d4550a);
+      border: 1px solid color-mix(in srgb, var(--g-accent, #d4550a) 30%, transparent);
+      border-radius: 16px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .game-tag-chip:hover {
+      background: var(--g-accent, #d4550a);
+      color: var(--g-on-accent, #fff);
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px color-mix(in srgb, var(--g-accent, #d4550a) 40%, transparent);
+    }
+
+    /* Report Section */
+    .game-report-section {
+      margin-top: 12px;
+      padding: 16px 24px;
+      background: color-mix(in srgb, var(--glass-bg, var(--g-panel)) 60%, transparent);
+      backdrop-filter: blur(12px) saturate(160%);
+      -webkit-backdrop-filter: blur(12px) saturate(160%);
+      border: 1px solid var(--glass-border, var(--g-border));
+      border-radius: var(--g-radius, 12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .game-report-label {
+      font-size: 0.85rem;
+      color: var(--g-muted, #999);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .game-report-label i { color: var(--g-accent, #d4550a); }
+    .game-report-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .report-btn {
+      padding: 7px 16px;
+      background: color-mix(in srgb, var(--g-panel) 80%, transparent);
+      color: var(--g-muted, #999);
+      border: 1px solid var(--g-border);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .report-btn:hover {
+      background: color-mix(in srgb, #ef4444 12%, var(--g-panel));
+      border-color: color-mix(in srgb, #ef4444 50%, transparent);
+      color: #ef4444;
+      transform: translateY(-1px);
+    }
+    .report-btn.report-sent {
+      background: color-mix(in srgb, #22c55e 12%, var(--g-panel));
+      border-color: color-mix(in srgb, #22c55e 40%, transparent);
+      color: #22c55e;
+      pointer-events: none;
+    }
+  </style>
+  <style>
     .loader-page .content-wrapper {
       display: flex;
       justify-content: center;
@@ -238,18 +364,33 @@
             </button>
           </div>
         </footer>
+        
+        <!-- Report Section (above About) -->
+        <div class="game-report-section" id="gameReportSection">
+          <span class="game-report-label">
+            <i class="fas fa-flag"></i>
+            Something wrong with this game?
+          </span>
+          <div class="game-report-buttons">
+            <button class="report-btn" data-reason="Game doesn't load"><i class="fas fa-times-circle"></i> Doesn't Load</button>
+            <button class="report-btn" data-reason="Game is broken"><i class="fas fa-bug"></i> Broken</button>
+            <button class="report-btn" data-reason="Wrong description"><i class="fas fa-file-alt"></i> Wrong Info</button>
+            <button class="report-btn" data-reason="Other issue"><i class="fas fa-ellipsis-h"></i> Other</button>
+          </div>
+        </div>
+
+        <!-- Game Info Section -->
+        <div class="game-info-section" id="gameInfoSection" style="display: none;">
+          <div class="game-info-header">
+            <h2 class="game-info-title" id="gameInfoTitle"></h2>
+          </div>
+          <p class="game-short-desc" id="gameShortDesc"></p>
+          <div class="game-long-desc" id="gameLongDesc"></div>
+          <div class="game-tags-row" id="gameTagsRow"></div>
+        </div>
       </div>
     </div>
 
-    <!-- Mid-page Ad Placement (between game and related games) -->
-    <div class="gameloader-ad-container" id="midPageAd">
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-7925754855607435"
-           data-ad-slot="auto"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-    </div>
 
     <!-- Related Games Section -->
     <section class="related-games-section">
@@ -262,15 +403,6 @@
       </div>
     </section>
 
-    <!-- Bottom Ad Placement -->
-    <div class="gameloader-ad-container">
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-7925754855607435"
-           data-ad-slot="auto"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-    </div>
   </div>
 
   <script>
@@ -627,6 +759,92 @@
 
       // Set game title in footer
       gameTitle.textContent = currentGame.title || "Unknown Game";
+      
+      // Populate game info section (description + tags)
+      const infoSection = document.getElementById('gameInfoSection');
+      if (infoSection) {
+        const hasInfo = currentGame.description || currentGame.longDescription || (Array.isArray(currentGame.tags) && currentGame.tags.length > 0);
+        if (hasInfo) {
+          infoSection.style.display = 'block';
+          const infoTitle = document.getElementById('gameInfoTitle');
+          const shortDesc = document.getElementById('gameShortDesc');
+          const longDesc = document.getElementById('gameLongDesc');
+          const tagsRow = document.getElementById('gameTagsRow');
+          
+          if (infoTitle) infoTitle.textContent = 'About ' + (currentGame.title || 'This Game');
+          if (shortDesc) {
+            shortDesc.textContent = currentGame.description || '';
+            shortDesc.style.display = currentGame.description ? 'block' : 'none';
+          }
+          if (longDesc) {
+            longDesc.textContent = currentGame.longDescription || '';
+            longDesc.style.display = currentGame.longDescription ? 'block' : 'none';
+          }
+          if (tagsRow && Array.isArray(currentGame.tags)) {
+            tagsRow.innerHTML = '';
+            currentGame.tags.forEach(tag => {
+              const chip = document.createElement('a');
+              chip.className = 'game-tag-chip';
+              chip.textContent = tag;
+              chip.href = '#';
+              chip.onclick = (e) => {
+                e.preventDefault();
+                // Navigate to games page with this tag selected
+                sessionStorage.setItem('nexora_filterTag', tag);
+                if (typeof navigate === 'function') {
+                  navigate('/games');
+                } else {
+                  location.href = 'games.html';
+                }
+              };
+              tagsRow.appendChild(chip);
+            });
+          }
+        }
+      }
+
+      // Wire up report buttons
+      document.querySelectorAll('.report-btn').forEach(btn => {
+        btn.onclick = async () => {
+          const reason = btn.dataset.reason;
+          const gameName = currentGame.title || 'Unknown';
+          
+          // Visual confirmation immediately
+          document.querySelectorAll('.report-btn').forEach(b => b.style.display = 'none');
+          btn.style.display = 'flex';
+          btn.classList.add('report-sent');
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+          
+          // Send report to AWS API
+          try {
+            const apiUrl = (_CONFIG.viewsApiUrl || '').replace(/\/+$/, '');
+            if (apiUrl && !apiUrl.includes('YOUR-API-ID')) {
+              await fetchWithTimeout(apiUrl + '/reports', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ gameTitle: gameName, reason })
+              }, 8000);
+            }
+            // Also store locally as backup
+            try {
+              const reportKey = 'nexora_reports';
+              const reports = JSON.parse(localStorage.getItem(reportKey) || '[]');
+              reports.push({ game: gameName, reason, time: new Date().toISOString() });
+              localStorage.setItem(reportKey, JSON.stringify(reports));
+            } catch(e) {}
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> Report Sent — Thanks!';
+          } catch (err) {
+            // Fallback: store locally even if API fails
+            try {
+              const reportKey = 'nexora_reports';
+              const reports = JSON.parse(localStorage.getItem(reportKey) || '[]');
+              reports.push({ game: gameName, reason, time: new Date().toISOString() });
+              localStorage.setItem(reportKey, JSON.stringify(reports));
+            } catch(e) {}
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> Report Sent — Thanks!';
+          }
+        };
+      });
       
       // Initialize favorite button
       if (favStar && FavoritesManager.isFavorited(currentGame.title)) {
@@ -1000,11 +1218,22 @@
       
       // Filter out current game and games without a thumbnail
       const currentTitle = currentGame?.title || "";
+      const currentTags = new Set(Array.isArray(currentGame?.tags) ? currentGame.tags : []);
       const otherGames = games.filter(g => g.title !== currentTitle && g.thumbnail && g.thumbnail.trim() !== "");
       
-      // Shuffle and pick 48 games
-      const shuffled = otherGames.sort(() => Math.random() - 0.5);
-      const selectedGames = shuffled.slice(0, 48);
+      // Sort: games with matching tags first, then random
+      const scored = otherGames.map(g => {
+        const gameTags = Array.isArray(g.tags) ? g.tags : [];
+        const overlap = gameTags.filter(t => currentTags.has(t)).length;
+        return { game: g, overlap, rand: Math.random() };
+      });
+      scored.sort((a, b) => b.overlap - a.overlap || a.rand - b.rand);
+      // Use a larger pool so we have replacements when thumbnails fail to load
+      const GRID_TARGET = 48;
+      const allSorted = scored.map(s => s.game);
+      const selectedGames = allSorted.slice(0, GRID_TARGET);
+      // Reserve pool = the rest, used as replacements when images fail
+      const replacementPool = allSorted.slice(GRID_TARGET);
       
       // Fetch view counts for selected games using the same cache
       const gameIds = selectedGames.map(g => g.title);
@@ -1047,25 +1276,65 @@
       
       let taboolaAdCount = 0;
       
+      function buildOnClick(g) {
+        return () => {
+          const newGameData = JSON.stringify(g);
+          const currentGameData = sessionStorage.getItem("currentGame");
+          if (currentGameData !== newGameData) {
+            if (typeof window.destroyGameSession === 'function') {
+              window.destroyGameSession();
+            } else if (window.GameStateManager) {
+              window.GameStateManager.clearState();
+              if (window.GameStateManager.clearDomState) window.GameStateManager.clearDomState();
+            }
+          }
+          if (window.GameStateManager) window.GameStateManager.setAutoplay(false);
+          sessionStorage.setItem("currentGame", newGameData);
+          if (typeof navigate === 'function') navigate('/loader');
+          else location.href = 'gameloader.html';
+        };
+      }
+      
+      function buildOnKeydown(g) {
+        return (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); }
+        };
+      }
+      
       // Render the games in games.html homepage style
-      selectedGames.forEach((game, index) => {
+      selectedGames.forEach((gameObj, index) => {
         // Insert Taboola ad every AD_INTERVAL cards
         if (index > 0 && index % AD_INTERVAL === 0) {
           insertTaboolaAd();
           taboolaAdCount++;
         }
         
+        let game = gameObj;
         const card = document.createElement("div");
         card.className = "related-game-card";
         card.style.setProperty("--card-index", index);
         card.style.animationDelay = `${Math.min(index * 0.03, 0.6)}s`;
         card.tabIndex = 0;
         
-        // Card image
+        // Card image — eager load so broken thumbnails get replaced immediately
         const img = document.createElement("img");
         img.src = game.thumbnail;
         img.alt = game.title;
-        img.loading = "lazy";
+        img.loading = "eager";
+        img.onerror = function tryReplacement() {
+          // Pull next unused game from the pool and try its thumbnail
+          const next = replacementPool.shift();
+          if (!next) { card.remove(); return; }
+          // Update card data to the replacement game
+          game = next;
+          img.src = next.thumbnail;
+          img.alt = next.title;
+          card.querySelector('.related-game-title').textContent = next.title;
+          const starEl = card.querySelector('.favorite-star');
+          if (starEl) starEl.classList.toggle('favorited', FavoritesManager.isFavorited(next.title));
+          card.onclick = buildOnClick(next);
+          card.onkeydown = buildOnKeydown(next);
+        };
         
         // Title overlay
         const title = document.createElement("div");
@@ -1104,42 +1373,8 @@
           window.NexoraMouseTracking.bindElement(card);
         }
         
-        card.onclick = () => {
-          const newGameData = JSON.stringify(game);
-          const currentGameData = sessionStorage.getItem("currentGame");
-          
-          // Check if this is a different game than what's currently loaded
-          if (currentGameData !== newGameData) {
-            if (typeof window.destroyGameSession === 'function') {
-              window.destroyGameSession();
-            } else if (window.GameStateManager) {
-              window.GameStateManager.clearState();
-              if (window.GameStateManager.clearDomState) {
-                window.GameStateManager.clearDomState();
-              }
-            }
-          }
-          
-          // Clear autoplay flag - only Continue button should trigger autoplay
-          if (window.GameStateManager) {
-            window.GameStateManager.setAutoplay(false);
-          }
-          
-          sessionStorage.setItem("currentGame", newGameData);
-          
-          if (typeof navigate === 'function') {
-            navigate('/loader');
-          } else {
-            location.href = 'gameloader.html';
-          }
-        };
-        
-        card.onkeydown = (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            card.click();
-          }
-        };
+        card.onclick = buildOnClick(game);
+        card.onkeydown = buildOnKeydown(game);
         
         grid.appendChild(card);
       });

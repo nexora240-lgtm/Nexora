@@ -861,3 +861,50 @@
   color: var(--admin-muted);
   font-size: 12px;
 }
+
+/* ── Game Reports ── */
+
+.admin-root .report-reason-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.admin-root .report-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.admin-root .report-bar-label {
+  min-width: 140px;
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+  text-align: right;
+  flex-shrink: 0;
+}
+.admin-root .report-bar-track {
+  flex: 1;
+  height: 22px;
+  background: rgba(128,128,128,0.08);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.admin-root .report-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.4s ease;
+  min-width: 4px;
+}
+.admin-root .report-bar-count {
+  min-width: 30px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+@media (max-width: 480px) {
+  .admin-root .report-bar-label {
+    min-width: 100px;
+    font-size: 11px;
+  }
+}

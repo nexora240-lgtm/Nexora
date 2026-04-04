@@ -414,6 +414,148 @@
       }
     }
   </style>
+  <style>
+    /* Tag Filter Bar */
+    .tag-filter-bar {
+      position: relative;
+      top: unset;
+      z-index: 99;
+      background: transparent;
+      border-top: 1px solid var(--g-border);
+      border-bottom: 1px solid var(--g-border);
+      padding: 10px 0;
+      transition: left 0.3s ease;
+    }
+    .tag-filter-inner {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 12px;
+    }
+    .tag-scroll-btn {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--g-border);
+      background: color-mix(in srgb, var(--g-panel) 80%, transparent);
+      color: var(--g-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.8rem;
+    }
+    .tag-scroll-btn:hover {
+      background: color-mix(in srgb, var(--g-accent) 20%, var(--g-panel));
+      border-color: var(--g-accent);
+      color: var(--g-text);
+    }
+    .tag-scroll-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+    .tag-filter-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding: 2px 0;
+      flex: 1;
+      min-width: 0;
+    }
+    .tag-filter-scroll::-webkit-scrollbar { display: none; }
+    .tag-pill {
+      flex-shrink: 0;
+      padding: 6px 16px;
+      background: color-mix(in srgb, var(--g-panel) 70%, transparent);
+      color: var(--g-muted);
+      border: 1.5px solid var(--g-border);
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    .tag-pill:hover {
+      background: color-mix(in srgb, var(--g-accent) 15%, var(--g-panel));
+      border-color: color-mix(in srgb, var(--g-accent) 50%, transparent);
+      color: var(--g-text);
+      transform: translateY(-1px);
+    }
+    .tag-pill.active {
+      background: linear-gradient(135deg, var(--g-accent), var(--g-accent-deep));
+      color: var(--g-on-accent);
+      border-color: var(--g-accent);
+      box-shadow: 0 2px 12px color-mix(in srgb, var(--g-accent) 40%, transparent);
+    }
+    .tag-pill .tag-count {
+      font-size: 0.72rem;
+      opacity: 0.7;
+      font-weight: 500;
+    }
+    .tag-pill.active .tag-count { opacity: 0.9; }
+    .active-tags-summary {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 20px 0;
+      max-width: 1200px;
+      margin: 0 auto;
+      font-size: 0.8rem;
+      color: var(--g-muted);
+    }
+    .active-tags-summary.visible { display: flex; }
+    .clear-tags-btn {
+      padding: 3px 10px;
+      background: color-mix(in srgb, var(--g-accent) 15%, transparent);
+      color: var(--g-accent);
+      border: 1px solid color-mix(in srgb, var(--g-accent) 30%, transparent);
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+    .clear-tags-btn:hover {
+      background: var(--g-accent);
+      color: var(--g-on-accent);
+    }
+
+    /* Game card tag badges */
+    .game-card-tags {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      z-index: 2;
+      max-width: calc(100% - 52px);
+      pointer-events: none;
+    }
+    .game-card-tag {
+      padding: 2px 8px;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px);
+      color: #fff;
+      border-radius: 10px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+    }
+  </style>
 </head>
 <body>
 
@@ -471,6 +613,23 @@
     <div class="games-hero-fade"></div>
   </div>
 
+  <!-- Tag Filter Bar -->
+  <div class="tag-filter-bar" id="tagFilterBar">
+    <div class="tag-filter-inner">
+      <button class="tag-scroll-btn tag-scroll-left" id="tagScrollLeft" aria-label="Scroll tags left">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <div class="tag-filter-scroll" id="tagFilterScroll">
+        <button class="tag-pill active" data-tag="all">
+          <i class="fas fa-th"></i> All
+        </button>
+      </div>
+      <button class="tag-scroll-btn tag-scroll-right" id="tagScrollRight" aria-label="Scroll tags right">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
   <!-- Horizontal Scrollable Sections -->
   <div class="scrollable-sections" id="scrollableSections">
     <!-- Recently Played Section -->
@@ -507,7 +666,7 @@
   </div>
 
   <div class="content-wrapper">
-    <h2 class="section-title" style="margin: 24px 0 16px; padding: 0 20px;">All Games</h2>
+    <h2 class="section-title" id="allGamesTitle" style="margin: 24px 0 16px; padding: 0 20px;">All Games</h2>
     <!-- Game Grid -->
     <div class="grid" id="gameGrid"></div>
   </div>
@@ -560,6 +719,18 @@
     let allGames = [];
     let filteredGames = [];
     let currentFilter = 'all';
+    let activeTags = new Set();
+
+    function updateAllGamesTitle() {
+      const el = document.getElementById('allGamesTitle');
+      if (!el) return;
+      if (activeTags.size === 0) {
+        el.textContent = 'All Games';
+      } else {
+        el.textContent = 'Games with ' + [...activeTags].join(', ');
+      }
+    }
+
     let viewsCache = (() => {
       try {
         const stored = sessionStorage.getItem(VIEWS_CACHE_STORAGE_KEY);
@@ -927,6 +1098,88 @@
     allGames = await resp.json();
     sessionStorage.setItem("gamesList", JSON.stringify(allGames));
     FavoritesManager.updateCount();
+
+    // Build tag filter pills from game data
+    (function buildTagPills() {
+      const tagCounts = {};
+      allGames.forEach(g => {
+        if (Array.isArray(g.tags)) {
+          g.tags.forEach(t => { tagCounts[t] = (tagCounts[t] || 0) + 1; });
+        }
+      });
+      // Sort tags by count descending
+      const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
+      const scrollContainer = document.querySelector('.tag-filter-scroll');
+      if (!scrollContainer) return;
+      sortedTags.forEach(([tag, count]) => {
+        const pill = document.createElement('button');
+        pill.className = 'tag-pill';
+        pill.dataset.tag = tag;
+        pill.innerHTML = `${tag} <span class="tag-count">${count}</span>`;
+        pill.onclick = () => {
+          if (tag === 'all') {
+            activeTags.clear();
+            scrollContainer.querySelectorAll('.tag-pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+          } else {
+            // Toggle this tag
+            const allPill = scrollContainer.querySelector('.tag-pill[data-tag="all"]');
+            if (activeTags.has(tag)) {
+              activeTags.delete(tag);
+              pill.classList.remove('active');
+            } else {
+              activeTags.add(tag);
+              pill.classList.add('active');
+            }
+            // If no tags selected, re-activate "All"
+            if (activeTags.size === 0) {
+              if (allPill) allPill.classList.add('active');
+            } else {
+              if (allPill) allPill.classList.remove('active');
+            }
+          }
+          currentPage = 1;
+          updateAllGamesTitle();
+          initGames(document.getElementById('searchInput').value);
+        };
+        scrollContainer.appendChild(pill);
+      });
+
+      // Horizontal scroll-wheel support for tag bar
+      scrollContainer.addEventListener('wheel', (e) => {
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+          e.preventDefault();
+          scrollContainer.scrollLeft += e.deltaY;
+        }
+      }, { passive: false });
+
+      // Arrow button navigation for tag bar
+      const tagLeftBtn = document.getElementById('tagScrollLeft');
+      const tagRightBtn = document.getElementById('tagScrollRight');
+      function updateTagArrows() {
+        if (tagLeftBtn) tagLeftBtn.disabled = scrollContainer.scrollLeft <= 0;
+        if (tagRightBtn) tagRightBtn.disabled = scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 1;
+      }
+      if (tagLeftBtn) tagLeftBtn.onclick = () => { scrollContainer.scrollBy({ left: -200, behavior: 'smooth' }); setTimeout(updateTagArrows, 300); };
+      if (tagRightBtn) tagRightBtn.onclick = () => { scrollContainer.scrollBy({ left: 200, behavior: 'smooth' }); setTimeout(updateTagArrows, 300); };
+      scrollContainer.addEventListener('scroll', updateTagArrows);
+      updateTagArrows();
+      
+      // Check if we arrived from gameloader with a pre-selected tag
+      const preTag = sessionStorage.getItem('nexora_filterTag');
+      if (preTag) {
+        sessionStorage.removeItem('nexora_filterTag');
+        const tagPill = scrollContainer.querySelector(`.tag-pill[data-tag="${CSS.escape(preTag)}"]`);
+        if (tagPill) {
+          activeTags.add(preTag);
+          const allPill = scrollContainer.querySelector('.tag-pill[data-tag="all"]');
+          if (allPill) allPill.classList.remove('active');
+          tagPill.classList.add('active');
+          tagPill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+          updateAllGamesTitle();
+        }
+      }
+    })();
 
     // ⚡ Get all game IDs for view count fetching
     const allGameIds = allGames.map(g => g.title);
@@ -1531,7 +1784,7 @@
       grid.innerHTML = "";
 
       // Hide hero, sections & continue-playing on pages beyond the first
-      const isFirstPage = currentPage === 1 && !filter.trim();
+      const isFirstPage = currentPage === 1 && !filter.trim() && activeTags.size === 0;
       const _heroEl = document.getElementById('gamesHero');
       const _continueEl = document.getElementById('continuePlayingSection');
       const _scrollSections = document.getElementById('scrollableSections');
@@ -1565,6 +1818,13 @@
       if (currentFilter === 'favorites') {
         const favs = FavoritesManager.get();
         gamesToShow = allGames.filter(g => favs.includes(g.title));
+      }
+      
+      // Apply tag filter
+      if (activeTags.size > 0) {
+        gamesToShow = gamesToShow.filter(g =>
+          Array.isArray(g.tags) && [...activeTags].every(t => g.tags.includes(t))
+        );
       }
       
       const candidates = gamesToShow.map(g => {
@@ -1701,6 +1961,20 @@
         card.appendChild(title);
         card.appendChild(star);
         card.appendChild(viewCount);
+        
+        // Add tag badges (show first 2 tags)
+        if (Array.isArray(game.tags) && game.tags.length > 0) {
+          const tagsDiv = document.createElement('div');
+          tagsDiv.className = 'game-card-tags';
+          game.tags.slice(0, 2).forEach(t => {
+            const badge = document.createElement('span');
+            badge.className = 'game-card-tag';
+            badge.textContent = t;
+            tagsDiv.appendChild(badge);
+          });
+          card.appendChild(tagsDiv);
+        }
+        
         grid.appendChild(card);
 
         bindCardHighlight(card);

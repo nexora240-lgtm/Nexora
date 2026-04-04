@@ -188,39 +188,83 @@
     function initHomeVisuals() {
       if (loaded) return;
       loaded = true;
+
       var xhr = new XMLHttpRequest();
       xhr.open('GET', '/game-info.json', true);
       xhr.onload = function() {
-        if (xhr.status !== 200) return;
+        if (xhr.status !== 200) { loaded = false; return; }
         try {
           var games = JSON.parse(xhr.responseText);
           var withImages = games.filter(function(g) { return g.thumbnail && g.thumbnail.trim() !== ''; });
-          var shuffled = withImages.slice().sort(function() { return Math.random() - 0.5; }).slice(0, 24);
-          var third = Math.ceil(shuffled.length / 3);
-          function mkCard(item) {
-            return '<a href="#" class="home-card" style="opacity:0;transition:opacity .3s ease;" data-route="/games" data-game="' + encodeURIComponent(item.title) + '">' +
-              '<div class="home-card-inner">' +
-                '<img src="' + item.thumbnail + '" alt="" onload="this.closest(\'.home-card\').style.opacity=\'\';" onerror="var c=this.closest(\'.home-card\');c.style.display=\'none\';">' +
-                '<div class="home-card-ov"><span>' + item.title + '</span></div>' +
-              '</div>' +
-            '</a>';
+
+          // Fisher-Yates shuffle (unbiased, no freeze risk)
+          for (var i = withImages.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var tmp = withImages[i];
+            withImages[i] = withImages[j];
+            withImages[j] = tmp;
           }
+          var shuffled = withImages.slice(0, 24);
+          var third = Math.ceil(shuffled.length / 3);
+
+          // Build cards via DOM to avoid onload race conditions and XSS
+          function mkCard(item) {
+            var card = document.createElement('a');
+            card.href = '#';
+            card.className = 'home-card';
+            card.style.opacity = '0';
+            card.style.transition = 'opacity .3s ease';
+            card.dataset.route = '/games';
+            card.dataset.game = item.title;
+
+            var inner = document.createElement('div');
+            inner.className = 'home-card-inner';
+
+            var img = document.createElement('img');
+            img.alt = '';
+            img.addEventListener('load', function() { card.style.opacity = ''; });
+            img.addEventListener('error', function() { card.style.display = 'none'; });
+            img.src = item.thumbnail;
+
+            var ov = document.createElement('div');
+            ov.className = 'home-card-ov';
+            var span = document.createElement('span');
+            span.textContent = item.title;
+            ov.appendChild(span);
+
+            inner.appendChild(img);
+            inner.appendChild(ov);
+            card.appendChild(inner);
+            return card;
+          }
+
           function fill(el, arr) {
             if (!el) return;
-            var html = arr.map(mkCard).join('');
-            el.innerHTML = html + html;
+            var frag = document.createDocumentFragment();
+            // Two copies for seamless infinite-scroll animation
+            for (var copy = 0; copy < 2; copy++) {
+              arr.forEach(function(item) { frag.appendChild(mkCard(item)); });
+            }
+            el.appendChild(frag);
           }
+
           fill(document.getElementById('home-t1'), shuffled.slice(0, third));
           fill(document.getElementById('home-t2'), shuffled.slice(third, third * 2));
           fill(document.getElementById('home-t3'), shuffled.slice(third * 2));
+
           if (window.NexoraMouseTracking) {
             var visuals = document.getElementById('home-bg-visuals');
             if (visuals) window.NexoraMouseTracking.bindDelegated(visuals, '.home-card-inner');
           }
-        } catch(e) {}
+        } catch(e) {
+          console.error('Home visuals error:', e);
+          loaded = false;
+        }
       };
+      xhr.onerror = function() { loaded = false; };
       xhr.send();
     }
+
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initHomeVisuals);
     } else {
