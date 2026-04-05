@@ -1,3 +1,5 @@
+const VERSION = "2.0"; // change this number whenever you need to force an update
+
 importScripts("/s/uv/uv.sw.js");
 
 const sw = new UVServiceWorker();

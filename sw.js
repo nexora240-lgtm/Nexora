@@ -1,3 +1,5 @@
+const VERSION = "2.0"; // change this number whenever you need to force an update
+
 if (navigator.userAgent.includes("Firefox")) {
 	Object.defineProperty(globalThis, "crossOriginIsolated", {
 		value: true,
