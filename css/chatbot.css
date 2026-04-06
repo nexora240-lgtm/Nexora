@@ -1,3 +1,7 @@
+/* ═══════════════════════════════════════════════════════════════
+   Nexora Chatbot — Glassmorphic + Neumorphic Style
+   ═══════════════════════════════════════════════════════════════ */
+
 .nexora {
   --page-bg: var(--page-bg, #0a0605);
   --panel: var(--surface, #1a100d);
@@ -5,102 +9,121 @@
 
   --orange: var(--primary, #d4550a);
   --orange-deep: var(--primary-deep, #992f05);
-  --orange-shadow: var(--primary-shadow, rgba(212,85,10,0.5));
+  --orange-shadow: var(--primary-shadow, rgba(212, 85, 10, 0.35));
 
   --accent: var(--orange);
   --send-icon: var(--on-primary, #fff0e8);
 
-  --text: var(--text, #f8e7e0);
-  --muted: var(--muted, #c9a08a);
+  --text: var(--text, #f0e0d8);
+  --muted: var(--muted, #b8907a);
 
   --radius: var(--radius, 12px);
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Glassmorphic tokens */
+  --glass-bg: rgba(26, 16, 13, 0.45);
+  --glass-bg-strong: rgba(26, 16, 13, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.15);
+  --glass-blur: 18px;
+
+  /* Neumorphic tokens */
+  --neu-shadow-dark: rgba(0, 0, 0, 0.6);
+  --neu-shadow-light: rgba(255, 255, 255, 0.04);
+  --neu-inset-dark: rgba(0, 0, 0, 0.4);
+  --neu-inset-light: rgba(255, 255, 255, 0.03);
 
   box-sizing: border-box;
   height: 100%;
   color: var(--text);
-  font: 500 16px/1.5 Arial, sans-serif;
+  font: 400 15px/1.65 'Inter', 'SF Pro Text', system-ui, -apple-system, sans-serif;
   display: flex;
   flex-direction: column;
   background: var(--page-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .nexora *, .nexora *::before, .nexora *::after { box-sizing: inherit; }
-
 .nexora body { margin: 0; }
-
 .nexora .app { display: flex; flex-direction: column; height: 100%; }
 
-.nexora .header {
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--muted);
-  font-weight: 700;
-  letter-spacing: .3px;
-  border-bottom: 1px solid color-mix(in srgb, var(--panel) 8%, #000 0%);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--panel) 6%, transparent), transparent);
-}
-
+/* ── Chat area ── */
 .nexora .chat {
   flex: 1;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  background: linear-gradient(160deg, rgba(26, 16, 13, 0.2) 0%, transparent 50%);
 }
 
 .nexora .reset-btn {
   position: absolute;
-  top: 15px;
+  top: 14px;
   right: 12px;
   z-index: 10;
-  padding: 8px 14px;
-  background: color-mix(in srgb, var(--panel) 80%, transparent);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid color-mix(in srgb, var(--orange) 30%, transparent);
-  border-radius: 8px;
+  padding: 7px 14px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
   color: var(--muted);
   font-size: 13px;
   font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    4px 4px 10px var(--neu-shadow-dark),
+    -2px -2px 8px var(--neu-shadow-light),
+    inset 0 1px 0 var(--neu-inset-light);
+  transition: all 0.25s var(--ease);
 }
 
 .nexora .reset-btn:hover {
-  background: color-mix(in srgb, var(--orange) 15%, transparent);
-  border-color: var(--orange);
+  background: rgba(212, 85, 10, 0.12);
+  border-color: var(--glass-border-hover);
   color: var(--orange);
-  box-shadow: 0 4px 12px var(--orange-shadow);
-  transform: translateY(-2px);
-  animation: gentleShake 0.5s ease;
-}
-
-@keyframes gentleShake {
-  0%, 100% { transform: translateY(-2px) rotate(0deg); }
-  25% { transform: translateY(-2px) rotate(-2deg); }
-  75% { transform: translateY(-2px) rotate(2deg); }
+  box-shadow:
+    6px 6px 14px var(--neu-shadow-dark),
+    -3px -3px 10px var(--neu-shadow-light),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
 }
 
 .nexora .reset-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transform: scale(0.94) translateY(1px);
+  box-shadow:
+    inset 3px 3px 8px var(--neu-inset-dark),
+    inset -2px -2px 6px var(--neu-inset-light);
+  transition: all 0.1s var(--ease);
 }
 
+/* ── Scroll container ── */
 .nexora .scroll {
   flex: 1;
   overflow: auto;
-  padding: 20px;
-  gap: 10px;
+  padding: 24px 20px;
+  gap: 14px;
   display: flex;
   flex-direction: column;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--orange) 30%, transparent) transparent;
 }
 
+.nexora .scroll::-webkit-scrollbar { width: 6px; }
+.nexora .scroll::-webkit-scrollbar-track { background: transparent; }
+.nexora .scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--orange) 30%, transparent);
+  border-radius: 3px;
+}
+
+/* ── Intro ── */
 .nexora .intro {
   position: absolute;
   inset: 0;
@@ -112,615 +135,734 @@
 
 .nexora .intro h1 {
   margin: 0;
-  font: 800 28px/1.1 inherit;
-  letter-spacing: .2px;
-  background: linear-gradient(90deg, var(--orange), var(--orange-deep));
+  font: 700 26px/1.2 inherit;
+  letter-spacing: -0.3px;
+  background: linear-gradient(135deg, var(--orange), var(--orange-deep));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  animation: floatTitle 3s ease-in-out infinite, gradientShift 6s ease-in-out infinite;
+  text-shadow: none;
+  animation: introFloat 3s ease-in-out infinite;
 }
 
-@keyframes floatTitle {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
+@keyframes introFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
-@keyframes gradientShift {
-  0%, 100% {
-    background: linear-gradient(90deg, var(--orange), var(--orange-deep));
-    -webkit-background-clip: text;
-    background-clip: text;
-  }
-  50% {
-    background: linear-gradient(90deg, var(--orange-deep), var(--orange), var(--orange-deep));
-    -webkit-background-clip: text;
-    background-clip: text;
-  }
+/* ── Messages ── */
+.nexora .msg {
+  max-width: 75%;
+  animation: msgIn 0.35s var(--ease) both;
 }
 
-.nexora .msg { max-width: 72%; animation: fade .2s ease; }
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@keyframes msgPop {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(0.95); }
+  60%  { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+@keyframes msgGlow {
+  0%   { box-shadow: 0 0 0 0 rgba(212, 85, 10, 0.4), 4px 4px 12px var(--neu-shadow-dark), -2px -2px 8px var(--neu-shadow-light); }
+  50%  { box-shadow: 0 0 20px 4px rgba(212, 85, 10, 0.25), 4px 4px 12px var(--neu-shadow-dark), -2px -2px 8px var(--neu-shadow-light); }
+  100% { box-shadow: 0 0 0 0 rgba(212, 85, 10, 0.4), 4px 4px 12px var(--neu-shadow-dark), -2px -2px 8px var(--neu-shadow-light); }
+}
+
+@keyframes editPulse {
+  0%, 100% { border-color: rgba(212, 85, 10, 0.5); }
+  50%      { border-color: rgba(212, 85, 10, 0.9); }
+}
 
 .nexora .msg.user {
   align-self: flex-end;
-  background: var(--accent);
+  background: linear-gradient(135deg, rgba(212, 85, 10, 0.85), rgba(153, 47, 5, 0.9));
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   color: var(--send-icon);
-  padding: 10px 12px;
-  border-radius: 18px;
-  border-bottom-right-radius: 6px;
-  box-shadow: 0 6px 20px var(--orange-shadow);
-  animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 10px 16px;
+  border-radius: 18px 18px 6px 18px;
+  font-weight: 450;
+  line-height: 1.5;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    4px 4px 12px var(--neu-shadow-dark),
+    -2px -2px 8px var(--neu-shadow-light),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+  cursor: text;
+  transition: all 0.25s var(--ease);
+  position: relative;
+  will-change: transform;
 }
 
 .nexora .msg.user:hover {
-  transform: translateX(-2px) scale(1.01);
-  box-shadow: 0 8px 28px var(--orange-shadow);
+  transform: translateY(-2px);
+  box-shadow:
+    6px 6px 16px var(--neu-shadow-dark),
+    -3px -3px 10px var(--neu-shadow-light),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+    0 0 16px rgba(212, 85, 10, 0.2);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(30px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
+.nexora .msg.user:active {
+  transform: scale(0.97) translateY(1px);
+  box-shadow:
+    inset 3px 3px 8px rgba(0, 0, 0, 0.35),
+    inset -2px -2px 6px rgba(255, 255, 255, 0.05);
+  transition: all 0.1s var(--ease);
+}
+
+/* Glow animation applied when pressing message */
+.nexora .msg.user.msg-pressed {
+  animation: msgPop 0.35s var(--ease);
+}
+
+/* Editing state — pulsing border */
+.nexora .msg.user.editing {
+  animation: editPulse 1.2s ease-in-out infinite, msgGlow 2s ease-in-out infinite;
+  border-color: rgba(212, 85, 10, 0.7);
+  box-shadow:
+    0 0 16px rgba(212, 85, 10, 0.25),
+    4px 4px 12px var(--neu-shadow-dark),
+    -2px -2px 8px var(--neu-shadow-light),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .nexora .msg.bot {
   align-self: flex-start;
-  background: transparent;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   color: var(--text);
+  padding: 14px 18px;
+  border-radius: 18px 18px 18px 6px;
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    4px 4px 12px var(--neu-shadow-dark),
+    -2px -2px 8px var(--neu-shadow-light),
+    inset 0 1px 0 var(--neu-inset-light);
+  transition: all 0.25s var(--ease);
+}
+
+.nexora .msg.bot:hover {
+  border-color: var(--glass-border-hover);
+  box-shadow:
+    6px 6px 16px var(--neu-shadow-dark),
+    -3px -3px 10px var(--neu-shadow-light),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+}
+
+/* ── Bot name label ── */
+.nexora .bot-name {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+  opacity: 0.8;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Message action toolbar ── */
+.nexora .msg-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.nexora .msg-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow:
+    2px 2px 6px var(--neu-shadow-dark),
+    -1px -1px 4px var(--neu-shadow-light),
+    inset 0 1px 0 var(--neu-inset-light);
+  transition: all 0.2s var(--ease);
+  opacity: 0.8;
+}
+
+.nexora .msg-action-btn:hover {
+  background: rgba(212, 85, 10, 0.1);
+  border-color: rgba(212, 85, 10, 0.25);
+  color: var(--orange);
+  opacity: 1;
+  transform: translateY(-1px);
+  box-shadow:
+    3px 3px 8px var(--neu-shadow-dark),
+    -1px -1px 5px var(--neu-shadow-light),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.nexora .msg-action-btn:active {
+  transform: scale(0.94) translateY(1px);
+  box-shadow:
+    inset 2px 2px 6px var(--neu-inset-dark),
+    inset -1px -1px 4px var(--neu-inset-light);
+  transition: all 0.08s var(--ease);
+}
+
+/* ── Inline bubble editor ── */
+.nexora .msg.user .bubble-editor {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  resize: none;
   padding: 0;
-  border-radius: 0;
-  animation: slideInLeft 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  margin: 0;
+  min-height: 1.5em;
+  overflow: hidden;
+  caret-color: currentColor;
 }
 
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
+.nexora .bubble-editor-btns {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  justify-content: flex-end;
 }
 
-.nexora .bot-chunk { 
-  margin: 6px 0;
-  animation: fadeInUp 0.3s ease-out;
-  animation-fill-mode: both;
+.nexora .bubble-editor-save,
+.nexora .bubble-editor-cancel {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow:
+    2px 2px 6px var(--neu-shadow-dark),
+    -1px -1px 4px var(--neu-shadow-light),
+    inset 0 1px 0 var(--neu-inset-light);
+  transition: all 0.2s var(--ease);
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.nexora .bubble-editor-save {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--send-icon);
 }
 
+.nexora .bubble-editor-save:hover {
+  background: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+  box-shadow:
+    3px 3px 8px var(--neu-shadow-dark),
+    -1px -1px 5px var(--neu-shadow-light);
+}
 
+.nexora .bubble-editor-save:active {
+  transform: scale(0.95);
+  box-shadow:
+    inset 2px 2px 5px rgba(0, 0, 0, 0.3),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.05);
+}
+
+.nexora .bubble-editor-cancel {
+  background: rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.nexora .bubble-editor-cancel:hover {
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+.nexora .bubble-editor-cancel:active {
+  transform: scale(0.95);
+  box-shadow:
+    inset 2px 2px 5px rgba(0, 0, 0, 0.3),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.05);
+}
+
+/* ── Bot response chunks ── */
+.nexora .bot-chunk {
+  margin: 4px 0;
+  line-height: 1.65;
+}
+
+/* Headings */
 .nexora .bot-chunk h1,
 .nexora .bot-chunk h2,
 .nexora .bot-chunk h3,
 .nexora .bot-chunk h4,
 .nexora .bot-chunk h5,
 .nexora .bot-chunk h6 {
-  margin: 16px 0 10px 0;
+  margin: 20px 0 8px 0;
   line-height: 1.3;
-  font-weight: 700;
+  font-weight: 650;
   color: var(--text);
+  letter-spacing: -0.2px;
 }
-
 .nexora .bot-chunk h1:first-child,
 .nexora .bot-chunk h2:first-child,
-.nexora .bot-chunk h3:first-child,
-.nexora .bot-chunk h4:first-child,
-.nexora .bot-chunk h5:first-child,
-.nexora .bot-chunk h6:first-child {
-  margin-top: 0;
-}
+.nexora .bot-chunk h3:first-child { margin-top: 0; }
 
-.nexora .bot-chunk h1 { 
-  font-size: 1.8em;
-  background: linear-gradient(90deg, var(--orange), var(--orange-deep), var(--orange));
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer 3s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-.nexora .bot-chunk h2 { 
-  font-size: 1.5em;
+.nexora .bot-chunk h1 {
+  font-size: 1.6em;
   color: var(--orange);
-  transition: transform 0.3s ease, color 0.3s ease;
-  cursor: default;
 }
+.nexora .bot-chunk h2 {
+  font-size: 1.35em;
+  color: var(--orange);
+}
+.nexora .bot-chunk h3 {
+  font-size: 1.15em;
+  color: color-mix(in srgb, var(--orange) 85%, var(--text));
+}
+.nexora .bot-chunk h4 { font-size: 1.05em; }
+.nexora .bot-chunk h5 { font-size: 1em; font-weight: 600; }
+.nexora .bot-chunk h6 { font-size: 0.9em; color: var(--muted); font-weight: 600; }
 
-.nexora .bot-chunk h2:hover {
-  transform: scale(1.05);
-  animation: headingBounce 0.6s ease;
-}
-
-@keyframes headingBounce {
-  0%, 100% { transform: scale(1.05); }
-  25% { transform: scale(1.08); }
-  75% { transform: scale(1.03); }
-}
-.nexora .bot-chunk h3 { 
-  font-size: 1.3em;
-  color: color-mix(in srgb, var(--orange) 90%, var(--text) 10%);
-}
-.nexora .bot-chunk h4 { font-size: 1.15em; }
-.nexora .bot-chunk h5 { font-size: 1.05em; }
-.nexora .bot-chunk h6 { 
-  font-size: 0.95em;
-  color: var(--muted);
-}
-
-
+/* Paragraphs */
 .nexora .bot-chunk p {
   margin: 8px 0;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
-
+/* Lists */
 .nexora .bot-chunk ul,
 .nexora .bot-chunk ol {
   margin: 10px 0;
-  padding-left: 24px;
+  padding-left: 22px;
 }
 
 .nexora .bot-chunk li {
-  margin: 6px 0;
-  line-height: 1.5;
+  margin: 5px 0;
+  line-height: 1.55;
 }
 
 .nexora .bot-chunk ul > li {
   list-style: none;
   position: relative;
-  padding-left: 4px;
-  animation: slideInListItem 0.4s ease-out;
-  animation-fill-mode: both;
-}
-
-.nexora .bot-chunk ul > li:nth-child(1) { animation-delay: 0.05s; }
-.nexora .bot-chunk ul > li:nth-child(2) { animation-delay: 0.10s; }
-.nexora .bot-chunk ul > li:nth-child(3) { animation-delay: 0.15s; }
-.nexora .bot-chunk ul > li:nth-child(4) { animation-delay: 0.20s; }
-.nexora .bot-chunk ul > li:nth-child(5) { animation-delay: 0.25s; }
-.nexora .bot-chunk ul > li:nth-child(n+6) { animation-delay: 0.30s; }
-
-@keyframes slideInListItem {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  padding-left: 2px;
 }
 
 .nexora .bot-chunk ul > li::before {
-  content: '•';
+  content: '';
   position: absolute;
-  left: -16px;
-  color: var(--orange);
-  font-weight: bold;
-  font-size: 1.2em;
-  animation: pulseDot 2s ease-in-out infinite;
-}
-
-@keyframes pulseDot {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.7; }
+  left: -14px;
+  top: 0.55em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--orange);
 }
 
 .nexora .bot-chunk ol > li {
-  padding-left: 4px;
+  padding-left: 2px;
 }
 
+.nexora .bot-chunk ol {
+  counter-reset: ol-counter;
+}
+.nexora .bot-chunk ol > li {
+  counter-increment: ol-counter;
+}
 
+/* Task list checkboxes */
+.nexora .bot-chunk li.task {
+  list-style: none;
+  position: relative;
+  padding-left: 2px;
+}
+.nexora .bot-chunk li.task::before { display: none; }
+.nexora .bot-chunk li.task input[type="checkbox"] {
+  margin-right: 8px;
+  accent-color: var(--orange);
+  vertical-align: middle;
+}
+.nexora .bot-chunk li.task.done {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--muted) 50%, transparent);
+}
+
+/* Blockquotes */
 .nexora .bot-chunk blockquote {
-  margin: 12px 0;
-  padding: 12px 16px;
-  border-left: 4px solid var(--orange);
-  background: color-mix(in srgb, var(--panel) 30%, transparent);
-  border-radius: 0 8px 8px 0;
+  margin: 14px 0;
+  padding: 12px 18px;
+  border-left: 3px solid var(--orange);
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 0 12px 12px 0;
+  border-top: 1px solid var(--glass-border);
+  border-right: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--glass-border);
   color: var(--muted);
   font-style: italic;
-  animation: slideInQuote 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transition: transform 0.3s ease, background 0.3s ease, border-left-width 0.3s ease;
+  box-shadow:
+    3px 3px 8px var(--neu-shadow-dark),
+    -1px -1px 5px var(--neu-shadow-light),
+    inset 0 1px 0 var(--neu-inset-light);
+  transition: all 0.25s var(--ease);
 }
 
 .nexora .bot-chunk blockquote:hover {
-  transform: translateX(8px);
-  background: color-mix(in srgb, var(--panel) 45%, transparent);
-  border-left-width: 6px;
+  border-color: var(--glass-border-hover);
+  transform: translateX(2px);
 }
 
-@keyframes slideInQuote {
-  from {
-    opacity: 0;
-    transform: translateX(-40px);
-    border-left-width: 0px;
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-    border-left-width: 4px;
-  }
-}
-
-
+/* Horizontal rules */
 .nexora .bot-chunk hr {
-  margin: 16px 0;
+  margin: 20px 0;
   border: none;
-  height: 2px;
+  height: 1px;
   background: linear-gradient(
     90deg,
     transparent,
-    color-mix(in srgb, var(--orange) 40%, transparent) 50%,
+    color-mix(in srgb, var(--orange) 30%, transparent) 50%,
     transparent
   );
 }
 
-
+/* Links */
 .nexora .bot-chunk a {
   color: var(--orange);
   text-decoration: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--orange) 40%, transparent);
-  transition: all 0.3s ease;
-  position: relative;
-  display: inline-block;
+  border-bottom: 1px solid color-mix(in srgb, var(--orange) 35%, transparent);
+  transition: border-color 0.2s var(--ease), color 0.2s var(--ease);
 }
 
 .nexora .bot-chunk a:hover {
   border-bottom-color: var(--orange);
-  color: color-mix(in srgb, var(--orange) 120%, white 20%);
-  animation: linkWave 0.6s ease;
-  text-shadow: 0 0 12px var(--orange-shadow);
+  color: color-mix(in srgb, var(--orange) 80%, white);
 }
 
-@keyframes linkWave {
-  0%, 100% { transform: translateY(0); }
-  25% { transform: translateY(-2px); }
-  75% { transform: translateY(2px); }
-}
-
-
+/* Inline formatting */
 .nexora .bot-chunk strong {
-  font-weight: 700;
+  font-weight: 650;
   color: var(--text);
 }
 
 .nexora .bot-chunk em {
   font-style: italic;
-  color: color-mix(in srgb, var(--text) 90%, var(--orange) 10%);
+  color: color-mix(in srgb, var(--text) 92%, var(--orange));
 }
-
 
 .nexora .bot-chunk del {
   text-decoration: line-through;
   color: var(--muted);
-  opacity: 0.7;
+  opacity: 0.65;
 }
 
-
+/* Tables */
 .nexora .bot-chunk table {
   width: 100%;
-  margin: 12px 0;
-  border-collapse: collapse;
-  border-radius: 8px;
+  margin: 14px 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 14px;
   overflow: hidden;
-  background: color-mix(in srgb, var(--panel) 30%, transparent);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  font-size: 14px;
+  box-shadow:
+    4px 4px 12px var(--neu-shadow-dark),
+    -2px -2px 8px var(--neu-shadow-light),
+    inset 0 1px 0 var(--neu-inset-light);
+  transition: all 0.25s var(--ease);
+}
+
+.nexora .bot-chunk table:hover {
+  border-color: var(--glass-border-hover);
+  box-shadow:
+    6px 6px 16px var(--neu-shadow-dark),
+    -3px -3px 10px var(--neu-shadow-light),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.nexora .bot-chunk thead th {
+  background: rgba(212, 85, 10, 0.12);
+  backdrop-filter: blur(8px);
+  color: var(--orange);
+  font-weight: 650;
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 2px solid rgba(212, 85, 10, 0.2);
 }
 
 .nexora .bot-chunk th,
 .nexora .bot-chunk td {
-  padding: 10px 12px;
+  padding: 9px 14px;
   text-align: left;
-  border: 1px solid color-mix(in srgb, var(--panel) 50%, transparent);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-.nexora .bot-chunk th {
-  background: color-mix(in srgb, var(--orange) 20%, transparent);
-  color: var(--orange);
-  font-weight: 700;
+.nexora .bot-chunk tbody tr:last-child td {
+  border-bottom: none;
 }
 
-.nexora .bot-chunk tr:nth-child(even) {
-  background: color-mix(in srgb, var(--panel) 15%, transparent);
+.nexora .bot-chunk tbody tr:hover {
+  background: rgba(212, 85, 10, 0.06);
 }
 
-
-.nexora .bot-chunk input[type="checkbox"] {
-  margin-right: 8px;
-  accent-color: var(--orange);
+.nexora .bot-chunk tbody tr {
+  transition: background 0.2s var(--ease);
 }
 
-
+/* Images */
 .nexora .bot-chunk img {
   max-width: 100%;
   height: auto;
-  border-radius: 8px;
-  margin: 12px 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-radius: 14px;
+  margin: 14px 0;
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    4px 4px 12px var(--neu-shadow-dark),
+    -2px -2px 8px var(--neu-shadow-light);
+  transition: all 0.3s var(--ease);
 }
 
-.nexora .bot-name {
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 4px;
+.nexora .bot-chunk img:hover {
+  transform: scale(1.01);
+  box-shadow:
+    6px 6px 18px var(--neu-shadow-dark),
+    -3px -3px 10px var(--neu-shadow-light);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Code blocks
+   ═══════════════════════════════════════════════════════════════ */
 
 .nexora .code {
-  margin: 10px 0;
-  border-radius: var(--radius);
+  margin: 14px 0;
+  border-radius: 16px;
   overflow: hidden;
-  background: color-mix(in srgb, var(--panel) 40%, transparent);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid color-mix(in srgb, var(--orange) 20%, transparent);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
-    0 0 0 1px color-mix(in srgb, var(--orange) 10%, transparent) inset;
-  transition: transform .3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow .3s ease, border-color .3s ease;
-  animation: codeSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes codeSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  background: rgba(17, 17, 17, 0.7);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    5px 5px 14px var(--neu-shadow-dark),
+    -2px -2px 8px var(--neu-shadow-light),
+    inset 0 1px 0 var(--neu-inset-light);
+  transition: all 0.3s var(--ease);
 }
 
 .nexora .code:hover {
-  transform: translateY(-4px) scale(1.01);
-  border-color: color-mix(in srgb, var(--orange) 35%, transparent);
-  box-shadow: 
-    0 12px 48px var(--orange-shadow),
-    0 4px 16px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
-    0 0 0 1px color-mix(in srgb, var(--orange) 15%, transparent) inset;
-  animation: codeGlow 1.5s ease-in-out infinite;
-}
-
-@keyframes codeGlow {
-  0%, 100% {
-    box-shadow: 
-      0 12px 48px var(--orange-shadow),
-      0 4px 16px rgba(0, 0, 0, 0.5),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.3),
-      0 0 0 1px color-mix(in srgb, var(--orange) 15%, transparent) inset;
-  }
-  50% {
-    box-shadow: 
-      0 12px 56px var(--orange-shadow),
-      0 6px 20px rgba(0, 0, 0, 0.5),
-      inset 0 1px 0 rgba(255, 255, 255, 0.12),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.3),
-      0 0 0 1px color-mix(in srgb, var(--orange) 25%, transparent) inset;
-  }
+  border-color: var(--glass-border-hover);
+  box-shadow:
+    7px 7px 20px var(--neu-shadow-dark),
+    -3px -3px 12px var(--neu-shadow-light),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transform: translateY(-2px);
 }
 
 .nexora .code-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--panel-2) 60%, transparent),
-    color-mix(in srgb, var(--panel) 40%, transparent)
-  );
+  gap: 10px;
+  background: rgba(28, 28, 28, 0.6);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  padding: 12px 16px;
-  gap: 8px;
-  border-bottom: 1px solid color-mix(in srgb, var(--orange) 15%, transparent);
-  box-shadow: 
-    inset 0 1px 0 rgba(255, 255, 255, 0.03),
-    0 1px 3px rgba(0, 0, 0, 0.2);
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
+
+.nexora .code-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.nexora .code-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+.nexora .code-dot:nth-child(1) { background: #ff5f57; }
+.nexora .code-dot:nth-child(2) { background: #febc2e; }
+.nexora .code-dot:nth-child(3) { background: #28c840; }
 
 .nexora .code-lang {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--orange);
-  letter-spacing: .5px;
-  text-transform: uppercase;
-  text-shadow: 
-    0 0 10px var(--orange-shadow),
-    0 2px 4px rgba(0, 0, 0, 0.5);
-  filter: drop-shadow(0 0 8px var(--orange-shadow));
-  animation: langPulse 2s ease-in-out infinite;
-}
-
-@keyframes langPulse {
-  0%, 100% {
-    text-shadow: 
-      0 0 10px var(--orange-shadow),
-      0 2px 4px rgba(0, 0, 0, 0.5);
-    filter: drop-shadow(0 0 8px var(--orange-shadow));
-  }
-  50% {
-    text-shadow: 
-      0 0 16px var(--orange-shadow),
-      0 2px 4px rgba(0, 0, 0, 0.5);
-    filter: drop-shadow(0 0 14px var(--orange-shadow));
-  }
+  flex: 1;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.28);
+  letter-spacing: 0.2px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
 }
 
 .nexora .copy-btn {
   appearance: none;
-  border: 0;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--orange) 15%, transparent),
-    color-mix(in srgb, var(--orange-deep) 12%, transparent)
-  );
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 7px 12px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 5px 11px;
   margin: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
+  box-shadow:
+    2px 2px 6px var(--neu-shadow-dark),
+    -1px -1px 4px var(--neu-shadow-light),
+    inset 0 1px 0 var(--neu-inset-light);
+  transition: all 0.2s var(--ease);
   font-size: 11px;
-  font-weight: 600;
-  color: var(--orange);
-  gap: 6px;
-  border: 1px solid color-mix(in srgb, var(--orange) 25%, transparent);
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  font-weight: 500;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.4);
+  gap: 5px;
+  flex-shrink: 0;
 }
 
 .nexora .copy-btn:hover {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--orange) 25%, transparent),
-    color-mix(in srgb, var(--orange-deep) 20%, transparent)
-  );
-  border-color: color-mix(in srgb, var(--orange) 40%, transparent);
-  box-shadow: 
-    0 4px 16px var(--orange-shadow),
-    0 0 20px var(--orange-shadow),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transform: translateY(-2px) scale(1.02);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--glass-border-hover);
+  color: rgba(255, 255, 255, 0.75);
+  transform: translateY(-1px);
+  box-shadow:
+    3px 3px 8px var(--neu-shadow-dark),
+    -1px -1px 5px var(--neu-shadow-light);
 }
 
 .nexora .copy-btn:active {
-  transform: translateY(0) scale(0.98);
-  box-shadow: 
-    0 1px 4px rgba(0, 0, 0, 0.3),
-    inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: scale(0.93) translateY(1px);
+  box-shadow:
+    inset 2px 2px 5px var(--neu-inset-dark),
+    inset -1px -1px 3px var(--neu-inset-light);
+  transition: all 0.08s var(--ease);
 }
 
 .nexora .copy-btn img {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   display: block;
-  opacity: 0.9;
-  transition: opacity .3s ease;
-}
-
-.nexora .copy-btn:hover img {
-  opacity: 1;
+  opacity: 0.7;
 }
 
 .nexora pre {
   margin: 0;
-  padding: 18px;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--page-bg) 60%, transparent),
-    color-mix(in srgb, var(--panel) 50%, transparent)
-  );
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  padding: 16px;
+  background: rgba(17, 17, 17, 0.5);
   overflow: auto;
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--orange) 60%, transparent) color-mix(in srgb, var(--panel) 30%, transparent);
-  box-shadow: 
-    inset 0 2px 8px rgba(0, 0, 0, 0.4),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+  scrollbar-color: color-mix(in srgb, var(--orange) 40%, transparent) transparent;
+  font-size: 13px;
+  line-height: 1.6;
+  tab-size: 2;
+}
+
+/* Override highlight.js github-dark theme background */
+.nexora pre code.hljs,
+.nexora pre .hljs {
+  background: transparent;
+  padding: 0;
 }
 
 .nexora pre::-webkit-scrollbar {
-  height: 10px;
-  width: 10px;
+  height: 6px;
+  width: 6px;
 }
 
 .nexora pre::-webkit-scrollbar-track {
-  background: color-mix(in srgb, var(--panel) 30%, transparent);
-  backdrop-filter: blur(5px);
-  border-radius: 5px;
+  background: transparent;
 }
 
 .nexora pre::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--orange) 70%, transparent),
-    color-mix(in srgb, var(--orange-deep) 60%, transparent)
-  );
-  border-radius: 5px;
-  border: 1px solid color-mix(in srgb, var(--orange) 30%, transparent);
-  box-shadow: 0 0 8px var(--orange-shadow);
+  background: color-mix(in srgb, var(--orange) 40%, transparent);
+  border-radius: 3px;
 }
 
 .nexora pre::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--orange) 90%, transparent),
-    color-mix(in srgb, var(--orange-deep) 80%, transparent)
-  );
-  box-shadow: 0 0 12px var(--orange-shadow);
+  background: color-mix(in srgb, var(--orange) 60%, transparent);
 }
 
-
+/* Inline code */
 .nexora .bot-chunk code {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--orange) 15%, transparent),
-    color-mix(in srgb, var(--orange-deep) 10%, transparent)
-  );
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(212, 85, 10, 0.08);
+  backdrop-filter: blur(4px);
   color: var(--orange);
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: 6px;
-  font-size: 13px;
-  border: 1px solid color-mix(in srgb, var(--orange) 25%, transparent);
-  box-shadow: 
-    0 2px 6px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  text-shadow: 0 0 8px var(--orange-shadow);
+  font-size: 0.88em;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  border: 1px solid rgba(212, 85, 10, 0.12);
+  box-shadow:
+    inset 1px 1px 3px rgba(0, 0, 0, 0.2),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.02);
+  word-break: break-word;
+  transition: all 0.2s var(--ease);
 }
 
-/* KaTeX Math Styling */
+.nexora .bot-chunk code:hover {
+  background: rgba(212, 85, 10, 0.12);
+  border-color: rgba(212, 85, 10, 0.2);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   KaTeX Math
+   ═══════════════════════════════════════════════════════════════ */
+
 .nexora .katex-display {
   margin: 16px 0;
-  padding: 16px;
-  background: color-mix(in srgb, var(--panel) 30%, transparent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--orange) 20%, transparent);
+  padding: 18px 20px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
   overflow-x: auto;
   overflow-y: hidden;
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  animation: fadeInUp 0.4s ease-out;
+  box-shadow:
+    4px 4px 12px var(--neu-shadow-dark),
+    -2px -2px 8px var(--neu-shadow-light),
+    inset 0 1px 0 var(--neu-inset-light);
+  transition: all 0.25s var(--ease);
+}
+
+.nexora .katex-display:hover {
+  border-color: var(--glass-border-hover);
+  box-shadow:
+    6px 6px 16px var(--neu-shadow-dark),
+    -3px -3px 10px var(--neu-shadow-light),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
 }
 
 .nexora .katex {
@@ -750,34 +892,40 @@
   color: var(--orange);
 }
 
-.nexora .katex-display:hover {
-  border-color: color-mix(in srgb, var(--orange) 30%, transparent);
-  box-shadow: 
-    0 6px 20px rgba(0, 0, 0, 0.4),
-    0 0 20px var(--orange-shadow),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transform: translateY(-2px);
-  transition: all 0.3s ease;
-}
+/* ═══════════════════════════════════════════════════════════════
+   Footer / Input
+   ═══════════════════════════════════════════════════════════════ */
 
 .nexora .footer {
   padding: 12px;
-  border-top: 1px solid color-mix(in srgb, var(--panel) 8%, #000 0%);
-  background: color-mix(in srgb, var(--panel-2) 6%, transparent);
+  background: transparent;
 }
 
 .nexora .input-row {
   display: flex;
   gap: 10px;
   align-items: center;
-  background: var(--panel-2);
-  border: 1px solid color-mix(in srgb, var(--panel) 8%, #000 0%);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
   border-radius: 999px;
   padding: 6px 8px;
+  box-shadow:
+    5px 5px 14px var(--neu-shadow-dark),
+    -2px -2px 8px var(--neu-shadow-light),
+    inset 0 1px 0 var(--neu-inset-light);
+  transition: all 0.3s var(--ease);
 }
+
 .nexora .input-row:focus-within {
-  border-color: color-mix(in srgb, var(--accent) 65%, transparent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+  border-color: rgba(212, 85, 10, 0.4);
+  box-shadow:
+    5px 5px 14px var(--neu-shadow-dark),
+    -2px -2px 8px var(--neu-shadow-light),
+    inset 0 1px 0 var(--neu-inset-light),
+    0 0 0 3px rgba(212, 85, 10, 0.1),
+    0 0 20px rgba(212, 85, 10, 0.08);
 }
 
 .nexora .input {
@@ -787,95 +935,109 @@
   border: 0;
   outline: 0;
   height: 44px;
-  padding: 0 10px;
-  font-size: 16px;
+  padding: 0 12px;
+  font-size: 15px;
+  font-family: inherit;
 }
-.nexora .input::placeholder { color: color-mix(in srgb, var(--text) 36%, transparent); opacity: .9; }
+
+.nexora .input::placeholder {
+  color: color-mix(in srgb, var(--text) 35%, transparent);
+  opacity: 1;
+}
 
 .nexora .send {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
   border-radius: 50%;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), var(--orange-deep));
+  backdrop-filter: blur(8px);
   color: var(--send-icon);
   font-size: 18px;
   font-weight: 900;
-  transition: transform .06s ease, filter .15s ease, box-shadow .3s ease;
+  box-shadow:
+    4px 4px 10px var(--neu-shadow-dark),
+    -2px -2px 6px var(--neu-shadow-light),
+    inset 0 2px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  transition: all 0.2s var(--ease);
   position: relative;
-  box-shadow: 0 2px 8px var(--orange-shadow);
-  animation: sendButtonPulse 3s ease-in-out infinite;
-}
-.nexora .send:hover { 
-  filter: brightness(1.08); 
-  transform: scale(1.05);
-  box-shadow: 0 4px 20px var(--orange-shadow);
-  animation: sendButtonBounce 0.5s ease;
-}
-.nexora .send:active { 
-  transform: scale(0.97); 
-  animation: sendClick 0.3s ease;
-}
-.nexora .send.typing { animation: pulse 1s infinite; }
-
-@keyframes sendButtonPulse {
-  0%, 100% {
-    box-shadow: 0 2px 8px var(--orange-shadow);
-  }
-  50% {
-    box-shadow: 0 4px 16px var(--orange-shadow);
-  }
+  will-change: transform;
 }
 
-@keyframes sendButtonBounce {
-  0%, 100% { transform: scale(1.05); }
-  50% { transform: scale(1.12); }
+.nexora .send:hover {
+  transform: scale(1.08);
+  box-shadow:
+    5px 5px 14px var(--neu-shadow-dark),
+    -2px -2px 8px var(--neu-shadow-light),
+    inset 0 2px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2),
+    0 0 18px rgba(212, 85, 10, 0.35);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
-@keyframes sendClick {
-  0% { transform: scale(0.97); }
-  50% { transform: scale(0.9) rotate(15deg); }
-  100% { transform: scale(0.97); }
+.nexora .send:active {
+  transform: scale(0.9);
+  box-shadow:
+    inset 3px 3px 8px rgba(0, 0, 0, 0.4),
+    inset -2px -2px 6px rgba(255, 255, 255, 0.05);
+  transition: all 0.08s var(--ease);
 }
 
-@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .6 } }
-@keyframes fade { from { opacity: 0; transform: translateY(4px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes sendBounce {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(0.85); }
+  50%  { transform: scale(1.1); }
+  75%  { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
 
+.nexora .send.sent-bounce {
+  animation: sendBounce 0.45s var(--ease);
+}
+
+.nexora .send.typing {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ── Utilities ── */
 .nexora .hidden { display: none; }
 
+/* ── Typing indicator ── */
 .nexora .typing-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   color: var(--muted);
-  padding: 0;
-  border-radius: 0;
-  background: transparent;
-  max-width: 72%;
+  padding: 12px 16px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 18px 18px 18px 6px;
+  max-width: 75%;
   line-height: 1;
-  animation: typingFadeIn 0.3s ease;
-}
-
-@keyframes typingFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  box-shadow:
+    4px 4px 12px var(--neu-shadow-dark),
+    -2px -2px 8px var(--neu-shadow-light),
+    inset 0 1px 0 var(--neu-inset-light);
+  animation: msgIn 0.35s var(--ease) both;
 }
 
 .nexora .loader {
-  width: 2.6rem;
-  padding: 0.4rem;
+  width: 2.2rem;
+  padding: 0.35rem;
   aspect-ratio: 1;
   border-radius: 50%;
   background: var(--accent);
@@ -886,23 +1048,24 @@
           mask: var(--sp);
   -webkit-mask-composite: source-out;
           mask-composite: subtract;
-  animation: SP 1s infinite linear;
+  animation: spin 0.8s infinite linear;
   display: inline-block;
   vertical-align: middle;
 }
-@keyframes SP { to { transform: rotate(1turn); } }
 
+@keyframes spin { to { transform: rotate(1turn); } }
+
+/* ── Intro cursor ── */
 .nexora .intro h1::after {
   content: '';
   display: inline-block;
   width: 2px;
-  height: 1.2em;
-  margin-left: 6px;
+  height: 1em;
+  margin-left: 4px;
   background: var(--accent);
   vertical-align: middle;
   border-radius: 1px;
-  transform: translateY(-0.06em);
-  animation: cursorBlink 1.2s step-end infinite;
+  animation: cursorBlink 1s step-end infinite;
 }
 
 @keyframes cursorBlink {
@@ -910,94 +1073,167 @@
   51%, 100% { opacity: 0; }
 }
 
-.nexora a:focus, .nexora button:focus, .nexora .input:focus {
+/* ── Focus styles ── */
+.nexora a:focus-visible,
+.nexora button:focus-visible {
+  outline: 2px solid rgba(212, 85, 10, 0.5);
+  outline-offset: 2px;
+  border-radius: 6px;
+  box-shadow: 0 0 12px rgba(212, 85, 10, 0.2);
+}
+
+/* Input gets no individual focus ring — the input-row :focus-within handles it */
+.nexora .input:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
-  border-radius: 8px;
+  box-shadow: none;
 }
 
+/* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .nexora * , .nexora *::before, .nexora *::after {
-    animation-duration: 1ms !important;
+  .nexora *, .nexora *::before, .nexora *::after {
+    animation-duration: 0ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 1ms !important;
-  }
-  .nexora .msg, .nexora .loader, .nexora .intro, .nexora .previewWrap {
-    animation: none !important;
-    transition: none !important;
+    transition-duration: 0ms !important;
   }
 }
 
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .nexora .msg { max-width: 88%; }
+  .nexora .scroll { padding: 16px 12px; }
+  .nexora .bot-chunk h1 { font-size: 1.4em; }
+  .nexora .bot-chunk h2 { font-size: 1.2em; }
+  .nexora pre { padding: 12px; font-size: 12px; }
+  .nexora .katex-display { padding: 12px 14px; }
+}
 
-/* ── Light Mode ── */
+
+/* ─────────────────────────────────────────────────────────────
+   Light Mode — Glassmorphic + Neumorphic
+───────────────────────────────────────────────────────────── */
+
+.light-scheme .nexora {
+  --glass-bg: rgba(255, 255, 255, 0.45);
+  --glass-bg-strong: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-border-hover: rgba(0, 0, 0, 0.15);
+  --neu-shadow-dark: rgba(0, 0, 0, 0.12);
+  --neu-shadow-light: rgba(255, 255, 255, 0.8);
+  --neu-inset-dark: rgba(0, 0, 0, 0.08);
+  --neu-inset-light: rgba(255, 255, 255, 0.6);
+}
+
 .light-scheme .nexora .code {
-  box-shadow: 0 2px 10px rgba(0,0,0,0.06), inset 0 1px 0 rgba(0,0,0,0.03), inset 0 -1px 0 rgba(0,0,0,0.04);
-  border-color: rgba(0,0,0,0.08);
-  background: rgba(0,0,0,0.02);
+  background: rgba(246, 248, 250, 0.7);
+  border-color: rgba(0, 0, 0, 0.08);
 }
 
 .light-scheme .nexora .code:hover {
-  box-shadow: 0 3px 14px rgba(0,0,0,0.08), inset 0 1px 0 rgba(0,0,0,0.04), inset 0 -1px 0 rgba(0,0,0,0.04);
+  border-color: rgba(0, 0, 0, 0.13);
 }
 
 .light-scheme .nexora .code-header {
-  box-shadow: 0 1px 2px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.5);
-  background: rgba(0,0,0,0.03);
+  background: rgba(238, 240, 242, 0.6);
+  border-bottom-color: rgba(0, 0, 0, 0.06);
 }
 
 .light-scheme .nexora .code-lang {
-  text-shadow: none;
+  color: rgba(0, 0, 0, 0.35);
 }
 
 .light-scheme .nexora .copy-btn {
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.4);
-  border-color: rgba(0,0,0,0.08);
+  border-color: rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.5);
+  color: rgba(0, 0, 0, 0.4);
 }
 
 .light-scheme .nexora .copy-btn:hover {
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.5);
-}
-
-.light-scheme .nexora .copy-btn:active {
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: rgba(0, 0, 0, 0.65);
 }
 
 .light-scheme .nexora pre {
-  box-shadow: inset 0 1px 4px rgba(0,0,0,0.04), inset 0 -1px 0 rgba(0,0,0,0.02);
-  background: rgba(0,0,0,0.02);
+  background: rgba(240, 242, 245, 0.5);
+}
+
+.light-scheme .nexora pre code.hljs,
+.light-scheme .nexora pre .hljs {
+  background: transparent;
+  padding: 0;
 }
 
 .light-scheme .nexora .bot-chunk code {
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05), inset 0 1px 0 rgba(0,0,0,0.02);
-  background: rgba(0,0,0,0.04);
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.06);
 }
 
 .light-scheme .nexora .bot-chunk img {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow:
+    4px 4px 12px rgba(0, 0, 0, 0.08),
+    -2px -2px 8px rgba(255, 255, 255, 0.8);
 }
 
 .light-scheme .nexora .katex-display {
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05), inset 0 1px 0 rgba(0,0,0,0.02);
-  border-color: rgba(0,0,0,0.06);
+  background: rgba(255, 255, 255, 0.4);
+  border-color: rgba(0, 0, 0, 0.06);
 }
 
 .light-scheme .nexora .katex-display:hover {
-  box-shadow: 0 3px 10px rgba(0,0,0,0.07), inset 0 1px 0 rgba(0,0,0,0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light-scheme .nexora .bot-chunk blockquote {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.light-scheme .nexora .bot-chunk table {
+  background: rgba(255, 255, 255, 0.4);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light-scheme .nexora .bot-chunk thead th {
+  background: rgba(0, 0, 0, 0.04);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
 }
 
 .light-scheme .nexora .reset-btn {
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-}
-
-.light-scheme .nexora .reset-btn:active {
-  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  background: rgba(255, 255, 255, 0.5);
+  border-color: rgba(0, 0, 0, 0.08);
 }
 
 .light-scheme .nexora .input-row {
-  border-color: rgba(0,0,0,0.06);
-  background: rgba(255,255,255,0.7);
+  border-color: rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .light-scheme .nexora .footer {
-  border-color: rgba(0,0,0,0.04);
+  border: none;
+}
+
+.light-scheme .nexora .msg.user {
+  box-shadow:
+    4px 4px 12px rgba(212, 85, 10, 0.15),
+    -2px -2px 8px rgba(255, 255, 255, 0.8);
+}
+
+.light-scheme .nexora .msg.bot {
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow:
+    4px 4px 12px rgba(0, 0, 0, 0.08),
+    -2px -2px 8px rgba(255, 255, 255, 0.8);
+}
+
+.light-scheme .nexora .msg-actions {
+  border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+.light-scheme .nexora .msg-action-btn {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light-scheme .nexora .typing-indicator {
+  background: rgba(255, 255, 255, 0.45);
+  border-color: rgba(0, 0, 0, 0.06);
 }

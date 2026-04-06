@@ -25,46 +25,51 @@
   <style>
     .mode-selector {
       position: absolute;
-      top: 15px;
+      top: 14px;
       left: 12px;
       z-index: 10;
-      padding: 8px 14px;
-      background: transparent;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid color-mix(in srgb, var(--orange) 30%, transparent);
-      border-radius: 8px;
-      color: var(--muted);
+      padding: 7px 14px;
+      background: rgba(26, 16, 13, 0.45);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      color: var(--muted, #b8907a);
       font-size: 13px;
       font-weight: 600;
       font-family: inherit;
       cursor: pointer;
-      transition: all 0.3s ease;
+      box-shadow:
+        4px 4px 10px rgba(0, 0, 0, 0.6),
+        -2px -2px 8px rgba(255, 255, 255, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       outline: none;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
-    .mode-selector:hover {
-      background: transparent;
-      border-color: var(--orange);
-      color: var(--orange);
-      box-shadow: 0 4px 12px var(--orange-shadow);
-      transform: translateY(-2px);
-    }
-
+    .mode-selector:hover,
     .mode-selector:focus {
-      border-color: var(--orange);
-      box-shadow: 0 4px 12px var(--orange-shadow);
+      border-color: rgba(255, 255, 255, 0.15);
+      color: var(--orange, #d4550a);
+      background: rgba(212, 85, 10, 0.1);
+      box-shadow:
+        6px 6px 14px rgba(0, 0, 0, 0.6),
+        -3px -3px 10px rgba(255, 255, 255, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      transform: translateY(-1px);
     }
 
     .mode-selector:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      transform: scale(0.95) translateY(1px);
+      box-shadow:
+        inset 3px 3px 8px rgba(0, 0, 0, 0.4),
+        inset -2px -2px 6px rgba(255, 255, 255, 0.03);
+      transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .mode-selector option {
-      background: var(--page-bg);
-      color: var(--text);
+      background: var(--page-bg, #0a0605);
+      color: var(--text, #f0e0d8);
       padding: 8px;
     }
 
@@ -79,7 +84,7 @@
       color: var(--text-muted, #888);
       text-align: right;
       padding: 0 8px 4px;
-      opacity: 0.8;
+      opacity: 0.7;
     }
     .quota-info.quota-warn { color: var(--accent, orange); }
     .quota-info.quota-empty { color: #e55; font-weight: 600; }
@@ -87,9 +92,16 @@
       text-align: center;
       font-size: 12px;
       color: var(--text-muted, #888);
-      padding: 4px 12px;
+      padding: 8px 16px;
       font-style: italic;
-      background: transparent;
+      background: rgba(26, 16, 13, 0.3);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      box-shadow:
+        2px 2px 6px rgba(0, 0, 0, 0.4),
+        -1px -1px 4px rgba(255, 255, 255, 0.03);
     }
     .msg.system-note.error { color: #e75; }
   </style>
@@ -102,10 +114,10 @@
       <div class="chat">
         <select id="ai-mode" class="mode-selector" title="Select AI mode" aria-label="Select AI assistant mode">
           <option value="general">💬 General</option>
-          <option value="coder">💻 Coder</option>
+          <option value="coder">💻 Code</option>
           <option value="writing">✍️ Writing</option>
           <option value="creative">🎨 Creative</option>
-          <option value="math">🔢 Math Assistant</option>
+          <option value="math">🔢 Math</option>
           <option value="tutor">🎓 Tutor</option>
         </select>
         <button id="reset-chat" class="reset-btn" title="Reset chat" aria-label="Reset chat">🗑️ Reset</button>
@@ -136,38 +148,103 @@
     const MODE_STORAGE_KEY = 'nexora_ai_mode';
     const LIMIT_STORAGE_KEY = 'nexora_rate_limits_v1';
     let chatHistory = [];
+    let lastUserPrompt = '';
     let currentMode = 'general';
 
     const AI_MODES = {
       general: {
-        name: "General Assistant",
+        name: "Nexora AI",
         maxHistory: 10,
-        systemPrompt: "You are a helpful AI assistant, Use markdown formatting and structure your responses with headings, subheadings, bullet points, and numbered lists where appropriate. When providing code snippets, ensure they are enclosed in triple backticks with the correct language specified for syntax highlighting. Always aim to be clear and concise in your explanations."
+        systemPrompt: `You are Nexora AI, a sharp and versatile assistant. Be direct—answer what's asked, nothing more.
+
+Formatting rules:
+- Use **bold** for key terms and emphasis.
+- Use headings (##, ###) to organize long answers into scannable sections.
+- Use bullet lists for multiple points; numbered lists for sequential steps.
+- ALWAYS wrap any code — including HTML, CSS, JS, or any markup — in fenced blocks with the language tag (e.g. \`\`\`html, \`\`\`js, \`\`\`css). Never output raw code as plain text.
+- Use inline \`code\` for function names, variables, file paths, and terminal commands.
+- Use > blockquotes for important callouts or warnings.
+- Keep paragraphs short (2-4 sentences max).
+- Use tables when comparing options or listing structured data.
+- Never pad your response with filler, disclaimers, or unsolicited examples.`
       },
       coder: {
-        name: "Code Assistant",
+        name: "Nexora Code",
         maxHistory: 20,
-        systemPrompt: "You are an expert programming assistant specialized in helping with code. Focus on providing clean, efficient, and well-documented code solutions. Always use proper syntax highlighting by specifying the language in code blocks. Include comments explaining complex logic. Suggest best practices and potential optimizations. When debugging, explain the root cause and provide fixes. Support multiple programming languages including JavaScript, Python, Java, C++, and more."
+        systemPrompt: `You are Nexora Code, a senior-level software engineer. Write production-quality code.
+
+Principles:
+- Default to the most idiomatic solution in the language being used.
+- ALWAYS wrap code in fenced blocks with the language specified (\`\`\`html, \`\`\`js, \`\`\`css, etc.). Never output raw code as plain text.
+- Add brief inline comments only where logic is non-obvious.
+- When fixing bugs, pinpoint the root cause first, then show the fix.
+- Prefer modern syntax and patterns (ES modules, async/await, f-strings, etc.).
+- If a question is ambiguous, state your assumption in one line, then answer.
+- For architecture questions, use bullet lists or tables, not walls of prose.
+- Mention edge cases and potential pitfalls only when they're likely to matter.
+- Never generate boilerplate, placeholder code, or examples the user didn't ask for.`
       },
       writing: {
-        name: "Writing Assistant",
+        name: "Nexora Write",
         maxHistory: 20,
-        systemPrompt: "You are a professional writing assistant specialized in creating, editing, and improving written content. Help with grammar, style, clarity, and structure. Provide constructive feedback on tone and readability. Assist with various writing tasks including essays, articles, emails, creative writing, and technical documentation. Suggest improvements while maintaining the author's voice. Use markdown formatting to organize your feedback and suggestions clearly."
+        systemPrompt: `You are Nexora Write, a skilled editor and writing coach with a sharp eye for clarity and rhythm.
+
+Approach:
+- When editing, show the revised text first, then briefly explain what you changed and why.
+- Preserve the author's voice—improve clarity without flattening personality.
+- Flag weak verbs, passive voice, redundancy, and vague language.
+- For structural feedback, use headings and bullet points to organize your suggestions.
+- Match the user's register: casual for casual, formal for formal.
+- When drafting new text, ask about audience and purpose if not obvious—but only once.
+- Use **bold** to highlight key edits or suggested phrases.
+- Never rewrite more than the user asked you to. Don't volunteer sample paragraphs or templates unless requested.`
       },
       creative: {
-        name: "Creative Partner",
+        name: "Nexora Creative",
         maxHistory: 20,
-        systemPrompt: "You are a creative AI assistant specialized in brainstorming, storytelling, and artistic ideas. Help generate creative concepts, story plots, character development, marketing slogans, design ideas, and innovative solutions. Encourage out-of-the-box thinking and provide multiple creative alternatives. Use vivid descriptions and engaging language. Support various creative domains including writing, visual arts, music, and design."
+        systemPrompt: `You are Nexora Creative, an imaginative collaborator who thrives on bold ideas.
+
+Style:
+- Lead with the most unexpected or compelling angle.
+- Offer 2-3 distinct directions when brainstorming, each with a one-line pitch.
+- Use vivid, sensory language—show, don't tell.
+- For story/character work, focus on conflict, motivation, and specificity.
+- For design or marketing, think about the target audience and emotional hook.
+- Keep suggestions actionable—not just "what if" but "here's how."
+- Use markdown formatting to separate ideas clearly (headings, bold, lists).
+- Don't over-explain your creative choices unless asked. Let the work speak.`
       },
       math: {
-        name: "Math Assistant",
+        name: "Nexora Math",
         maxHistory: 10,
-        systemPrompt: "You are an expert mathematics assistant specialized in solving mathematical problems and explaining concepts clearly. Help with arithmetic, algebra, calculus, geometry, statistics, and advanced mathematics. Show step-by-step solutions with detailed explanations. Use proper mathematical notation and formatting. Break down complex problems into manageable steps. Verify calculations and provide multiple approaches when applicable. Support students at all levels from basic math to university-level mathematics."
+        systemPrompt: `You are Nexora Math, a precise and patient mathematics expert.
+
+Rules:
+- ALWAYS use LaTeX notation for mathematical expressions: inline math with $...$ and display math with $$...$$.
+- Show complete, step-by-step solutions. Number each step.
+- State the method or theorem you're applying at each step (e.g., "By the chain rule…").
+- Clearly box or bold the final answer.
+- When multiple approaches exist, present the cleanest one first; mention alternatives briefly.
+- For proofs, use clear logical structure: Given → Show → Proof → QED.
+- Define any non-standard notation before using it.
+- If the problem is ambiguous, state your interpretation, solve it, then note alternatives.
+- Never generate practice problems or examples unless the user asks for them.`
       },
       tutor: {
-        name: "Educational Tutor",
+        name: "Nexora Tutor",
         maxHistory: 20,
-        systemPrompt: "You are a patient and knowledgeable educational tutor. Break down complex topics into easy-to-understand explanations. Use examples, analogies, and step-by-step instructions to teach concepts. Adapt your teaching style to different learning levels. Encourage questions and provide practice exercises when appropriate. Cover subjects including mathematics, science, history, languages, and more. Use markdown formatting to create well-structured lessons with clear headings and organized content."
+        systemPrompt: `You are Nexora Tutor, a patient and adaptive teacher who makes complex ideas click.
+
+Teaching approach:
+- Start with the core concept in 1-2 plain sentences before going deeper.
+- Use analogies tied to everyday things the user likely knows.
+- Build up from simple to complex—don't skip steps even if they seem obvious.
+- Use ### headings to break explanations into digestible sections.
+- For STEM topics, include relevant formulas in LaTeX ($...$, $$...$$).
+- For history/humanities, use chronological structure and highlight cause-and-effect.
+- Ask a quick check-in question at the end ("Does that make sense?" or "Want me to go deeper on any part?").
+- Adapt your depth based on the user's question—a simple question gets a simple answer.
+- Don't assign homework, quizzes, or practice problems unless explicitly asked.`
       }
     };
     // Client-side rate limiting
@@ -204,7 +281,13 @@
       return state;
     }
 
+    function isLocalhost(){
+      const h = window.location.hostname;
+      return h === '127.0.0.1' || h === 'localhost' || h === '::1';
+    }
+
     function canSendNow(){
+      if(isLocalhost()) return { ok: true, state: {}, reason: { cooldownOk: true, hourOk: true, dayOk: true } };
       const state = resetIfWindowElapsed(loadLimitState());
       const t = now();
       const cooldownOk = (t - (state.lastSendAt || 0)) >= RATE_LIMIT.cooldownMs;
@@ -214,6 +297,7 @@
     }
 
     function recordSend(){
+      if(isLocalhost()) return;
       const state = resetIfWindowElapsed(loadLimitState());
       state.lastSendAt = now();
       state.hourCount++;
@@ -327,6 +411,8 @@
     }
 
     function renderReplyWithCode(text){
+      // Normalize line endings (CRLF → LF) so the code-block regex always matches
+      text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
       const re = /```(\w+)?\n([\s\S]*?)```/g;
       let html = "";
       let last = 0;
@@ -342,12 +428,16 @@
         html += `
           <div class="code">
             <div class="code-header">
+              <div class="code-dots" aria-hidden="true">
+                <span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>
+              </div>
               <span class="code-lang">${escapeHtml(langLabel)}</span>
-              <button class="copy-btn" title="Copy">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <button class="copy-btn" title="Copy code">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
+                <span>Copy</span>
               </button>
             </div>
             <pre><code class="language-${escapeHtml(langRaw)}">${escapeHtml(code)}</code></pre>
@@ -363,81 +453,125 @@
     }
 
     function formatMarkdown(text){
-      // Extract and protect LaTeX expressions before any processing
+      // 1. Protect LaTeX expressions from markdown/HTML processing
       const mathStore = [];
-      
-      // Extract display math blocks first ($$...$$ or \[...\])
-      text = text.replace(/\$\$([\s\S]+?)\$\$/g, (match) => {
-        const id = `KATEXBLOCK${mathStore.length}KATEX`;
+      function stash(match, type){
+        const id = `NXMT${type}${mathStore.length}NXMT`;
         mathStore.push({ id, content: match });
         return id;
-      });
-      
-      text = text.replace(/\\\[([\s\S]+?)\\\]/g, (match) => {
-        const id = `KATEXBLOCK${mathStore.length}KATEX`;
-        mathStore.push({ id, content: match });
+      }
+      // Display math: $$...$$ and \[...\]
+      text = text.replace(/\$\$([\s\S]+?)\$\$/g, m => stash(m, 'D'));
+      text = text.replace(/\\\[([\s\S]+?)\\\]/g, m => stash(m, 'D'));
+      // Inline math: \(...\) and $...$
+      text = text.replace(/\\\((.+?)\\\)/g, m => stash(m, 'I'));
+      text = text.replace(/\$([^\$\n]+?)\$/g, m => stash(m, 'I'));
+
+      // 2. Protect inline code spans
+      const codeStore = [];
+      text = text.replace(/`([^`]+)`/g, (m, code) => {
+        const id = `NXCD${codeStore.length}NXCD`;
+        codeStore.push({ id, code });
         return id;
       });
-      
-      // Extract inline math (\(...\) or $...$)
-      text = text.replace(/\\\((.+?)\\\)/g, (match) => {
-        const id = `KATEXINLINE${mathStore.length}KATEX`;
-        mathStore.push({ id, content: match });
-        return id;
-      });
-      
-      text = text.replace(/\$([^\$\n]+?)\$/g, (match) => {
-        const id = `KATEXINLINE${mathStore.length}KATEX`;
-        mathStore.push({ id, content: match });
-        return id;
-      });
-      
-      // Now escape HTML
+
+      // 3. Escape HTML on the remaining text
       let html = escapeHtml(text);
-      
-      // Process markdown
+
+      // 4. Horizontal rules
       html = html.replace(/^(\-{3,}|\*{3,}|_{3,})$/gm, '<hr>');
-      html = html.replace(/^###### (.+)$/gm, '<h6>$1</h6>');
-      html = html.replace(/^##### (.+)$/gm, '<h5>$1</h5>');
-      html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
-      html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-      html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-      html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
-      html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+
+      // 5. Headings (h1-h6)
+      html = html.replace(/^#{6}\s+(.+)$/gm, '<h6>$1</h6>');
+      html = html.replace(/^#{5}\s+(.+)$/gm, '<h5>$1</h5>');
+      html = html.replace(/^#{4}\s+(.+)$/gm, '<h4>$1</h4>');
+      html = html.replace(/^#{3}\s+(.+)$/gm, '<h3>$1</h3>');
+      html = html.replace(/^#{2}\s+(.+)$/gm, '<h2>$1</h2>');
+      html = html.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>');
+
+      // 6. Blockquotes (multi-line aware)
+      html = html.replace(/^&gt;\s?(.+)$/gm, '<blockquote>$1</blockquote>');
+      html = html.replace(/<\/blockquote>\n<blockquote>/g, '\n');
+
+      // 7. Tables – detect header separator row and apply <thead>/<tbody>
+      html = html.replace(/(^\|.+\|\n)(^\|[\s\-:|]+\|\n)((?:^\|.+\|\n?)+)/gm, (m, hdr, sep, bodyRows) => {
+        const parseRow = (row, tag) => {
+          const cells = row.replace(/^\||\|$/g,'').split('|').map(c => c.trim());
+          return '<tr>' + cells.map(c => `<${tag}>${c}</${tag}>`).join('') + '</tr>';
+        };
+        const thead = '<thead>' + parseRow(hdr.trim(), 'th') + '</thead>';
+        const tbody = '<tbody>' + bodyRows.trim().split('\n').map(r => parseRow(r, 'td')).join('') + '</tbody>';
+        return `<table>${thead}${tbody}</table>`;
+      });
+      // Fallback: simple table rows without separator
       html = html.replace(/^\|(.+)\|$/gm, (match, content) => {
-        const cells = content.split('|').map(c => c.trim()).filter(c => c);
-        const isHeaderSeparator = cells.every(c => /^[\-:]+$/.test(c));
-        if (isHeaderSeparator) return '';
-        const tag = cells.every(c => /^[\-:]+$/.test(c)) ? 'th' : 'td';
-        return '<tr>' + cells.map(c => `<${tag}>${c}</${tag}>`).join('') + '</tr>';
+        const cells = content.split('|').map(c => c.trim()).filter(Boolean);
+        if(cells.every(c => /^[\-:]+$/.test(c))) return '';
+        return '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
       });
-      html = html.replace(/(<tr>.*?<\/tr>\s*)+/g, match => `<table>${match}</table>`);
+      html = html.replace(/(<tr>.*?<\/tr>\s*)+/g, match => {
+        if(match.includes('<table>')) return match;
+        return `<table>${match}</table>`;
+      });
+
+      // 8. Inline formatting
       html = html.replace(/~~([^~]+)~~/g, '<del>$1</del>');
-      html = html.replace(/\*\*\*([^\*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
-      html = html.replace(/___([^_]+)___/g, '<strong><em>$1</em></strong>');
-      html = html.replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
-      html = html.replace(/__([^_]+)__/g, '<strong>$1</strong>');
-      html = html.replace(/\*([^\*]+)\*/g, '<em>$1</em>');
-      html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
-      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-      html = html.replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%; height:auto;">');
+      html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+      html = html.replace(/___(.+?)___/g, '<strong><em>$1</em></strong>');
+      html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+      html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      html = html.replace(/_(.+?)_/g, '<em>$1</em>');
+
+      // 9. Images and links
+      html = html.replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, '<img src="$2" alt="$1" loading="lazy">');
       html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-      html = html.replace(/^[\-\*\+] (.+)$/gm, '<li>$1</li>');
-      html = html.replace(/^\d+\. (.+)$/gm, '<li class="ol-item">$1</li>');
-      html = html.replace(/(<li>.*?<\/li>\s*)+/g, match => `<ul>${match}</ul>`);
-      html = html.replace(/(<li class="ol-item">.*?<\/li>\s*)+/g, match => {
-        const cleaned = match.replace(/ class="ol-item"/g, '');
-        return `<ol>${cleaned}</ol>`;
+
+      // 10. Lists – unordered
+      html = html.replace(/^[\-\*\+]\s+(.+)$/gm, '<li>$1</li>');
+      // Lists – ordered
+      html = html.replace(/^\d+\.\s+(.+)$/gm, '<li class="ol-item">$1</li>');
+      // Wrap consecutive <li> into <ul>
+      html = html.replace(/(<li>(?:(?!<li class)[\s\S])*?<\/li>(?:\s*<li>(?:(?!<li class)[\s\S])*?<\/li>)*)/g, match => {
+        if(match.includes('ol-item')) return match;
+        return `<ul>${match}</ul>`;
       });
-      html = html.replace(/<li>\[ \] (.+)<\/li>/g, '<li><input type="checkbox" disabled> $1</li>');
-      html = html.replace(/<li>\[x\] (.+)<\/li>/gi, '<li><input type="checkbox" disabled checked> $1</li>');
+      // Wrap consecutive <li class="ol-item"> into <ol>
+      html = html.replace(/(<li class="ol-item">.*?<\/li>\s*)+/g, match => {
+        return `<ol>${match.replace(/ class="ol-item"/g, '')}</ol>`;
+      });
+      // Checkboxes
+      html = html.replace(/<li>\[ \]\s*(.+)<\/li>/g, '<li class="task"><input type="checkbox" disabled> $1</li>');
+      html = html.replace(/<li>\[x\]\s*(.+)<\/li>/gi, '<li class="task done"><input type="checkbox" disabled checked> $1</li>');
+
+      // 11. Paragraphs: convert double-newlines to paragraph breaks, single to <br>
+      html = html.replace(/\n{2,}/g, '</p><p>');
       html = html.replace(/\n/g, '<br>');
-      
-      // Restore all LaTeX expressions
+      // Wrap in <p> tags if we created paragraph breaks
+      if(html.includes('</p><p>')) html = '<p>' + html + '</p>';
+      // Clean up empty paragraphs
+      html = html.replace(/<p><\/p>/g, '');
+      html = html.replace(/<p>(<h[1-6]>)/g, '$1');
+      html = html.replace(/(<\/h[1-6]>)<\/p>/g, '$1');
+      html = html.replace(/<p>(<ul>|<ol>|<table>|<blockquote>|<hr>)/g, '$1');
+      html = html.replace(/(<\/ul>|<\/ol>|<\/table>|<\/blockquote>)<\/p>/g, '$1');
+
+      // 11b. Strip stray <br> adjacent to block elements — the main cause of double-spacing
+      html = html.replace(/<br>\s*(<(?:h[1-6]|ul|ol|li|table|thead|tbody|tr|blockquote|hr)[\s>])/gi, '$1');
+      html = html.replace(/(<\/(?:h[1-6]|ul|ol|li|table|tbody|blockquote)>)\s*<br>/gi, '$1');
+      html = html.replace(/<p>\s*(<br>\s*)+/g, '<p>');
+      html = html.replace(/(\s*<br>)+\s*<\/p>/g, '</p>');
+
+      // 12. Restore inline code spans
+      codeStore.forEach(({ id, code }) => {
+        html = html.replace(new RegExp(id, 'g'), `<code>${escapeHtml(code)}</code>`);
+      });
+
+      // 13. Restore LaTeX expressions
       mathStore.forEach(({ id, content }) => {
         html = html.replace(new RegExp(id, 'g'), content);
       });
-      
+
       return html;
     }
 
@@ -452,15 +586,123 @@
       };
     }
 
+    function openBubbleEditor(userBubble, botWrap, root){
+      if(!userBubble) return;
+      if(userBubble._nexoraEditing) return;
+
+      const rootEl = root && root.querySelector ? root : document;
+      const currentSendEl = rootEl.querySelector('#send');
+      const originalText = userBubble.textContent.trim();
+
+      userBubble._nexoraEditing = true;
+      userBubble.classList.add('editing');
+      userBubble.textContent = '';
+
+      const textarea = document.createElement('textarea');
+      textarea.className = 'bubble-editor';
+      textarea.value = originalText;
+
+      const btnRow = document.createElement('div');
+      btnRow.className = 'bubble-editor-btns';
+
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'bubble-editor-save';
+      saveBtn.textContent = 'Send';
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'bubble-editor-cancel';
+      cancelBtn.textContent = 'Cancel';
+
+      function closeEditor(text){
+        while(userBubble.firstChild) userBubble.removeChild(userBubble.firstChild);
+        userBubble.textContent = text;
+        userBubble._nexoraEditing = false;
+        userBubble.classList.remove('editing');
+      }
+
+      function cancelEdit(e){
+        if(e){ e.stopPropagation(); e.preventDefault(); }
+        closeEditor(originalText);
+      }
+
+      let submitted = false;
+      function submitEdit(e){
+        if(e){ e.stopPropagation(); e.preventDefault(); }
+        if(submitted) return;
+        const newText = textarea.value.trim();
+        if(!newText){ cancelEdit(e); return; }
+        submitted = true;
+        saveBtn.disabled = true;
+        cancelBtn.disabled = true;
+
+        closeEditor(newText);
+        lastUserPrompt = newText;
+
+        if(chatHistory.length && chatHistory[chatHistory.length-1].role === 'bot') chatHistory.pop();
+        if(chatHistory.length && chatHistory[chatHistory.length-1].role === 'user') chatHistory.pop();
+        chatHistory.push({ role: 'user', content: newText, text: newText });
+        saveChatHistory();
+
+        if(botWrap && botWrap.parentNode) botWrap.remove();
+
+        if(currentSendEl){
+          const old = currentSendEl.textContent;
+          currentSendEl.disabled = true;
+          currentSendEl.classList.add('typing');
+          currentSendEl.textContent = '◻';
+          fetchAndAddBotMessage(root, currentSendEl, old, true);
+        }
+      }
+
+      cancelBtn.addEventListener('click', cancelEdit);
+      saveBtn.addEventListener('click', submitEdit);
+      textarea.addEventListener('click', function(e){ e.stopPropagation(); });
+
+      function autoResize(){
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+      }
+      textarea.addEventListener('input', autoResize);
+
+      textarea.addEventListener('keydown', function(e){
+        if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); submitEdit(e); }
+        if(e.key === 'Escape'){ cancelEdit(e); }
+      });
+
+      btnRow.appendChild(cancelBtn);
+      btnRow.appendChild(saveBtn);
+      userBubble.appendChild(textarea);
+      userBubble.appendChild(btnRow);
+
+      textarea.focus();
+      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+      autoResize();
+    }
+
     function addUserMessage(text, root){
       const { scrollEl } = getEls(root);
       if(!scrollEl) return;
       const div = document.createElement("div");
       div.className = "msg user";
+      div.title = "Click to edit";
+      div.style.cursor = "text";
       div.textContent = text;
+      div.addEventListener('click', function(e){
+        if(div._nexoraEditing) return;
+        // Pop animation on press
+        div.classList.add('msg-pressed');
+        div.addEventListener('animationend', function handler(){ div.classList.remove('msg-pressed'); div.removeEventListener('animationend', handler); });
+        // Find the immediately following bot message in the scroll container
+        const { scrollEl: sc } = getEls(root);
+        const allMsgs = sc ? Array.from(sc.children) : [];
+        const idx = allMsgs.indexOf(div);
+        const nextBot = allMsgs.slice(idx + 1).find(el => el.classList.contains('msg') && el.classList.contains('bot')) || null;
+        openBubbleEditor(div, nextBot, root);
+      });
       scrollEl.appendChild(div);
       scrollEl.scrollTop = scrollEl.scrollHeight;
       
+      lastUserPrompt = text;
       chatHistory.push({ role: 'user', content: text, text: text });
       saveChatHistory();
     }
@@ -474,17 +716,75 @@
 
       const name = document.createElement("div");
       name.className = "bot-name";
-      name.textContent = AI_MODES[currentMode]?.name || "gpt-5 nano";
+      name.textContent = AI_MODES[currentMode]?.name || "Nexora AI";
 
       const body = document.createElement("div");
       body.innerHTML = markup;
 
+      // ── Action toolbar ──────────────────────────────────────
+      const actions = document.createElement("div");
+      actions.className = "msg-actions";
+      actions.innerHTML = `
+        <button class="msg-action-btn" data-action="copy" title="Copy response">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copy
+        </button>
+        <button class="msg-action-btn" data-action="regenerate" title="Regenerate response">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 .49-3.71"></path></svg>
+          Regenerate
+        </button>
+        <button class="msg-action-btn" data-action="edit" title="Edit last message">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          Edit
+        </button>
+      `;
+
+      actions.addEventListener('click', e => {
+        const btn = e.target.closest('[data-action]');
+        if(!btn) return;
+        const rootEl = root && root.querySelector ? root : document;
+        const currentSendEl = rootEl.querySelector('#send');
+        const currentPromptEl = rootEl.querySelector('#prompt');
+
+        if(btn.dataset.action === 'copy'){
+          const text = (body.innerText || body.textContent || '').trim();
+          navigator.clipboard.writeText(text).catch(()=>{});
+          const prev = btn.innerHTML;
+          btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied';
+          setTimeout(()=>{ btn.innerHTML = prev; }, 2000);
+        }
+
+        if(btn.dataset.action === 'regenerate'){
+          if(!lastUserPrompt || (currentSendEl && currentSendEl.disabled)) return;
+          if(chatHistory.length && chatHistory[chatHistory.length-1].role === 'bot'){
+            chatHistory.pop();
+            saveChatHistory();
+          }
+          wrap.remove();
+          if(currentSendEl){
+            const old = currentSendEl.textContent;
+            currentSendEl.disabled = true;
+            currentSendEl.classList.add('typing');
+            currentSendEl.textContent = '◻';
+            fetchAndAddBotMessage(root, currentSendEl, old, true);
+          }
+        }
+
+        if(btn.dataset.action === 'edit'){
+          if(!lastUserPrompt) return;
+          const allUserMsgs = scrollEl.querySelectorAll('.msg.user');
+          const userBubble = allUserMsgs.length ? allUserMsgs[allUserMsgs.length - 1] : null;
+          openBubbleEditor(userBubble, wrap, root);
+        }
+      });
+
       wrap.appendChild(name);
       wrap.appendChild(body);
+      wrap.appendChild(actions);
       scrollEl.appendChild(wrap);
-      
-      // Render LaTeX math expressions
-      if(window.renderMathInElement) {
+
+      // Render LaTeX
+      if(window.renderMathInElement){
         try {
           renderMathInElement(body, {
             delimiters: [
@@ -495,11 +795,9 @@
             ],
             throwOnError: false
           });
-        } catch(e) {
-          console.error('KaTeX rendering error:', e);
-        }
+        } catch(e){ console.error('KaTeX rendering error:', e); }
       }
-      
+
       scrollEl.scrollTop = scrollEl.scrollHeight;
 
       wrap.querySelectorAll(".copy-btn").forEach(btn=>{
@@ -510,13 +808,13 @@
           const code = codeEl ? codeEl.innerText : "";
           if(code) navigator.clipboard.writeText(code).catch(()=>{});
           const old = btn.innerHTML;
-          btn.textContent = "✅";
+          btn.innerHTML = '✅ Copied';
           setTimeout(()=>{ btn.innerHTML = old; }, 1500);
         };
       });
 
       requestAnimationFrame(()=>{ if(window.hljs) hljs.highlightAll(); });
-      
+
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = markup;
       const textContent = tempDiv.textContent || tempDiv.innerText || '';
@@ -570,7 +868,19 @@
           if(msg.role === 'user'){
             const div = document.createElement("div");
             div.className = "msg user";
+            div.title = "Click to edit";
+            div.style.cursor = "text";
             div.textContent = msg.content;
+            div.addEventListener('click', function(e){
+              if(div._nexoraEditing) return;
+              div.classList.add('msg-pressed');
+              div.addEventListener('animationend', function handler(){ div.classList.remove('msg-pressed'); div.removeEventListener('animationend', handler); });
+              const { scrollEl: sc } = getEls(root);
+              const allMsgs = sc ? Array.from(sc.children) : [];
+              const idx = allMsgs.indexOf(div);
+              const nextBot = allMsgs.slice(idx + 1).find(el => el.classList.contains('msg') && el.classList.contains('bot')) || null;
+              openBubbleEditor(div, nextBot, root);
+            });
             scrollEl.appendChild(div);
           } else if(msg.role === 'bot'){
             const wrap = document.createElement("div");
@@ -578,7 +888,7 @@
 
             const name = document.createElement("div");
             name.className = "bot-name";
-            name.textContent = AI_MODES[currentMode]?.name || "gpt-5 nano";
+            name.textContent = AI_MODES[currentMode]?.name || "Nexora AI";
 
             const body = document.createElement("div");
             body.innerHTML = msg.content;
@@ -698,7 +1008,7 @@
 
       const name = document.createElement('div');
       name.className = 'bot-name';
-      name.textContent = AI_MODES[currentMode]?.name || 'gpt-5 nano';
+      name.textContent = AI_MODES[currentMode]?.name || 'Nexora AI';
 
       const body = document.createElement('div');
       body.innerHTML = `<div class="typing-indicator"><div class="loader" aria-hidden="true"></div><div>Typing...</div></div>`;
@@ -733,6 +1043,49 @@
       const d = lim.dayRemaining;
       el.textContent = `${d} message${d !== 1 ? 's' : ''} left today`;
       el.className = 'quota-info' + (d <= 5 ? ' quota-warn' : '') + (d === 0 ? ' quota-empty' : '');
+    }
+
+    async function fetchAndAddBotMessage(root, sendEl, oldLabel, skipRecord = false){
+      showTypingIndicator(root);
+      const { scrollEl } = getEls(root);
+      try {
+        if(!skipRecord) recordSend();
+        updateQuotaDisplay(root);
+        const systemPrompt = AI_MODES[currentMode]?.systemPrompt || AI_MODES.general.systemPrompt;
+        const maxHistory = AI_MODES[currentMode]?.maxHistory || 10;
+        const limitedHistory = maxHistory === Infinity ? chatHistory : chatHistory.slice(-maxHistory);
+        const messages = buildOptimizedMessages(systemPrompt, limitedHistory, currentMode);
+        let res;
+        try {
+          res = await fetch(LAMBDA_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages }),
+            mode: 'cors'
+          });
+        } catch(fetchError) {
+          throw new Error(`Network request failed: ${fetchError.message}. This may be due to CORS policy, network connectivity, or the Lambda endpoint being unavailable.`);
+        }
+        if(!res.ok){
+          let errorDetail = `HTTP ${res.status}`;
+          try {
+            const errorText = await res.text();
+            try { const d = JSON.parse(errorText); errorDetail = d.error || d.message || errorText || errorDetail; } catch { errorDetail = errorText || errorDetail; }
+          } catch {}
+          throw new Error(errorDetail);
+        }
+        const data = await res.json();
+        const reply = data.choices?.[0]?.message?.content || data.error || "API Error";
+        const markup = renderReplyWithCode(String(reply || ""));
+        hideTypingIndicator(root);
+        addBotMessage(markup, root);
+      } catch(err) {
+        hideTypingIndicator(root);
+        addBotMessage(`<div class="bot-chunk"><strong>Error:</strong> ${escapeHtml(err?.message || String(err))}</div>`, root);
+      } finally {
+        if(sendEl){ sendEl.classList.remove("typing"); sendEl.textContent = oldLabel; sendEl.disabled = false; }
+        if(scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
+      }
     }
 
     async function sendMessage(root){
@@ -785,89 +1138,12 @@
 
       sendEl.disabled = true;
       sendEl.classList.add("typing");
+      sendEl.classList.add("sent-bounce");
+      sendEl.addEventListener('animationend', function handler(){ sendEl.classList.remove('sent-bounce'); sendEl.removeEventListener('animationend', handler); });
       const oldLabel = sendEl.textContent;
       sendEl.textContent = "◻";
 
-      showTypingIndicator(root);
-
-      try {
-        // Record request on send attempt
-        recordSend();
-        updateQuotaDisplay(root);
-        console.log('Sending to:', LAMBDA_ENDPOINT);
-        console.log('Current origin:', window.location.origin);
-        
-        // Build the messages array with token-optimized context
-        const systemPrompt = AI_MODES[currentMode]?.systemPrompt || AI_MODES.general.systemPrompt;
-        const maxHistory = AI_MODES[currentMode]?.maxHistory || 10;
-        const limitedHistory = maxHistory === Infinity ? chatHistory : chatHistory.slice(-maxHistory);
-        const messages = buildOptimizedMessages(systemPrompt, limitedHistory, currentMode);
-        
-        const requestBody = {
-          messages: messages
-        };
-        
-        console.log('Request body:', JSON.stringify(requestBody));
-        console.log('Message count:', messages.length);
-        
-        // Call your AWS Lambda endpoint with more detailed error handling
-        let res;
-        try {
-          res = await fetch(LAMBDA_ENDPOINT, {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify(requestBody),
-            mode: 'cors'
-          });
-          console.log('Response status:', res.status);
-          console.log('Response headers:', Object.fromEntries([...res.headers.entries()]));
-        } catch (fetchError) {
-          console.error('Fetch failed:', fetchError);
-          console.error('Error name:', fetchError.name);
-          console.error('Error message:', fetchError.message);
-          throw new Error(`Network request failed: ${fetchError.message}. This may be due to CORS policy, network connectivity, or the Lambda endpoint being unavailable.`);
-        }
-        
-        if (!res.ok) {
-          let errorDetail = `HTTP ${res.status}`;
-          try {
-            const errorText = await res.text();
-            console.log('Error response:', errorText);
-            try {
-              const errorData = JSON.parse(errorText);
-              errorDetail = errorData.error || errorData.message || errorText || errorDetail;
-            } catch {
-              errorDetail = errorText || errorDetail;
-            }
-          } catch {
-            // If reading response fails, use default error
-          }
-          throw new Error(errorDetail);
-        }
-
-        const data = await res.json();
-        console.log('Success response:', data);
-        
-        const reply = data.choices?.[0]?.message?.content || data.error || "API Error";
-        const replyStr = String(reply || "");
-        const markup = renderReplyWithCode(replyStr);
-
-        hideTypingIndicator(root);
-        addBotMessage(markup, root);
-
-      } catch (err) {
-        hideTypingIndicator(root);
-        const errorMsg = err?.message || String(err);
-        console.error("Fetch error:", err);
-        addBotMessage(`<div class="bot-chunk"><strong>Error:</strong> ${escapeHtml(errorMsg)}</div>`, root);
-      } finally {
-        sendEl.classList.remove("typing");
-        sendEl.textContent = oldLabel;
-        sendEl.disabled = false;
-        if (scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
-      }
+      await fetchAndAddBotMessage(root, sendEl, oldLabel);
     }
 
     function attachTo(root){
