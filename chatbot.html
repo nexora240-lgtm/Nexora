@@ -29,47 +29,47 @@
       left: 12px;
       z-index: 10;
       padding: 7px 14px;
-      background: rgba(26, 16, 13, 0.45);
+      background: var(--glass-bg);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--glass-border);
       border-radius: 12px;
-      color: var(--muted, #b8907a);
+      color: var(--muted);
       font-size: 13px;
       font-weight: 600;
       font-family: inherit;
       cursor: pointer;
       box-shadow:
-        4px 4px 10px rgba(0, 0, 0, 0.6),
-        -2px -2px 8px rgba(255, 255, 255, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        4px 4px 10px var(--neu-shadow-dark),
+        -2px -2px 8px var(--neu-shadow-light),
+        inset 0 1px 0 var(--neu-inset-light);
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       outline: none;
     }
 
     .mode-selector:hover,
     .mode-selector:focus {
-      border-color: rgba(255, 255, 255, 0.15);
-      color: var(--orange, #d4550a);
-      background: rgba(212, 85, 10, 0.1);
+      border-color: var(--glass-border-hover);
+      color: var(--primary);
+      background: color-mix(in srgb, var(--primary) 10%, transparent);
       box-shadow:
-        6px 6px 14px rgba(0, 0, 0, 0.6),
-        -3px -3px 10px rgba(255, 255, 255, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        6px 6px 14px var(--neu-shadow-dark),
+        -3px -3px 10px var(--neu-shadow-light),
+        inset 0 1px 0 var(--neu-inset-light);
       transform: translateY(-1px);
     }
 
     .mode-selector:active {
       transform: scale(0.95) translateY(1px);
       box-shadow:
-        inset 3px 3px 8px rgba(0, 0, 0, 0.4),
-        inset -2px -2px 6px rgba(255, 255, 255, 0.03);
+        inset 3px 3px 8px var(--neu-inset-dark),
+        inset -2px -2px 6px var(--neu-inset-light);
       transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .mode-selector option {
-      background: var(--page-bg, #0a0605);
-      color: var(--text, #f0e0d8);
+      background: var(--page-bg);
+      color: var(--text);
       padding: 8px;
     }
 
@@ -81,27 +81,27 @@
     }
     .quota-info {
       font-size: 11px;
-      color: var(--text-muted, #888);
+      color: var(--muted);
       text-align: right;
       padding: 0 8px 4px;
       opacity: 0.7;
     }
-    .quota-info.quota-warn { color: var(--accent, orange); }
+    .quota-info.quota-warn { color: var(--primary); }
     .quota-info.quota-empty { color: #e55; font-weight: 600; }
     .msg.system-note {
       text-align: center;
       font-size: 12px;
-      color: var(--text-muted, #888);
+      color: var(--muted);
       padding: 8px 16px;
       font-style: italic;
-      background: rgba(26, 16, 13, 0.3);
+      background: color-mix(in srgb, var(--surface) 30%, transparent);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
       border-radius: 12px;
       box-shadow:
-        2px 2px 6px rgba(0, 0, 0, 0.4),
-        -1px -1px 4px rgba(255, 255, 255, 0.03);
+        2px 2px 6px var(--neu-shadow-dark),
+        -1px -1px 4px var(--neu-shadow-light);
     }
     .msg.system-note.error { color: #e75; }
   </style>
