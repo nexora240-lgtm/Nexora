@@ -60,70 +60,7 @@
   position: relative;
 }
 
-/* ── Ambient Floating Orbs Background ── */
-.ambient-bg {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-}
 
-.ambient-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.12;
-  animation: orbFloat 20s ease-in-out infinite;
-}
-
-.ambient-orb:nth-child(1) {
-  width: 500px;
-  height: 500px;
-  background: var(--orange);
-  top: -10%;
-  right: -5%;
-  animation-delay: 0s;
-  animation-duration: 25s;
-}
-
-.ambient-orb:nth-child(2) {
-  width: 400px;
-  height: 400px;
-  background: var(--orange-deep);
-  bottom: -15%;
-  left: -8%;
-  animation-delay: -7s;
-  animation-duration: 22s;
-}
-
-.ambient-orb:nth-child(3) {
-  width: 300px;
-  height: 300px;
-  background: color-mix(in srgb, var(--orange) 60%, var(--text) 40%);
-  top: 40%;
-  left: 50%;
-  animation-delay: -14s;
-  animation-duration: 28s;
-}
-
-@keyframes orbFloat {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  25% { transform: translate(40px, -30px) scale(1.08); }
-  50% { transform: translate(-20px, 50px) scale(0.95); }
-  75% { transform: translate(30px, 20px) scale(1.04); }
-}
-
-/* Mesh Grid Texture Overlay */
-.ambient-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--text) 3%, transparent) 1px, transparent 0);
-  background-size: 40px 40px;
-  opacity: 0.4;
-}
 
 
 /* ═══════════════════════════════════════════════════════════
@@ -2156,10 +2093,6 @@
   .player-recommendations { padding: 20px 4%; }
   .recommendations-title { font-size: 18px; margin-bottom: 16px; }
 
-  /* Ambient orbs smaller on mobile */
-  .ambient-orb:nth-child(1) { width: 250px; height: 250px; }
-  .ambient-orb:nth-child(2) { width: 200px; height: 200px; }
-  .ambient-orb:nth-child(3) { width: 150px; height: 150px; }
 }
 
 
@@ -2267,10 +2200,6 @@ body:has(.sidebar:hover) .player-modal .player-close { right: calc(20px - 95px);
 .light-scheme .player-episode-sidebar {
   background: rgba(255, 255, 255, 0.85);
 }
-
-.light-scheme .ambient-orb { opacity: 0.06; }
-
-.light-scheme .ambient-bg::after { opacity: 0.15; }
 
 .light-scheme .content-row {
   background: rgba(255, 255, 255, 0.4);
