@@ -195,62 +195,93 @@
         if (xhr.status !== 200) { loaded = false; return; }
         try {
           var games = JSON.parse(xhr.responseText);
-          var withImages = games.filter(function(g) { return g.thumbnail && g.thumbnail.trim() !== ''; });
 
-          // Fisher-Yates shuffle (unbiased, no freeze risk)
-          for (var i = withImages.length - 1; i > 0; i--) {
+          // Fisher-Yates shuffle
+          for (var i = games.length - 1; i > 0; i--) {
             var j = Math.floor(Math.random() * (i + 1));
-            var tmp = withImages[i];
-            withImages[i] = withImages[j];
-            withImages[j] = tmp;
+            var tmp = games[i]; games[i] = games[j]; games[j] = tmp;
           }
-          var shuffled = withImages.slice(0, 24);
-          var third = Math.ceil(shuffled.length / 3);
 
-          // Build cards via DOM to avoid onload race conditions and XSS
-          function mkCard(item) {
-            var card = document.createElement('a');
+          // Shared pool — each card pulls the next game; on thumbnail
+          // failure it keeps pulling until one loads.
+          var poolIdx = 0;
+          function nextGame() {
+            return poolIdx < games.length ? games[poolIdx++] : null;
+          }
+
+          var CARDS_PER_COL = 8;
+
+          // Build a single card; calls onDone(card) on success or onDone(null)
+          function buildCard(onDone) {
+            var game = nextGame();
+            if (!game) { onDone(null); return; }
+
+            var card  = document.createElement('a');
             card.href = '#';
             card.className = 'home-card';
-            card.style.opacity = '0';
-            card.style.transition = 'opacity .3s ease';
             card.dataset.route = '/games';
-            card.dataset.game = item.title;
 
             var inner = document.createElement('div');
             inner.className = 'home-card-inner';
-
-            var img = document.createElement('img');
-            img.alt = '';
-            img.addEventListener('load', function() { card.style.opacity = ''; });
-            img.addEventListener('error', function() { card.style.display = 'none'; });
-            img.src = item.thumbnail;
-
-            var ov = document.createElement('div');
+            var img   = document.createElement('img');
+            img.alt   = '';
+            var ov    = document.createElement('div');
             ov.className = 'home-card-ov';
-            var span = document.createElement('span');
-            span.textContent = item.title;
+            var span  = document.createElement('span');
             ov.appendChild(span);
-
             inner.appendChild(img);
             inner.appendChild(ov);
             card.appendChild(inner);
-            return card;
-          }
 
-          function fill(el, arr) {
-            if (!el) return;
-            var frag = document.createDocumentFragment();
-            // Two copies for seamless infinite-scroll animation
-            for (var copy = 0; copy < 2; copy++) {
-              arr.forEach(function(item) { frag.appendChild(mkCard(item)); });
+            function tryLoad(g) {
+              if (!g || !g.thumbnail) {
+                var nx = nextGame();
+                if (nx) { tryLoad(nx); return; }
+                onDone(null); return;
+              }
+              card.dataset.game = g.title;
+              span.textContent  = g.title;
+              img.onload  = function() { onDone(card); };
+              img.onerror = function() {
+                var nx = nextGame();
+                if (nx) { tryLoad(nx); } else { onDone(null); }
+              };
+              img.src = g.thumbnail;
             }
-            el.appendChild(frag);
+            tryLoad(game);
           }
 
-          fill(document.getElementById('home-t1'), shuffled.slice(0, third));
-          fill(document.getElementById('home-t2'), shuffled.slice(third, third * 2));
-          fill(document.getElementById('home-t3'), shuffled.slice(third * 2));
+          // Fill a track, then clone valid cards for seamless infinite scroll
+          function fillTrack(trackId) {
+            var el = document.getElementById(trackId);
+            if (!el) return;
+            var resolved = 0;
+            var slots = new Array(CARDS_PER_COL);
+
+            for (var i = 0; i < CARDS_PER_COL; i++) {
+              (function(idx) {
+                buildCard(function(card) {
+                  slots[idx] = card;
+                  resolved++;
+                  if (resolved === CARDS_PER_COL) {
+                    var frag = document.createDocumentFragment();
+                    for (var k = 0; k < slots.length; k++) {
+                      if (slots[k]) frag.appendChild(slots[k]);
+                    }
+                    // Clone for seamless loop
+                    for (var k = 0; k < slots.length; k++) {
+                      if (slots[k]) frag.appendChild(slots[k].cloneNode(true));
+                    }
+                    el.appendChild(frag);
+                  }
+                });
+              })(i);
+            }
+          }
+
+          fillTrack('home-t1');
+          fillTrack('home-t2');
+          fillTrack('home-t3');
 
           if (window.NexoraMouseTracking) {
             var visuals = document.getElementById('home-bg-visuals');
