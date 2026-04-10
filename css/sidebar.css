@@ -224,7 +224,6 @@ body {
   padding-bottom: 10px;
   width: 100%;
   box-sizing: border-box;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .sidebar a.settings {
@@ -300,7 +299,7 @@ body {
   color: var(--sb-accent);
   opacity: 1;
   max-width: 200px;
-  transition: opacity 0.25s ease, max-width 0.3s ease;
+  transition: opacity 0.25s ease 0.08s, max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-top: 0;
   text-shadow: 0 2px 8px color-mix(in srgb, var(--sb-shadow) 40%, transparent);
   background: linear-gradient(135deg, var(--sb-accent), var(--sb-accent-deep));
@@ -315,6 +314,7 @@ body {
   opacity: 0;
   max-width: 0;
   pointer-events: none;
+  transition: opacity 0.12s ease, max-width 0.28s cubic-bezier(0.4, 0, 0.2, 1) 0.04s;
 }
 
 .sidebar a {
@@ -363,10 +363,9 @@ body {
 
 .sidebar:not(:hover) a {
   height: 48px;
-  padding: 0 12px;
+  padding: 0 13px;
   gap: 0;
   margin: 6px 8px;
-  justify-content: center;
   box-shadow: 
     -2px -2px 6px rgba(255, 255, 255, 0.03),
     2px 2px 6px rgba(0, 0, 0, 0.4);
@@ -422,7 +421,7 @@ body {
   letter-spacing: 0.3px;
   opacity: 1;
   max-width: 200px;
-  transition: opacity 0.2s ease, max-width 0.3s ease;
+  transition: opacity 0.25s ease 0.08s, max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   white-space: nowrap;
 }
@@ -430,6 +429,7 @@ body {
 .sidebar:not(:hover) span {
   opacity: 0;
   max-width: 0;
+  transition: opacity 0.12s ease, max-width 0.28s cubic-bezier(0.4, 0, 0.2, 1) 0.04s;
 }
 
 .site-title {
@@ -606,7 +606,8 @@ body.view-chatroom .main-content {
 
 /* View Loading Transition - Prevent FOUC */
 .main-content.view-loading {
-  opacity: 0;
+  opacity: 0 !important;
+  transition: none !important;
 }
 
 /* Respect reduced motion preferences */

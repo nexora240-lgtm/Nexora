@@ -416,8 +416,8 @@ function loadView(file) {
           const loadPromise = new Promise((resolve) => {
             newLink.addEventListener('load', resolve, { once: true });
             newLink.addEventListener('error', resolve, { once: true }); // Resolve on error too
-            // Timeout fallback in case load event doesn't fire
-            setTimeout(resolve, 100);
+            // Safety-net timeout — only fires if load/error never do
+            setTimeout(resolve, 5000);
           });
           cssLinkPromises.push(loadPromise);
           
