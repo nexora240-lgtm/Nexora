@@ -220,9 +220,11 @@ body {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  padding-top: 8px;
   padding-bottom: 10px;
   width: 100%;
   box-sizing: border-box;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .sidebar a.settings {
@@ -680,6 +682,10 @@ body.view-chatroom .main-content {
   filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
 }
 
+.light-scheme .sidebar .sidebar-bottom {
+  border-top-color: rgba(0,0,0,0.08);
+}
+
 .light-scheme #cookie-decline {
   border: 1px solid rgba(0,0,0,0.08);
 }
@@ -692,9 +698,6 @@ body.view-chatroom .main-content {
   box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
 }
 
-/* Responsive sidebar breakpoints removed — sidebar stays at 1920×1080 size on all devices */
-
-/* Scale sidebar down on small screens so it fits like it would at 1920×1080 */
 /* ── Discord button ── */
 .sidebar a[href*="discord"] {
   background: linear-gradient(135deg,
@@ -722,19 +725,273 @@ body.view-chatroom .main-content {
   color: #c9d1ff;
 }
 
-@media (max-width: 1366px) {
+/* Large laptops / scaled desktops (e.g. 1517x852) */
+@media (max-width: 1536px) {
   .sidebar {
-    zoom: 0.8;
-    /* Compensate height/position: zoom shrinks rendered output by 0.8,
-       so multiply internal values by 1/0.8 = 1.25 to restore visual size */
-    top: 15px !important;           /* 15 * 0.8 = 12px visual */
-    left: 15px !important;          /* 15 * 0.8 = 12px visual */
-    height: calc(125vh - 30px) !important; /* (125vh-30px)*0.8 = 100vh-24px visual */
+    width: 64px;
+    top: 11px !important;
+    left: 11px !important;
+    height: calc(100vh - 22px) !important;
+    padding-top: 18px;
+    border-radius: 19px;
+  }
+  .sidebar:hover {
+    width: 230px;
+  }
+  .sidebar-title {
+    height: 68px;
+    min-height: 68px;
+    max-height: 68px;
+    margin-bottom: 16px;
+    padding: 9px;
+  }
+  .sidebar-title img {
+    width: 36px;
+    height: 36px;
+  }
+  .sidebar-title span {
+    font-size: 1.35rem;
+  }
+  .sidebar a {
+    height: 46px;
+    margin: 5px 9px;
+    padding: 0 13px;
+    font-size: 15px;
+    border-radius: 13px;
+  }
+  .sidebar:not(:hover) a {
+    height: 46px;
+    margin: 5px 7px;
+    padding: 0 11px;
+  }
+  .sidebar i {
+    width: 23px;
+    height: 23px;
+    font-size: 20px;
+  }
+  .sidebar .sidebar-bottom {
+    padding-bottom: 9px;
+    padding-top: 7px;
   }
   .main-content {
-    left: calc(92px * 0.8);
+    left: 86px;
   }
   .sidebar:hover ~ .main-content {
-    left: calc(274px * 0.8);
+    left: 252px;
+  }
+  .sidebar:hover ~ #cookie-popup {
+    right: 272px;
+  }
+}
+
+/* Standard laptops (e.g. 1366x768) */
+@media (max-width: 1366px) {
+  .sidebar {
+    width: 60px;
+    top: 10px !important;
+    left: 10px !important;
+    height: calc(100vh - 20px) !important;
+    padding-top: 16px;
+    border-radius: 18px;
+  }
+  .sidebar:hover {
+    width: 215px;
+  }
+  .sidebar-title {
+    height: 62px;
+    min-height: 62px;
+    max-height: 62px;
+    margin-bottom: 14px;
+    padding: 8px;
+  }
+  .sidebar-title img {
+    width: 34px;
+    height: 34px;
+  }
+  .sidebar-title span {
+    font-size: 1.25rem;
+  }
+  .sidebar a {
+    height: 43px;
+    margin: 4px 8px;
+    padding: 0 12px;
+    font-size: 14px;
+    border-radius: 12px;
+  }
+  .sidebar:not(:hover) a {
+    height: 43px;
+    margin: 4px 7px;
+    padding: 0 10px;
+  }
+  .sidebar i {
+    width: 21px;
+    height: 21px;
+    font-size: 18px;
+  }
+  .sidebar .sidebar-bottom {
+    padding-bottom: 8px;
+    padding-top: 6px;
+  }
+  .main-content {
+    left: 80px;
+  }
+  .sidebar:hover ~ .main-content {
+    left: 235px;
+  }
+  .sidebar:hover ~ #cookie-popup {
+    right: 255px;
+  }
+}
+
+/* Short laptop screens (1366x768 etc.) — tighten vertical spacing */
+@media (max-width: 1366px) and (max-height: 800px) {
+  .sidebar {
+    padding-top: 12px;
+  }
+  .sidebar-title {
+    height: 54px;
+    min-height: 54px;
+    max-height: 54px;
+    margin-bottom: 10px;
+  }
+  .sidebar-title img {
+    width: 30px;
+    height: 30px;
+  }
+  .sidebar a {
+    height: 40px;
+    margin: 3px 8px;
+  }
+  .sidebar:not(:hover) a {
+    height: 40px;
+    margin: 3px 7px;
+  }
+  .sidebar i {
+    width: 20px;
+    height: 20px;
+    font-size: 17px;
+  }
+  .sidebar .sidebar-bottom {
+    padding-bottom: 6px;
+    padding-top: 5px;
+  }
+}
+
+/* Tablet landscape / small laptops */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 54px;
+    top: 8px !important;
+    left: 8px !important;
+    height: calc(100vh - 16px) !important;
+    padding-top: 14px;
+    border-radius: 16px;
+  }
+  .sidebar:hover {
+    width: 200px;
+  }
+  .sidebar-title {
+    height: 54px;
+    min-height: 54px;
+    max-height: 54px;
+    margin-bottom: 10px;
+    padding: 6px;
+  }
+  .sidebar-title img {
+    width: 30px;
+    height: 30px;
+  }
+  .sidebar-title span {
+    font-size: 1.1rem;
+  }
+  .sidebar a {
+    height: 40px;
+    margin: 3px 6px;
+    padding: 0 10px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+  .sidebar:not(:hover) a {
+    height: 40px;
+    margin: 3px 5px;
+    padding: 0 9px;
+  }
+  .sidebar i {
+    width: 20px;
+    height: 20px;
+    font-size: 17px;
+  }
+  .sidebar .sidebar-bottom {
+    padding-bottom: 6px;
+    padding-top: 6px;
+  }
+  .main-content {
+    left: 70px;
+  }
+  .sidebar:hover ~ .main-content {
+    left: 216px;
+  }
+  .sidebar:hover ~ #cookie-popup {
+    right: 236px;
+  }
+}
+
+/* Tablet portrait (iPad portrait) */
+@media (max-width: 810px) {
+  .sidebar {
+    width: 50px;
+    top: 6px !important;
+    left: 6px !important;
+    height: calc(100vh - 12px) !important;
+    padding-top: 12px;
+    border-radius: 14px;
+  }
+  .sidebar:hover {
+    width: 190px;
+  }
+  .sidebar-title {
+    height: 48px;
+    min-height: 48px;
+    max-height: 48px;
+    margin-bottom: 8px;
+    padding: 5px;
+  }
+  .sidebar-title img {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+  }
+  .sidebar-title span {
+    font-size: 1rem;
+  }
+  .sidebar a {
+    height: 38px;
+    margin: 3px 5px;
+    padding: 0 9px;
+    font-size: 12.5px;
+    border-radius: 10px;
+  }
+  .sidebar:not(:hover) a {
+    height: 38px;
+    margin: 3px 4px;
+    padding: 0 8px;
+  }
+  .sidebar i {
+    width: 18px;
+    height: 18px;
+    font-size: 16px;
+  }
+  .sidebar .sidebar-bottom {
+    padding-bottom: 5px;
+    padding-top: 5px;
+  }
+  .main-content {
+    left: 62px;
+  }
+  .sidebar:hover ~ .main-content {
+    left: 202px;
+  }
+  .sidebar:hover ~ #cookie-popup {
+    right: 222px;
   }
 }

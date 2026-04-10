@@ -456,6 +456,18 @@
 
 /* ── Responsive ── */
 
+@media (max-width: 1024px) {
+  .lf-selector-content { max-width: 90%; }
+  .lf-results { padding: 20px 16px; }
+  .lf-limit-content { padding: 32px 22px; }
+}
+
+@media (max-width: 810px) {
+  .lf-selector-content h1 { font-size: 28px; }
+  .lf-results { padding: 18px 14px; }
+  .lf-results-header h2 { font-size: 20px; }
+}
+
 @media (max-width: 640px) {
   .lf-selector-content h1 { font-size: 24px; }
   .lf-strict-btn { width: 34px; height: 34px; font-size: 12px; }

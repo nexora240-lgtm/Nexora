@@ -1097,6 +1097,18 @@
   }
 }
 
+/* ── Tablet ── */
+@media (max-width: 1024px) {
+  .nexora .msg { max-width: 82%; }
+  .nexora .scroll { padding: 18px 16px; }
+}
+
+@media (max-width: 810px) {
+  .nexora .msg { max-width: 85%; }
+  .nexora .scroll { padding: 16px 14px; }
+  .nexora pre { font-size: 13px; }
+}
+
 /* ── Mobile ── */
 @media (max-width: 640px) {
   .nexora .msg { max-width: 88%; }

@@ -750,6 +750,12 @@
 
 /* ── Responsive ── */
 
+@media (max-width: 1024px) {
+  .admin-root .admin-app { padding: 0 24px 40px; }
+  .admin-root .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .admin-root .nav-btn { padding: 10px 18px; font-size: 13px; }
+}
+
 @media (max-width: 768px) {
   .admin-root .admin-app { padding: 0 16px 40px; }
   .admin-root .header-row { padding-top: 20px; }

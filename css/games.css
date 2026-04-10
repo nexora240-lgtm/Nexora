@@ -1109,6 +1109,88 @@ html.performance-fast body {
 }
 
 /* Responsive adjustments */
+@media (max-width: 1536px) {
+  .pagination {
+    left: 54px;
+  }
+  .sidebar:hover ~ * .pagination,
+  body:has(.sidebar:hover) .pagination {
+    left: 230px;
+  }
+}
+
+@media (max-width: 1366px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 18px;
+    padding: 18px;
+  }
+  .pagination {
+    left: 48px;
+  }
+  .sidebar:hover ~ * .pagination,
+  body:has(.sidebar:hover) .pagination {
+    left: 215px;
+  }
+  .section-game-card {
+    flex: 0 0 180px;
+    width: 180px;
+  }
+  .banner-cards .section-game-card {
+    flex: 0 0 340px;
+    width: 340px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 16px;
+  }
+  .pagination {
+    left: 44px;
+  }
+  .sidebar:hover ~ * .pagination,
+  body:has(.sidebar:hover) .pagination {
+    left: 200px;
+  }
+  .section-game-card {
+    flex: 0 0 165px;
+    width: 165px;
+  }
+  .banner-cards .section-game-card {
+    flex: 0 0 310px;
+    width: 310px;
+  }
+}
+
+@media (max-width: 810px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+    padding: 14px;
+  }
+  .pagination {
+    left: 40px;
+  }
+  .sidebar:hover ~ * .pagination,
+  body:has(.sidebar:hover) .pagination {
+    left: 190px;
+  }
+  .section-game-card {
+    flex: 0 0 155px;
+    width: 155px;
+  }
+  .banner-cards .section-game-card {
+    flex: 0 0 290px;
+    width: 290px;
+  }
+  .scrollable-sections {
+    padding: 0 14px 14px;
+  }
+}
+
 @media (max-width: 768px) {
   .section-title {
     font-size: 1.25rem;

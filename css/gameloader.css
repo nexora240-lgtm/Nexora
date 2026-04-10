@@ -661,6 +661,16 @@ html.performance-no-glow.light-scheme .fullscreen-btn img {
   background: var(--g-accent);
 }
 
+/* Tablet responsive */
+@media (max-width: 1024px) {
+  .episode-sidebar {
+    width: 320px;
+  }
+  .episode-sidebar.collapsed {
+    transform: translateX(280px);
+  }
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
   .episode-sidebar {
@@ -1073,13 +1083,53 @@ html.performance-fast .related-game-card {
 }
 
 /* Responsive adjustments for sidebar margin */
-@media (max-width: 720px) {
+@media (max-width: 1536px) {
   .loader-page {
-    margin-left: 28px;
+    margin-left: 25px;
   }
   .sidebar:hover ~ * .loader-page,
   body:has(.sidebar:hover) .loader-page {
-    margin-left: 110px;
+    margin-left: 165px;
+  }
+}
+
+@media (max-width: 1366px) {
+  .loader-page {
+    margin-left: 20px;
+  }
+  .sidebar:hover ~ * .loader-page,
+  body:has(.sidebar:hover) .loader-page {
+    margin-left: 155px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .loader-page {
+    margin-left: 16px;
+  }
+  .sidebar:hover ~ * .loader-page,
+  body:has(.sidebar:hover) .loader-page {
+    margin-left: 135px;
+  }
+}
+
+@media (max-width: 810px) {
+  .loader-page {
+    margin-left: 14px;
+  }
+  .sidebar:hover ~ * .loader-page,
+  body:has(.sidebar:hover) .loader-page {
+    margin-left: 120px;
+  }
+}
+
+@media (max-width: 720px) {
+  .loader-page {
+    margin-left: 10px;
+  }
+  .sidebar:hover ~ * .loader-page,
+  body:has(.sidebar:hover) .loader-page {
+    margin-left: 100px;
   }
 }
 

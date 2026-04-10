@@ -577,6 +577,61 @@ body:has(.sidebar:hover) .apploader-page {
 }
 
 /* Responsive */
+@media (max-width: 1536px) {
+  .apploader-page {
+    left: 86px;
+  }
+  .sidebar:hover ~ * .apploader-page,
+  body:has(.sidebar:hover) .apploader-page {
+    left: 252px;
+  }
+}
+
+@media (max-width: 1366px) {
+  .apploader-page {
+    left: 80px;
+  }
+  .sidebar:hover ~ * .apploader-page,
+  body:has(.sidebar:hover) .apploader-page {
+    left: 235px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .apploader-page {
+    left: 70px;
+  }
+  .sidebar:hover ~ * .apploader-page,
+  body:has(.sidebar:hover) .apploader-page {
+    left: 216px;
+  }
+  .other-apps-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
+
+@media (max-width: 810px) {
+  .apploader-page {
+    left: 62px;
+    padding: 10px;
+  }
+  .sidebar:hover ~ * .apploader-page,
+  body:has(.sidebar:hover) .apploader-page {
+    left: 202px;
+  }
+  .app-icon-preview {
+    width: 130px;
+    height: 130px;
+  }
+  .app-start-title {
+    font-size: 1.5rem;
+  }
+  .launch-btn {
+    padding: 14px 30px;
+    font-size: 1.15rem;
+  }
+}
+
 @media (max-width: 768px) {
   .apploader-page {
     left: 0;

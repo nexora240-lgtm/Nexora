@@ -1182,6 +1182,22 @@
   .nexora-chatroom .cr-rail { display: none !important; }
 }
 
+@media (max-width: 1024px) {
+  .nexora-chatroom .app { padding: 8px; gap: 8px; }
+  .nexora-chatroom .messages { padding: 16px; margin: 8px 8px 0; }
+  .nexora-chatroom .input-area { margin: 0 8px 8px; }
+  .nexora-chatroom .container { max-width: 100%; }
+}
+
+@media (max-width: 810px) {
+  .nexora-chatroom .app { padding: 7px; gap: 7px; }
+  .nexora-chatroom .login-screen { padding: 28px 20px; }
+  .nexora-chatroom .cr-lobby-header h2 { font-size: 2.2rem; }
+  .nexora-chatroom .messages { padding: 15px; margin: 7px 7px 0; }
+  .nexora-chatroom .input-area { padding: 10px 13px; margin: 0 7px 7px; }
+  .nexora-chatroom .room-code-large-code { font-size: 3.8rem; letter-spacing: 10px; }
+}
+
 @media (max-width: 768px) {
   .nexora-chatroom .cr-rail { display: none !important; }
   .nexora-chatroom .app { padding: 6px; gap: 6px; }

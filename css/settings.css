@@ -711,6 +711,12 @@
 .settings-root .theme-option { min-width: 420px; }
 .settings-root .nav-btn { min-width: 220px; }
 
+@media (max-width:1024px) {
+  .settings-root .app { padding:36px; }
+  .settings-root .content { max-width:880px; }
+  .settings-root .nav-btn { min-width:200px; font-size:16px; }
+  .settings-root .theme-option { min-width:380px; }
+}
 
 @media (max-width:920px) {
   .settings-root .app { padding:32px; }

@@ -2113,9 +2113,29 @@ input:focus-visible {
 body:has(.sidebar:hover) .player-modal { transform: translateX(95px); }
 body:has(.sidebar:hover) .player-modal .player-close { right: calc(20px - 95px); }
 
+@media (max-width: 1536px) {
+  body:has(.sidebar:hover) .player-modal { transform: translateX(85px); }
+  body:has(.sidebar:hover) .player-modal .player-close { right: calc(18px - 85px); }
+}
+
+@media (max-width: 1366px) {
+  body:has(.sidebar:hover) .player-modal { transform: translateX(78px); }
+  body:has(.sidebar:hover) .player-modal .player-close { right: calc(16px - 78px); }
+}
+
+@media (max-width: 1024px) {
+  body:has(.sidebar:hover) .player-modal { transform: translateX(72px); }
+  body:has(.sidebar:hover) .player-modal .player-close { right: calc(14px - 72px); }
+}
+
+@media (max-width: 810px) {
+  body:has(.sidebar:hover) .player-modal { transform: translateX(66px); }
+  body:has(.sidebar:hover) .player-modal .player-close { right: calc(12px - 66px); }
+}
+
 @media (max-width: 720px) {
-  body:has(.sidebar:hover) .player-modal { transform: translateX(82px); }
-  body:has(.sidebar:hover) .player-modal .player-close { right: calc(12px - 82px); }
+  body:has(.sidebar:hover) .player-modal { transform: translateX(60px); }
+  body:has(.sidebar:hover) .player-modal .player-close { right: calc(10px - 60px); }
 }
 
 

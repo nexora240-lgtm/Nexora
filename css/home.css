@@ -578,13 +578,18 @@ html.performance-fast #home-bg-visuals {
 
 /*  Responsive  */
 
+@media (max-width: 1536px) {
+  #home-bg-visuals { left: 86px; }
+  .sidebar:hover ~ #home-bg-visuals { left: 252px; }
+}
+
 @media (max-width: 1366px) {
   .home-visuals { width: 34vw; right: 2%; opacity: 0.6; }
   .home-layout { padding: 0 5%; }
   .home-content { max-width: 480px; }
   .home-desc { font-size: 1rem; max-width: 400px; }
-  #home-bg-visuals { left: 74px; }
-  .sidebar:hover ~ #home-bg-visuals { left: 236px; }
+  #home-bg-visuals { left: 80px; }
+  .sidebar:hover ~ #home-bg-visuals { left: 235px; }
 }
 
 @media (max-width: 1100px) {
@@ -597,8 +602,18 @@ html.performance-fast #home-bg-visuals {
   .home-download-btn { padding: 13px 18px; font-size: 0.95rem; }
   .home-links { gap: 6px; }
   .home-link { padding: 8px 12px; font-size: 0.78rem; }
-  #home-bg-visuals { left: 64px; }
-  .sidebar:hover ~ #home-bg-visuals { left: 212px; }
+  #home-bg-visuals { left: 80px; }
+  .sidebar:hover ~ #home-bg-visuals { left: 235px; }
+}
+
+@media (max-width: 1024px) {
+  #home-bg-visuals { left: 70px; }
+  .sidebar:hover ~ #home-bg-visuals { left: 216px; }
+}
+
+@media (max-width: 810px) {
+  #home-bg-visuals { left: 62px; }
+  .sidebar:hover ~ #home-bg-visuals { left: 202px; }
 }
 
 @media (max-width: 900px) {

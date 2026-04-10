@@ -557,6 +557,43 @@ body {
 /* 
    RESPONSIVE
     */
+@media (max-width: 1366px) {
+  .apps-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 16px;
+  }
+  .apps-container {
+    padding: 24px 18px 18px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .apps-grid {
+    grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+    gap: 14px;
+  }
+  .apps-header {
+    margin-bottom: 22px;
+  }
+  .apps-title {
+    font-size: clamp(1.8rem, 4.5vw, 2.5rem);
+  }
+}
+
+@media (max-width: 810px) {
+  .apps-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+  }
+  .apps-container {
+    padding: 20px 14px 14px;
+  }
+  .apps-header {
+    padding: 16px 16px 6px;
+    margin-bottom: 18px;
+  }
+}
+
 @media (max-width: 600px) {
   .apps-grid {
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
