@@ -325,6 +325,23 @@ html.performance-fast {
   scroll-behavior: auto;
 }
 
+/* Layout containment for sidebar to reduce layout thrashing */
+.sidebar {
+  contain: layout style;
+}
+
+/* Hide views during CSS load transition */
+.view-loading {
+  opacity: 0;
+}
+
+/* GPU compositing hints for animated elements */
+.sidebar::before,
+.sidebar::after,
+.sidebar .sidebar-glow {
+  will-change: opacity;
+}
+
 
 #preserved-game-loader {
   position: fixed;

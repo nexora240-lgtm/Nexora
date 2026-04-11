@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <script>
     if (window.location.pathname.endsWith('/games.html')) {
       const params = window.location.search;
@@ -14,13 +15,13 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', 'G-H5VGHQJKD8');
+  gtag('config', 'G-H5VGHQJKD8', {transport_type: 'beacon'});
   </script>
-  <meta charset="UTF-8" />
   <meta name="referrer" content="no-referrer-when-downgrade" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="css/games.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" /></noscript>
   <style>
     .view-count {
       position: absolute;
@@ -89,6 +90,7 @@
       overflow: hidden;
       z-index: 1;
       border-radius: calc(var(--g-radius) + 8px);
+      contain: layout style;
     }
 
     .games-hero-backdrop {
@@ -272,6 +274,7 @@
       transition: box-shadow 0.4s ease, border-color 0.4s ease;
       overflow: visible;
       position: relative;
+      contain: layout style;
     }
 
     /* Per-section mouse glow */
@@ -1213,7 +1216,7 @@
       const card = document.createElement('div');
       card.className = 'section-game-card';
       card.innerHTML = `
-        <img class="game-thumbnail" src="${game.thumbnail || ''}" alt="${game.title || ''}" loading="lazy" />
+        <img class="game-thumbnail" src="${game.thumbnail || ''}" alt="${game.title || ''}" loading="lazy" decoding="async" />
         ${isFavorite ? '<div class="favorite-badge"><i class="fas fa-heart"></i></div>' : ''}
         <div class="game-info">
           <div class="game-name">${game.title || 'Unknown'}</div>
@@ -1931,6 +1934,7 @@
         img.src     = game.thumbnail;
         img.alt     = game.title;
         img.loading = "lazy";
+        img.decoding = "async";
 
         const title = document.createElement("div");
         title.className   = "game-title";

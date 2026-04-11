@@ -14,7 +14,7 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', 'G-H5VGHQJKD8');
+  gtag('config', 'G-H5VGHQJKD8', {transport_type: 'beacon'});
   </script>
   <meta charset="UTF-8" />
   <meta name="referrer" content="no-referrer-when-downgrade" />
@@ -22,7 +22,8 @@
   <title>Apps - Nexora</title>
   <link rel="stylesheet" href="css/_tokens.css" />
   <link rel="stylesheet" href="css/apps.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" /></noscript>
   <script src="config.js"></script>
   <script src="js/mouse-tracking.js"></script>
 </head>
@@ -115,6 +116,7 @@
             alt="${app.title}"
             onerror="this.src='https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/images/apps/default.png'"
             loading="lazy"
+            decoding="async"
           />
         </div>
         <span class="app-name">${app.title}</span>

@@ -38,20 +38,22 @@
     "Khan Academy": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/khanacademy.ico"
   };
 
+  const _isEdge = /Edg\//.test(navigator.userAgent);
+
   const PERFORMANCE_PRESETS = {
     fast: {
-      mouseTracking: false,
+      mouseTracking: true,
       animations: false,
       glow: false,
       blur: false,
-      transforms: false
+      transforms: true
     },
     normal: {
-      mouseTracking: false,
+      mouseTracking: true,
       animations: true,
       glow: false,
-      blur: true,
-      transforms: false
+      blur: false,
+      transforms: true
     },
     fancy: {
       mouseTracking: true,
@@ -378,14 +380,16 @@
     }
 
     if (presetName && PERFORMANCE_PRESETS[presetName]) {
-      return { settings: PERFORMANCE_PRESETS[presetName], preset: presetName };
+      const presetSettings = Object.assign({}, PERFORMANCE_PRESETS[presetName]);
+      if (_isEdge) presetSettings.blur = false;
+      return { settings: presetSettings, preset: presetName };
     }
 
     const fallbackSettings = {
       mouseTracking: JSON.parse(localStorage.getItem(MOUSE_TRACKING_KEY) || 'true'),
       animations: JSON.parse(localStorage.getItem(ANIMATIONS_KEY) || 'true'),
       glow: JSON.parse(localStorage.getItem(GLOW_KEY) || 'true'),
-      blur: JSON.parse(localStorage.getItem(BLUR_KEY) || 'true'),
+      blur: _isEdge ? false : JSON.parse(localStorage.getItem(BLUR_KEY) || 'true'),
       transforms: JSON.parse(localStorage.getItem(TRANSFORMS_KEY) || 'true')
     };
 

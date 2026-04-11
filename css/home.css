@@ -414,6 +414,7 @@ body.view-home #home-bg-visuals {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  contain: layout paint;
 }
 
 .home-track {
@@ -422,6 +423,7 @@ body.view-home #home-bg-visuals {
   gap: 14px;
   width: 100%;
   will-change: transform;
+  contain: layout style;
 }
 
 .home-c1 .home-track { animation: homeScrollDown 140s linear infinite; }
@@ -452,6 +454,7 @@ body.view-home #home-bg-visuals {
   display: block;
   text-decoration: none;
   flex-shrink: 0;
+  contain: layout style;
 }
 
 .home-card-inner {

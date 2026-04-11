@@ -3,6 +3,9 @@ let currentViewAssets = [];
 let currentViewScripts = [];
 let currentNavId = 0;
 
+// View HTML cache — avoids re-fetching the same view HTML on repeat navigation
+const viewCache = new Map();
+
 // GameStateManager - tracks game state for "Continue Playing" feature
 window.GameStateManager = {
   STORAGE_KEY: 'nexora_gameInProgress',
@@ -389,8 +392,15 @@ function loadView(file) {
   const targetContainer = persistentConfig ? (persistentConfig.stash || app) : app;
   targetContainer.classList.add('view-loading');
   
-  fetch('/' + file)
-    .then(res => res.text())
+  // Use cached HTML if available, otherwise fetch and cache
+  const fetchPromise = viewCache.has(file) 
+    ? Promise.resolve(viewCache.get(file))
+    : fetch('/' + file).then(res => res.text()).then(html => {
+        viewCache.set(file, html);
+        return html;
+      });
+  
+  fetchPromise
     .then(html => {
       // If a newer navigation started, discard this response
       if (navId !== currentNavId) return;
@@ -417,7 +427,7 @@ function loadView(file) {
             newLink.addEventListener('load', resolve, { once: true });
             newLink.addEventListener('error', resolve, { once: true }); // Resolve on error too
             // Safety-net timeout — only fires if load/error never do
-            setTimeout(resolve, 5000);
+            setTimeout(resolve, 300);
           });
           cssLinkPromises.push(loadPromise);
           

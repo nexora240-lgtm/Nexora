@@ -1,27 +1,60 @@
 <!doctype html>
 <html lang="en" class="app-shell">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="referrer" content="no-referrer-when-downgrade" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nexora</title>
+  <meta name="description" content="Nexora Learning Hub — interactive educational tools and tutorials for middle and high school students." />
+  <link rel="canonical" href="https://thenexoraproject.xyz/" />
   <meta name="clckd" content="ed7341078f7a3cb1899a4741ca67db61" />
+
+  <!-- Preconnect to critical origins -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+  <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+  <link rel="dns-prefetch" href="https://cdn.taboola.com" />
+
+  <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/nexora-amber.png">
+
+  <!-- Critical CSS first -->
+  <link rel="stylesheet" href="/css/_tokens.css" />
+  <link rel="stylesheet" href="/css/first-time-modal.css" />
+
+  <script src="/config.js"></script>
+  <script src="/js/nexora-boot.js"></script>
+
+  <!-- Fonts with preload for faster rendering -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" /></noscript>
+
+  <!-- Defer non-critical ad/analytics scripts -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7925754855607435"
      crossorigin="anonymous"></script>
 
-  <!-- Taboola Loader (global - must load at real page load, not SPA view injection) -->
+  <!-- Taboola Loader deferred to after DOM -->
   <script type="text/javascript">
     window._taboola = window._taboola || [];
     _taboola.push({article:'auto'});
-    !function (e, f, u, i) {
-      if (!document.getElementById(i)){
-        e.async = 1;
-        e.src = u;
-        e.id = i;
-        f.parentNode.insertBefore(e, f);
-      }
-    }(document.createElement('script'),
-    document.getElementsByTagName('script')[0],
-    '//cdn.taboola.com/libtrc/adklip-thenexoraproject/loader.js',
-    'tb_loader_script');
-    if(window.performance && typeof window.performance.mark == 'function')
-      {window.performance.mark('tbl_ic');}
+    requestIdleCallback(function() {
+      !function (e, f, u, i) {
+        if (!document.getElementById(i)){
+          e.async = 1;
+          e.src = u;
+          e.id = i;
+          f.parentNode.insertBefore(e, f);
+        }
+      }(document.createElement('script'),
+      document.getElementsByTagName('script')[0],
+      '//cdn.taboola.com/libtrc/adklip-thenexoraproject/loader.js',
+      'tb_loader_script');
+      if(window.performance && typeof window.performance.mark == 'function')
+        {window.performance.mark('tbl_ic');}
+    }, {timeout: 3000});
   </script>
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-H5VGHQJKD8"></script>
@@ -29,23 +62,8 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
-  gtag('config', 'G-H5VGHQJKD8');
+  gtag('config', 'G-H5VGHQJKD8', {send_page_view: true, transport_type: 'beacon'});
   </script>
-  <meta charset="UTF-8" />
-  <meta name="referrer" content="no-referrer-when-downgrade" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nexora</title>
-  <meta name="description" content="Nexora Learning Hub — interactive educational tools and tutorials for middle and high school students." />
-  <link rel="canonical" href="https://thenexoraproject.xyz/" />
-  <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/nexora-amber.png">
-
-  <script src="/config.js"></script>
-  <script src="/js/nexora-boot.js"></script>
-
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/_tokens.css" />
-  <link rel="stylesheet" href="/css/first-time-modal.css" />
   <script>
     (function () {
       try {
@@ -100,7 +118,8 @@
   <link rel="stylesheet" href="/css/home.css" />
   <link rel="stylesheet" href="/css/auth.css" />
   <link rel="stylesheet" href="/css/nexora-notify.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" /></noscript>
 
   <script type="application/ld+json">
   {
@@ -140,7 +159,7 @@
     <aside class="sidebar" aria-label="Main navigation">
       <div class="sidebar-glow"></div>
       <div class="sidebar-title">
-        <img src="/logos/nexora-amber.png" alt="Nexora Logo" />
+        <img src="/logos/nexora-amber.png" alt="Nexora Logo" width="40" height="40" decoding="async" />
         <span>Nexora</span>
       </div>
       <nav aria-label="Primary">
@@ -177,9 +196,9 @@
   <script src="/js/views.js"></script>
   <script src="/js/app.js"></script>
   <script src="/js/mouse-tracking.js"></script>
-  <script src="/js/first-time-visitor.js"></script>
   <script src="/js/nexora-notify.js"></script>
-  <script src="/js/lag-detector.js"></script>
+  <script src="/js/first-time-visitor.js" defer></script>
+  <script src="/js/lag-detector.js" defer></script>
 
   <!-- Persistent home visuals: load once, scroll forever -->
   <script>
@@ -189,13 +208,9 @@
       if (loaded) return;
       loaded = true;
 
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', '/game-info.json', true);
-      xhr.onload = function() {
-        if (xhr.status !== 200) { loaded = false; return; }
-        try {
-          var games = JSON.parse(xhr.responseText);
-
+      fetch('/game-info.json')
+        .then(function(res) { return res.json(); })
+        .then(function(games) {
           // Fisher-Yates shuffle
           for (var i = games.length - 1; i > 0; i--) {
             var j = Math.floor(Math.random() * (i + 1));
@@ -225,6 +240,7 @@
             inner.className = 'home-card-inner';
             var img   = document.createElement('img');
             img.alt   = '';
+            img.decoding = 'async';
             var ov    = document.createElement('div');
             ov.className = 'home-card-ov';
             var span  = document.createElement('span');
@@ -287,16 +303,17 @@
             var visuals = document.getElementById('home-bg-visuals');
             if (visuals) window.NexoraMouseTracking.bindDelegated(visuals, '.home-card-inner');
           }
-        } catch(e) {
+        })
+        .catch(function(e) {
           console.error('Home visuals error:', e);
           loaded = false;
-        }
-      };
-      xhr.onerror = function() { loaded = false; };
-      xhr.send();
+        });
     }
 
-    if (document.readyState === 'loading') {
+    // Use requestIdleCallback to defer non-critical home visuals
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(initHomeVisuals, {timeout: 2000});
+    } else if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initHomeVisuals);
     } else {
       initHomeVisuals();
@@ -342,7 +359,8 @@
   </script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    // Defer particles loading until browser is idle
+    function _initParticlesWhenReady() {
       // Check if particles are enabled (default true)
       let particlesEnabled = true;
       try {
@@ -369,6 +387,7 @@
         var script = document.createElement('script');
         script.id = 'particles-js-lib';
         script.src = 'https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js';
+        script.async = true;
         script.onload = ready;
         document.head.appendChild(script);
       }
@@ -522,7 +541,13 @@
           removeParticles();
         }
       });
-    });
+    }
+    // Defer entire particle system initialization
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(_initParticlesWhenReady, {timeout: 4000});
+    } else {
+      setTimeout(_initParticlesWhenReady, 1000);
+    }
   </script>
 
   <script>

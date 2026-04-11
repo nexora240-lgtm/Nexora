@@ -56,7 +56,7 @@
   var RAF_MAX_PTS      = 5;      // rAF contribution cap
 
   // Wait before rAF evaluation starts (ms)
-  var WARMUP_MS        = 10000;
+  var WARMUP_MS        = 12000;
   // ─────────────────────────────────────────────────────────────────────────────
 
   var score = 0;
@@ -247,12 +247,18 @@
     );
   };
 
-  setTimeout(function () {
+  // Start rAF monitor after page is idle, not during critical load path
+  function startRafMonitor() {
     if (!shown) {
       console.log('[LagDetector] rAF monitor started (WARMUP_MS:', WARMUP_MS, ')');
       rafId = requestAnimationFrame(onFrame);
     }
-  }, 500);
+  }
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(startRafMonitor, { timeout: 3000 });
+  } else {
+    setTimeout(startRafMonitor, 2000);
+  }
 
   // --- Banner UI ---
   function showLagBanner() {

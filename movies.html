@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <meta charset="utf-8" />
   <script>
     if (window.location.pathname.endsWith('/movies.html')) {
       const params = window.location.search;
@@ -15,9 +16,8 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
-  gtag('config', 'G-H5VGHQJKD8');
+  gtag('config', 'G-H5VGHQJKD8', {transport_type: 'beacon'});
   </script>
-  <meta charset="utf-8" />
   <meta name="referrer" content="no-referrer-when-downgrade" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Movies & Series - Nexora</title>
@@ -386,12 +386,26 @@
     }
   }
 
-  // Fetch helper with retry for 5xx errors
+  // In-memory TMDB response cache
+  const tmdbCache = new Map();
+  const TMDB_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+  // Fetch helper with retry for 5xx errors + in-memory caching
   async function fetchTMDB(endpoint, retries = 3) {
+    // Check cache first
+    const cached = tmdbCache.get(endpoint);
+    if (cached && (Date.now() - cached.ts) < TMDB_CACHE_TTL) {
+      return cached.data;
+    }
+
     for (let i = 0; i < retries; i++) {
       try {
         const res = await fetch(`${TMDB_BASE}${endpoint}`);
-        if (res.ok) return await res.json();
+        if (res.ok) {
+          const data = await res.json();
+          tmdbCache.set(endpoint, { data, ts: Date.now() });
+          return data;
+        }
         if (res.status >= 500 && i < retries - 1) {
           await new Promise(r => setTimeout(r, 1000 * (i + 1)));
           continue;
@@ -432,6 +446,7 @@
     if (heroProgressInterval) clearInterval(heroProgressInterval);
     
     const progressBar = document.getElementById('heroProgressBar');
+    if (!progressBar) return;
     let progress = 0;
     
     // Reset and animate progress bar
@@ -481,7 +496,7 @@
   // Register cleanup for hero rotation
   registerCleanup(stopHeroRotation);
 
-  document.addEventListener('visibilitychange', () => {
+  const visibilityHandler = () => {
     if (document.hidden) {
       stopHeroRotation();
       return;
@@ -489,7 +504,9 @@
     if (heroItems.length) {
       startHeroRotation();
     }
-  });
+  };
+  document.addEventListener('visibilitychange', visibilityHandler);
+  registerCleanup(() => document.removeEventListener('visibilitychange', visibilityHandler));
 
   function displayHero(item) {
     const title = item.title || item.name || 'Untitled';
@@ -596,7 +613,7 @@
 
     card.innerHTML = `
       <div class="card-image">
-        ${posterPath ? `<img src="${posterPath}" alt="${title}" loading="lazy">` : '<div class="card-placeholder">No Image</div>'}
+        ${posterPath ? `<img src="${posterPath}" alt="${title}" loading="lazy" decoding="async">` : '<div class="card-placeholder">No Image</div>'}
         <div class="card-overlay">
           <button class="card-play-btn" title="Play">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
@@ -908,7 +925,7 @@
 
       card.innerHTML = `
         <div class="rec-poster">
-          ${posterPath ? `<img src="${posterPath}" alt="${title}" loading="lazy">` : '<div class="rec-placeholder">?</div>'}
+          ${posterPath ? `<img src="${posterPath}" alt="${title}" loading="lazy" decoding="async">` : '<div class="rec-placeholder">?</div>'}
           <div class="rec-overlay">
             <button class="rec-play-btn" title="Play">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
@@ -1045,7 +1062,7 @@
 
       episodeCard.innerHTML = `
         <div class="episode-thumbnail">
-          <img src="${thumbnailUrl}" alt="${episode.name}" loading="lazy">
+          <img src="${thumbnailUrl}" alt="${episode.name}" loading="lazy" decoding="async">
           <div class="episode-play-overlay">
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M8 5v14l11-7z"/>
@@ -1116,7 +1133,7 @@
           const type = item.media_type || 'movie';
 
           result.innerHTML = `
-            ${posterPath ? `<img src="${posterPath}" alt="${title}">` : '<div class="result-placeholder">?</div>'}
+            ${posterPath ? `<img src="${posterPath}" alt="${title}" decoding="async">` : '<div class="result-placeholder">?</div>'}
             <div class="result-info">
               <div class="result-title">${title}</div>
               <div class="result-meta">${year} • ${type === 'tv' ? 'TV Show' : 'Movie'}</div>

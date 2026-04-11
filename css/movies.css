@@ -718,6 +718,7 @@
   border-radius: calc(var(--radius) + 2px);
   overflow: hidden;
   position: relative;
+  contain: layout style;
 
   /* Glass base */
   background: linear-gradient(160deg,

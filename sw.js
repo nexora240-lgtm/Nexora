@@ -1,4 +1,32 @@
-const VERSION = "2.0"; // change this number whenever you need to force an update
+const VERSION = "2.2"; // change this number whenever you need to force an update
+const CACHE_NAME = 'nexora-v' + VERSION;
+const IMG_CACHE_NAME = 'nexora-images-v1';
+
+// Static assets to precache on install
+const PRECACHE_URLS = [
+  '/css/_tokens.css',
+  '/css/sidebar.css',
+  '/css/home.css',
+  '/css/auth.css',
+  '/css/nexora-notify.css',
+  '/css/first-time-modal.css',
+  '/css/theme-tokens.css',
+  '/config.js',
+  '/js/nexora-boot.js',
+  '/js/auth.js',
+  '/js/views.js',
+  '/js/app.js',
+  '/js/mouse-tracking.js',
+  '/js/nexora-notify.js',
+  '/js/first-time-visitor.js',
+  '/js/lag-detector.js',
+  '/home.html',
+  '/games.html',
+  '/game-info.json'
+];
+
+// Extensions that should use cache-first strategy
+const CACHEABLE_EXTENSIONS = /\.(css|js|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|eot)(\?.*)?$/i;
 
 if (navigator.userAgent.includes("Firefox")) {
 	Object.defineProperty(globalThis, "crossOriginIsolated", {
@@ -13,6 +41,57 @@ const scramjet = new ScramjetServiceWorker();
 let scramjetConfigPromise = null;
 
 console.log('Scramjet service worker loaded');
+
+// Stale-while-revalidate for static assets
+async function cacheFirst(request) {
+	const cached = await caches.match(request);
+	if (cached) return cached;
+	
+	try {
+		const networkResponse = await fetch(request);
+		if (networkResponse.ok) {
+			const cache = await caches.open(CACHE_NAME);
+			cache.put(request, networkResponse.clone());
+		}
+		return networkResponse;
+	} catch (err) {
+		// If offline and not cached, return a basic error
+		return new Response('Offline', { status: 503 });
+	}
+}
+
+// Cache-first for cross-origin images (TMDB posters, CDN assets)
+async function cacheFirstImages(request) {
+	const cached = await caches.match(request);
+	if (cached) return cached;
+	
+	try {
+		const networkResponse = await fetch(request);
+		if (networkResponse.ok) {
+			const cache = await caches.open(IMG_CACHE_NAME);
+			cache.put(request, networkResponse.clone());
+		}
+		return networkResponse;
+	} catch (err) {
+		return new Response('', { status: 503 });
+	}
+}
+
+// Network-first for HTML views (SPA pages)
+async function networkFirst(request) {
+	try {
+		const networkResponse = await fetch(request);
+		if (networkResponse.ok) {
+			const cache = await caches.open(CACHE_NAME);
+			cache.put(request, networkResponse.clone());
+		}
+		return networkResponse;
+	} catch (err) {
+		const cached = await caches.match(request);
+		if (cached) return cached;
+		return new Response('Offline', { status: 503 });
+	}
+}
 
 async function handleRequest(event) {
 	const url = new URL(event.request.url);
@@ -51,6 +130,27 @@ async function handleRequest(event) {
 		return scramjet.fetch(event);
 	}
 
+	// Only cache same-origin requests
+	if (url.origin === self.location.origin) {
+		// Cache-first for static assets (CSS, JS, images, fonts)
+		if (CACHEABLE_EXTENSIONS.test(url.pathname)) {
+			return cacheFirst(event.request);
+		}
+		
+		// Network-first for HTML views (for SPA view loading)
+		if (url.pathname.endsWith('.html') || url.pathname.endsWith('.json')) {
+			return networkFirst(event.request);
+		}
+	}
+
+	// Cache TMDB images and CDN assets (cross-origin, cache-first)
+	if (url.hostname === 'image.tmdb.org' ||
+	    url.hostname === 'cdn.jsdelivr.net' ||
+	    url.hostname === 'cdnjs.cloudflare.com' ||
+	    url.hostname === 'fonts.gstatic.com') {
+		return cacheFirstImages(event.request);
+	}
+
 	return fetch(event.request);
 }
 
@@ -60,10 +160,25 @@ self.addEventListener("fetch", (event) => {
 
 self.addEventListener("install", (event) => {
 	console.log('Service worker installing');
+	event.waitUntil(
+		caches.open(CACHE_NAME).then(cache => {
+			return cache.addAll(PRECACHE_URLS).catch(err => {
+				console.warn('Precache partial failure:', err);
+			});
+		})
+	);
 	self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
 	console.log('Service worker activating');
-	event.waitUntil(self.clients.claim());
+	// Clean up old caches (keep IMG_CACHE_NAME)
+	event.waitUntil(
+		caches.keys().then(keys => {
+			return Promise.all(
+				keys.filter(key => key !== CACHE_NAME && key !== IMG_CACHE_NAME)
+				    .map(key => caches.delete(key))
+			);
+		}).then(() => self.clients.claim())
+	);
 });

@@ -1,6 +1,9 @@
 /**
  * Distributed with Ultraviolet and compatible with most configurations.
  */
+(function() {
+if (typeof registerSW !== 'undefined') return;
+
 const stockSW = "/s/uv-sw.js";
 
 /**
@@ -12,7 +15,7 @@ const swAllowedHostnames = ["localhost", "127.0.0.1"];
  * Global util
  * Used in 404.html and index.html
  */
-async function registerSW() {
+window.registerSW = async function registerSW() {
 	if (
 		location.protocol !== "https:" &&
 		!swAllowedHostnames.includes(location.hostname)
@@ -27,4 +30,5 @@ async function registerSW() {
 		scope: __uv$config.prefix,
 		updateViaCache: 'none',
 	});
-}
+};
+})();

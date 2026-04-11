@@ -13,12 +13,13 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
-  gtag('config', 'G-H5VGHQJKD8');
+  gtag('config', 'G-H5VGHQJKD8', {transport_type: 'beacon'});
   </script>
   <meta charset="utf-8" />  <meta name="referrer" content="no-referrer-when-downgrade" />  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="css/theme-tokens.css" />
   <link rel="stylesheet" href="css/gameloader.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" /></noscript>
   <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/nexora-amber.png">
   <script src="config.js"></script>
   <script src="js/mouse-tracking.js"></script>
