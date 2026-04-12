@@ -1,6 +1,7 @@
 "use strict";
 
-// Ultraviolet proxy
+// Global scramjet instance
+let scramjet = null;
 let swReady = false;
 
 let proxyInitialized = false;
@@ -12,10 +13,43 @@ async function initProxyBrowser() {
   console.log('Proxy browser loaded');
 
   try {
-    // Register Ultraviolet service worker using register-sw.js
-    await registerSW();
+    const { ScramjetController } = $scramjetLoadController();
+    scramjet = new ScramjetController({
+      prefix: "/scramjet/",
+      files: {
+        wasm: "/scram/scramjet.wasm.wasm",
+        all: "/scram/scramjet.all.js",
+        sync: "/scram/scramjet.sync.js",
+      }
+    });
+    await scramjet.init();
+    console.log('Scramjet initialized');
+
+    const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+
+    try {
+      await connection.setTransport("/epoxy/index.mjs", [{
+        wisp: window._CONFIG?.wispurl || "wss://anura.pro/"
+      }]);
+      console.log('Epoxy transport configured with WISP:', window._CONFIG?.wispurl);
+    } catch (e) {
+      console.warn('Epoxy/WISP transport failed, trying bare transport:', e);
+      try {
+        await connection.setTransport("/baremux/index.mjs", [
+          window._CONFIG?.bareurl || "https://aluu.xyz/bare/"
+        ]);
+        console.log('Bare transport configured:', window._CONFIG?.bareurl);
+      } catch (e2) {
+        console.error('All transports failed, proxy may not work correctly:', e2);
+      }
+    }
+
+    await navigator.serviceWorker.register("/sw.js");
+    await navigator.serviceWorker.ready;
     swReady = true;
-    console.log('Ultraviolet service worker ready');
+    console.log('Service worker ready');
+
+    window.scramjet = scramjet;
 
   } catch (err) {
     console.error("Initialization failed:", err);
@@ -106,15 +140,19 @@ function getFavicon(url) {
   }
 }
 
-// Get proxy URL using Ultraviolet
+// Get proxy URL using Scramjet
 function getProxyUrl(url) {
   if (!swReady) {
     console.warn('Service worker not ready yet');
   }
-  // Use Ultraviolet's encoding
-  const encoded = __uv$config.prefix + __uv$config.encodeUrl(url);
-  console.log('Encoded URL:', url, '->', encoded);
-  return encoded;
+  if (scramjet) {
+    const encoded = scramjet.encodeUrl(url);
+    console.log('Encoded URL:', url, '->', encoded);
+    return encoded;
+  }
+  // Fallback if scramjet not yet initialized
+  console.warn('Scramjet not initialized, using fallback encoding');
+  return "/scramjet/" + encodeURIComponent(url);
 }
 
 // Search function (from arsenic)
