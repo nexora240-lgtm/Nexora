@@ -1,4 +1,4 @@
-const VERSION = "2.2"; // change this number whenever you need to force an update
+const VERSION = "2.3"; // change this number whenever you need to force an update
 const CACHE_NAME = 'nexora-v' + VERSION;
 const IMG_CACHE_NAME = 'nexora-images-v1';
 
@@ -140,6 +140,11 @@ async function handleRequest(event) {
 		// Network-first for HTML views (for SPA view loading)
 		if (url.pathname.endsWith('.html') || url.pathname.endsWith('.json')) {
 			return networkFirst(event.request);
+		}
+
+		// SPA navigation fallback — serve index.html for clean URL routes
+		if (event.request.mode === 'navigate' && !url.pathname.includes('.')) {
+			return networkFirst(new Request('/index.html'));
 		}
 	}
 

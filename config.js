@@ -3,9 +3,7 @@ let host = location.protocol + "//" + location.host;
 var _CONFIG = {
   wispurl:
     localStorage.getItem("proxServer") ||
-    (location.protocol === "https:" ? "wss://" : "ws://") +
-      location.host +
-      "/wisp/",
+    "wss://anura.pro/",
   bareurl: host + "/bare/",
   // Views API Configuration - Replace with your AWS API Gateway URL
   viewsApiUrl: "https://2zpvhn3woh.execute-api.us-east-2.amazonaws.com",

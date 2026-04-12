@@ -1,10 +1,9 @@
 "use strict";
 
-// Global scramjet instance
-let scramjet = null;
-let swReady = false;
-
-let proxyInitialized = false;
+// Global scramjet instance (use var so SPA re-injection doesn't throw)
+if (typeof scramjet === 'undefined') var scramjet = null;
+if (typeof swReady === 'undefined') var swReady = false;
+if (typeof proxyInitialized === 'undefined') var proxyInitialized = false;
 
 async function initProxyBrowser() {
   if (proxyInitialized) return;
@@ -27,13 +26,24 @@ async function initProxyBrowser() {
 
     const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
 
+    const wispUrl = window._CONFIG?.wispurl || "wss://anura.pro/";
+    let transportReady = false;
+
     try {
       await connection.setTransport("/epoxy/index.mjs", [{
-        wisp: window._CONFIG?.wispurl || "wss://anura.pro/"
+        wisp: wispUrl
       }]);
-      console.log('Epoxy transport configured with WISP:', window._CONFIG?.wispurl);
+      // Verify the transport actually works by checking it was set
+      const transportName = await connection.getTransport();
+      if (transportName) {
+        console.log('Epoxy transport configured with WISP:', wispUrl);
+        transportReady = true;
+      }
     } catch (e) {
-      console.warn('Epoxy/WISP transport failed, trying bare transport:', e);
+      console.warn('Epoxy/WISP transport failed:', e);
+    }
+
+    if (!transportReady) {
       try {
         await connection.setTransport("/baremux/index.mjs", [
           window._CONFIG?.bareurl || "https://aluu.xyz/bare/"
@@ -65,17 +75,17 @@ if (document.readyState === 'loading') {
   initProxyBrowser();
 }
 
-// Tab Management
-let tabCounter = 0;
-let activeTabId = null;
-const searchEngineUrl = "https://duckduckgo.com/?q=%s";
+// Tab Management (use var for SPA re-injection safety)
+if (typeof tabCounter === 'undefined') var tabCounter = 0;
+if (typeof activeTabId === 'undefined') var activeTabId = null;
+var searchEngineUrl = "https://duckduckgo.com/?q=%s";
 
-const MAX_TABS = 14;
+var MAX_TABS = 14;
 
 // Tab sizing constants (matching mainstream browsers)
-const TAB_MAX_WIDTH = 240;
-const TAB_MIN_WIDTH = 48;
-const TAB_NARROW_THRESHOLD = 100;
+var TAB_MAX_WIDTH = 240;
+var TAB_MIN_WIDTH = 48;
+var TAB_NARROW_THRESHOLD = 100;
 
 function updateTabSizes() {
   const tabBar = document.getElementById('tab-bar');
@@ -264,7 +274,6 @@ function createNewTab() {
   const iframe = document.createElement('iframe');
   iframe.className = 'proxy-frame';
   iframe.id = `${tabId}-frame`;
-  iframe.sandbox = "allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads";
   iframe.allow = "fullscreen; geolocation; microphone; camera";
   
   iframe.onload = function() {
@@ -342,7 +351,6 @@ async function openProxyPage(url) {
     iframe = document.createElement('iframe');
     iframe.className = 'proxy-frame';
     iframe.id = `${tabId}-frame`;
-    iframe.sandbox = "allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads";
     iframe.allow = "fullscreen; geolocation; microphone; camera";
     
     iframe.onload = function() {
@@ -574,7 +582,7 @@ function hideLoading() {
 }
 
 // Handle window resize to update tab sizes
-let resizeTimeout;
+if (typeof resizeTimeout === 'undefined') var resizeTimeout;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimeout);
   resizeTimeout = setTimeout(updateTabSizes, 100);
