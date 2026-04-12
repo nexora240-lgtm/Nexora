@@ -1,4 +1,4 @@
-const VERSION = "2.3"; // change this number whenever you need to force an update
+const VERSION = "2.5"; // change this number whenever you need to force an update
 const CACHE_NAME = 'nexora-v' + VERSION;
 const IMG_CACHE_NAME = 'nexora-images-v1';
 
@@ -126,8 +126,19 @@ async function handleRequest(event) {
 	}
 	await scramjetConfigPromise;
 
+	// Skip Scramjet for vidplus proxy requests (API Gateway + VPS)
+	if (url.hostname.endsWith('.execute-api.us-east-2.amazonaws.com') ||
+	    url.hostname === '69.10.53.183') {
+		return fetch(event.request);
+	}
+
 	if (scramjet.route(event)) {
-		return scramjet.fetch(event);
+		try {
+			return await scramjet.fetch(event);
+		} catch (err) {
+			console.error('[SW] Scramjet fetch failed:', err.message);
+			return new Response('Proxy error: ' + err.message, { status: 502 });
+		}
 	}
 
 	// Only cache same-origin requests
