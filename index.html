@@ -192,6 +192,28 @@
     <main class="main-content" id="app" tabindex="-1" role="main"></main>
   </div>
 
+  <script>
+  // Register SW on every page load and force-update stale workers
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').then(function(reg) {
+      // Immediately check for a newer sw.js from the server
+      reg.update().catch(function() {});
+      // When a new SW is found and installed, take over immediately
+      reg.addEventListener('updatefound', function() {
+        var newWorker = reg.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', function() {
+            if (newWorker.state === 'activated') {
+              console.log('Service worker updated — new version active');
+            }
+          });
+        }
+      });
+    }).catch(function(err) {
+      console.warn('SW registration failed:', err);
+    });
+  }
+  </script>
   <script src="/js/auth.js"></script>
   <script src="/js/views.js"></script>
   <script src="/js/app.js"></script>
