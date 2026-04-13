@@ -4,6 +4,7 @@
 if (typeof scramjet === 'undefined') var scramjet = null;
 if (typeof swReady === 'undefined') var swReady = false;
 if (typeof proxyInitialized === 'undefined') var proxyInitialized = false;
+if (typeof proxyInitPromise === 'undefined') var proxyInitPromise = null;
 
 // Ensure the $scramjet IDB has all required object stores.
 // If a stale DB exists at version 1 without the needed stores,
@@ -114,9 +115,9 @@ async function initProxyBrowser() {
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initProxyBrowser, { once: true });
+  document.addEventListener('DOMContentLoaded', function() { proxyInitPromise = initProxyBrowser(); }, { once: true });
 } else {
-  initProxyBrowser();
+  proxyInitPromise = initProxyBrowser();
 }
 
 // Tab Management (use var for SPA re-injection safety)
@@ -195,16 +196,17 @@ function getFavicon(url) {
 }
 
 // Get proxy URL using Scramjet
-function getProxyUrl(url) {
-  if (!swReady) {
-    console.warn('Service worker not ready yet');
+async function getProxyUrl(url) {
+  // Wait for init to finish before checking scramjet
+  if (proxyInitPromise) {
+    await proxyInitPromise;
   }
-  if (scramjet) {
+  if (scramjet && swReady) {
     const encoded = scramjet.encodeUrl(url);
     console.log('Encoded URL:', url, '->', encoded);
     return encoded;
   }
-  // Fallback if scramjet not yet initialized
+  // Fallback if scramjet failed to initialize
   console.warn('Scramjet not initialized, using fallback encoding');
   return "/scramjet/" + encodeURIComponent(url);
 }
@@ -423,7 +425,7 @@ async function openProxyPage(url) {
   }
   
   showLoading();
-  iframe.src = getProxyUrl(url);
+  iframe.src = await getProxyUrl(url);
   document.getElementById('address-bar').value = url;
   document.getElementById('welcome-screen').style.display = 'none';
 }
@@ -522,7 +524,7 @@ function setupLinkInterception(iframe) {
 }
 
 // Listen for messages from iframes
-window.addEventListener('message', function(event) {
+window.addEventListener('message', async function(event) {
   if (event.data && event.data.type === 'open-new-tab' && event.data.url) {
     const tabBar = document.getElementById('tab-bar');
     const existingTabs = tabBar.querySelectorAll('.tab').length;
@@ -574,7 +576,7 @@ window.addEventListener('message', function(event) {
     contentArea.appendChild(iframe);
     
     showLoading();
-    iframe.src = getProxyUrl(event.data.url);
+    iframe.src = await getProxyUrl(event.data.url);
     
     // Switch to the new tab
     switchToTab(newTabId);

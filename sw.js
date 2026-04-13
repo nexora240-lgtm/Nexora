@@ -1,4 +1,4 @@
-const VERSION = "3.5"; // change this number whenever you need to force an update
+const VERSION = "3.9"; // change this number whenever you need to force an update
 const CACHE_NAME = 'nexora-v' + VERSION;
 const IMG_CACHE_NAME = 'nexora-images-v1';
 
@@ -57,10 +57,37 @@ if (navigator.userAgent.includes("Firefox")) {
 // loaded LAZILY — only when a /scramjet/ request actually comes through.
 // This means movies, games, and every other non-proxy page never wait on
 // scramjet and are completely unaffected if it fails.
-importScripts("/scram/scramjet.all.js");
-const { ScramjetServiceWorker } = $scramjetLoadWorker();
-const scramjet = new ScramjetServiceWorker();
+
+// Catch bare-mux async errors so they don't kill the service worker
+self.addEventListener('unhandledrejection', (event) => {
+	const msg = event.reason?.message || String(event.reason || '');
+	if (msg.includes('bare-mux') || msg.includes('MessagePort') || msg.includes('SharedWorker')) {
+		event.preventDefault(); // swallow — proxy just won't work until configured
+	}
+});
+
+let scramjet = null;
 let scramjetConfigPromise = null;
+let scramjetReady = false;
+let _ScramjetSW = null; // deferred — constructor triggers bare-mux infinite retry
+try {
+	importScripts("/scram/scramjet.all.js");
+	const loaded = $scramjetLoadWorker();
+	_ScramjetSW = loaded.ScramjetServiceWorker;
+	scramjetReady = true;
+} catch (e) {
+	console.warn('[SW] Scramjet failed to load (proxy will be unavailable):', e.message);
+}
+
+// Lazy-instantiate ScramjetServiceWorker only when a /scramjet/ request arrives.
+// Creating it eagerly starts a bare-mux SharedWorker port poll that retries
+// every second against ALL page clients, flooding the console on non-proxy pages.
+function getScramjet() {
+	if (!scramjet && _ScramjetSW) {
+		scramjet = new _ScramjetSW();
+	}
+	return scramjet;
+}
 
 // Default scramjet config — matches what proxy-browser.js passes to ScramjetController.
 // Stored in IndexedDB so that scramjet.loadConfig() can read it, call its internal
@@ -218,6 +245,16 @@ async function networkFirst(request) {
 // ─── Scramjet proxy handler (isolated — only called for /scramjet/ paths) ──
 
 async function handleScramjetRequest(event, url) {
+	// If scramjet failed to load, return a clear error instead of crashing
+	if (!scramjetReady || !_ScramjetSW) {
+		return new Response('Proxy not available. Scramjet failed to initialize.', {
+			status: 503,
+			headers: { 'Content-Type': 'text/plain' }
+		});
+	}
+
+	const scram = getScramjet();
+
 	// Validate the proxied URL
 	try {
 		const encodedUrl = url.pathname.substring('/scramjet/'.length);
@@ -243,8 +280,8 @@ async function handleScramjetRequest(event, url) {
 	if (!scramjetConfigPromise) {
 		scramjetConfigPromise = (async () => {
 			await ensureScramjetIDB();
-			scramjet.config = null; // force loadConfig to run fully (calls setConfig)
-			await scramjet.loadConfig().catch((err) => {
+			scram.config = null; // force loadConfig to run fully (calls setConfig)
+			await scram.loadConfig().catch((err) => {
 				console.warn('[SW] Scramjet loadConfig error (config may still be usable):', err);
 			});
 		})();
@@ -252,18 +289,18 @@ async function handleScramjetRequest(event, url) {
 	await scramjetConfigPromise;
 
 	// If config is still missing after loadConfig, retry once from scratch
-	if (!scramjet.config || !scramjet.config.prefix) {
+	if (!scram.config || !scram.config.prefix) {
 		scramjetConfigPromise = (async () => {
 			await ensureScramjetIDB();
-			scramjet.config = null;
-			await scramjet.loadConfig().catch((err) => {
+			scram.config = null;
+			await scram.loadConfig().catch((err) => {
 				console.warn('[SW] Scramjet loadConfig retry error:', err);
 			});
 		})();
 		await scramjetConfigPromise;
 	}
 
-	if (!scramjet.config || !scramjet.config.prefix) {
+	if (!scram.config || !scram.config.prefix) {
 		return new Response('Proxy not initialized. Please visit the proxy page first.', {
 			status: 503,
 			headers: { 'Content-Type': 'text/plain' }
@@ -271,8 +308,8 @@ async function handleScramjetRequest(event, url) {
 	}
 
 	try {
-		if (scramjet.route(event)) {
-			return await scramjet.fetch(event);
+		if (scram.route(event)) {
+			return await scram.fetch(event);
 		}
 	} catch (err) {
 		console.error('[SW] Scramjet fetch failed:', err.message);
@@ -295,6 +332,7 @@ async function handleRequest(event) {
 
 	// ── 2. External API pass-through (vidplus proxy, AWS APIs) ─────────────
 	if (url.hostname.endsWith('.execute-api.us-east-2.amazonaws.com') ||
+	    url.hostname.endsWith('.cloudfront.net') ||
 	    url.hostname === '69.10.53.183') {
 		return fetch(event.request);
 	}
