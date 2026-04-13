@@ -70,6 +70,9 @@
       const backBtn       = document.getElementById('backBtn');
       const fullscreenBtn = document.getElementById('fullscreenBtn');
 
+      let proxyReady = false;
+      let proxyInitPromise = null;
+
       /* ── Proxy init (Scramjet) ───────────────────────────────── */
       async function initProxy() {
         try {
@@ -95,10 +98,16 @@
             ]);
           }
 
-          await navigator.serviceWorker.register("/sw.js");
-          await navigator.serviceWorker.ready;
-          swReady = true;
+          // Reuse existing SW registration from the shell if available
+          if (navigator.serviceWorker.controller) {
+            swReady = true;
+          } else {
+            await navigator.serviceWorker.register("/sw.js");
+            await navigator.serviceWorker.ready;
+            swReady = true;
+          }
           window.scramjet = scramjet;
+          proxyReady = true;
           console.log('Scramjet service worker ready');
         } catch (err) {
           console.error("Proxy init failed:", err);
@@ -113,7 +122,11 @@
       }
 
       /* ── Iframe launch ───────────────────────────────────────── */
-      function launchApp() {
+      async function launchApp() {
+        // Wait for proxy to be ready before launching
+        if (!proxyReady && proxyInitPromise) {
+          await proxyInitPromise;
+        }
         const proxyUrl = getProxyUrl(appLink);
         appContainer.innerHTML = `
           <iframe
@@ -124,6 +137,12 @@
             allow="fullscreen; geolocation; microphone; camera"
           ></iframe>
         `;
+      }
+
+      // Escape HTML to prevent XSS from URL parameters
+      function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       }
 
       /* ── Splash screen ───────────────────────────────────────── */
@@ -143,21 +162,24 @@
           return;
         }
 
+        const safeTitle = escapeHtml(appTitle);
+        const safeThumb = appThumb ? escapeHtml(appThumb) : '';
+
         titleEl.textContent = appTitle;
         document.title = `${appTitle} - Nexora`;
 
         // Apply thumbnail as blurred background
         if (appThumb) {
-          appContainer.style.setProperty('--app-bg', `url("${appThumb}")`);
+          appContainer.style.setProperty('--app-bg', `url("${safeThumb}")`);
         }
 
         appContainer.innerHTML = `
           <div class="app-start">
             <div class="app-icon-preview">
-              <img src="${appThumb || ''}"
-                   alt="${appTitle}" />
+              <img src="${safeThumb}"
+                   alt="${safeTitle}" />
             </div>
-            <h2 class="app-start-title">${appTitle}</h2>
+            <h2 class="app-start-title">${safeTitle}</h2>
             <button class="launch-btn" id="launchBtn">
               <i class="fas fa-rocket"></i>
               Launch App
@@ -190,7 +212,7 @@
       });
 
       /* ── Boot ────────────────────────────────────────────────── */
-      initProxy();
+      proxyInitPromise = initProxy();
       initAppLoader();
     })();
   </script>

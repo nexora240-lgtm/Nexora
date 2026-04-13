@@ -3,8 +3,17 @@ let currentViewAssets = [];
 let currentViewScripts = [];
 let currentNavId = 0;
 
-// View HTML cache — avoids re-fetching the same view HTML on repeat navigation
+// View HTML cache — avoids re-fetching the same view HTML on repeat navigation.
+// Cleared when the service worker activates a new version, so users always
+// see the latest HTML after a deployment.
 const viewCache = new Map();
+
+// Clear the in-memory view cache whenever a new SW takes control
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    viewCache.clear();
+  });
+}
 
 // GameStateManager - tracks game state for "Continue Playing" feature
 window.GameStateManager = {
@@ -395,7 +404,10 @@ function loadView(file) {
   // Use cached HTML if available, otherwise fetch and cache
   const fetchPromise = viewCache.has(file) 
     ? Promise.resolve(viewCache.get(file))
-    : fetch('/' + file).then(res => res.text()).then(html => {
+    : fetch('/' + file).then(res => {
+        if (!res.ok) throw new Error(`View fetch failed: ${res.status}`);
+        return res.text();
+      }).then(html => {
         viewCache.set(file, html);
         return html;
       });
@@ -414,7 +426,16 @@ function loadView(file) {
       const headNodes = doc.head ? Array.from(doc.head.querySelectorAll('link, style')) : [];
       headNodes.forEach(node => {
         if (node.tagName === 'LINK' && node.href) {
-          const existing = document.head.querySelector(`link[href="${node.href}"]`);
+          // DOMParser resolves relative hrefs to absolute URLs. Extract the
+          // pathname so we can compare against both relative and absolute hrefs
+          // already in the document (prevents duplicate CSS loading).
+          let hrefToCheck = node.getAttribute('href') || '';
+          try { hrefToCheck = new URL(node.href).pathname; } catch (e) {}
+          const existing = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]')).find(link => {
+            let existingPath = link.getAttribute('href') || '';
+            try { existingPath = new URL(link.href).pathname; } catch (e) {}
+            return existingPath === hrefToCheck;
+          });
           if (existing && !existing.dataset.viewAsset) {
             return;
           }
@@ -538,7 +559,7 @@ function appendScriptNode(scriptNode) {
     });
 
     const hasSrc = Boolean(scriptNode.getAttribute('src'));
-    const isAsync = scriptNode.hasAttribute('async') || scriptNode.hasAttribute('defer') || scriptNode.getAttribute('type') === 'module';
+    const isModule = scriptNode.getAttribute('type') === 'module';
 
     if (!hasSrc) {
       newScript.textContent = scriptNode.textContent;
@@ -548,7 +569,9 @@ function appendScriptNode(scriptNode) {
       return;
     }
 
-    if (!isAsync) {
+    // Module scripts are always deferred/async. Force non-module, non-async
+    // scripts to load synchronously to preserve document order.
+    if (!isModule && !scriptNode.hasAttribute('async') && !scriptNode.hasAttribute('defer')) {
       newScript.async = false;
     }
 

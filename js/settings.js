@@ -824,16 +824,16 @@
     try {
       if (!enabled) {
 
-        if (_aboutWin && !_aboutWin.closed) {
+        if (window._aboutWin && !window._aboutWin.closed) {
           try { 
-            _aboutWin.close();
+            window._aboutWin.close();
 
             if (window.opener) {
               window.location.href = window.location.origin;
             }
           } catch (e) {}
         }
-        _aboutWin = null;
+        window._aboutWin = null;
       }
     } catch (e) {
     }

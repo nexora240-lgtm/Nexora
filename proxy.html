@@ -31,8 +31,8 @@
         };
       } catch (e) {}
       var PRESETS = {
-        fast:   { mouseTracking: false, animations: false, glow: false, blur: false, transforms: false },
-        normal: { mouseTracking: false, animations: true,  glow: false, blur: true,  transforms: false },
+        fast:   { mouseTracking: true,  animations: false, glow: false, blur: false, transforms: true  },
+        normal: { mouseTracking: true,  animations: true,  glow: false, blur: false, transforms: true  },
         fancy:  { mouseTracking: true,  animations: true,  glow: true,  blur: true,  transforms: true  }
       };
       var s = (preset && PRESETS[preset]) ? PRESETS[preset] : PRESETS.normal;

@@ -60,8 +60,10 @@ async function initProxyBrowser() {
     await scramjet.init();
     console.log('Scramjet initialized');
 
-    // Register service worker FIRST so bare-mux can communicate via SW ↔ page ports
-    await navigator.serviceWorker.register("/sw.js");
+    // Reuse existing SW if already active, otherwise register
+    if (!navigator.serviceWorker.controller) {
+      await navigator.serviceWorker.register("/sw.js");
+    }
     await navigator.serviceWorker.ready;
     swReady = true;
     console.log('Service worker ready');

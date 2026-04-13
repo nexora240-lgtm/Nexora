@@ -1,7 +1,8 @@
 :root {
-  --page-bg: #ffffff;
-  --surface: #f7f7f8;
-  --surface-2: #efefef;
+  /* Default to dark theme to prevent white flash while theme-tokens.css loads */
+  --page-bg: #0a0605;
+  --surface: #1a100d;
+  --surface-2: #1f1410;
 
   --primary: #d4550a;
   --primary-deep: #992f05;
@@ -10,18 +11,29 @@
   --primary-accent: var(--primary);
   --on-primary: #fff0e8;
 
-  --text: #111111;
-  --muted: #666666;
+  --text: #f8e7e0;
+  --muted: #c9a08a;
 
   --radius: 10px;
   --control-gap: 12px;
   --focus-ring: 3px;
   --focus-color: rgba(212,85,10,0.18);
 
-  --contrast-high: rgba(0,0,0,0.85);
-  --contrast-low: rgba(0,0,0,0.5);
+  --contrast-high: rgba(255,255,255,0.85);
+  --contrast-low: rgba(255,255,255,0.5);
 
   --accent-gradient: linear-gradient(90deg, var(--primary-deep), var(--primary));
+}
+
+/* Light scheme overrides — applied when user selects light mode */
+.light-scheme:root {
+  --page-bg: #ffffff;
+  --surface: #f7f7f8;
+  --surface-2: #efefef;
+  --text: #111111;
+  --muted: #666666;
+  --contrast-high: rgba(0,0,0,0.85);
+  --contrast-low: rgba(0,0,0,0.5);
 }
 
 

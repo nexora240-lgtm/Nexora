@@ -1,4 +1,4 @@
-const VERSION = "3.2"; // change this number whenever you need to force an update
+const VERSION = "3.5"; // change this number whenever you need to force an update
 const CACHE_NAME = 'nexora-v' + VERSION;
 const IMG_CACHE_NAME = 'nexora-images-v1';
 
@@ -19,7 +19,7 @@ const PRECACHE_URLS = [
   '/css/settings.css',
   '/css/gameloader.css',
   '/css/linkfinder.css',
-  '/config.js',
+  '/config.js?v=2',
   '/js/nexora-boot.js',
   '/js/auth.js',
   '/js/views.js',
@@ -30,6 +30,15 @@ const PRECACHE_URLS = [
   '/js/lag-detector.js',
   '/home.html',
   '/games.html',
+  '/movies.html',
+  '/apps.html',
+  '/proxy.html',
+  '/chatbot.html',
+  '/chatroom.html',
+  '/settings.html',
+  '/linkfinder.html',
+  '/apploader.html',
+  '/gameloader.html',
   '/game-info.json'
 ];
 
@@ -332,9 +341,15 @@ self.addEventListener("install", (event) => {
 	console.log('Service worker installing');
 	event.waitUntil(
 		caches.open(CACHE_NAME).then(cache => {
-			return cache.addAll(PRECACHE_URLS).catch(err => {
-				console.warn('Precache partial failure:', err);
-			});
+			// Cache each URL individually so one failure doesn't lose everything.
+			// cache.addAll() is atomic — a single 404 or timeout empties the entire cache.
+			return Promise.allSettled(
+				PRECACHE_URLS.map(url =>
+					cache.add(url).catch(err => {
+						console.warn('Precache failed for', url, err);
+					})
+				)
+			);
 		})
 	);
 	self.skipWaiting();
@@ -350,5 +365,18 @@ self.addEventListener("activate", (event) => {
 				    .map(key => caches.delete(key))
 			);
 		}).then(() => self.clients.claim())
+		  .then(() => {
+			// Tell every open tab that a new version just activated
+			return self.clients.matchAll({ type: 'window' }).then(clients => {
+				clients.forEach(client => client.postMessage({ type: 'SW_UPDATED', version: VERSION }));
+			});
+		  })
 	);
+});
+
+// Respond to version queries from the page
+self.addEventListener('message', (event) => {
+	if (event.data && event.data.type === 'GET_VERSION') {
+		event.source.postMessage({ type: 'SW_VERSION', version: VERSION });
+	}
 });

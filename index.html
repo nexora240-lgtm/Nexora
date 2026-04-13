@@ -196,6 +196,21 @@
   <script>
   // Register SW on every page load and force-update stale workers
   if ('serviceWorker' in navigator) {
+    // Auto-reload when a new service worker activates.
+    // The guard prevents an infinite reload loop: the new SW sends its
+    // version, and we only reload if the page hasn't already reloaded for
+    // that version.
+    var _swReloadedKey = 'nexora_sw_reloaded';
+    navigator.serviceWorker.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'SW_UPDATED') {
+        var reloadedFor = sessionStorage.getItem(_swReloadedKey);
+        if (reloadedFor === event.data.version) return; // already reloaded for this version
+        sessionStorage.setItem(_swReloadedKey, event.data.version);
+        console.log('New service worker version', event.data.version, '— reloading page');
+        window.location.reload();
+      }
+    });
+
     navigator.serviceWorker.register('/sw.js').then(function(reg) {
       // Immediately check for a newer sw.js from the server
       reg.update().catch(function() {});
