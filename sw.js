@@ -1,4 +1,4 @@
-const VERSION = "3.0"; // change this number whenever you need to force an update
+const VERSION = "3.2"; // change this number whenever you need to force an update
 const CACHE_NAME = 'nexora-v' + VERSION;
 const IMG_CACHE_NAME = 'nexora-images-v1';
 
@@ -11,6 +11,14 @@ const PRECACHE_URLS = [
   '/css/nexora-notify.css',
   '/css/first-time-modal.css',
   '/css/theme-tokens.css',
+  '/css/movies.css',
+  '/css/games.css',
+  '/css/apps.css',
+  '/css/chatbot.css',
+  '/css/chatroom.css',
+  '/css/settings.css',
+  '/css/gameloader.css',
+  '/css/linkfinder.css',
   '/config.js',
   '/js/nexora-boot.js',
   '/js/auth.js',
@@ -95,8 +103,10 @@ const SCRAMJET_DEFAULT_CONFIG = {
 // Ensure scram's IDB has a valid config before loadConfig() reads from it.
 // If the proxy page was never visited, IDB would be empty and loadConfig()
 // would leave the internal $W undefined — causing "Cannot read 'prefix'".
-function ensureScramjetIDB() {
+function ensureScramjetIDB(retries) {
+	if (retries === undefined) retries = 0;
 	return new Promise((resolve) => {
+		if (retries >= 2) { resolve(); return; }
 		try {
 			const req = indexedDB.open("$scramjet", 1);
 			req.onupgradeneeded = (e) => {
@@ -107,6 +117,17 @@ function ensureScramjetIDB() {
 			};
 			req.onsuccess = (e) => {
 				const db = e.target.result;
+				// Verify all required stores exist (handles stale v1 DBs)
+				const needed = ["config", "cookies", "redirectTrackers", "referrerPolicies", "publicSuffixList"];
+				const missing = needed.filter(n => !db.objectStoreNames.contains(n));
+				if (missing.length > 0) {
+					db.close();
+					const delReq = indexedDB.deleteDatabase("$scramjet");
+					delReq.onsuccess = () => ensureScramjetIDB(retries + 1).then(resolve);
+					delReq.onerror = () => resolve();
+					delReq.onblocked = () => resolve();
+					return;
+				}
 				try {
 					const tx = db.transaction("config", "readwrite");
 					const store = tx.objectStore("config");
@@ -221,6 +242,18 @@ async function handleScramjetRequest(event, url) {
 	}
 	await scramjetConfigPromise;
 
+	// If config is still missing after loadConfig, retry once from scratch
+	if (!scramjet.config || !scramjet.config.prefix) {
+		scramjetConfigPromise = (async () => {
+			await ensureScramjetIDB();
+			scramjet.config = null;
+			await scramjet.loadConfig().catch((err) => {
+				console.warn('[SW] Scramjet loadConfig retry error:', err);
+			});
+		})();
+		await scramjetConfigPromise;
+	}
+
 	if (!scramjet.config || !scramjet.config.prefix) {
 		return new Response('Proxy not initialized. Please visit the proxy page first.', {
 			status: 503,
@@ -284,7 +317,11 @@ async function handleRequest(event) {
 	}
 
 	// ── 5. Everything else — straight to network, no scramjet ─────────────
-	return fetch(event.request);
+	try {
+		return await fetch(event.request);
+	} catch (err) {
+		return new Response('Offline', { status: 503 });
+	}
 }
 
 self.addEventListener("fetch", (event) => {

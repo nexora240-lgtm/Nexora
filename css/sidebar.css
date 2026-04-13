@@ -605,6 +605,9 @@ body.view-chatroom .main-content {
 }
 
 /* View Loading Transition - Prevent FOUC */
+.main-content {
+  transition: opacity 0.15s ease-out;
+}
 .main-content.view-loading {
   opacity: 0 !important;
   transition: none !important;

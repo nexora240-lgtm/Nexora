@@ -5,6 +5,39 @@ if (typeof scramjet === 'undefined') var scramjet = null;
 if (typeof swReady === 'undefined') var swReady = false;
 if (typeof proxyInitialized === 'undefined') var proxyInitialized = false;
 
+// Ensure the $scramjet IDB has all required object stores.
+// If a stale DB exists at version 1 without the needed stores,
+// delete it so scramjet's openIDB() can recreate it cleanly.
+function ensureScramjetStores() {
+  return new Promise((resolve) => {
+    try {
+      const req = indexedDB.open("$scramjet", 1);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        for (const name of ["config", "cookies", "redirectTrackers", "referrerPolicies", "publicSuffixList"]) {
+          if (!db.objectStoreNames.contains(name)) db.createObjectStore(name);
+        }
+      };
+      req.onsuccess = (e) => {
+        const db = e.target.result;
+        const needed = ["config", "cookies", "redirectTrackers", "referrerPolicies", "publicSuffixList"];
+        const missing = needed.filter(n => !db.objectStoreNames.contains(n));
+        db.close();
+        if (missing.length > 0) {
+          // Stores missing — delete so scramjet can recreate from scratch
+          const delReq = indexedDB.deleteDatabase("$scramjet");
+          delReq.onsuccess = resolve;
+          delReq.onerror = resolve;
+          delReq.onblocked = resolve;
+        } else {
+          resolve();
+        }
+      };
+      req.onerror = () => resolve();
+    } catch (err) { resolve(); }
+  });
+}
+
 async function initProxyBrowser() {
   if (proxyInitialized) return;
   proxyInitialized = true;
@@ -12,6 +45,9 @@ async function initProxyBrowser() {
   console.log('Proxy browser loaded');
 
   try {
+    // Fix stale IDB before scramjet touches it
+    await ensureScramjetStores();
+
     const { ScramjetController } = $scramjetLoadController();
     scramjet = new ScramjetController({
       prefix: "/scramjet/",
@@ -24,23 +60,32 @@ async function initProxyBrowser() {
     await scramjet.init();
     console.log('Scramjet initialized');
 
+    // Register service worker FIRST so bare-mux can communicate via SW ↔ page ports
+    await navigator.serviceWorker.register("/sw.js");
+    await navigator.serviceWorker.ready;
+    swReady = true;
+    console.log('Service worker ready');
+
     const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
 
     const wispUrl = window._CONFIG?.wispurl || "wss://anura.pro/";
     let transportReady = false;
 
-    try {
-      await connection.setTransport("/epoxy/index.mjs", [{
-        wisp: wispUrl
-      }]);
-      // Verify the transport actually works by checking it was set
-      const transportName = await connection.getTransport();
-      if (transportName) {
-        console.log('Epoxy transport configured with WISP:', wispUrl);
-        transportReady = true;
+    // Try epoxy transport with retry
+    for (let attempt = 0; attempt < 2 && !transportReady; attempt++) {
+      try {
+        await connection.setTransport("/epoxy/index.mjs", [{
+          wisp: wispUrl
+        }]);
+        // Verify the transport actually works by checking it was set
+        const transportName = await connection.getTransport();
+        if (transportName) {
+          console.log('Epoxy transport configured with WISP:', wispUrl);
+          transportReady = true;
+        }
+      } catch (e) {
+        console.warn('Epoxy/WISP transport attempt', attempt + 1, 'failed:', e);
       }
-    } catch (e) {
-      console.warn('Epoxy/WISP transport failed:', e);
     }
 
     if (!transportReady) {
@@ -54,15 +99,12 @@ async function initProxyBrowser() {
       }
     }
 
-    await navigator.serviceWorker.register("/sw.js");
-    await navigator.serviceWorker.ready;
-    swReady = true;
-    console.log('Service worker ready');
-
     window.scramjet = scramjet;
 
   } catch (err) {
     console.error("Initialization failed:", err);
+    // Allow re-initialization on next attempt instead of permanent failure
+    proxyInitialized = false;
     alert('Failed to initialize proxy. Please refresh the page.');
   }
 

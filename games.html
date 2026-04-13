@@ -1216,7 +1216,7 @@
       const card = document.createElement('div');
       card.className = 'section-game-card';
       card.innerHTML = `
-        <img class="game-thumbnail" src="${game.thumbnail || ''}" alt="${game.title || ''}" loading="lazy" decoding="async" />
+        <img class="game-thumbnail" src="${game.thumbnail || ''}" alt="${game.title || ''}" loading="lazy" decoding="async" onerror="this.style.background='var(--surface-2,#23232b)';this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22 viewBox=%220 0 24 24%22%3E%3Cpath fill=%22%23555%22 d=%22M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z%22/%3E%3C/svg%3E'" />
         ${isFavorite ? '<div class="favorite-badge"><i class="fas fa-heart"></i></div>' : ''}
         <div class="game-info">
           <div class="game-name">${game.title || 'Unknown'}</div>

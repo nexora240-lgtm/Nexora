@@ -424,10 +424,12 @@ function loadView(file) {
           
           // Create promise to wait for CSS to load
           const loadPromise = new Promise((resolve) => {
-            newLink.addEventListener('load', resolve, { once: true });
-            newLink.addEventListener('error', resolve, { once: true }); // Resolve on error too
-            // Safety-net timeout — only fires if load/error never do
-            setTimeout(resolve, 300);
+            let settled = false;
+            const done = () => { if (!settled) { settled = true; resolve(); } };
+            newLink.addEventListener('load', done, { once: true });
+            newLink.addEventListener('error', done, { once: true });
+            // Safety-net timeout — generous to handle slow networks / cache misses
+            setTimeout(done, 2000);
           });
           cssLinkPromises.push(loadPromise);
           
@@ -520,19 +522,11 @@ function loadView(file) {
 }
 
 function loadScriptsSequentially(scripts) {
-  // Group scripts: those with src and those without
-  const inlineScripts = scripts.filter(s => !s.getAttribute('src'));
-  const externalScripts = scripts.filter(s => s.getAttribute('src'));
-  
-  // Load external scripts in parallel, then inline scripts sequentially
-  const externalPromises = externalScripts.map(scriptNode => appendScriptNode(scriptNode));
-  
-  return Promise.all(externalPromises).then(() => {
-    // Then execute inline scripts sequentially after external scripts load
-    return inlineScripts.reduce((chain, scriptNode) => {
-      return chain.then(() => appendScriptNode(scriptNode));
-    }, Promise.resolve());
-  });
+  // Load ALL scripts sequentially in document order.
+  // This ensures dependencies are met (e.g. baremux before proxy-browser).
+  return scripts.reduce((chain, scriptNode) => {
+    return chain.then(() => appendScriptNode(scriptNode));
+  }, Promise.resolve());
 }
 
 function appendScriptNode(scriptNode) {
@@ -569,14 +563,4 @@ function appendScriptNode(scriptNode) {
   });
 }
 
-function renderHome()     { loadView('home.html'); }
-function renderGames()    { loadView('games.html'); }
-function renderMovies()   { loadView('movies.html'); }
-function renderProxy()    { 
-  // Proxy page requires full page reload due to service worker dependencies
-  window.location.href = '/proxy.html';
-}
-function renderHacks()    { loadView('hacks.html'); }
-function renderChatbot()  { loadView('chatbot.html'); }
-function renderChatroom() { loadView('chatroom.html'); }
-function renderSettings() { loadView('settings.html'); }
+
