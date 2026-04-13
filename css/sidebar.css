@@ -237,7 +237,7 @@ body {
 .main-content {
   flex: 1;
   padding: 20px;
-  transition: left 0.3s ease, opacity 0.15s ease-in-out;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease-out;
   overflow-y: auto; 
   overflow-x: hidden;
   min-height: 100vh;
@@ -606,7 +606,7 @@ body.view-chatroom .main-content {
 
 /* View Loading Transition - Prevent FOUC */
 .main-content {
-  transition: opacity 0.15s ease-out;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease-out;
 }
 .main-content.view-loading {
   opacity: 0 !important;
