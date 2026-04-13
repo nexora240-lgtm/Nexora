@@ -74,6 +74,13 @@
       let proxyInitPromise = null;
 
       /* ── Proxy init (Scramjet) ───────────────────────────────── */
+      function withTimeout(promise, ms) {
+        return Promise.race([
+          promise,
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Transport timeout')), ms))
+        ]);
+      }
+
       async function initProxy() {
         try {
           const { ScramjetController } = $scramjetLoadController();
@@ -89,13 +96,24 @@
 
           const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
           try {
-            await connection.setTransport("/epoxy/index.mjs", [{
-              wisp: window._CONFIG?.wispurl || "wss://anura.pro/"
-            }]);
+            await withTimeout(
+              connection.setTransport("/epoxy/index.mjs", [{
+                wisp: window._CONFIG?.wispurl || "wss://anura.pro/"
+              }]),
+              8000
+            );
           } catch (e) {
-            await connection.setTransport("/baremux/index.mjs", [
-              window._CONFIG?.bareurl || "https://aluu.xyz/bare/"
-            ]);
+            console.warn('Epoxy transport failed, trying bare:', e.message || e);
+            try {
+              await withTimeout(
+                connection.setTransport("/baremux/index.mjs", [
+                  window._CONFIG?.bareurl || "https://aluu.xyz/bare/"
+                ]),
+                8000
+              );
+            } catch (e2) {
+              console.error('All transports failed:', e2.message || e2);
+            }
           }
 
           // Reuse existing SW registration from the shell if available

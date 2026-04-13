@@ -74,32 +74,48 @@ async function initProxyBrowser() {
     const wispUrl = window._CONFIG?.wispurl || "wss://anura.pro/";
     let transportReady = false;
 
-    // Try epoxy transport with retry
-    for (let attempt = 0; attempt < 2 && !transportReady; attempt++) {
+    // Timeout helper — bare-mux retries infinitely when SharedWorker is dead.
+    // Cap each attempt so init doesn't hang forever.
+    function withTimeout(promise, ms) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Transport timeout')), ms))
+      ]);
+    }
+
+    // Try epoxy transport (single attempt with 8s timeout)
+    try {
+      await withTimeout(
+        connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]),
+        8000
+      );
+      const transportName = await withTimeout(connection.getTransport(), 3000);
+      if (transportName) {
+        console.log('Epoxy transport configured with WISP:', wispUrl);
+        transportReady = true;
+      }
+    } catch (e) {
+      console.warn('Epoxy/WISP transport failed:', e.message || e);
+    }
+
+    // Fallback to bare transport
+    if (!transportReady) {
       try {
-        await connection.setTransport("/epoxy/index.mjs", [{
-          wisp: wispUrl
-        }]);
-        // Verify the transport actually works by checking it was set
-        const transportName = await connection.getTransport();
-        if (transportName) {
-          console.log('Epoxy transport configured with WISP:', wispUrl);
-          transportReady = true;
-        }
-      } catch (e) {
-        console.warn('Epoxy/WISP transport attempt', attempt + 1, 'failed:', e);
+        await withTimeout(
+          connection.setTransport("/baremux/index.mjs", [
+            window._CONFIG?.bareurl || "https://aluu.xyz/bare/"
+          ]),
+          8000
+        );
+        console.log('Bare transport configured:', window._CONFIG?.bareurl);
+        transportReady = true;
+      } catch (e2) {
+        console.warn('Bare transport failed:', e2.message || e2);
       }
     }
 
     if (!transportReady) {
-      try {
-        await connection.setTransport("/baremux/index.mjs", [
-          window._CONFIG?.bareurl || "https://aluu.xyz/bare/"
-        ]);
-        console.log('Bare transport configured:', window._CONFIG?.bareurl);
-      } catch (e2) {
-        console.error('All transports failed, proxy may not work correctly:', e2);
-      }
+      console.error('All transports failed. SharedWorker may not be supported or is blocked.');
     }
 
     window.scramjet = scramjet;

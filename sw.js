@@ -1,4 +1,4 @@
-const VERSION = "3.9"; // change this number whenever you need to force an update
+const VERSION = "3.11"; // change this number whenever you need to force an update
 const CACHE_NAME = 'nexora-v' + VERSION;
 const IMG_CACHE_NAME = 'nexora-images-v1';
 
@@ -70,11 +70,31 @@ let scramjet = null;
 let scramjetConfigPromise = null;
 let scramjetReady = false;
 let _ScramjetSW = null; // deferred — constructor triggers bare-mux infinite retry
+
+// Pre-load WASM bytes into self.WASM so scramjet's rewriter has them immediately.
+// Without this, loadConfig() kicks off asyncSetWasm() which races against scram.fetch(),
+// causing "rewriter wasm not found" when the first proxied page loads heavy JS.
+let wasmPreloadPromise = null;
+function preloadWasm() {
+	if (wasmPreloadPromise) return wasmPreloadPromise;
+	wasmPreloadPromise = fetch('/scram/scramjet.wasm.wasm').then(r => {
+		if (!r.ok) throw new Error('WASM fetch ' + r.status);
+		return r.arrayBuffer();
+	}).then(buf => {
+		self.WASM = new Uint8Array(buf);
+	}).catch(err => {
+		console.warn('[SW] WASM preload failed (rewriter may be slow on first load):', err.message);
+	});
+	return wasmPreloadPromise;
+}
+
 try {
 	importScripts("/scram/scramjet.all.js");
 	const loaded = $scramjetLoadWorker();
 	_ScramjetSW = loaded.ScramjetServiceWorker;
 	scramjetReady = true;
+	// Start WASM preload immediately after scramjet loads
+	preloadWasm();
 } catch (e) {
 	console.warn('[SW] Scramjet failed to load (proxy will be unavailable):', e.message);
 }
@@ -274,6 +294,11 @@ async function handleScramjetRequest(event, url) {
 		console.error('Error validating URL:', e);
 	}
 
+	// Ensure WASM bytes are available before scramjet tries to use the rewriter.
+	// loadConfig() calls asyncSetWasm() internally, but it can resolve before the
+	// WASM compile finishes. self.WASM gives scramjet the bytes synchronously.
+	await preloadWasm();
+
 	// Ensure scramjet's internal config ($W) is set via loadConfig() → setConfig().
 	// We seed IDB first (if empty), then clear scramjet.config so loadConfig()
 	// doesn't early-return — it MUST run through to call setConfig().
@@ -347,6 +372,11 @@ async function handleRequest(event) {
 
 	// ── 4. Same-origin requests — normal caching strategies ───────────────
 	if (url.origin === self.location.origin) {
+		// Never cache baremux/epoxy worker scripts — stale copies break SharedWorker
+		if (url.pathname.startsWith('/baremux/') || url.pathname.startsWith('/epoxy/')) {
+			return fetch(event.request);
+		}
+
 		// Cache-first for static assets (CSS, JS, images, fonts)
 		if (CACHEABLE_EXTENSIONS.test(url.pathname)) {
 			return cacheFirst(event.request);
@@ -396,11 +426,24 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
 	console.log('Service worker activating');
 	// Clean up old caches (keep IMG_CACHE_NAME)
+	// Also purge any stale baremux/epoxy entries from the current cache
 	event.waitUntil(
 		caches.keys().then(keys => {
 			return Promise.all(
 				keys.filter(key => key !== CACHE_NAME && key !== IMG_CACHE_NAME)
 				    .map(key => caches.delete(key))
+			);
+		}).then(() => {
+			// Remove cached baremux/epoxy scripts — they must always be fetched fresh
+			return caches.open(CACHE_NAME).then(cache =>
+				cache.keys().then(reqs =>
+					Promise.all(
+						reqs.filter(r => {
+							const p = new URL(r.url).pathname;
+							return p.startsWith('/baremux/') || p.startsWith('/epoxy/');
+						}).map(r => cache.delete(r))
+					)
+				)
 			);
 		}).then(() => self.clients.claim())
 		  .then(() => {
