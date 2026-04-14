@@ -64,6 +64,45 @@
   gtag('js', new Date());
   gtag('config', 'G-H5VGHQJKD8', {send_page_view: true, transport_type: 'beacon'});
   </script>
+
+  <!-- Taboola → GA event bridge -->
+  <script>
+    window._taboola = window._taboola || [];
+    _taboola.push({
+      listenTo: 'render',
+      handler: function(e) {
+        var d = e.detail || {};
+        gtag('event', 'taboola_render', {
+          event_category: 'ads',
+          placement: d.placement || '',
+          item_count: d.itemCount || 0
+        });
+      }
+    });
+    _taboola.push({
+      listenTo: 'visible',
+      handler: function(e) {
+        var d = e.detail || {};
+        gtag('event', 'taboola_visible', {
+          event_category: 'ads',
+          placement: d.placement || '',
+          item_count: d.itemCount || 0
+        });
+      }
+    });
+    _taboola.push({
+      listenTo: 'click',
+      handler: function(e) {
+        var d = e.detail || {};
+        gtag('event', 'taboola_click', {
+          event_category: 'ads',
+          placement: d.placement || '',
+          item_title: d.title || '',
+          item_type: d.type || ''
+        });
+      }
+    });
+  </script>
   <script>
     (function () {
       try {

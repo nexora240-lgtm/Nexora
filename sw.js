@@ -1,4 +1,4 @@
-const VERSION = "3.13"; // change this number whenever you need to force an update
+const VERSION = "3.16"; // change this number whenever you need to force an update
 const CACHE_NAME = 'nexora-v' + VERSION;
 const IMG_CACHE_NAME = 'nexora-images-v1';
 

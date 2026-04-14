@@ -15,6 +15,18 @@ const routes = {
   '/admin':     renderAdmin
 };
 
+// Fire a unique daily visit event (once per device per day)
+(function() {
+  if (typeof gtag !== 'function') return;
+  var today = new Date().toISOString().slice(0, 10);
+  var key = 'nexora_daily_visit';
+  if (localStorage.getItem(key) === today) return;
+  localStorage.setItem(key, today);
+  gtag('event', 'daily_unique_visit', {
+    page_location: window.location.origin + window.location.pathname
+  });
+})();
+
 function navigate(path) {
   history.pushState({}, '', path);
   const routeKey = path.split('?')[0];
@@ -23,9 +35,11 @@ function navigate(path) {
     window.NexoraCircleNotifications.dismissAll();
   }
 
-  // Send virtual pageview to GA for accurate traffic attribution
+  // Send pageview to GA
   if (typeof gtag === 'function') {
-    gtag('event', 'page_view', { page_path: path });
+    gtag('event', 'page_view', {
+      page_location: window.location.origin + path
+    });
   }
 
   const renderFn = routes[routeKey];
@@ -57,9 +71,11 @@ window.onpopstate = () => {
     window.saveChatroomState();
   }
 
-  // Send virtual pageview to GA
+  // Send pageview to GA
   if (typeof gtag === 'function') {
-    gtag('event', 'page_view', { page_path: location.pathname });
+    gtag('event', 'page_view', {
+      page_location: window.location.href
+    });
   }
 
   const path = location.pathname;
