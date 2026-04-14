@@ -143,7 +143,7 @@
     .taboola-ad-row {
       grid-column: 1 / -1;
       width: 100%;
-      min-height: 50px;
+      min-height: 250px;
       padding: 10px 0;
     }
   </style>
@@ -1254,10 +1254,17 @@
       
       // Taboola ad insertion — every 12 cards
       const AD_INTERVAL = 12;
+      // Global Taboola ad counter — never reset, only increment, to avoid
+      // "Placement duplication" errors from Taboola's library
       if (typeof window._taboolaGlobalIndex === 'undefined') {
         window._taboolaGlobalIndex = 0;
       }
-      
+
+      // Signal new page to Taboola BEFORE pushing any placements
+      window._taboola = window._taboola || [];
+      _taboola.push({notify: 'newPageLoad'});
+      _taboola.push({article: 'auto', url: window.location.origin + window.location.pathname});
+
       function insertTaboolaAd() {
         window._taboolaGlobalIndex++;
         const adContainer = document.createElement('div');
@@ -1380,10 +1387,10 @@
         grid.appendChild(card);
       });
       
-      // Flush Taboola after grid is built
+      // Flush Taboola placements
       if (taboolaAdCount > 0) {
         window._taboola = window._taboola || [];
-        _taboola.push({ flush: true });
+        _taboola.push({flush: true});
       }
       
       // Try to fetch fresh view counts in background

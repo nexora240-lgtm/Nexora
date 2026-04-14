@@ -361,6 +361,29 @@ function loadView(file) {
       const iframes = persistentConfig.stash.querySelectorAll('iframe');
       iframes.forEach(iframe => resumeIframeAudio(iframe));
       
+      // Refresh Taboola ads when re-showing a persistent view:
+      // clear old ad containers, re-push placements with unique IDs, then flush
+      if (window._taboola) {
+        const adRows = persistentConfig.stash.querySelectorAll('.taboola-ad-row');
+        if (adRows.length > 0) {
+          if (typeof window._taboolaGlobalIndex === 'undefined') window._taboolaGlobalIndex = 0;
+          _taboola.push({notify: 'newPageLoad'});
+          _taboola.push({article: 'auto', url: window.location.href});
+          adRows.forEach(row => {
+            window._taboolaGlobalIndex++;
+            const adId = 'taboola-refresh-' + window._taboolaGlobalIndex;
+            row.innerHTML = '<div id="' + adId + '"></div>';
+            _taboola.push({
+              mode: 'alternating-thumbnails-a',
+              container: adId,
+              placement: 'Refresh Feed ' + window._taboolaGlobalIndex,
+              target_type: 'mix'
+            });
+          });
+          _taboola.push({flush: true});
+        }
+      }
+
       setActiveViewClass(file);
       if (window.GameStateManager) {
         window.GameStateManager.markDomActive();

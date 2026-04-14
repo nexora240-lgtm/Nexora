@@ -23,6 +23,11 @@ function navigate(path) {
     window.NexoraCircleNotifications.dismissAll();
   }
 
+  // Send virtual pageview to GA for accurate traffic attribution
+  if (typeof gtag === 'function') {
+    gtag('event', 'page_view', { page_path: path });
+  }
+
   const renderFn = routes[routeKey];
   if (renderFn) {
     renderFn();
@@ -51,6 +56,12 @@ window.onpopstate = () => {
   if (location.pathname === '/chatroom' && typeof window.saveChatroomState === 'function') {
     window.saveChatroomState();
   }
+
+  // Send virtual pageview to GA
+  if (typeof gtag === 'function') {
+    gtag('event', 'page_view', { page_path: location.pathname });
+  }
+
   const path = location.pathname;
   (routes[path] || renderHome)();
 };
