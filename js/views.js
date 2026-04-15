@@ -528,6 +528,12 @@ function loadView(file) {
         });
       });
 
+      // Ensure ad-related globals exist before any view script runs.
+      // Prevents "googletag is not defined" from cached views.
+      window.googletag = window.googletag || {cmd: []};
+      window.googletag.cmd = window.googletag.cmd || [];
+      window.pbjs = window.pbjs || {que: []};
+
       loadScriptsSequentially(scripts)
         .then(() => {
           if (file === 'chatroom.html' && typeof restoreChatroomState === 'function') {
@@ -573,7 +579,10 @@ function appendScriptNode(scriptNode) {
     const isModule = scriptNode.getAttribute('type') === 'module';
 
     if (!hasSrc) {
-      newScript.textContent = scriptNode.textContent;
+      // Wrap inline view scripts in try-catch to prevent uncaught errors
+      // from stale cached HTML that references globals not yet loaded.
+      var code = scriptNode.textContent;
+      newScript.textContent = 'try{' + code + '}catch(_e){console.warn("[view-script]",_e.message)}';
       document.body.appendChild(newScript);
       currentViewScripts.push(newScript);
       resolve();

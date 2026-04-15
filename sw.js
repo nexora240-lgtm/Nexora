@@ -11,7 +11,7 @@
 
 // ── Import scripts at top level (SW spec requirement) ──
 // Cache-bust version — change on every deploy to force SW update
-const SW_VERSION = '2026.04.15a';
+const SW_VERSION = '2026.04.15b';
 importScripts("/s/uv/uv.bundle.js?v=" + SW_VERSION);
 importScripts("/s/uv/uv.config.js?v=" + SW_VERSION);
 importScripts(self.__uv$config.sw + "?v=" + SW_VERSION);
