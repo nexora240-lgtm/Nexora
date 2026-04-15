@@ -653,12 +653,7 @@
     </div>
 
     <!-- GPT AdSlot 1 for Ad unit 'nexora_multisize_content_1' ### Size: [[728,90],[300,250]] -->
-    <div id='div-gpt-ad-9017135-1' style='margin: 24px auto; text-align: center;'>
-      <script>
-        window.googletag = window.googletag || {cmd: []};
-        googletag.cmd.push(function() { googletag.display('div-gpt-ad-9017135-1'); });
-      </script>
-    </div>
+    <div id='div-gpt-ad-9017135-1' style='margin: 24px auto; text-align: center;'></div>
     <!-- End AdSlot 1 -->
 
     <!-- Most Popular Section -->
@@ -678,12 +673,7 @@
     </div>
 
     <!-- GPT AdSlot 3 for Ad unit 'nexora_multisize_content_3' ### Size: [[728,90],[300,250]] -->
-    <div id='div-gpt-ad-9017135-3' style='margin: 24px auto; text-align: center;'>
-      <script>
-        window.googletag = window.googletag || {cmd: []};
-        googletag.cmd.push(function() { googletag.display('div-gpt-ad-9017135-3'); });
-      </script>
-    </div>
+    <div id='div-gpt-ad-9017135-3' style='margin: 24px auto; text-align: center;'></div>
     <!-- End AdSlot 3 -->
   </div>
 
@@ -715,13 +705,49 @@
   <div style="height: 40px;"></div>
 
   <!-- GPT AdSlot 2 for Ad unit 'nexora_multisize_content_2' ### Size: [[728,90],[300,250]] -->
-  <div id='div-gpt-ad-9017135-2' style='margin: 24px auto; text-align: center;'>
-    <script>
-      window.googletag = window.googletag || {cmd: []};
-      googletag.cmd.push(function() { googletag.display('div-gpt-ad-9017135-2'); });
-    </script>
-  </div>
+  <div id='div-gpt-ad-9017135-2' style='margin: 24px auto; text-align: center;'></div>
   <!-- End AdSlot 2 -->
+
+  <!-- Prebid + GPT: display slots and run fresh auction for SPA navigation -->
+  <script>
+  (function() {
+    window.googletag = window.googletag || {cmd: []};
+    window.pbjs = window.pbjs || {que: []};
+
+    googletag.cmd.push(function() {
+      googletag.display('div-gpt-ad-9017135-1');
+      googletag.display('div-gpt-ad-9017135-2');
+      googletag.display('div-gpt-ad-9017135-3');
+    });
+
+    // Allow bidsBackHandler to fire again (it guards with initAdserverSet)
+    window.pbjs.initAdserverSet = false;
+
+    // Trigger a fresh Prebid auction → GPT refresh
+    if (typeof window.conductPrebidAuction === 'function') {
+      window.conductPrebidAuction();
+    } else {
+      // Fallback: run Prebid auction manually, then refresh GPT
+      window.pbjs.que.push(function() {
+        pbjs.requestBids({
+          timeout: 3000,
+          adUnitCodes: [
+            '/98948493/nexora_mulisize_content_1',
+            '/98948493/nexora_mulisize_content_2',
+            '/98948493/nexora_mulisize_content_3',
+          ],
+          bidsBackHandler: function() {
+            pbjs.setTargetingForGPTAsync();
+            googletag.cmd.push(function() {
+              var slots = [window.slot1, window.slot2, window.slot3].filter(Boolean);
+              googletag.pubads().refresh(slots.length ? slots : undefined);
+            });
+          }
+        });
+      });
+    }
+  })();
+  </script>
 
   <!-- Game Suggestion Button -->
   <div class="suggestion-section">
