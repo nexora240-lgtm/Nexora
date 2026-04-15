@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nexora Ad Test</title>
+  <script src="https://adklip.net/prebid/thenexoraproject.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0d0d0f;
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    h1 { text-align: center; margin-bottom: 12px; color: #f5a623; }
+    p.subtitle { text-align: center; color: #888; margin-bottom: 40px; font-size: 14px; }
+    .ad-slot {
+      max-width: 728px;
+      min-height: 250px;
+      margin: 0 auto 60px;
+      background: rgba(255,255,255,0.03);
+      border: 1px dashed rgba(255,255,255,0.1);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .ad-slot::before {
+      position: absolute;
+      top: -24px;
+      left: 0;
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .ad-slot:nth-child(2)::before { content: 'Ad Slot 1 — nexora_multisize_content_1 (728×90 / 300×250)'; }
+    .ad-slot:nth-child(3)::before { content: 'Ad Slot 2 — nexora_multisize_content_2 (728×90 / 300×250)'; }
+    .ad-slot:nth-child(4)::before { content: 'Ad Slot 3 — nexora_multisize_content_3 (728×90 / 300×250)'; }
+    .filler {
+      max-width: 728px;
+      margin: 0 auto 60px;
+      padding: 40px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 12px;
+      text-align: center;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>Nexora Prebid Ad Test</h1>
+  <p class="subtitle">3 GPT ad slots via Prebid — check that ads render below</p>
+
+  <!-- GPT AdSlot 1 for Ad unit 'nexora_multisize_content_1' ### Size: [[728,90],[300,250]] -->
+  <div class="ad-slot">
+    <div id='div-gpt-ad-9017135-1'>
+      <script>
+        googletag.cmd.push(function() { googletag.display('div-gpt-ad-9017135-1'); });
+      </script>
+    </div>
+  </div>
+
+  <div class="filler">— Page content would go here —</div>
+
+  <!-- GPT AdSlot 2 for Ad unit 'nexora_multisize_content_2' ### Size: [[728,90],[300,250]] -->
+  <div class="ad-slot">
+    <div id='div-gpt-ad-9017135-2'>
+      <script>
+        googletag.cmd.push(function() { googletag.display('div-gpt-ad-9017135-2'); });
+      </script>
+    </div>
+  </div>
+
+  <div class="filler">— More page content —</div>
+
+  <!-- GPT AdSlot 3 for Ad unit 'nexora_multisize_content_3' ### Size: [[728,90],[300,250]] -->
+  <div class="ad-slot">
+    <div id='div-gpt-ad-9017135-3'>
+      <script>
+        googletag.cmd.push(function() { googletag.display('div-gpt-ad-9017135-3'); });
+      </script>
+    </div>
+  </div>
+
+</body>
+</html>
