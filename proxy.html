@@ -882,30 +882,214 @@
     </div>
   </div>
 
-  <script src="/baremux/index.js"></script>
-  <script src="/scram/scramjet.all.js"></script>
-  <script type="module" src="/epoxy/index.mjs"></script>
+  <script src="/s/baremux/index.js"></script>
+  <script src="/s/uv/uv.bundle.js"></script>
+  <script src="/s/uv/uv.config.js"></script>
+  <script src="/s/scram/scramjet.all.js"></script>
+  <script src="/js/proxy-engine.js"></script>
   <script>
-    // Mouse tracking for glow effects
-    document.addEventListener('DOMContentLoaded', function() {
-      if (!window.NexoraMouseTracking) return;
+  (function () {
+    "use strict";
 
-      const tabs = document.getElementById('tab-bar');
-      if (tabs) {
-        window.NexoraMouseTracking.bindElement(tabs);
-        window.NexoraMouseTracking.bindDelegated(tabs, '.tab');
+    const PE = window.NexoraProxy;
+    if (!PE) { console.error("[Nexora] ProxyEngine not found"); return; }
+
+    const tabBar       = document.getElementById("tab-bar");
+    const navBar       = document.querySelector(".nav-bar");
+    const addressBar   = document.getElementById("address-bar");
+    const addressForm  = document.getElementById("address-form");
+    const welcomeScreen = document.getElementById("welcome-screen");
+    const contentArea  = document.getElementById("content-area");
+    const loading      = document.getElementById("loading-indicator");
+    const backBtn      = document.getElementById("back-btn");
+    const forwardBtn   = document.getElementById("forward-btn");
+    const refreshBtn   = document.getElementById("refresh-btn");
+    const welcomeInput = document.getElementById("welcome-search-input");
+
+    let tabs = [];
+    let activeTabId = null;
+
+    // ── Init ──
+    PE.init().catch(e => {
+      console.error("[Nexora] Engine init error:", e);
+      if (typeof NexoraNotify !== "undefined") {
+        NexoraNotify.error("Proxy engine failed to initialize: " + e.message);
       }
-
-      window.NexoraMouseTracking.bindElements(document.querySelectorAll('.nav-btn, .menu-btn'));
-
-      const addressBar = document.querySelector('.address-bar-container');
-      if (addressBar) {
-        window.NexoraMouseTracking.bindElement(addressBar);
-      }
-
-      window.NexoraMouseTracking.bindDelegated(document, '.shortcut');
     });
+
+    // ── Tab Management ──
+    function genId() { return "tab-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6); }
+
+    function createNewTab() {
+      const id = genId();
+      const iframe = document.createElement("iframe");
+      iframe.className = "proxy-frame";
+      iframe.id = "frame-" + id;
+      iframe.setAttribute("sandbox", "allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads");
+      iframe.style.display = "none";
+      contentArea.appendChild(iframe);
+
+      tabs.push({ id, title: "New Tab", url: "", favicon: "" });
+      renderTabs();
+      switchToTab(id);
+      showWelcome(true);
+      return id;
+    }
+
+    function switchToTab(id) {
+      activeTabId = id;
+      tabs.forEach(t => {
+        const f = document.getElementById("frame-" + t.id);
+        if (f) f.style.display = t.id === id ? "block" : "none";
+        if (f) f.classList.toggle("active", t.id === id);
+      });
+      const tab = tabs.find(t => t.id === id);
+      if (tab) addressBar.value = tab.url || "";
+      renderTabs();
+    }
+
+    function closeTab(id) {
+      const f = document.getElementById("frame-" + id);
+      if (f) f.remove();
+      tabs = tabs.filter(t => t.id !== id);
+      if (tabs.length === 0) {
+        createNewTab();
+      } else if (activeTabId === id) {
+        switchToTab(tabs[tabs.length - 1].id);
+      }
+      renderTabs();
+    }
+
+    function renderTabs() {
+      const existing = tabBar.querySelectorAll(".tab");
+      existing.forEach(el => el.remove());
+
+      tabs.forEach(t => {
+        const el = document.createElement("div");
+        el.className = "tab" + (t.id === activeTabId ? " active" : "");
+        const faviconHtml = t.favicon
+          ? '<img class="tab-favicon" src="' + escapeHtml(t.favicon) + '" alt="" onerror="this.style.display=\'none\'" />'
+          : '';
+        el.innerHTML = faviconHtml + '<span class="tab-title">' + escapeHtml(t.title || "New Tab") + '</span><button class="tab-close" data-id="' + t.id + '">×</button>';
+        el.addEventListener("click", (e) => {
+          if (e.target.classList.contains("tab-close")) { closeTab(e.target.dataset.id); return; }
+          switchToTab(t.id);
+        });
+        tabBar.insertBefore(el, tabBar.querySelector(".new-tab-btn"));
+      });
+
+      // Show tab bar + nav when at least 1 tab exists
+      const hasContent = tabs.some(t => t.url);
+      tabBar.classList.toggle("visible", tabs.length > 0);
+      navBar.classList.toggle("visible", tabs.length > 0);
+      document.body.classList.toggle("has-top-bars", tabs.length > 0);
+    }
+
+    function escapeHtml(s) {
+      const d = document.createElement("div");
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    function showWelcome(show) {
+      welcomeScreen.style.display = show ? "flex" : "none";
+      const f = document.getElementById("frame-" + activeTabId);
+      if (f) f.style.display = show ? "none" : "block";
+    }
+
+    function showLoading(on) {
+      loading.classList.toggle("loading", on);
+    }
+
+    // ── Navigation ──
+    async function openProxyPage(input) {
+      if (!input || !input.trim()) return;
+
+      showWelcome(false);
+      showLoading(true);
+
+      try {
+        const result = await PE.navigate(input.trim());
+        const tab = tabs.find(t => t.id === activeTabId);
+        if (tab) {
+          tab.url = result.originalUrl;
+          tab.title = extractDomain(result.originalUrl) || result.originalUrl;
+          const domain = extractDomain(result.originalUrl);
+          if (domain) tab.favicon = "https://www.google.com/s2/favicons?domain=" + encodeURIComponent(domain) + "&sz=32";
+        }
+        addressBar.value = result.originalUrl;
+
+        const iframe = document.getElementById("frame-" + activeTabId);
+        if (iframe) {
+          iframe.style.display = "block";
+          iframe.src = result.proxyUrl;
+          iframe.onload = () => {
+            showLoading(false);
+            // Try to get page title from iframe
+            try {
+              const title = iframe.contentDocument && iframe.contentDocument.title;
+              if (title && tab) { tab.title = title; renderTabs(); }
+            } catch { /* cross-origin */ }
+          };
+          iframe.onerror = () => showLoading(false);
+        }
+        renderTabs();
+      } catch (e) {
+        showLoading(false);
+        console.error("[Nexora] Navigation failed:", e);
+        if (typeof NexoraNotify !== "undefined") {
+          NexoraNotify.error("Failed to load page: " + e.message);
+        }
+      }
+    }
+
+    function extractDomain(url) {
+      try { return new URL(url).hostname; } catch { return ""; }
+    }
+
+    // ── Event Handlers ──
+    function handleAddressSubmit(e) {
+      e.preventDefault();
+      openProxyPage(addressBar.value);
+      return false;
+    }
+
+    function handleWelcomeSearch(e) {
+      e.preventDefault();
+      openProxyPage(welcomeInput.value);
+      return false;
+    }
+
+    function goBack() {
+      const f = document.getElementById("frame-" + activeTabId);
+      if (f) try { f.contentWindow.history.back(); } catch {}
+    }
+    function goForward() {
+      const f = document.getElementById("frame-" + activeTabId);
+      if (f) try { f.contentWindow.history.forward(); } catch {}
+    }
+    function refreshPage() {
+      const f = document.getElementById("frame-" + activeTabId);
+      if (f) try { f.contentWindow.location.reload(); } catch { f.src = f.src; }
+    }
+
+    // Wire up globals for onclick handlers in HTML
+    window.createNewTab = createNewTab;
+    window.openProxyPage = openProxyPage;
+    window.handleAddressSubmit = handleAddressSubmit;
+    window.handleWelcomeSearch = handleWelcomeSearch;
+    window.goBack = goBack;
+    window.goForward = goForward;
+    window.refreshPage = refreshPage;
+
+    // Start with one tab
+    createNewTab();
+
+    // Listen for settings changes
+    window.addEventListener("settings:proxyChanged", () => {
+      PE.reinitTransport().catch(e => console.warn("[Nexora] Transport reinit failed:", e));
+    });
+  })();
   </script>
-  <script src="js/proxy-browser.js"></script>
 </body>
 </html>

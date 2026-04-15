@@ -42,6 +42,7 @@
           <button class="nav-btn" data-target="game-reports" role="tab"><i class="fas fa-exclamation-triangle"></i> Game Reports</button>
           <button class="nav-btn" data-target="links-mgmt" role="tab"><i class="fas fa-globe"></i> Links</button>
           <button class="nav-btn" data-target="audit-log" role="tab"><i class="fas fa-clipboard-list"></i> Audit Log</button>
+          <button class="nav-btn" data-target="proxy-overrides" role="tab"><i class="fas fa-network-wired"></i> Proxy</button>
         </nav>
       </div>
 
@@ -254,6 +255,25 @@
         </div>
       </section>
 
+      <!-- ═══ PROXY OVERRIDES ═══ -->
+      <section id="proxy-overrides" class="panel" role="tabpanel">
+        <div class="panel-card">
+          <div class="section-header">
+            <h2>Proxy Overrides</h2>
+            <span class="meta-count" id="proxyOverridesCount"></span>
+            <div class="search-bar">
+              <button class="btn btn-primary btn-sm" onclick="showAddProxyOverrideForm()"><i class="fas fa-plus"></i> Add Override</button>
+              <button class="btn btn-outline btn-sm" onclick="loadProxyOverrides()"><i class="fas fa-sync"></i> Refresh</button>
+            </div>
+          </div>
+          <p class="text-muted" style="font-size:13px;margin:-8px 0 12px">Set per-domain proxy and transport overrides. When a user visits a matching domain, the system will use the specified proxy engine and transport instead of the user's default.</p>
+          <div class="admin-table-wrap">
+            <table><thead><tr><th>Domain Pattern</th><th>Proxy</th><th>Transport</th><th>Priority</th><th>Added</th><th>Actions</th></tr></thead>
+            <tbody id="proxyOverridesBody"><tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr></tbody></table>
+          </div>
+        </div>
+      </section>
+
     </div><!-- /adminContent -->
   </div><!-- /admin-app -->
 
@@ -374,6 +394,7 @@
         else if (t === 'game-reports')  loadGameReports();
         else if (t === 'links-mgmt')    loadAdminLinks();
         else if (t === 'audit-log') loadAuditLog();
+        else if (t === 'proxy-overrides') loadProxyOverrides();
       });
     });
   }
@@ -1358,6 +1379,98 @@
       await lfFetch('DELETE', { linkId });
       toast('Link deleted');
       loadAdminLinks();
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+  };
+
+  // ─── Proxy Overrides ───
+
+  let proxyOverridesData = [];
+
+  async function loadProxyOverrides() {
+    const tbody = document.getElementById('proxyOverridesBody');
+    const countEl = document.getElementById('proxyOverridesCount');
+    tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr>';
+    try {
+      const data = await adminFetch('/admin/proxy-overrides');
+      proxyOverridesData = data.overrides || data || [];
+      if (countEl) countEl.textContent = proxyOverridesData.length;
+      if (!proxyOverridesData.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No proxy overrides configured</td></tr>';
+        return;
+      }
+      tbody.innerHTML = proxyOverridesData.map(o => `<tr>
+        <td><code>${esc(o.domain)}</code></td>
+        <td><span class="badge badge-${o.proxy === 'scramjet' ? 'success' : o.proxy === 'ultraviolet' ? 'warning' : 'muted'}">${esc(o.proxy)}</span></td>
+        <td><span class="badge">${esc(o.transport || 'auto')}</span></td>
+        <td>${o.priority || 0}</td>
+        <td>${fmtRelative(o.createdAt)}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="doRemoveProxyOverride('${esc(o.overrideId || o.domain)}','${esc(o.domain)}')"><i class="fas fa-trash"></i></button></td>
+      </tr>`).join('');
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Failed to load: ${esc(e.message)}</td></tr>`;
+    }
+  }
+
+  window.loadProxyOverrides = loadProxyOverrides;
+
+  window.showAddProxyOverrideForm = function () {
+    const modal = document.getElementById('adminModal');
+    modal.innerHTML = `
+      <div class="modal-overlay" onclick="closeModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+          <h3>Add Proxy Override</h3>
+          <div class="form-group">
+            <label>Domain Pattern</label>
+            <input type="text" class="form-input" id="poNewDomain" placeholder="e.g. discord.com or *.google.com" />
+          </div>
+          <div class="form-group">
+            <label>Proxy Engine</label>
+            <select class="form-input" id="poNewProxy">
+              <option value="scramjet">Scramjet</option>
+              <option value="ultraviolet">Ultraviolet</option>
+              <option value="rammerhead">Rammerhead</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Transport</label>
+            <select class="form-input" id="poNewTransport">
+              <option value="auto">Auto</option>
+              <option value="libcurl">Libcurl</option>
+              <option value="epoxy">Epoxy</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Priority (higher = checked first)</label>
+            <input type="number" class="form-input" id="poNewPriority" value="0" min="0" max="100" />
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="doAddProxyOverride()">Save</button>
+            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+          </div>
+        </div>
+      </div>`;
+  };
+
+  window.doAddProxyOverride = async function () {
+    const domain = document.getElementById('poNewDomain')?.value.trim();
+    const proxy = document.getElementById('poNewProxy')?.value;
+    const transport = document.getElementById('poNewTransport')?.value;
+    const priority = parseInt(document.getElementById('poNewPriority')?.value) || 0;
+    if (!domain) { toast('Domain is required', 'error'); return; }
+    try {
+      await adminFetch('/admin/proxy-overrides', 'POST', { domain, proxy, transport, priority });
+      toast('Override added');
+      closeModal();
+      loadProxyOverrides();
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+  };
+
+  window.doRemoveProxyOverride = async function (overrideId, name) {
+    if (!confirm(`Delete proxy override for "${name}"?`)) return;
+    try {
+      await adminFetch(`/admin/proxy-overrides/${encodeURIComponent(overrideId)}`, 'DELETE');
+      toast('Override deleted');
+      loadProxyOverrides();
     } catch (e) { toast('Failed: ' + e.message, 'error'); }
   };
 

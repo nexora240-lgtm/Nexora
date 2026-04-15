@@ -1149,3 +1149,72 @@
 }
 
 
+/* ── Proxy Configuration Section ── */
+.settings-root .proxy-config-section {
+  padding: 20px;
+  position: relative;
+}
+
+.settings-root .proxy-config-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-root .proxy-config-icon {
+  color: var(--settings-accent);
+  flex-shrink: 0;
+}
+
+.settings-root .proxy-config-select {
+  width: 100%;
+  max-width: 420px;
+  cursor: pointer;
+}
+
+.settings-root .proxy-config-hint {
+  margin: 6px 0 0 0;
+  font-size: 13px;
+  color: var(--settings-muted);
+  opacity: 0.8;
+  transition: color 0.3s ease;
+  line-height: 1.4;
+}
+
+.settings-root .proxy-config-input {
+  width: 100%;
+  max-width: 420px;
+}
+
+.settings-root .proxy-config-advanced-toggle {
+  background: transparent;
+  border: none;
+  color: var(--settings-accent);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.2s ease;
+}
+
+.settings-root .proxy-config-advanced-toggle:hover {
+  opacity: 0.8;
+}
+
+.settings-root .proxy-config-advanced {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 12px;
+  margin-top: 8px;
+}
+
+.light-scheme .settings-root .proxy-config-advanced {
+  border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+.light-scheme .settings-root .proxy-config-icon {
+  color: var(--settings-accent);
+}

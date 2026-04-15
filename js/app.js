@@ -3,7 +3,6 @@ const app = document.getElementById('app');
 const routes = {
   '/home':      renderHome,
   '/games':     renderGamesRoute,
-  '/movies':    renderMovies,
   '/apps':      renderApps,
   '/apploader': renderAppLoader,
   '/proxy':     renderProxy,
@@ -97,7 +96,6 @@ if (redirectRoute) {
 }
 
 function renderHome()        { loadView('home.html'); }
-function renderMovies()      { loadView('movies.html'); }
 function renderApps()        { loadView('apps.html'); }
 function renderAppLoader()   { loadView('apploader.html'); }
 function renderProxy()       { loadView('proxy.html'); }

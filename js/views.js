@@ -8,13 +8,6 @@ let currentNavId = 0;
 // see the latest HTML after a deployment.
 const viewCache = new Map();
 
-// Clear the in-memory view cache whenever a new SW takes control
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    viewCache.clear();
-  });
-}
-
 // GameStateManager - tracks game state for "Continue Playing" feature
 window.GameStateManager = {
   STORAGE_KEY: 'nexora_gameInProgress',
@@ -318,11 +311,6 @@ function loadView(file) {
     window.homeCleanup = null;
   }
 
-  if (typeof window.moviesCleanup === 'function') {
-    window.moviesCleanup();
-    window.moviesCleanup = null;
-  }
-  
   if (typeof window.gamesCleanup === 'function') {
     window.gamesCleanup();
     window.gamesCleanup = null;

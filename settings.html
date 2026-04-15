@@ -285,6 +285,73 @@
                 <p class="description" style="margin:6px 0 0 0;">Press <span id="panic-key-display" style="font-weight:600;color:var(--settings-accent);"></span> to instantly redirect.</p>
               </div>
             </div>
+
+            <div style="height:24px;"></div>
+
+            <!-- ── Proxy Configuration ── -->
+            <div class="subsection proxy-config-section">
+              <div class="proxy-config-header">
+                <h2 class="tab-appearance-heading" style="margin:0;">Proxy Configuration</h2>
+              </div>
+              <p class="description" style="margin-top:6px;">Configure which web proxy and transport layer to use when browsing. Auto mode automatically falls back if one fails.</p>
+
+              <div style="margin-top:16px;">
+                <label for="proxyModeSelect" class="description" style="display:block;margin-bottom:8px;font-weight:600;color:var(--settings-accent);">Proxy Mode</label>
+                <select id="proxyModeSelect" class="theme-option proxy-config-select">
+                  <option value="auto">Auto</option>
+                  <option value="scramjet">Scramjet</option>
+                  <option value="ultraviolet">Ultraviolet</option>
+                  <option value="rammerhead">Rammerhead</option>
+                </select>
+                <p class="proxy-config-hint" id="proxyModeHint">Automatically tries each proxy in order until one succeeds.</p>
+              </div>
+
+              <div style="margin-top:16px;">
+                <label for="transportModeSelect" class="description" style="display:block;margin-bottom:8px;font-weight:600;color:var(--settings-accent);">Transport Mode</label>
+                <select id="transportModeSelect" class="theme-option proxy-config-select">
+                  <option value="auto">Auto</option>
+                  <option value="libcurl">Libcurl</option>
+                  <option value="epoxy">Epoxy</option>
+                </select>
+                <p class="proxy-config-hint" id="transportModeHint">Handles the underlying network connection for proxy traffic.</p>
+              </div>
+
+              <div style="margin-top:16px;">
+                <label for="searchEngineSelect" class="description" style="display:block;margin-bottom:8px;font-weight:600;color:var(--settings-accent);">Search Engine</label>
+                <select id="searchEngineSelect" class="theme-option proxy-config-select">
+                  <option value="startpage">Startpage (Recommended)</option>
+                  <option value="google">Google</option>
+                  <option value="duckduckgo">DuckDuckGo</option>
+                  <option value="bing">Bing</option>
+                  <option value="yahoo">Yahoo</option>
+                  <option value="brave">Brave Search</option>
+                </select>
+                <p class="proxy-config-hint">Used when you type a search query instead of a URL in the proxy browser.</p>
+              </div>
+
+              <div style="margin-top:20px;">
+                <button class="proxy-config-advanced-toggle" id="proxyAdvancedToggle" type="button">
+                  <span id="proxyAdvancedArrow">▸</span> Advanced Settings
+                </button>
+                <div class="proxy-config-advanced" id="proxyAdvancedPanel" style="display:none;">
+                  <div style="margin-top:12px;">
+                    <label for="bareUrlInput" class="description" style="display:block;margin-bottom:6px;">Bare Server URL</label>
+                    <input id="bareUrlInput" type="url" class="theme-option proxy-config-input" placeholder="Default" />
+                  </div>
+                  <div style="margin-top:12px;">
+                    <label for="wispUrlInput" class="description" style="display:block;margin-bottom:6px;">Wisp Server URL</label>
+                    <input id="wispUrlInput" type="url" class="theme-option proxy-config-input" placeholder="Default" />
+                  </div>
+                  <div style="margin-top:12px;">
+                    <label for="rammerheadUrlInput" class="description" style="display:block;margin-bottom:6px;">Rammerhead Server URL</label>
+                    <input id="rammerheadUrlInput" type="url" class="theme-option proxy-config-input" placeholder="Default" />
+                  </div>
+                  <div style="margin-top:12px;">
+                    <button class="blank-link" id="resetProxyDefaults" type="button" style="background:transparent;border:1px solid var(--settings-accent);color:var(--settings-accent);">Reset to Defaults</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -615,9 +682,6 @@
     </div>
   </div>
 
-  <script src="/config.js"></script>
-  <script src="/js/auth.js"></script>
-  <script src="/js/mouse-tracking.js"></script>
   <script src="/js/settings.js"></script>
   <script>
     // Auth modal and profile UI logic

@@ -685,81 +685,9 @@
     updateNavButtons();
   }
 
-  // Play content
-  async function playContent(content) {
-    const modal = document.getElementById('playerModal');
-    const frame = document.getElementById('playerFrame');
-    const title = document.getElementById('playerTitle');
-    const sidebar = document.getElementById('playerEpisodeSidebar');
-    const wrapper = document.querySelector('.player-content-wrapper');
-    
-    // Update title to include episode info if available
-    if (content.season && content.episode) {
-      title.textContent = `${content.title} - S${content.season}E${content.episode}${content.episodeTitle ? ': ' + content.episodeTitle : ''}`;
-    } else {
-      title.textContent = content.title;
-    }
-    
-    let url = '';
-    if (content.type === 'movie') {
-      url = `${VIDPLUS_BASE}/movie/${content.id}?${DEFAULT_QUERY}`;
-      sidebar.style.display = 'none';
-      wrapper.classList.remove('with-sidebar');
-    } else {
-      // If episode info is provided, use it; otherwise default to S1E1
-      const season = content.season || 1;
-      const episode = content.episode || 1;
-      url = `${VIDPLUS_BASE}/tv/${content.id}/${season}/${episode}?${DEFAULT_QUERY}`;
-      
-      // Show episode sidebar for TV shows
-      sidebar.style.display = 'flex';
-      wrapper.classList.add('with-sidebar');
-      await loadPlayerEpisodes(content);
-      
-      // Sync sidebar height with player wrapper after modal is visible
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const playerWrapper = document.querySelector('.player-wrapper');
-          if (playerWrapper) {
-            const playerHeight = playerWrapper.offsetHeight;
-            sidebar.style.height = `${playerHeight}px`;
-            sidebar.style.maxHeight = `${playerHeight}px`;
-          }
-        });
-      });
-    }
-
-    frame.src = url;
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-
-    // Track watch in history
-    addToWatchHistory(content);
-
-    // Load recommendations
-    await loadRecommendations(content);
-    
-    // Cleanup old observer if exists
-    if (playerResizeObserver) {
-      playerResizeObserver.disconnect();
-    }
-    
-    // Also sync sidebar height on window resize
-    playerResizeObserver = new ResizeObserver(() => {
-      if (sidebar.style.display === 'flex') {
-        const playerWrapper = document.querySelector('.player-wrapper');
-        if (playerWrapper) {
-          const playerHeight = playerWrapper.offsetHeight;
-          sidebar.style.height = `${playerHeight}px`;
-          sidebar.style.maxHeight = `${playerHeight}px`;
-        }
-      }
-    });
-    
-    const playerWrapper = document.querySelector('.player-wrapper');
-    if (playerWrapper) {
-      playerResizeObserver.observe(playerWrapper);
-    }
+  // Play content — VidPlus loader removed, pending infrastructure rewrite
+  function playContent(content) {
+    console.log('[Nexora] Movie player disabled — infrastructure being rebuilt.', content.title);
   }
 
   // Load episodes for player sidebar

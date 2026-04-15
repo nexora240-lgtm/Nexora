@@ -27,6 +27,20 @@
   <script src="/config.js?v=2"></script>
   <script src="/js/nexora-boot.js"></script>
 
+  <!-- BareMux: loaded globally so the SW can get SharedWorker ports from any page -->
+  <script src="/s/baremux/index.js"></script>
+  <script>
+    // Create BareMux connection early — this sets up the SW message listener
+    // so the service worker can obtain a SharedWorker port on demand.
+    (function() {
+      try {
+        if (typeof BareMux !== 'undefined' && typeof _CONFIG !== 'undefined' && _CONFIG.proxy) {
+          new BareMux.BareMuxConnection(_CONFIG.proxy.baremuxWorker);
+        }
+      } catch(e) { /* ignore — proxy not needed on this page */ }
+    })();
+  </script>
+
   <!-- Fonts with preload for faster rendering -->
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />

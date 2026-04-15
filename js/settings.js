@@ -1135,6 +1135,7 @@
   activate('appearance');
   try { restoreSettingsUI(); } catch (e) {}
   initPanicButton();
+  initProxyConfig();
 
   window.NexoraSettings = {
     applyTheme,
@@ -1147,6 +1148,160 @@
     setFavicon: setFaviconFlexible,
     restoreOriginalAppearance
   };
+
+  // ── Proxy Configuration ──
+  function initProxyConfig() {
+    try {
+      const PROXY_MODE_KEY      = 'settings.proxyMode';
+      const TRANSPORT_MODE_KEY  = 'settings.transportMode';
+      const SEARCH_ENGINE_KEY   = 'settings.searchEngine';
+      const BARE_URL_KEY        = 'settings.bareUrl';
+      const WISP_URL_KEY        = 'settings.wispUrl';
+      const RH_URL_KEY          = 'settings.rammerheadUrl';
+
+      const proxyModeSelect     = root.querySelector('#proxyModeSelect');
+      const transportModeSelect = root.querySelector('#transportModeSelect');
+      const searchEngineSelect  = root.querySelector('#searchEngineSelect');
+      const bareUrlInput        = root.querySelector('#bareUrlInput');
+      const wispUrlInput        = root.querySelector('#wispUrlInput');
+      const rammerheadUrlInput  = root.querySelector('#rammerheadUrlInput');
+      const advancedToggle      = root.querySelector('#proxyAdvancedToggle');
+      const advancedPanel       = root.querySelector('#proxyAdvancedPanel');
+      const advancedArrow       = root.querySelector('#proxyAdvancedArrow');
+      const resetBtn            = root.querySelector('#resetProxyDefaults');
+      const proxyModeHint       = root.querySelector('#proxyModeHint');
+      const transportModeHint   = root.querySelector('#transportModeHint');
+
+      // Restore saved values
+      if (proxyModeSelect) {
+        proxyModeSelect.value = localStorage.getItem(PROXY_MODE_KEY) || 'auto';
+        updateProxyHint();
+      }
+      if (transportModeSelect) {
+        transportModeSelect.value = localStorage.getItem(TRANSPORT_MODE_KEY) || 'auto';
+        updateTransportHint();
+      }
+      if (searchEngineSelect) {
+        searchEngineSelect.value = localStorage.getItem(SEARCH_ENGINE_KEY) || 'startpage';
+      }
+      if (bareUrlInput) {
+        bareUrlInput.value = localStorage.getItem(BARE_URL_KEY) || '';
+        bareUrlInput.placeholder = 'Nexora Bare Server';
+      }
+      if (wispUrlInput) {
+        wispUrlInput.value = localStorage.getItem(WISP_URL_KEY) || '';
+        wispUrlInput.placeholder = 'Nexora Wisp Server';
+      }
+      if (rammerheadUrlInput) {
+        rammerheadUrlInput.value = localStorage.getItem(RH_URL_KEY) || '';
+        rammerheadUrlInput.placeholder = 'Nexora Rammerhead Server';
+      }
+
+      function updateProxyHint() {
+        if (!proxyModeHint) return;
+        const val = proxyModeSelect ? proxyModeSelect.value : 'auto';
+        const hints = {
+          auto:        'Automatically tries each proxy in order until one succeeds.',
+          scramjet:    'Uses Scramjet — modern interception-based proxy with WASM.',
+          ultraviolet: 'Uses Ultraviolet — URL-rewriting proxy (legacy fallback).',
+          rammerhead:  'Uses Rammerhead — server-side proxy with persistent sessions.'
+        };
+        proxyModeHint.textContent = hints[val] || '';
+      }
+
+      function updateTransportHint() {
+        if (!transportModeHint) return;
+        const val = transportModeSelect ? transportModeSelect.value : 'auto';
+        const hints = {
+          auto:    'Tries Libcurl first, falls back to Epoxy on failure.',
+          libcurl: 'End-to-end encrypted via libcurl.js + Wisp protocol.',
+          epoxy:   'TLS encryption via epoxy-tls + Wisp protocol.'
+        };
+        transportModeHint.textContent = hints[val] || '';
+      }
+
+      function fireProxyChanged() {
+        window.dispatchEvent(new CustomEvent('settings:proxyChanged'));
+      }
+
+      // Event listeners
+      if (proxyModeSelect) {
+        proxyModeSelect.addEventListener('change', () => {
+          localStorage.setItem(PROXY_MODE_KEY, proxyModeSelect.value);
+          updateProxyHint();
+          fireProxyChanged();
+        });
+      }
+      if (transportModeSelect) {
+        transportModeSelect.addEventListener('change', () => {
+          localStorage.setItem(TRANSPORT_MODE_KEY, transportModeSelect.value);
+          updateTransportHint();
+          fireProxyChanged();
+        });
+      }
+      if (searchEngineSelect) {
+        searchEngineSelect.addEventListener('change', () => {
+          localStorage.setItem(SEARCH_ENGINE_KEY, searchEngineSelect.value);
+        });
+      }
+
+      // Debounce for URL inputs
+      function debounce(fn, ms) {
+        let t; return function () { clearTimeout(t); t = setTimeout(fn, ms); };
+      }
+
+      if (bareUrlInput) {
+        bareUrlInput.addEventListener('input', debounce(() => {
+          const v = bareUrlInput.value.trim();
+          if (v) localStorage.setItem(BARE_URL_KEY, v);
+          else localStorage.removeItem(BARE_URL_KEY);
+          fireProxyChanged();
+        }, 800));
+      }
+      if (wispUrlInput) {
+        wispUrlInput.addEventListener('input', debounce(() => {
+          const v = wispUrlInput.value.trim();
+          if (v) localStorage.setItem(WISP_URL_KEY, v);
+          else localStorage.removeItem(WISP_URL_KEY);
+          fireProxyChanged();
+        }, 800));
+      }
+      if (rammerheadUrlInput) {
+        rammerheadUrlInput.addEventListener('input', debounce(() => {
+          const v = rammerheadUrlInput.value.trim();
+          if (v) localStorage.setItem(RH_URL_KEY, v);
+          else localStorage.removeItem(RH_URL_KEY);
+        }, 800));
+      }
+
+      // Advanced toggle
+      if (advancedToggle && advancedPanel) {
+        advancedToggle.addEventListener('click', () => {
+          const open = advancedPanel.style.display !== 'none';
+          advancedPanel.style.display = open ? 'none' : 'block';
+          if (advancedArrow) advancedArrow.textContent = open ? '▸' : '▾';
+        });
+      }
+
+      // Reset defaults
+      if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+          [PROXY_MODE_KEY, TRANSPORT_MODE_KEY, SEARCH_ENGINE_KEY, BARE_URL_KEY, WISP_URL_KEY, RH_URL_KEY].forEach(k => localStorage.removeItem(k));
+          if (proxyModeSelect) proxyModeSelect.value = 'auto';
+          if (transportModeSelect) transportModeSelect.value = 'auto';
+          if (searchEngineSelect) searchEngineSelect.value = 'startpage';
+          if (bareUrlInput) bareUrlInput.value = '';
+          if (wispUrlInput) wispUrlInput.value = '';
+          if (rammerheadUrlInput) rammerheadUrlInput.value = '';
+          updateProxyHint();
+          updateTransportHint();
+          fireProxyChanged();
+        });
+      }
+    } catch (e) {
+      console.warn('[Nexora Settings] Proxy config init error:', e);
+    }
+  }
 
 })();
 
