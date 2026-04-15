@@ -8,7 +8,6 @@
       window.location.replace('/?route=/games' + (params ? '&' + params.substring(1) : ''));
     }
   </script>
-  <script src="https://adklip.net/prebid/thenexoraproject.js"></script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7925754855607435"
      crossorigin="anonymous"></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-H5VGHQJKD8"></script>
@@ -708,43 +707,67 @@
   <div id='div-gpt-ad-9017135-2' style='margin: 24px auto; text-align: center;'></div>
   <!-- End AdSlot 2 -->
 
-  <!-- Prebid + GPT: display slots and run fresh auction for SPA navigation -->
+  <!-- Prebid + GPT: trigger ad auction on SPA navigation -->
   <script>
   (function() {
-    window.googletag = window.googletag || {cmd: []};
-    window.pbjs = window.pbjs || {que: []};
+    try {
+      // Ensure googletag exists (shim is in index.html, but guard here too)
+      window.googletag = window.googletag || {cmd: []};
+      window.googletag.cmd = window.googletag.cmd || [];
+      window.pbjs = window.pbjs || {que: []};
 
-    googletag.cmd.push(function() {
-      googletag.display('div-gpt-ad-9017135-1');
-      googletag.display('div-gpt-ad-9017135-2');
-      googletag.display('div-gpt-ad-9017135-3');
-    });
+      var gt = window.googletag;
+      var divIds = [
+        'div-gpt-ad-9017135-1',
+        'div-gpt-ad-9017135-2',
+        'div-gpt-ad-9017135-3'
+      ];
 
-    // Allow bidsBackHandler to fire again (it guards with initAdserverSet)
-    window.pbjs.initAdserverSet = false;
-
-    // Trigger a fresh Prebid auction → GPT refresh
-    if (typeof window.conductPrebidAuction === 'function') {
-      window.conductPrebidAuction();
-    } else {
-      // Fallback: run Prebid auction manually, then refresh GPT
-      window.pbjs.que.push(function() {
-        pbjs.requestBids({
-          timeout: 3000,
-          adUnitCodes: [
-            '/98948493/nexora_mulisize_content_1',
-            '/98948493/nexora_mulisize_content_2',
-            '/98948493/nexora_mulisize_content_3',
-          ],
-          bidsBackHandler: function() {
-            pbjs.setTargetingForGPTAsync();
-            googletag.cmd.push(function() {
-              var slots = [window.slot1, window.slot2, window.slot3].filter(Boolean);
-              googletag.pubads().refresh(slots.length ? slots : undefined);
-            });
+      function runAds() {
+        try {
+          // display() tells GPT the divs are in the DOM
+          for (var i = 0; i < divIds.length; i++) {
+            gt.display(divIds[i]);
           }
-        });
-      });
+
+          // Reset guard so bidsBackHandler fires again
+          if (window.pbjs) window.pbjs.initAdserverSet = false;
+
+          // Re-run Prebid auction → GPT refresh
+          if (typeof window.conductPrebidAuction === 'function') {
+            window.conductPrebidAuction();
+          } else if (window.pbjs && window.pbjs.que) {
+            window.pbjs.que.push(function() {
+              window.pbjs.requestBids({
+                timeout: 3000,
+                adUnitCodes: [
+                  '/98948493/nexora_mulisize_content_1',
+                  '/98948493/nexora_mulisize_content_2',
+                  '/98948493/nexora_mulisize_content_3'
+                ],
+                bidsBackHandler: function() {
+                  window.pbjs.setTargetingForGPTAsync();
+                  gt.cmd.push(function() {
+                    var slots = [window.slot1, window.slot2, window.slot3].filter(Boolean);
+                    gt.pubads().refresh(slots.length ? slots : undefined);
+                  });
+                }
+              });
+            });
+          } else {
+            // Last resort: just refresh GPT slots directly
+            var slots = [window.slot1, window.slot2, window.slot3].filter(Boolean);
+            if (slots.length) gt.pubads().refresh(slots);
+          }
+        } catch(e) {
+          console.warn('[Nexora Ads] runAds error:', e.message);
+        }
+      }
+
+      // Queue until GPT is ready; safe even if still loading
+      gt.cmd.push(runAds);
+    } catch(e) {
+      console.warn('[Nexora Ads] init error:', e.message);
     }
   })();
   </script>

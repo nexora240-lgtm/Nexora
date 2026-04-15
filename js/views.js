@@ -412,10 +412,10 @@ function loadView(file) {
   const targetContainer = persistentConfig ? (persistentConfig.stash || app) : app;
   targetContainer.classList.add('view-loading');
   
-  // Use cached HTML if available, otherwise fetch and cache
+  // Use cached HTML if available, otherwise fetch (cache-bust) and cache
   const fetchPromise = viewCache.has(file) 
     ? Promise.resolve(viewCache.get(file))
-    : fetch('/' + file).then(res => {
+    : fetch('/' + file + '?_v=' + (typeof SW_VERSION !== 'undefined' ? SW_VERSION : Date.now())).then(res => {
         if (!res.ok) throw new Error(`View fetch failed: ${res.status}`);
         return res.text();
       }).then(html => {
