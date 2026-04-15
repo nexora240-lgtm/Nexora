@@ -17,6 +17,8 @@
   <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
   <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
   <link rel="dns-prefetch" href="https://cdn.taboola.com" />
+  <link rel="preconnect" href="https://adklip.net" crossorigin />
+  <link rel="dns-prefetch" href="https://securepubads.g.doubleclick.net" />
 
   <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/nexora-amber.png">
 
@@ -49,6 +51,16 @@
   <!-- Defer non-critical ad/analytics scripts -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7925754855607435"
      crossorigin="anonymous"></script>
+
+  <!-- GPT + Prebid: global shims so cmd/que queues exist before the library loads -->
+  <script>
+    window.googletag = window.googletag || {cmd: []};
+    window.googletag.cmd = window.googletag.cmd || [];
+    window.pbjs = window.pbjs || {que: []};
+    window.pbjs.que = window.pbjs.que || [];
+  </script>
+  <!-- Prebid + GPT wrapper (defines slots, runs header bidding) -->
+  <script async src="https://adklip.net/prebid/thenexoraproject.js"></script>
 
   <!-- Taboola Loader deferred to after DOM -->
   <script type="text/javascript">
