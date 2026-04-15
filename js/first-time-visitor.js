@@ -623,7 +623,8 @@
     setupEl.style.opacity = '0';
 
     setTimeout(() => {
-      if (setupEl) { setupEl.remove(); setupEl = null; }
+      setupEl.remove();
+      setupEl = null;
 
       // Show fake loading screen
       showFakeLoader(() => {
