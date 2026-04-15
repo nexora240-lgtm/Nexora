@@ -45,16 +45,12 @@
 
   </div>
 
-  <script src="/baremux/index.js"></script>
-  <script src="/scram/scramjet.all.js"></script>
-  <script type="module" src="/epoxy/index.mjs"></script>
-  <script>
-    window._CONFIG = window._CONFIG || {
-      wispurl: "wss://anura.pro/",
-      bareurl: "https://aluu.xyz/bare/"
-    };
-  </script>
-
+  <script src="/s/baremux/index.js"></script>
+  <script src="/s/uv/uv.bundle.js"></script>
+  <script src="/s/uv/uv.config.js"></script>
+  <script src="/s/scram/scramjet.all.js"></script>
+  <script src="/config.js"></script>
+  <script src="/js/proxy-engine.js"></script>
   <script>
     (function() {
       const params = new URLSearchParams(window.location.search);
@@ -62,105 +58,52 @@
       const appLink  = params.get('link');
       const appThumb = params.get('thumb');
 
-      let scramjet  = null;
-      let swReady   = false;
-
       const appContainer  = document.getElementById('appContainer');
       const titleEl       = document.getElementById('appTitle');
       const backBtn       = document.getElementById('backBtn');
       const fullscreenBtn = document.getElementById('fullscreenBtn');
 
-      let proxyReady = false;
-      let proxyInitPromise = null;
-
-      /* ── Proxy init (Scramjet) ───────────────────────────────── */
-      function withTimeout(promise, ms) {
-        return Promise.race([
-          promise,
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Transport timeout')), ms))
-        ]);
-      }
-
-      async function initProxy() {
-        try {
-          const { ScramjetController } = $scramjetLoadController();
-          scramjet = new ScramjetController({
-            prefix: "/scramjet/",
-            files: {
-              wasm: "/scram/scramjet.wasm.wasm",
-              all:  "/scram/scramjet.all.js",
-              sync: "/scram/scramjet.sync.js",
-            }
-          });
-          await scramjet.init();
-
-          const connection = new BareMux.BareMuxConnection("/baremux/worker.js");
-          try {
-            await withTimeout(
-              connection.setTransport("/epoxy/index.mjs", [{
-                wisp: window._CONFIG?.wispurl || "wss://anura.pro/"
-              }]),
-              8000
-            );
-          } catch (e) {
-            console.warn('Epoxy transport failed, trying bare:', e.message || e);
-            try {
-              await withTimeout(
-                connection.setTransport("/baremux/index.mjs", [
-                  window._CONFIG?.bareurl || "https://aluu.xyz/bare/"
-                ]),
-                8000
-              );
-            } catch (e2) {
-              console.error('All transports failed:', e2.message || e2);
-            }
-          }
-
-          // Reuse existing SW registration from the shell if available
-          if (navigator.serviceWorker.controller) {
-            swReady = true;
-          } else {
-            await navigator.serviceWorker.register("/sw.js");
-            await navigator.serviceWorker.ready;
-            swReady = true;
-          }
-          window.scramjet = scramjet;
-          proxyReady = true;
-          console.log('Scramjet service worker ready');
-        } catch (err) {
-          console.error("Proxy init failed:", err);
-        }
-      }
-
-      function getProxyUrl(url) {
-        if (scramjet && swReady) {
-          return scramjet.encodeUrl(url);
-        }
-        return "/scramjet/" + encodeURIComponent(url);
-      }
-
-      /* ── Iframe launch ───────────────────────────────────────── */
-      async function launchApp() {
-        // Wait for proxy to be ready before launching
-        if (!proxyReady && proxyInitPromise) {
-          await proxyInitPromise;
-        }
-        const proxyUrl = getProxyUrl(appLink);
-        appContainer.innerHTML = `
-          <iframe
-            id="appFrame"
-            src="${proxyUrl}"
-            class="app-iframe"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads"
-            allow="fullscreen; geolocation; microphone; camera"
-          ></iframe>
-        `;
-      }
+      const PE = window.NexoraProxy;
 
       // Escape HTML to prevent XSS from URL parameters
       function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      }
+
+      /* ── Iframe launch ───────────────────────────────────────── */
+      async function launchApp() {
+        if (!PE) {
+          appContainer.innerHTML = '<div class="app-error"><i class="fas fa-exclamation-triangle"></i><h2>Proxy Unavailable</h2><p>Proxy engine failed to load.</p></div>';
+          return;
+        }
+
+        appContainer.innerHTML = '<div class="app-start"><div class="app-icon-preview"><div class="loading-spinner"></div></div><h2 class="app-start-title">Loading...</h2></div>';
+
+        try {
+          const result = await PE.navigate(appLink);
+          appContainer.innerHTML = `
+            <iframe
+              id="appFrame"
+              src="${result.proxyUrl}"
+              class="app-iframe"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads"
+              allow="fullscreen; geolocation; microphone; camera"
+            ></iframe>
+          `;
+        } catch (e) {
+          console.error('[Nexora] App launch failed:', e);
+          appContainer.innerHTML = `
+            <div class="app-error">
+              <i class="fas fa-exclamation-triangle"></i>
+              <h2>Failed to Load</h2>
+              <p>${escapeHtml(e.message)}</p>
+              <button class="go-back-btn" onclick="window.navigate ? window.navigate('/apps') : (window.location.href='/apps')">
+                <i class="fas fa-arrow-left"></i> Go to Apps
+              </button>
+            </div>
+          `;
+        }
       }
 
       /* ── Splash screen ───────────────────────────────────────── */
@@ -230,7 +173,6 @@
       });
 
       /* ── Boot ────────────────────────────────────────────────── */
-      proxyInitPromise = initProxy();
       initAppLoader();
     })();
   </script>
