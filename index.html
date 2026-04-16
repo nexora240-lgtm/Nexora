@@ -313,15 +313,15 @@
 
       fetch('/game-info.json')
         .then(function(res) { return res.json(); })
-        .then(function(games) {
-          // Fisher-Yates shuffle
+        .then(function(allGames) {
+          // Filter to only displayable games, then shuffle
+          var games = allGames.filter(function(g) { return g.display === true; });
           for (var i = games.length - 1; i > 0; i--) {
             var j = Math.floor(Math.random() * (i + 1));
             var tmp = games[i]; games[i] = games[j]; games[j] = tmp;
           }
 
-          // Shared pool — each card pulls the next game; on thumbnail
-          // failure it keeps pulling until one loads.
+          // Shared pool — each card pulls the next game
           var poolIdx = 0;
           function nextGame() {
             return poolIdx < games.length ? games[poolIdx++] : null;

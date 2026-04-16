@@ -1217,10 +1217,10 @@
         }
       }
       
-      // Filter out current game and games without a thumbnail
+      // Filter out current game and games without display enabled
       const currentTitle = currentGame?.title || "";
       const currentTags = new Set(Array.isArray(currentGame?.tags) ? currentGame.tags : []);
-      const otherGames = games.filter(g => g.title !== currentTitle && g.thumbnail && g.thumbnail.trim() !== "");
+      const otherGames = games.filter(g => g.title !== currentTitle && g.display === true);
       
       // Sort: games with matching tags first, then random
       const scored = otherGames.map(g => {
