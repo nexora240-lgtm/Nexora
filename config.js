@@ -3,13 +3,13 @@ let host = location.protocol + "//" + location.host;
 var _CONFIG = {
   wispurl:
     localStorage.getItem("settings.wispUrl") ||
-    "wss://69.164.244.149/wisp/",
+    "wss://d2ky08vqpitnus.cloudfront.net/wisp/",
   bareurl:
     localStorage.getItem("settings.bareUrl") ||
-    "https://69.164.244.149/bare/",
+    "https://d2ky08vqpitnus.cloudfront.net/bare/",
   rammerheadUrl:
     localStorage.getItem("settings.rammerheadUrl") ||
-    "https://69.164.244.149",
+    "https://d2ky08vqpitnus.cloudfront.net",
   // Views API Configuration - Replace with your AWS API Gateway URL
   viewsApiUrl: "https://2zpvhn3woh.execute-api.us-east-2.amazonaws.com",
   // Auth API Configuration - User authentication and data sync
