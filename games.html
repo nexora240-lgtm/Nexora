@@ -633,10 +633,6 @@
     </div>
   </div>
 
-  <!-- GPT AdSlot 1 for Ad unit 'nexora_multisize_content_1' ### Size: [[728,90],[300,250]] -->
-  <div id='div-gpt-ad-9017135-1' style='margin: 24px auto; text-align: center;'></div>
-  <!-- End AdSlot 1 -->
-
   <!-- Horizontal Scrollable Sections -->
   <div class="scrollable-sections" id="scrollableSections">
     <!-- Recently Played Section -->
@@ -675,6 +671,10 @@
     <div id='div-gpt-ad-9017135-3' style='margin: 24px auto; text-align: center;'></div>
     <!-- End AdSlot 3 -->
   </div>
+
+  <!-- GPT AdSlot 1 for Ad unit 'nexora_multisize_content_1' ### Size: [[728,90],[300,250]] -->
+  <div id='div-gpt-ad-9017135-1' style='margin: 24px auto; text-align: center;'></div>
+  <!-- End AdSlot 1 -->
 
   <div class="content-wrapper">
     <h2 class="section-title" id="allGamesTitle" style="margin: 24px 0 16px; padding: 0 20px;">All Games</h2>
@@ -719,7 +719,12 @@
 
       function runAds() {
         try {
-          // display() registers the divs with their GPT slots
+          var slots = [window.slot1, window.slot2, window.slot3].filter(Boolean);
+
+          // Clear stale ad content/DOM refs from previous SPA navigation
+          if (slots.length) gt.pubads().clear(slots);
+
+          // Re-register divs with GPT slots (safe to call again after clear)
           for (var i = 0; i < divIds.length; i++) {
             gt.display(divIds[i]);
           }
@@ -743,15 +748,21 @@
                 bidsBackHandler: function() {
                   window.pbjs.setTargetingForGPTAsync();
                   gt.cmd.push(function() {
-                    var slots = [window.slot1, window.slot2, window.slot3].filter(Boolean);
-                    gt.pubads().refresh(slots.length ? slots : undefined);
+                    var s = [window.slot1, window.slot2, window.slot3].filter(Boolean);
+                    gt.pubads().refresh(s.length ? s : undefined);
                   });
                 }
               });
             });
+            // Safety net: if Prebid doesn't respond in 4s, refresh GPT directly
+            setTimeout(function() {
+              if (!window.pbjs || !window.pbjs.initAdserverSet) {
+                var s = [window.slot1, window.slot2, window.slot3].filter(Boolean);
+                if (s.length) gt.cmd.push(function() { gt.pubads().refresh(s); });
+              }
+            }, 4000);
           } else {
             // Last resort: just refresh GPT slots directly
-            var slots = [window.slot1, window.slot2, window.slot3].filter(Boolean);
             if (slots.length) gt.pubads().refresh(slots);
           }
         } catch(e) {
@@ -2112,6 +2123,22 @@
         noCard.className = "no-results";
         noCard.textContent = `No results for "${filter}"`;
         grid.appendChild(noCard);
+      }
+
+      // Refresh GPT ads on every page change
+      try {
+        var gt = window.googletag;
+        if (gt && gt.cmd) {
+          gt.cmd.push(function() {
+            var slots = [window.slot1, window.slot2, window.slot3].filter(Boolean);
+            if (slots.length) {
+              gt.pubads().clear(slots);
+              gt.pubads().refresh(slots);
+            }
+          });
+        }
+      } catch(e) {
+        console.warn('[Nexora Ads] pagination refresh error:', e.message);
       }
     }
 
