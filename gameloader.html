@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="css/gameloader.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" /></noscript>
-  <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/nexora-amber.png">
+  <link rel="icon" type="image/png" id="favicon" href="https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/nexora-amber.png">
   <script src="config.js"></script>
   <script src="js/mouse-tracking.js"></script>
   <style>
@@ -361,7 +361,7 @@
               <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="100" aria-label="Volume">
             </div>
             <button id="fullscreenBtn" class="fullscreen-btn" aria-label="Toggle full screen">
-              <img src="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/icons/full-screen-icon.svg" alt="Full Screen" />
+              <img src="https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/full-screen-icon.svg" alt="Full Screen" />
             </button>
           </div>
         </footer>
@@ -1432,12 +1432,12 @@
     // Theme-aware favicon updater
     (function() {
       const FAVICON_MAP = {
-        'midnight-amber': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/favicon-amber.png',
-        'midnight-blueberry': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/favicon-blueberry.png',
-        'midnight-grape': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/favicon-grape.png'
+        'midnight-amber': 'https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/logos/favicon-amber.png',
+        'midnight-blueberry': 'https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/logos/favicon-blueberry.png',
+        'midnight-grape': 'https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/logos/favicon-grape.png'
       };
 
-      const DEFAULT_FAVICON = 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/favicon-amber.png';
+      const DEFAULT_FAVICON = 'https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/logos/favicon-amber.png';
 
       function updateFavicon() {
         const favicon = document.getElementById('favicon');

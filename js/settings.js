@@ -37,7 +37,7 @@
   const COOKIE_FAV = 'nexora_favicon';
   const COOKIE_MAX_DAYS = 365;
 
-  const FALLBACK_NONE_FAVICON = 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/nexora-amber.png';
+  const FALLBACK_NONE_FAVICON = 'https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/logos/nexora-amber.png';
 
   const root = document.getElementById('settingsRoot');
   if (!root) return;
@@ -109,15 +109,15 @@
   };
 
   const FAVICON_MAP = {
-    "Clever": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/clever.ico",
-    "Google Classroom": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/classroom.ico",
-    "Canvas": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/canvas.png",
-    "Google Drive": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/drive.png",
-    "Seesaw": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/seesaw.jpg",
-    "Edpuzzle": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/edpuzzle.png",
-    "Kahoot!": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/kahoot.ico",
-    "Quizlet": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/quizlet.png",
-    "Khan Academy": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/khanacademy.ico"
+    "Clever": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/clever.ico",
+    "Google Classroom": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/classroom.ico",
+    "Canvas": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/canvas.png",
+    "Google Drive": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/drive.png",
+    "Seesaw": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/seesaw.jpg",
+    "Edpuzzle": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/edpuzzle.png",
+    "Kahoot!": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/kahoot.ico",
+    "Quizlet": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/quizlet.png",
+    "Khan Academy": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/khanacademy.ico"
   };
 
   const BRAND_LOGOS = {
@@ -137,7 +137,7 @@
   }
   function assetFor(name) {
     const s = slugify(name);
-    return s ? `https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/${s}.png` : '';
+    return s ? `https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/${s}.png` : '';
   }
   function encodeSvgToDataUrl(svg) {
     if (!svg) return '';
@@ -1333,15 +1333,15 @@
           "Khan Academy": "Dashboard | Khan Academy"
         };
         var FAVICONS = {
-          "Clever": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/clever.ico",
-          "Google Classroom": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/classroom.ico",
-          "Canvas": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/canvas.png",
-          "Google Drive": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/drive.png",
-          "Seesaw": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/seesaw.jpg",
-          "Edpuzzle": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/edpuzzle.png",
-          "Kahoot!": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/kahoot.ico",
-          "Quizlet": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/quizlet.png",
-          "Khan Academy": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/khanacademy.ico"
+          "Clever": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/clever.ico",
+          "Google Classroom": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/classroom.ico",
+          "Canvas": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/canvas.png",
+          "Google Drive": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/drive.png",
+          "Seesaw": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/seesaw.jpg",
+          "Edpuzzle": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/edpuzzle.png",
+          "Kahoot!": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/kahoot.ico",
+          "Quizlet": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/quizlet.png",
+          "Khan Academy": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/khanacademy.ico"
         };
         var dTitle = (disguiseName && TITLES[disguiseName]) ? TITLES[disguiseName] : '';
         var dFavicon = (disguiseName && FAVICONS[disguiseName]) ? FAVICONS[disguiseName] : '';
@@ -1427,19 +1427,19 @@
 
 (function () {
   const LOGO_MAP = {
-    'midnight-amber': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/nexora-amber.png',
-    'midnight-blueberry': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/nexora-blueberry.png',
-    'midnight-grape': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/nexora-grape.png'
+    'midnight-amber': 'https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/logos/nexora-amber.png',
+    'midnight-blueberry': 'https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/logos/nexora-blueberry.png',
+    'midnight-grape': 'https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/logos/nexora-grape.png'
   };
 
   const FAVICON_MAP = {
-    'midnight-amber': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/favicon-amber.png',
-    'midnight-blueberry': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/favicon-blueberry.png',
-    'midnight-grape': 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/favicon-grape.png'
+    'midnight-amber': 'https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/favicon-amber.png',
+    'midnight-blueberry': 'https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/favicon-blueberry.png',
+    'midnight-grape': 'https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/favicon-grape.png'
   };
 
-  const DEFAULT_LOGO = 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/logos/nexora-amber.png';
-  const DEFAULT_FAVICON = 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/favicon-amber.png';
+  const DEFAULT_LOGO = 'https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/logos/nexora-amber.png';
+  const DEFAULT_FAVICON = 'https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/favicon-amber.png';
   const settingsRoot = document.getElementById('settingsRoot');
 
   function setLogoAndFaviconForTheme(themeId) {

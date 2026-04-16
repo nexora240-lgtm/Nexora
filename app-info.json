@@ -1,112 +1,112 @@
 [
     {
         "title": "Youtube",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/youtube.webp",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/youtube.webp",
         "link": "https://youtube.com"
     },
     {
         "title": "Tiktok",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/tiktok.png",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/tiktok.png",
         "link": "https://tiktok.com"
     },
     {
         "title": "Snapchat",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/snapchat.jpg",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/snapchat.jpg",
         "link": "https://snapchat.com"
     },
     {
         "title": "Discord",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/discord.webp",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/discord.webp",
         "link": "https://discord.com"
     },
     {
         "title": "Instagram",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/instagram.webp",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/instagram.webp",
         "link": "https://instagram.com"
     },
     {
         "title": "Netflix",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/netflix.webp",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/netflix.webp",
         "link": "https://netflix.com"
     },
     {
         "title": "Hulu",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/hulu.webp",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/hulu.webp",
         "link": "https://hulu.com"
     },
     {
         "title": "Disney+",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/disney.jpg",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/disney.jpg",
         "link": "https://disneyplus.com"
     },
     {
         "title": "ESPN",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/espn.webp",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/espn.webp",
         "link": "https://espn.com"
     },
     {
         "title": "Spotify",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/spotify.webp",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/spotify.webp",
         "link": "https://spotify.com"
     },
     {
         "title": "Gauth",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/gauth.png",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/gauth.png",
         "link": "https://gauthmath.com"
     },
     {
         "title": "Gemini",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/gemini.webp",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/gemini.webp",
         "link": "https://gemini.google.com"
     },
     {
         "title": "ChatGPT",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/chatgpt.png",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/chatgpt.png",
         "link": "https://chatgpt.com"
     },
     {
         "title": "Geforce Now",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/geforcenow.jpg",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/geforcenow.jpg",
         "link": "https://geforcenow.com"
     },
     {
         "title": "W3Schools",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/w3schools.png",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/w3schools.png",
         "link": "https://w3schools.com"
     },
     {
         "title": "Now.gg",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/nowgg.jpg",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/nowgg.jpg",
         "link": "https://now.gg"
     },
     {
         "title": "Twitch",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/twitch.webp",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/twitch.webp",
         "link": "https://twitch.tv" 
     },
     {
         "title": "Soundcloud",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/soundcloud.jpg",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/soundcloud.jpg",
         "link": "https://soundcloud.com"
     },
     {
         "title": "Xbox Cloud",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/xbox.png",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/xbox.png",
         "link": "https://xbox.com"
     },
     {
         "title": "Poki",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/poki.webp",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/poki.webp",
         "link": "https://poki.com"
     },
     {
         "title": "Wattpad",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/wattpad.webp",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/wattpad.webp",
         "link": "https://wattpad.com"
     },
     {
         "title": "Webtoon",
-        "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@latest/icons/apps/webtoon.jpg",
+        "thumbnail": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/icons/apps/webtoon.jpg",
         "link": "https://webtoon.com"
     }
 ]

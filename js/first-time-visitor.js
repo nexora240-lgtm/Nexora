@@ -14,15 +14,15 @@
   const PANIC_URL_KEY = 'settings.panicUrl';
 
   const DISGUISE_OPTIONS = [
-    { name: "Clever",           title: "Clever | Portal",           icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/clever.ico" },
-    { name: "Google Classroom", title: "Home",                      icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/classroom.ico" },
-    { name: "Canvas",           title: "Dashboard",                 icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/canvas.png" },
-    { name: "Google Drive",     title: "Home - Google Drive",       icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/drive.png" },
-    { name: "Seesaw",           title: "Seesaw",                    icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/seesaw.jpg" },
-    { name: "Edpuzzle",         title: "Edpuzzle",                  icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/edpuzzle.png" },
-    { name: "Kahoot!",          title: "Enter Game PIN - Kahoot!",  icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/kahoot.ico" },
-    { name: "Quizlet",          title: "Your Sets | Quizlet",       icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/quizlet.png" },
-    { name: "Khan Academy",     title: "Dashboard | Khan Academy",  icon: "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets/favicon/khanacademy.ico" }
+    { name: "Clever",           title: "Clever | Portal",           icon: "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/clever.ico" },
+    { name: "Google Classroom", title: "Home",                      icon: "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/classroom.ico" },
+    { name: "Canvas",           title: "Dashboard",                 icon: "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/canvas.png" },
+    { name: "Google Drive",     title: "Home - Google Drive",       icon: "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/drive.png" },
+    { name: "Seesaw",           title: "Seesaw",                    icon: "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/seesaw.jpg" },
+    { name: "Edpuzzle",         title: "Edpuzzle",                  icon: "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/edpuzzle.png" },
+    { name: "Kahoot!",          title: "Enter Game PIN - Kahoot!",  icon: "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/kahoot.ico" },
+    { name: "Quizlet",          title: "Your Sets | Quizlet",       icon: "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/quizlet.png" },
+    { name: "Khan Academy",     title: "Dashboard | Khan Academy",  icon: "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/khanacademy.ico" }
   ];
 
   const DISGUISE_URLS = {
