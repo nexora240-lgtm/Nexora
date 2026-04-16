@@ -96,10 +96,8 @@ body {
   gap: 20px;
   padding: 20px;
   max-width: 1200px;
-  margin: 0 auto 40px;
+  margin: 0 auto;
   overflow: visible;
-  min-height: calc(100vh - 100px); 
-  padding-bottom: 60px; 
 }
 
 /* optional minimal no-results style */
@@ -356,12 +354,10 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
-  min-height: 100vh;
 }
 
 .content-wrapper .grid {
   width: 100%;
-  padding-bottom: 80px;
 }
 
 /* Pagination */
@@ -475,7 +471,6 @@ body:has(.sidebar:hover) .pagination {
   justify-content: center;
   align-items: center;
   padding: 40px 20px 100px 20px;
-  margin-top: -40px;
 }
 
 .suggestion-btn {
