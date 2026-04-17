@@ -13,7 +13,7 @@
   const GLOW_KEY = 'settings.glow';
   const BLUR_KEY = 'settings.blur';
   const TRANSFORMS_KEY = 'settings.transforms';
-  const DEFAULT_FALLBACK = 'https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/logos/nexora-amber.png';
+  const DEFAULT_FALLBACK = 'https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/logos/nexora-amber.png';
   const CODE_LEVEL_TITLES = {
     "Clever": "Clever | Portal",
     "Google Classroom": "Home",
@@ -27,15 +27,15 @@
   };
 
   const FAVICON_MAP = {
-    "Clever": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/clever.ico",
-    "Google Classroom": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/classroom.ico",
-    "Canvas": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/canvas.png",
-    "Google Drive": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/drive.png",
-    "Seesaw": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/seesaw.jpg",
-    "Edpuzzle": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/edpuzzle.png",
-    "Kahoot!": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/kahoot.ico",
-    "Quizlet": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/quizlet.png",
-    "Khan Academy": "https://nexora-assets-cdn.s3.us-east-2.amazonaws.com/favicon/khanacademy.ico"
+    "Clever": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/favicon/clever.ico",
+    "Google Classroom": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/favicon/classroom.ico",
+    "Canvas": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/favicon/canvas.png",
+    "Google Drive": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/favicon/drive.png",
+    "Seesaw": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/favicon/seesaw.jpg",
+    "Edpuzzle": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/favicon/edpuzzle.png",
+    "Kahoot!": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/favicon/kahoot.ico",
+    "Quizlet": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/favicon/quizlet.png",
+    "Khan Academy": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/favicon/khanacademy.ico"
   };
 
   const _isEdge = /Edg\//.test(navigator.userAgent);
