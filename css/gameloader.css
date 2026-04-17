@@ -981,31 +981,6 @@ html.performance-no-glow.light-scheme .fullscreen-btn img {
   opacity: 0.8;
 }
 
-/* Ad row inside the grid */
-.related-games-grid .taboola-ad-row {
-  grid-column: 1 / -1;
-  width: 100%;
-  min-height: 50px;
-  padding: 10px 0;
-}
-
-/* Ad container between sections */
-.gameloader-ad-container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 8px auto;
-  padding: 0 20px;
-  min-height: 90px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.gameloader-ad-container ins {
-  display: block;
-  width: 100%;
-}
-
 /* Responsive adjustments for related games */
 @media (max-width: 768px) {
   .related-games-section {

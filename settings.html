@@ -7,8 +7,6 @@
       window.location.replace('/?route=/settings' + (params ? '&' + params.substring(1) : ''));
     }
   </script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7925754855607435"
-     crossorigin="anonymous"></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-H5VGHQJKD8"></script>
   <script>
   window.dataLayer = window.dataLayer || [];
@@ -601,28 +599,7 @@
           </div>
         </section>
 
-        <!-- Taboola native ad at bottom of settings -->
-        <div id="taboola-settings-bottom" style="width:100%;min-height:250px;margin-top:0;box-sizing:border-box;overflow:hidden;"></div>
       </div>
-      <script>
-        (function() {
-          if (typeof window._taboolaGlobalIndex === 'undefined') window._taboolaGlobalIndex = 0;
-          window._taboolaGlobalIndex++;
-          var idx = window._taboolaGlobalIndex;
-          var innerId = 'taboola-settings-init-' + idx;
-          var wrapper = document.getElementById('taboola-settings-bottom');
-          wrapper.innerHTML = '<div id="' + innerId + '"></div>';
-          window._taboola = window._taboola || [];
-          _taboola.push({article: 'auto', url: window.location.origin + '/settings'});
-          _taboola.push({
-            mode: 'alternating-thumbnails-a',
-            container: innerId,
-            placement: 'Settings Below Content ' + idx,
-            target_type: 'mix'
-          });
-          _taboola.push({flush: true});
-        })();
-      </script>
 
     </div>
   </div>
