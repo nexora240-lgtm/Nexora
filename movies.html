@@ -366,7 +366,7 @@
   }
 
   // Image helpers with fallback sizes
-  const imgBase = (size) => `https://image.tmdb.org/t/p/${size}`;
+  const imgBase = (size) => `${TMDB_BASE}/img/t/p/${size}`;
   const posterSizes = ['w342', 'w500', 'w185', 'original'];
   const poster = (path) => path ? imgBase('w342') + path : null;
   const backdrop = (path) => path ? imgBase('w1280') + path : null;
@@ -988,7 +988,7 @@
       episodeCard.className = 'episode-card';
       
       const thumbnailUrl = episode.still_path 
-        ? `https://image.tmdb.org/t/p/w300${episode.still_path}` 
+        ? `${TMDB_BASE}/img/t/p/w300${episode.still_path}` 
         : 'https://via.placeholder.com/300x169/1a1a1a/666666?text=No+Image';
 
       episodeCard.innerHTML = `
