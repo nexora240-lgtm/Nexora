@@ -397,6 +397,13 @@ body {
   transition-duration: 0.1s;
 }
 
+.sidebar a.nav-disabled {
+  opacity: 0.38;
+  filter: brightness(0.55);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .sidebar i {
   flex-shrink: 0;
   width: 24px;
