@@ -22,6 +22,73 @@
     const CHATROOM_STATE_KEY = 'nexora_circle_state';
     const USERNAME_COOKIE_KEY = 'nexora_circle_username';
 
+    // Idle timeout - disconnect WebSocket after 5 minutes of inactivity to save costs
+    const IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+    let idleTimer = null;
+    let idleDisconnected = false;
+
+    function resetIdleTimer() {
+        if (idleDisconnected) {
+            idleDisconnected = false;
+            removeIdleBanner();
+            if (currentRoomCode && currentUsername) {
+                connectWebSocket(false, true);
+            }
+            return;
+        }
+        clearTimeout(idleTimer);
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            idleTimer = setTimeout(idleDisconnect, IDLE_TIMEOUT_MS);
+        }
+    }
+
+    function idleDisconnect() {
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
+        idleDisconnected = true;
+        ws.send(JSON.stringify({
+            action: 'sendMessage',
+            roomCode: currentRoomCode,
+            username: currentUsername,
+            message: '::LEAVE::'
+        }));
+        ws.close();
+        ws = null;
+        showIdleBanner();
+    }
+
+    function showIdleBanner() {
+        if (document.getElementById('idleBanner')) return;
+        var banner = document.createElement('div');
+        banner.id = 'idleBanner';
+        banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:var(--color-warning, #e6a817);color:#000;text-align:center;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;';
+        banner.textContent = 'Disconnected due to inactivity. Click anywhere or type to reconnect.';
+        document.body.appendChild(banner);
+    }
+
+    function removeIdleBanner() {
+        var banner = document.getElementById('idleBanner');
+        if (banner) banner.remove();
+    }
+
+    function startIdleTracking() {
+        var events = ['keydown', 'mousedown', 'touchstart', 'scroll'];
+        events.forEach(function(evt) {
+            document.addEventListener(evt, resetIdleTimer, { passive: true });
+        });
+        resetIdleTimer();
+    }
+
+    function stopIdleTracking() {
+        clearTimeout(idleTimer);
+        idleTimer = null;
+        idleDisconnected = false;
+        removeIdleBanner();
+        var events = ['keydown', 'mousedown', 'touchstart', 'scroll'];
+        events.forEach(function(evt) {
+            document.removeEventListener(evt, resetIdleTimer);
+        });
+    }
+
     function saveUsernameToCookie(username) {
 
         document.cookie = `${USERNAME_COOKIE_KEY}=${encodeURIComponent(username)}; path=/; SameSite=Strict`;
@@ -471,6 +538,8 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
             showChatScreen();
         }
 
+        startIdleTracking();
+
         if (isCreatingRoom) {
             setTimeout(() => {
                 toggleRoomCodeOverlay();
@@ -482,6 +551,8 @@ function connectWebSocket(isCreatingRoom = false, isReconnecting = false, isJoin
     // Always rebind handlers to current closure (whether reused or new WS)
     ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
+        // Reset idle timer on any incoming message
+        if (idleTimer) { clearTimeout(idleTimer); idleTimer = setTimeout(idleDisconnect, IDLE_TIMEOUT_MS); }
 
         if (isRestoringState && data.type !== 'error') {
                         return;
@@ -842,6 +913,7 @@ window.addEventListener('beforeunload', () => {
 });
 
 function leaveChat() {
+    stopIdleTracking();
 
     if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({
@@ -1424,6 +1496,7 @@ function continueAsGuest() {
         saveChatroomState: saveChatroomState,
         restoreChatroomState: restoreChatroomState,
         _cleanup: function() {
+            stopIdleTracking();
             // Save open WS for reuse instead of closing (avoids USERNAME_CONFLICT on reconnect)
             if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
                 window._nexoraCirclePendingWs = ws;
