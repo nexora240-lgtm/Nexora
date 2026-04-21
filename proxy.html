@@ -976,11 +976,12 @@
         tabBar.insertBefore(el, tabBar.querySelector(".new-tab-btn"));
       });
 
-      // Show tab bar + nav when at least 1 tab exists
+      // Show tab bar + nav only after the user has actually navigated somewhere.
+      // Keep the welcome screen clean (no top bars) until then.
       const hasContent = tabs.some(t => t.url);
-      tabBar.classList.toggle("visible", tabs.length > 0);
-      navBar.classList.toggle("visible", tabs.length > 0);
-      document.body.classList.toggle("has-top-bars", tabs.length > 0);
+      tabBar.classList.toggle("visible", hasContent);
+      navBar.classList.toggle("visible", hasContent);
+      document.body.classList.toggle("has-top-bars", hasContent);
     }
 
     function escapeHtml(s) {
