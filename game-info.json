@@ -103,19 +103,6 @@
     "display": true
   },
   {
-    "title": "2048 Cupcakes",
-    "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/cl2048cupcakes.webp",
-    "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/cl2048cupcakes.html",
-    "tags": [
-      "Puzzle",
-      "Casual",
-      "Single Player"
-    ],
-    "description": "Combine cupcakes to create larger ones and reach the 2048 cupcake in this sweet puzzle game.",
-    "longDescription": "Combine cupcakes to create larger ones and reach the 2048 cupcake in this sweet puzzle game. Slide the cupcakes across the board, merging them to achieve the ultimate dessert. A delightful and engaging experience for puzzle lovers.",
-    "display": true
-  },
-  {
     "title": "2D Shooting",
     "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/cl2dshooting(1).webp",
     "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/cl2dshooting(1).html",
@@ -194,19 +181,6 @@
     "display": true
   },
   {
-    "title": "60 Sec Santa Run",
-    "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/cl60secsantarun.webp",
-    "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/cl60secsantarun.html",
-    "tags": [
-      "Arcade",
-      "Casual",
-      "Single Player"
-    ],
-    "description": "A holiday-themed arcade game where Santa must collect gifts in 60 seconds.",
-    "longDescription": "Collect gifts and complete tasks in this holiday-themed arcade game. Do it all within 60 seconds for a festive challenge. Perfect for those who enjoy quick, festive gameplay and the spirit of the holidays.",
-    "display": true
-  },
-  {
     "title": "8 Ball Classic",
     "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/cl8ballclassic.webp",
     "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/cl8ballclassic.html",
@@ -241,19 +215,6 @@
     ],
     "description": "A single-player horror survival game where you explore an abandoned building.",
     "longDescription": "Explore an abandoned building in this single-player horror survival game. Navigate through eerie environments, uncovering secrets and surviving against the odds. Perfect for fans of horror and survival games.",
-    "display": true
-  },
-  {
-    "title": "Abandoned 3",
-    "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/clabandoned3.webp",
-    "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/clabandoned3.html",
-    "tags": [
-      "Horror",
-      "Survival",
-      "Single Player"
-    ],
-    "description": "A single-player horror survival game where you explore an abandoned building.",
-    "longDescription": "Explore another abandoned building in this single-player horror survival game. Face new challenges and uncover more secrets in this chilling experience. Ideal for those who enjoy immersive and terrifying gameplay.",
     "display": true
   },
   {
@@ -461,19 +422,6 @@
     ],
     "description": "A top-down shooter game featuring intense action and alien combat.",
     "longDescription": "Engage in intense top-down shooter action in this single-player arcade game. Battle alien hordes with a variety of weapons and power-ups. Navigate through challenging levels filled with enemies and obstacles. Can you survive the onslaught and defeat the alien threat?",
-    "display": true
-  },
-  {
-    "title": "Alien Hominid (GBA)",
-    "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/clalienhominidgba.webp",
-    "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/clalienhominidgba.html",
-    "tags": [
-      "Shooter",
-      "Arcade",
-      "Single Player"
-    ],
-    "description": "A portable version of the Alien Hominid shooter with fast-paced action.",
-    "longDescription": "Experience fast-paced alien combat on the go with this portable version of the Alien Hominid shooter. Navigate through challenging levels, defeat enemies, and upgrade your weapons. With its portable design, you can take the action anywhere. Can you survive the alien invasion on your handheld device?",
     "display": true
   },
   {
@@ -1022,32 +970,6 @@
     "display": true
   },
   {
-    "title": "Bad Time Simulator",
-    "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/clbadtimesim.webp",
-    "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/clbadtimesim.html",
-    "tags": [
-      "Horror",
-      "Simulation",
-      "Single Player"
-    ],
-    "description": "Survive against waves of monsters in this horror simulation game.",
-    "longDescription": "Survive against relentless waves of monstrous adversaries in this chilling horror simulation game. Navigate through eerie environments, using whatever tools and tactics you can find to fend off the creatures that lurk in the shadows. With its intense atmosphere and unpredictable gameplay, this game will test your nerves and strategic thinking.",
-    "display": true
-  },
-  {
-    "title": "Baldi Decompiled",
-    "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/clbaldidecomp.webp",
-    "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/clbaldidecomp.html",
-    "tags": [
-      "Horror",
-      "Escape",
-      "Single Player"
-    ],
-    "description": "Explore the decompiled version of Baldi's Basics in this eerie escape game.",
-    "longDescription": "Dive into the decompiled version of Baldi's Basics in this spine-tingling escape game. Explore a school filled with puzzles and hidden secrets, all while evading Baldi's relentless pursuit. With its eerie atmosphere and challenging gameplay, this game will keep you on the edge of your seat as you try to uncover the mysteries of the school.",
-    "display": true
-  },
-  {
     "title": "Baldi's Basics",
     "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/clbaldisbasics.webp",
     "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/clbaldisbasics.html",
@@ -1058,32 +980,6 @@
     ],
     "description": "Navigate a school filled with puzzles and chases in this horror escape game.",
     "longDescription": "Navigate a school filled with puzzles and chases in this horror escape game. Collect notebooks while avoiding Baldi's pursuit, solving puzzles to progress through the school. With its unique blend of horror and puzzle-solving, this game will keep you engaged and on your toes as you try to escape the school's clutches.",
-    "display": true
-  },
-  {
-    "title": "Baldi's Basics Remaster",
-    "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/clbaldisbasicsremaster.webp",
-    "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/clbaldisbasicsremaster.html",
-    "tags": [
-      "Horror",
-      "Escape",
-      "Single Player"
-    ],
-    "description": "Experience an enhanced version of Baldi's Basics with improved graphics and gameplay.",
-    "longDescription": "Experience an enhanced version of Baldi's Basics with improved graphics and gameplay. Collect notebooks and solve puzzles to escape the school, all while avoiding Baldi's relentless chase. With its updated visuals and refined mechanics, this game offers a fresh take on the classic horror escape experience.",
-    "display": true
-  },
-  {
-    "title": "Baldi's Fun New School Ultimate",
-    "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/clbaldisfunnewschoolultimate.webp",
-    "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/clbaldisfunnewschoolultimate.html",
-    "tags": [
-      "Horror",
-      "Escape",
-      "Single Player"
-    ],
-    "description": "Explore a new school and face Baldi in this ultimate horror escape game.",
-    "longDescription": "Explore a new school and face Baldi in this ultimate horror escape game. Collect notebooks, solve puzzles, and navigate through various environments to escape the school. With its expanded content and new challenges, this game offers a fresh and thrilling take on the classic horror escape experience.",
     "display": true
   },
   {
@@ -1331,19 +1227,6 @@
     "display": true
   },
   {
-    "title": "Battle Zone",
-    "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/clbattlezone.webp",
-    "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/clbattlezone.html",
-    "tags": [
-      "Arcade",
-      "Shooter",
-      "Single Player"
-    ],
-    "description": "Engage in tank battles in this classic arcade shooter game.",
-    "longDescription": "Engage in tank battles in this classic arcade shooter game. Take control of a tank and navigate through enemy territory, using your skills and strategy to outlast the enemy. With its fast-paced gameplay and challenging levels, this game offers a fun and engaging experience for arcade enthusiasts and casual players alike.",
-    "display": true
-  },
-  {
     "title": "Bazooka Boy",
     "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/clbazookaboy.webp",
     "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/clbazookaboy.html",
@@ -1354,19 +1237,6 @@
     ],
     "description": "Defend your base from invaders using a bazooka in this action-packed arcade game.",
     "longDescription": "Defend your base from invaders using a bazooka in this action-packed arcade game. Navigate through levels, using your bazooka to destroy enemies and obstacles. With its fast-paced gameplay and challenging levels, this game offers a fun and engaging experience for arcade enthusiasts and casual players alike.",
-    "display": true
-  },
-  {
-    "title": "Beam Rider",
-    "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/clbeamrider.webp",
-    "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/clbeamrider.html",
-    "tags": [
-      "Arcade",
-      "Action",
-      "Single Player"
-    ],
-    "description": "Navigate a beam through obstacles in this classic arcade action game.",
-    "longDescription": "Navigate a beam through obstacles in this classic arcade action game. Control the beam as it moves through a series of obstacles, using your skills and strategy to progress. With its simple yet addictive gameplay, this game offers a fun and engaging experience for arcade enthusiasts and casual players alike.",
     "display": true
   },
   {
@@ -1471,19 +1341,6 @@
     ],
     "description": "Live a life from birth to death in this life simulation game.",
     "longDescription": "Live a life from birth to death in this life simulation game. Make choices that shape your character's life, from education and career to relationships and health. With its engaging gameplay and endless possibilities, this game offers a unique experience.",
-    "display": true
-  },
-  {
-    "title": "BitLife (Encrypted)",
-    "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/clbitlifeencrypted.webp",
-    "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/clbitlifeencrypted.html",
-    "tags": [
-      "Simulation",
-      "Strategy",
-      "Single Player"
-    ],
-    "description": "An encrypted version of BitLife, offering similar life simulation gameplay.",
-    "longDescription": "Experience a life simulation with an encrypted twist in this game. Make choices that shape your character's life, from education and career to relationships and health. Enjoy the engaging gameplay and unique features of this encrypted version.",
     "display": true
   },
   {

@@ -437,8 +437,8 @@ function loadView(file) {
             const done = () => { if (!settled) { settled = true; resolve(); } };
             newLink.addEventListener('load', done, { once: true });
             newLink.addEventListener('error', done, { once: true });
-            // Safety-net timeout — generous to handle slow networks / cache misses
-            setTimeout(done, 2000);
+            // Safety-net timeout
+            setTimeout(done, 400);
           });
           cssLinkPromises.push(loadPromise);
           

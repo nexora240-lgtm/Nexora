@@ -1,15 +1,31 @@
 let host = location.protocol + "//" + location.host;
 
+// Migrate legacy proxy endpoints that used the raw IP. The relay's TLS cert
+// only covers nx-relay.thenexoraproject.xyz, so cached IP-based URLs cause
+// WebSocket TLS handshake failures.
+(function migrateLegacyProxyHosts() {
+  try {
+    const LEGACY = "69.164.244.149";
+    const NEW = "nx-relay.thenexoraproject.xyz";
+    ["settings.wispUrl", "settings.bareUrl", "settings.rammerheadUrl"].forEach((k) => {
+      const v = localStorage.getItem(k);
+      if (v && v.includes(LEGACY)) {
+        localStorage.setItem(k, v.split(LEGACY).join(NEW));
+      }
+    });
+  } catch { /* private mode */ }
+})();
+
 var _CONFIG = {
   wispurl:
     localStorage.getItem("settings.wispUrl") ||
-    "wss://d1ebw3zgrpned2.cloudfront.net/wisp/",
+    "wss://nex-webdelivery-services402.b-cdn.net/wisp/",
   bareurl:
     localStorage.getItem("settings.bareUrl") ||
-    "https://d1ebw3zgrpned2.cloudfront.net/bare/",
+    "https://nex-webdelivery-services402.b-cdn.net/bare/",
   rammerheadUrl:
     localStorage.getItem("settings.rammerheadUrl") ||
-    "https://d1ebw3zgrpned2.cloudfront.net",
+    "https://nex-webdelivery-services402.b-cdn.net",
   // Views API Configuration - Replace with your AWS API Gateway URL
   viewsApiUrl: "https://ru7838oq5c.execute-api.us-east-2.amazonaws.com",
   // Auth API Configuration - User authentication and data sync

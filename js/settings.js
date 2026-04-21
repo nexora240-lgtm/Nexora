@@ -228,7 +228,7 @@
       const sep = source.includes('?') ? '&' : '?';
       const persistedHref = source + sep + '_n=' + Date.now();
       try {
-        const res = await fetch(source, { mode: 'cors', cache: 'no-store' });
+        const res = await fetch(source, { mode: 'cors', cache: 'default' });
         if (token !== _favToken) return false;
         if (!res.ok) throw new Error('Fetch failed ' + res.status);
         const blob = await res.blob();

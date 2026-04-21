@@ -652,6 +652,7 @@
         <div class="section-games banner-cards" id="mostPopularGames"></div>
       </div>
     </div>
+  </div>
 
   <div class="content-wrapper">
     <h2 class="section-title" id="allGamesTitle" style="margin: 24px 0 16px; padding: 0 20px;">All Games</h2>
@@ -1607,45 +1608,22 @@
       return score;
     }
 
-    // Smooth scroll-to-top for page navigation (non-interruptible)
-    let _scrollLocked = false;
-    function smoothScrollToTop(callback) {
+    function getSearchValue() {
+      return document.getElementById('searchInput')?.value || '';
+    }
+
+    function goToPage(page, totalPages) {
+      const nextPage = Math.max(1, Math.min(page, Math.max(totalPages, 1)));
+      if (nextPage === currentPage) return;
+      currentPage = nextPage;
+
       const appEl = document.getElementById('app');
-      const target = appEl || document.documentElement;
-      const duration = 420; // ms
-      const startY = target.scrollTop || window.scrollY;
-      if (startY === 0) {
-        if (callback) callback();
-        return;
+      if (appEl && typeof appEl.scrollTo === 'function') {
+        appEl.scrollTo({ top: 0, behavior: 'smooth' });
       }
-      _scrollLocked = true;
-      // Block wheel, touch, and keyboard scroll during animation
-      const blockScroll = (e) => { e.preventDefault(); e.stopPropagation(); };
-      const opts = { passive: false, capture: true };
-      window.addEventListener('wheel', blockScroll, opts);
-      window.addEventListener('touchmove', blockScroll, opts);
-      window.addEventListener('keydown', blockScroll, opts);
-      const startTime = performance.now();
-      function ease(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
-      function step(now) {
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const y = startY * (1 - ease(progress));
-        if (appEl) appEl.scrollTop = y;
-        window.scrollTo(0, y);
-        if (progress < 1) {
-          requestAnimationFrame(step);
-        } else {
-          if (appEl) appEl.scrollTop = 0;
-          window.scrollTo(0, 0);
-          window.removeEventListener('wheel', blockScroll, opts);
-          window.removeEventListener('touchmove', blockScroll, opts);
-          window.removeEventListener('keydown', blockScroll, opts);
-          _scrollLocked = false;
-          if (callback) callback();
-        }
-      }
-      requestAnimationFrame(step);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      initGames(getSearchValue());
     }
 
     // Render pagination controls
@@ -1654,6 +1632,9 @@
       const pagination = document.getElementById("pagination");
       
       if (!pagination) return;
+
+      // Keep current page in valid range when result count changes.
+      currentPage = Math.max(1, Math.min(currentPage, Math.max(totalPages, 1)));
       
       // Always show pagination container for consistency
       pagination.style.display = 'flex';
@@ -1670,10 +1651,7 @@
       prevBtn.textContent = "‹";
       prevBtn.disabled = currentPage === 1;
       prevBtn.onclick = () => {
-        if (currentPage > 1 && !_scrollLocked) {
-          currentPage--;
-          smoothScrollToTop(() => initGames(document.getElementById("searchInput").value));
-        }
+        if (currentPage > 1) goToPage(currentPage - 1, totalPages);
       };
       pagination.appendChild(prevBtn);
 
@@ -1709,10 +1687,7 @@
         btn.textContent = page;
         btn.className = page === currentPage ? "active" : "";
         btn.onclick = () => {
-          if (!_scrollLocked) {
-            currentPage = page;
-            smoothScrollToTop(() => initGames(document.getElementById("searchInput").value));
-          }
+          goToPage(page, totalPages);
         };
         pagination.appendChild(btn);
       }
@@ -1730,10 +1705,7 @@
       nextBtn.textContent = "›";
       nextBtn.disabled = currentPage === totalPages;
       nextBtn.onclick = () => {
-        if (currentPage < totalPages && !_scrollLocked) {
-          currentPage++;
-          smoothScrollToTop(() => initGames(document.getElementById("searchInput").value));
-        }
+        if (currentPage < totalPages) goToPage(currentPage + 1, totalPages);
       };
       pagination.appendChild(nextBtn);
     }
@@ -1771,10 +1743,10 @@
       const _favSection = document.getElementById('yourFavoritesSection');
       if (!isFirstPage) {
         // Save current display values before hiding
-        if (_heroEl && !_heroEl.dataset.savedDisplay) _heroEl.dataset.savedDisplay = _heroEl.style.display;
-        if (_continueEl && !_continueEl.dataset.savedDisplay) _continueEl.dataset.savedDisplay = _continueEl.style.display;
-        if (_scrollSections && !_scrollSections.dataset.savedDisplay) _scrollSections.dataset.savedDisplay = _scrollSections.style.display;
-        if (_favSection && !_favSection.dataset.savedDisplay) _favSection.dataset.savedDisplay = _favSection.style.display;
+        if (_heroEl && !('savedDisplay' in _heroEl.dataset)) _heroEl.dataset.savedDisplay = _heroEl.style.display;
+        if (_continueEl && !('savedDisplay' in _continueEl.dataset)) _continueEl.dataset.savedDisplay = _continueEl.style.display;
+        if (_scrollSections && !('savedDisplay' in _scrollSections.dataset)) _scrollSections.dataset.savedDisplay = _scrollSections.style.display;
+        if (_favSection && !('savedDisplay' in _favSection.dataset)) _favSection.dataset.savedDisplay = _favSection.style.display;
         if (_heroEl) _heroEl.style.display = 'none';
         if (_continueEl) _continueEl.style.display = 'none';
         if (_scrollSections) _scrollSections.style.display = 'none';
@@ -1818,6 +1790,8 @@
 
       // Calculate pagination
       const totalGames = candidates.length;
+      const totalPages = Math.max(1, Math.ceil(totalGames / GAMES_PER_PAGE));
+      currentPage = Math.max(1, Math.min(currentPage, totalPages));
       const startIndex = (currentPage - 1) * GAMES_PER_PAGE;
       const endIndex = Math.min(startIndex + GAMES_PER_PAGE, totalGames);
       const pageGames = candidates.slice(startIndex, endIndex);
@@ -1900,7 +1874,7 @@
           star.classList.toggle('favorited', isFav);
           // If viewing favorites and unfavorited, refresh the view
           if (currentFilter === 'favorites' && !isFav) {
-            initGames(document.getElementById("searchInput").value);
+            initGames(getSearchValue());
           }
         };
         
@@ -2012,7 +1986,7 @@
         tab.classList.add('active');
         currentFilter = tab.dataset.filter;
         currentPage = 1;
-        initGames(document.getElementById('searchInput').value);
+        initGames(getSearchValue());
       });
     });
 
