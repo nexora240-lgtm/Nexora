@@ -36,9 +36,6 @@ var _CONFIG = {
   linkFinderApiUrl: "https://79yj424n42.execute-api.us-east-2.amazonaws.com",
   // Link Finder Admin API Key — Must match ADMIN_API_KEY in your Lambda env vars
   linkAdminApiKey: "nxlf-adm-8f3a2b7c-e91d-4c6f-b850-1d7e9a3f5c24",
-  // VidPlus Proxy — CloudFront → API Gateway → Lambda → VPS (FlareSolverr) → vidplus.pro
-  // CloudFront caches /_next/ chunks to avoid Lambda concurrency throttling
-  vidplusProxyUrl: "https://dxh0uvcdj7oge.cloudfront.net",
 
   // ── Proxy Infrastructure ──
   // Asset paths for proxy bundles (relative to site root)
