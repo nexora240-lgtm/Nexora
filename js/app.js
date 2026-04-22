@@ -9,7 +9,6 @@ const routes = {
   '/chatbot':   renderChatbot,
   '/chatroom':  renderChatroom,
   '/loader':    renderLoader,
-  '/links':     renderLinkFinder,
   '/settings':  renderSettings,
   '/admin':     renderAdmin
 };
@@ -103,6 +102,5 @@ function renderChatbot()     { loadView('chatbot.html'); }
 function renderChatroom()    { loadView('chatroom.html'); }
 function renderLoader()      { loadView('gameloader.html'); }
 function renderGamesRoute()  { loadView('games.html'); }
-function renderLinkFinder()  { loadView('linkfinder.html'); }
 function renderSettings()    { loadView('settings.html'); }
 function renderAdmin()       { loadView('admin.html'); }
