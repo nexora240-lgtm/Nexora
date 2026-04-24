@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="theme-midnight-amber">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Link Finder — Nexora</title>
+  <title>Link Finder</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" /></noscript>
   <style>
-/* ── Theme tokens (inline) ── */
+/* Theme tokens (inline) */
 :root {
   --page-bg: #ffffff; --surface: #f7f7f8; --surface-2: #efefef;
   --primary: #d4550a; --primary-deep: #992f05; --primary-shadow: rgba(212,85,10,0.5);
@@ -32,12 +32,36 @@
   --on-primary: #efe7ff; --text: #efe7ff; --muted: #cdb9e8;
   --focus-color: rgba(179,136,255,0.16);
 }
-html, body { margin: 0; padding: 0; height: 100%; background: var(--page-bg); color: var(--text); font-family: 'Poppins', Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+html {
+  background: var(--page-bg); color: var(--text);
+}
+html, body {
+  margin: 0; padding: 0; min-height: 100%;
+  font-family: 'Poppins', Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  overflow-x: hidden;
+}
+body { background: transparent; color: var(--text); }
 
-/* ═══════════════════════════════════════════════════════════════
-   Nexora Link Finder — Neumorphic + Glassmorphic UI
-   ═══════════════════════════════════════════════════════════════ */
+/* Particles background (matches index.html) */
+#particles-js {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 0; pointer-events: none;
+}
 
+/* Page-frame border glow (identical to .page-frame in css/sidebar.css) */
+.page-frame {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100vh;
+  box-sizing: border-box;
+  box-shadow:
+    0 0 20px var(--primary-shadow),
+    inset 0 0 20px var(--primary-shadow);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Nexora Link Finder UI */
 .lf {
   --lf-panel: var(--surface, #1a100d);
   --lf-panel-2: var(--surface-2, #1f1410);
@@ -47,244 +71,424 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--page-bg); co
   --lf-text: var(--text, #f8e7e0);
   --lf-muted: var(--muted, #c9a08a);
   --lf-on-accent: var(--on-primary, #fff0e8);
-  --lf-radius: var(--radius, 10px);
-  --lf-glass: color-mix(in srgb, var(--lf-panel) 45%, transparent);
-  --lf-glass-border: color-mix(in srgb, var(--lf-muted) 18%, transparent);
+  --lf-glass: color-mix(in srgb, var(--lf-panel) 55%, transparent);
+  --lf-glass-strong: color-mix(in srgb, var(--lf-panel) 80%, transparent);
+  --lf-glass-border: color-mix(in srgb, var(--lf-muted) 22%, transparent);
   --lf-glass-blur: 18px;
-  --lf-neu-light: color-mix(in srgb, var(--lf-text) 5%, transparent);
-  --lf-neu-dark: color-mix(in srgb, var(--lf-panel) 55%, transparent);
-  box-sizing: border-box; height: 100%; color: var(--lf-text);
-  font: 500 16px/1.5 'Poppins', Inter, system-ui, sans-serif;
+  box-sizing: border-box;
+  position: relative; z-index: 2;
+  min-height: 100vh; color: var(--lf-text);
+  font: 500 17px/1.55 'Poppins', Inter, system-ui, sans-serif;
   display: flex; flex-direction: column; background: transparent;
+  padding: 24px;
 }
 .lf *, .lf *::before, .lf *::after { box-sizing: inherit; }
 
-.lf-app { display: flex; flex-direction: column; height: 100%; }
-.lf-content { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+.lf-app { display: flex; flex-direction: column; flex: 1; }
+.lf-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
-/* ── Selector ── */
-.lf-selector { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 5; overflow-y: auto; }
-.lf-selector.hidden { display: none; }
-.lf-selector-content {
-  max-width: 520px; text-align: center; animation: lf-fadeIn 0.5s ease;
-  background: var(--lf-glass); backdrop-filter: blur(var(--lf-glass-blur)); -webkit-backdrop-filter: blur(var(--lf-glass-blur));
-  border: 1px solid var(--lf-glass-border); border-radius: 24px; padding: 36px 28px;
-  box-shadow: 6px 6px 16px var(--lf-neu-dark), -4px -4px 12px var(--lf-neu-light);
+/* Cards / Screens (shared) */
+.lf-screen {
+  width: 100%; max-width: 720px;
+  background: var(--lf-glass);
+  backdrop-filter: blur(var(--lf-glass-blur)); -webkit-backdrop-filter: blur(var(--lf-glass-blur));
+  border: 1px solid var(--lf-glass-border); border-radius: 28px;
+  padding: 36px 32px;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.45),
+    inset 0 1px 0 color-mix(in srgb, var(--lf-text) 8%, transparent);
+  animation: lf-fadeIn 0.45s ease;
 }
-.lf-selector-content h1 {
-  margin: 0 0 8px; font-size: 32px; font-weight: 800;
-  background: linear-gradient(90deg, var(--lf-accent), var(--lf-accent-deep));
-  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
-}
-.lf-selector-content > p { margin: 0 0 28px; font-size: 14px; color: var(--lf-muted); }
+.lf-screen.hidden { display: none; }
 
-/* Chips */
-.lf-blocker-chips { margin-bottom: 24px; }
-.lf-quick-label { font-size: 13px; font-weight: 600; color: var(--lf-muted); margin: 0 0 10px; }
-.lf-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-.lf-chip {
-  padding: 6px 14px; border: 1px solid var(--lf-glass-border); border-radius: 20px;
-  background: var(--lf-glass); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  color: var(--lf-muted); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.25s ease;
-  box-shadow: 2px 2px 6px var(--lf-neu-dark), -1px -1px 4px var(--lf-neu-light);
+/* Mascot header */
+.lf-hero {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  margin-bottom: 18px;
 }
-.lf-chip:hover { border-color: color-mix(in srgb, var(--lf-muted) 30%, transparent); color: var(--lf-accent); }
-.lf-chip.active {
-  background: color-mix(in srgb, var(--lf-accent) 15%, transparent);
-  border-color: var(--lf-accent); color: var(--lf-accent);
-  box-shadow: inset 2px 2px 4px color-mix(in srgb, var(--lf-panel) 50%, transparent), 0 0 12px color-mix(in srgb, var(--lf-accent) 15%, transparent);
-}
-
-/* Go button */
-.lf-go-btn {
-  padding: 12px 32px; border: 1px solid color-mix(in srgb, var(--lf-text) 10%, transparent); border-radius: 14px;
+.lf-mascot {
+  width: 84px; height: 84px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 42px; color: var(--lf-on-accent);
   background: linear-gradient(135deg, var(--lf-accent), var(--lf-accent-deep));
-  color: var(--lf-on-accent); font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.25s ease;
-  box-shadow: 5px 5px 14px var(--lf-neu-dark), -3px -3px 10px var(--lf-neu-light), 0 4px 20px var(--lf-accent-shadow);
+  box-shadow:
+    0 12px 36px var(--lf-accent-shadow),
+    inset 0 -4px 10px rgba(0,0,0,0.25),
+    inset 0 4px 10px rgba(255,255,255,0.18);
+  margin-bottom: 14px;
+  animation: lf-bob 3s ease-in-out infinite;
 }
-.lf-go-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.lf-go-btn:not(:disabled):hover { transform: translateY(-2px); }
-
-/* ── Results — single link at a time ── */
-.lf-results { display: none; flex-direction: column; flex: 1; animation: lf-fadeIn 0.4s ease; }
-.lf-results.visible { display: flex; }
-
-.lf-single-wrap {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: space-between;
-  padding: 36px 24px 28px; text-align: center;
+@keyframes lf-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
 }
-
-.lf-single-top { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 480px; }
-.lf-single-counter { font-size: 12px; font-weight: 700; color: var(--lf-muted); letter-spacing: 0.4px; min-height: 18px; }
-.lf-single-title {
-  margin: 0; font-size: clamp(22px, 5vw, 30px); font-weight: 800; line-height: 1.2;
+.lf-title {
+  margin: 0; font-size: clamp(28px, 5vw, 38px); font-weight: 800; line-height: 1.15;
   background: linear-gradient(90deg, var(--lf-accent), var(--lf-accent-deep));
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
 }
-.lf-single-badge {
-  display: inline-block; padding: 4px 12px; border-radius: 10px;
-  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-  background: color-mix(in srgb, var(--lf-accent) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--lf-text) 5%, transparent); color: var(--lf-accent);
+.lf-subtitle { margin: 8px 0 0; font-size: 16px; color: var(--lf-muted); max-width: 480px; }
+
+/* Step indicator */
+.lf-steps {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-bottom: 22px;
+}
+.lf-step-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: color-mix(in srgb, var(--lf-muted) 30%, transparent);
+  transition: all 0.3s ease;
+}
+.lf-step-dot.active { background: var(--lf-accent); box-shadow: 0 0 12px var(--lf-accent-shadow); transform: scale(1.3); }
+.lf-step-dot.done   { background: var(--lf-accent); opacity: 0.6; }
+
+/* Welcome step */
+.lf-welcome-actions { display: flex; flex-direction: column; gap: 14px; margin-top: 26px; align-items: center; }
+.lf-big-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 20px 36px; min-height: 64px;
+  border: none; border-radius: 18px; cursor: pointer;
+  font: 700 19px/1 'Poppins', sans-serif; letter-spacing: 0.2px;
+  background: linear-gradient(135deg, var(--lf-accent), var(--lf-accent-deep));
+  color: var(--lf-on-accent);
+  box-shadow:
+    0 14px 36px var(--lf-accent-shadow),
+    inset 0 -3px 10px rgba(0,0,0,0.25),
+    inset 0 3px 10px rgba(255,255,255,0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width: 100%; max-width: 380px;
+}
+.lf-big-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 18px 44px var(--lf-accent-shadow); }
+.lf-big-btn:active:not(:disabled) { transform: translateY(-1px); }
+.lf-big-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.lf-big-btn i { font-size: 22px; }
+
+.lf-ghost-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 14px 28px; min-height: 52px;
+  border: 1px solid var(--lf-glass-border); border-radius: 14px; cursor: pointer;
+  font: 600 15px/1 'Poppins', sans-serif;
+  background: var(--lf-glass);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  color: var(--lf-text);
+  transition: all 0.2s ease;
+}
+.lf-ghost-btn:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--lf-accent) 40%, transparent);
+  color: var(--lf-accent);
+}
+.lf-ghost-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Blocker picker step */
+.lf-question {
+  margin: 0 0 6px; font-size: clamp(22px, 4vw, 28px); font-weight: 800; text-align: center;
+  color: var(--lf-text);
+}
+.lf-question-help {
+  margin: 0 auto 22px; max-width: 520px; text-align: center;
+  font-size: 15px; color: var(--lf-muted);
 }
 
-.lf-single-mid { display: flex; flex-direction: column; align-items: center; gap: 18px; width: 100%; max-width: 480px; }
+.lf-blocker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.lf-blocker-card {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; padding: 18px 12px; min-height: 110px;
+  border: 2px solid var(--lf-glass-border); border-radius: 18px;
+  background: var(--lf-glass);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  color: var(--lf-text); font: 700 13px/1.2 'Poppins', sans-serif; text-align: center;
+  cursor: pointer; transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+}
+.lf-blocker-card i {
+  font-size: 26px; color: var(--lf-muted); transition: color 0.2s ease, transform 0.2s ease;
+}
+.lf-blocker-card:hover {
+  border-color: color-mix(in srgb, var(--lf-accent) 45%, transparent);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.28);
+}
+.lf-blocker-card:hover i { color: var(--lf-accent); transform: scale(1.1); }
+.lf-blocker-card.active {
+  border-color: var(--lf-accent);
+  background: color-mix(in srgb, var(--lf-accent) 18%, var(--lf-glass));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--lf-accent) 18%, transparent), 0 10px 24px var(--lf-accent-shadow);
+}
+.lf-blocker-card.active i { color: var(--lf-accent); }
+.lf-blocker-card .lf-check {
+  position: absolute; top: 8px; right: 8px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--lf-accent); color: #ffffff;
+  display: none; align-items: center; justify-content: center; font-size: 11px;
+  box-shadow: 0 2px 8px var(--lf-accent-shadow);
+}
+.lf-blocker-card .lf-check i { color: #ffffff; }
+.lf-blocker-card.active .lf-check { display: flex; }
 
-.lf-big-link-btn {
+.lf-step-actions {
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+}
+
+/* Result step */
+.lf-result-card {
+  display: flex; flex-direction: column; align-items: center; gap: 22px;
+  padding: 8px 0;
+}
+.lf-result-counter {
+  font-size: 13px; font-weight: 700; color: var(--lf-muted); letter-spacing: 0.5px;
+  text-transform: uppercase; min-height: 18px;
+}
+.lf-result-name {
+  margin: 0; text-align: center;
+  font-size: clamp(24px, 5vw, 32px); font-weight: 800; line-height: 1.2;
+  background: linear-gradient(90deg, var(--lf-accent), var(--lf-accent-deep));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+}
+.lf-result-badge {
+  display: inline-block; padding: 5px 14px; border-radius: 12px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
+  background: color-mix(in srgb, var(--lf-accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--lf-accent) 30%, transparent);
+  color: var(--lf-accent);
+}
+.lf-open-btn {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
-  width: 100%; padding: 44px 28px;
+  width: 100%; max-width: 480px; padding: 38px 24px;
   background: linear-gradient(135deg, var(--lf-accent), var(--lf-accent-deep));
-  color: var(--lf-on-accent); border-radius: 24px; text-decoration: none;
-  font-size: 20px; font-weight: 700;
-  box-shadow: 0 8px 32px var(--lf-accent-shadow), 5px 5px 14px var(--lf-neu-dark);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  animation: lf-fadeIn 0.35s ease;
+  color: var(--lf-on-accent); border-radius: 22px; text-decoration: none;
+  font-size: 22px; font-weight: 800; letter-spacing: 0.3px;
+  box-shadow:
+    0 20px 50px var(--lf-accent-shadow),
+    inset 0 -4px 12px rgba(0,0,0,0.25),
+    inset 0 4px 12px rgba(255,255,255,0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.lf-big-link-btn i { font-size: 38px; }
-.lf-big-link-btn:hover {
+.lf-open-btn i { font-size: 42px; }
+.lf-open-btn:hover {
   transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 16px 48px var(--lf-accent-shadow), 5px 5px 14px var(--lf-neu-dark);
+  box-shadow: 0 26px 60px var(--lf-accent-shadow);
 }
 
-.lf-single-nav { display: flex; gap: 10px; }
-.lf-nav-btn {
-  padding: 9px 22px; border: 1px solid var(--lf-glass-border); border-radius: 12px;
-  background: var(--lf-glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  color: var(--lf-muted); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
-  box-shadow: 3px 3px 8px var(--lf-neu-dark), -2px -2px 6px var(--lf-neu-light);
+.lf-usage-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-radius: 999px;
+  font-size: 13px; font-weight: 600; color: var(--lf-muted);
+  background: var(--lf-glass);
+  border: 1px solid var(--lf-glass-border);
+  margin: 0;
 }
-.lf-nav-btn:hover:not(:disabled) { color: var(--lf-accent); border-color: color-mix(in srgb, var(--lf-accent) 30%, transparent); }
-.lf-nav-btn:disabled { opacity: 0.28; cursor: not-allowed; }
-
-.lf-single-bottom { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 480px; }
-.lf-results-usage { margin: 0; font-size: 13px; color: var(--lf-muted); }
-.lf-back-btn {
-  width: 100%; padding: 12px 28px; border: 1px solid var(--lf-glass-border); border-radius: 14px;
-  background: var(--lf-glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  color: var(--lf-muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.25s ease;
-  box-shadow: 3px 3px 8px var(--lf-neu-dark), -2px -2px 6px var(--lf-neu-light);
-}
-.lf-back-btn:hover { color: var(--lf-accent); border-color: color-mix(in srgb, var(--lf-accent) 30%, transparent); }
+.lf-usage-pill i { color: var(--lf-accent); }
 
 .lf-empty {
-  text-align: center; padding: 32px 20px; color: var(--lf-muted); font-size: 14px; line-height: 1.7;
-  background: var(--lf-glass); backdrop-filter: blur(var(--lf-glass-blur)); -webkit-backdrop-filter: blur(var(--lf-glass-blur));
-  border: 1px solid var(--lf-glass-border); border-radius: 18px; width: 100%; max-width: 480px;
+  text-align: center; padding: 26px 18px; color: var(--lf-muted); font-size: 15px; line-height: 1.65;
+  background: var(--lf-glass); border: 1px solid var(--lf-glass-border); border-radius: 18px;
+  width: 100%; max-width: 480px;
 }
-.lf-empty i { display: block; font-size: 32px; margin-bottom: 12px; opacity: 0.4; }
+.lf-empty i { display: block; font-size: 34px; margin-bottom: 10px; opacity: 0.85; color: #fbbf24; }
 
-/* ── Limit screen ── */
-.lf-limit { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; padding: 20px; z-index: 6; }
-.lf-limit.visible { display: flex; }
-.lf-limit-content {
-  max-width: 420px; text-align: center; animation: lf-fadeIn 0.5s ease;
-  background: var(--lf-glass); backdrop-filter: blur(var(--lf-glass-blur)); -webkit-backdrop-filter: blur(var(--lf-glass-blur));
-  border: 1px solid var(--lf-glass-border); border-radius: 24px; padding: 40px 28px;
-  box-shadow: 6px 6px 16px var(--lf-neu-dark), -4px -4px 12px var(--lf-neu-light);
+/* Limit screen */
+.lf-limit-icon {
+  width: 84px; height: 84px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 42px; color: #fff;
+  background: linear-gradient(135deg, #fbbf24, #d97706);
+  box-shadow: 0 12px 36px rgba(251,191,36,0.45);
+  margin: 0 auto 18px;
 }
-.lf-limit-icon { font-size: 48px; color: #fbbf24; margin-bottom: 16px; }
-.lf-limit-content h2 { margin: 0 0 10px; font-size: 22px; font-weight: 800; color: var(--lf-text); }
-.lf-limit-content p { margin: 0 0 8px; font-size: 14px; color: var(--lf-muted); line-height: 1.6; }
-.lf-limit-content strong { color: var(--lf-accent); }
-.lf-limit-reset { font-size: 13px; font-weight: 600; color: #fbbf24; margin-top: 12px; }
+.lf-limit-text { text-align: center; }
+.lf-limit-text h2 { margin: 0 0 10px; font-size: 26px; font-weight: 800; color: var(--lf-text); }
+.lf-limit-text p { margin: 0 0 8px; font-size: 16px; color: var(--lf-muted); line-height: 1.6; }
+.lf-limit-text strong { color: var(--lf-accent); }
+.lf-limit-reset {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 14px; padding: 10px 18px; border-radius: 999px;
+  font-size: 14px; font-weight: 700; color: #fbbf24;
+  background: color-mix(in srgb, #fbbf24 12%, transparent);
+  border: 1px solid color-mix(in srgb, #fbbf24 30%, transparent);
+}
 
-/* ── Animations ── */
-@keyframes lf-fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes lf-slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes lf-fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ── Responsive ── */
-@media (max-width: 640px) {
-  .lf-selector-content h1 { font-size: 24px; }
+@media (max-width: 540px) {
+  .lf { padding: 14px; }
+  .lf-screen { padding: 26px 18px; border-radius: 22px; }
+  .lf-mascot { width: 70px; height: 70px; font-size: 34px; }
+  .lf-blocker-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .lf-blocker-card { min-height: 98px; padding: 14px 8px; }
+  .lf-blocker-card i { font-size: 22px; }
+  .lf-open-btn { padding: 30px 20px; font-size: 19px; }
+  .lf-open-btn i { font-size: 36px; }
 }
   </style>
 </head>
 <body>
 
+<!-- Particles background + page-frame border glow (matches index.html) -->
+<div id="particles-js" aria-hidden="true"></div>
+<div class="page-frame" aria-hidden="true"></div>
+
 <div class="lf">
   <div class="lf-app">
     <div class="lf-content">
-      <!-- Selector screen -->
-      <div class="lf-selector" id="lf-selector">
-        <div class="lf-selector-content">
-          <h1>Link Finder</h1>
-          <p>Select your school's blocker and we'll find a link that works for you.</p>
-          <div class="lf-blocker-chips" id="lf-blocker-chips">
-            <p class="lf-quick-label">What blocker does your school use?</p>
-            <div class="lf-chips">
-              <button class="lf-chip" data-blocker="fortiguard">FortiGuard</button>
-              <button class="lf-chip" data-blocker="lightspeed">Lightspeed</button>
-              <button class="lf-chip" data-blocker="palo alto">Palo Alto</button>
-              <button class="lf-chip" data-blocker="blocksi web">Blocksi Web</button>
-              <button class="lf-chip" data-blocker="blocksi ai">Blocksi AI</button>
-              <button class="lf-chip" data-blocker="linewize">Linewize</button>
-              <button class="lf-chip" data-blocker="cisco umbrella">Cisco Umbrella</button>
-              <button class="lf-chip" data-blocker="securly">Securly</button>
-              <button class="lf-chip" data-blocker="goguardian">GoGuardian</button>
-              <button class="lf-chip" data-blocker="lanschool">LanSchool</button>
-              <button class="lf-chip" data-blocker="contentkeeper">ContentKeeper</button>
-              <button class="lf-chip" data-blocker="aristotlek12">AristotleK12</button>
-              <button class="lf-chip" data-blocker="senso cloud">Senso Cloud</button>
-              <button class="lf-chip" data-blocker="deledao">Deledao</button>
-              <button class="lf-chip" data-blocker="iboss">iBoss</button>
-              <button class="lf-chip" data-blocker="sophos">Sophos</button>
-              <button class="lf-chip" data-blocker="barracuda">Barracuda</button>
-              <button class="lf-chip" data-blocker="qustodio">Qustodio</button>
-              <button class="lf-chip" data-blocker="dns filter">DNS Filter</button>
-            </div>
-          </div>
-          <button class="lf-go-btn" id="lf-go-btn" disabled>
-            <i class="fas fa-search"></i> Find Links
+
+      <!-- STEP 1: Welcome -->
+      <section class="lf-screen" id="lf-welcome">
+        <div class="lf-hero">
+          <div class="lf-mascot"><i class="fas fa-rocket"></i></div>
+          <h1 class="lf-title">Find a Working Link!</h1>
+          <p class="lf-subtitle">Tap the button below and we'll find a link for you in two easy steps.</p>
+        </div>
+        <div class="lf-welcome-actions">
+          <button class="lf-big-btn" id="lf-start-btn" type="button">
+            <i class="fas fa-magnifying-glass"></i> Let's Go!
+          </button>
+          <p class="lf-usage-pill">
+            <i class="fas fa-bolt"></i> <span id="lf-welcome-usage-text"></span>
+          </p>
+        </div>
+      </section>
+
+      <!-- STEP 2: Pick blocker -->
+      <section class="lf-screen hidden" id="lf-picker">
+        <div class="lf-steps" aria-hidden="true">
+          <span class="lf-step-dot done"></span>
+          <span class="lf-step-dot active"></span>
+          <span class="lf-step-dot"></span>
+        </div>
+        <div class="lf-hero">
+          <div class="lf-mascot"><i class="fas fa-shield-halved"></i></div>
+          <h2 class="lf-question">What blocks your school sites?</h2>
+          <p class="lf-question-help">Tap the one your school uses, then press <strong>"Find My Link"</strong>.</p>
+        </div>
+
+        <div class="lf-blocker-grid" id="lf-blocker-grid"></div>
+
+        <div class="lf-step-actions">
+          <button class="lf-ghost-btn" id="lf-back-to-welcome" type="button">
+            <i class="fas fa-arrow-left"></i> Back
+          </button>
+          <button class="lf-big-btn" id="lf-find-btn" type="button" disabled style="max-width:240px;min-height:56px;padding:16px 28px;font-size:17px;">
+            <i class="fas fa-magnifying-glass"></i> Find My Link
           </button>
         </div>
-      </div>
+      </section>
 
-      <!-- Results — one link at a time -->
-      <div class="lf-results" id="lf-results">
-        <div class="lf-single-wrap">
-          <div class="lf-single-top">
-            <div class="lf-single-counter" id="lf-counter"></div>
-            <h2 class="lf-single-title" id="lf-single-title"></h2>
-            <div class="lf-single-badge" id="lf-single-badge"></div>
-          </div>
-          <div class="lf-single-mid" id="lf-single-mid">
-            <a class="lf-big-link-btn" id="lf-big-link" href="#" target="_blank" rel="noopener noreferrer">
-              <i class="fas fa-globe"></i>
-              <span>Open Link</span>
-            </a>
-            <div class="lf-single-nav" id="lf-single-nav" style="display:none;">
-              <button class="lf-nav-btn" id="lf-next-btn"><i class="fas fa-forward"></i> Try Another Link</button>
-            </div>
-          </div>
-          <div class="lf-single-bottom">
-            <p class="lf-results-usage" id="lf-results-usage"></p>
-            <button class="lf-back-btn" id="lf-back-btn"><i class="fas fa-arrow-left"></i> Search Again</button>
-          </div>
+      <!-- STEP 3: Result -->
+      <section class="lf-screen hidden" id="lf-results">
+        <div class="lf-steps" aria-hidden="true">
+          <span class="lf-step-dot done"></span>
+          <span class="lf-step-dot done"></span>
+          <span class="lf-step-dot active"></span>
         </div>
-      </div>
+        <div class="lf-result-card">
+          <div class="lf-result-counter" id="lf-counter">Here's a link for you!</div>
+          <h2 class="lf-result-name" id="lf-result-name">Loading...</h2>
+          <div class="lf-result-badge" id="lf-result-badge">link</div>
+
+          <a class="lf-open-btn" id="lf-open-link" href="#" target="_blank" rel="noopener noreferrer">
+            <i class="fas fa-up-right-from-square"></i>
+            <span>Tap to Open</span>
+          </a>
+
+          <div class="lf-step-actions" id="lf-result-actions">
+            <button class="lf-ghost-btn" id="lf-back-btn" type="button">
+              <i class="fas fa-arrow-left"></i> Start Over
+            </button>
+            <button class="lf-ghost-btn" id="lf-next-btn" type="button">
+              <i class="fas fa-shuffle"></i> Try Another
+            </button>
+          </div>
+
+          <p class="lf-usage-pill">
+            <i class="fas fa-bolt"></i> <span id="lf-results-usage-text"></span>
+          </p>
+        </div>
+      </section>
 
       <!-- Limit reached -->
-      <div class="lf-limit" id="lf-limit">
-        <div class="lf-limit-content">
-          <i class="fas fa-clock lf-limit-icon"></i>
-          <h2>Daily Limit Reached</h2>
-          <p>You've used your <strong>3 searches</strong> for today. Come back tomorrow for more links!</p>
-          <p class="lf-limit-reset" id="lf-limit-reset"></p>
+      <section class="lf-screen hidden" id="lf-limit">
+        <div class="lf-limit-icon"><i class="fas fa-clock"></i></div>
+        <div class="lf-limit-text">
+          <h2>Come back tomorrow!</h2>
+          <p>You've used all <strong>3 searches</strong> for today.</p>
+          <p>New searches unlock when the day resets.</p>
+          <p class="lf-limit-reset" id="lf-limit-reset"><i class="fas fa-hourglass-half"></i> <span></span></p>
         </div>
-      </div>
+      </section>
+
     </div>
   </div>
 </div>
 
+<!-- particles.js -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js" defer></script>
 <script>
-/* ── Config (inline) ── */
+/* Particles init - identical config to index.html */
+(function () {
+  function start() {
+    if (!window.particlesJS) return;
+    var cfg = {
+      "particles": {
+        "number": { "value": 100, "density": { "enable": true, "value_area": 800 } },
+        "color": { "value": "#ffffff" },
+        "shape": { "type": "circle" },
+        "opacity": {
+          "value": 0.5, "random": false,
+          "anim": { "enable": false, "speed": 0.5, "opacity_min": 0.1, "sync": false }
+        },
+        "size": {
+          "value": 7, "random": true,
+          "anim": { "enable": false, "speed": 71.71429026757396, "size_min": 0.1, "sync": false }
+        },
+        "line_linked": {
+          "enable": false, "distance": 150, "color": "#ffffff", "opacity": 0.1, "width": 1
+        },
+        "move": {
+          "enable": true, "speed": 1, "random": false, "straight": false,
+          "out_mode": "out", "bounce": false,
+          "attract": { "enable": false, "rotateX": 600, "rotateY": 1200 }
+        }
+      },
+      "interactivity": {
+        "detect_on": "canvas",
+        "events": {
+          "onhover": { "enable": true, "mode": "bubble" },
+          "onclick": { "enable": true, "mode": "repulse" },
+          "resize": true
+        },
+        "modes": {
+          "grab": { "distance": 400, "line_linked": { "opacity": 1 } },
+          "bubble": {
+            "distance": 286.85716107029583, "size": 7.968254474174885,
+            "duration": 2.1514287080272188, "opacity": 8, "speed": 3
+          },
+          "repulse": { "distance": 113.14228450435593, "duration": 0.4 },
+          "push": { "particles_nb": 4 },
+          "remove": { "particles_nb": 2 }
+        }
+      },
+      "retina_detect": true
+    };
+    particlesJS('particles-js', cfg);
+  }
+  if (document.readyState === 'complete') start();
+  else window.addEventListener('load', start, { once: true });
+})();
+</script>
+
+<script>
+/* Config (inline) */
 var _CONFIG = {
   linkFinderApiUrl: "https://79yj424n42.execute-api.us-east-2.amazonaws.com"
 };
 
-/* ══════════════════════════════════════════════════════════════
-   Nexora Link Finder — One link at a time, each costs a point
-   ══════════════════════════════════════════════════════════════ */
+/* Nexora Link Finder - Friendly 3-step flow */
 (function () {
   'use strict';
 
@@ -293,7 +497,27 @@ var _CONFIG = {
   const STORAGE_KEY = 'lf-daily';
   const SHOWN_KEY = 'lf-shown-domains';
 
-  // ─── Shown-domains tracking ───────────────────────────────
+  const BLOCKERS = [
+    { id: 'fortiguard',     name: 'FortiGuard',     icon: 'fa-shield-halved' },
+    { id: 'lightspeed',     name: 'Lightspeed',     icon: 'fa-bolt' },
+    { id: 'palo alto',      name: 'Palo Alto',      icon: 'fa-mountain' },
+    { id: 'blocksi web',    name: 'Blocksi Web',    icon: 'fa-globe' },
+    { id: 'blocksi ai',     name: 'Blocksi AI',     icon: 'fa-robot' },
+    { id: 'linewize',       name: 'Linewize',       icon: 'fa-network-wired' },
+    { id: 'cisco umbrella', name: 'Cisco Umbrella', icon: 'fa-umbrella' },
+    { id: 'securly',        name: 'Securly',        icon: 'fa-lock' },
+    { id: 'goguardian',     name: 'GoGuardian',     icon: 'fa-user-shield' },
+    { id: 'lanschool',      name: 'LanSchool',      icon: 'fa-school' },
+    { id: 'contentkeeper',  name: 'ContentKeeper',  icon: 'fa-folder-tree' },
+    { id: 'aristotlek12',   name: 'AristotleK12',   icon: 'fa-book' },
+    { id: 'senso cloud',    name: 'Senso Cloud',    icon: 'fa-cloud' },
+    { id: 'deledao',        name: 'Deledao',        icon: 'fa-eye' },
+    { id: 'iboss',          name: 'iBoss',          icon: 'fa-user-tie' },
+    { id: 'sophos',         name: 'Sophos',         icon: 'fa-fish' },
+    { id: 'barracuda',      name: 'Barracuda',      icon: 'fa-water' },
+    { id: 'qustodio',       name: 'Qustodio',       icon: 'fa-eye-slash' },
+    { id: 'dns filter',     name: 'DNS Filter',     icon: 'fa-filter' },
+  ];
 
   function getShownDomains() {
     try {
@@ -301,20 +525,15 @@ var _CONFIG = {
       return Array.isArray(raw) ? raw : [];
     } catch { return []; }
   }
-
   function addShownDomains(domains) {
     const existing = new Set(getShownDomains());
     domains.forEach(d => existing.add(d));
     sessionStorage.setItem(SHOWN_KEY, JSON.stringify([...existing]));
   }
-
-  // ─── Daily usage tracking ─────────────────────────────────
-
   function getTodayKey() {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
-
   function getUsage() {
     try {
       const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -322,90 +541,106 @@ var _CONFIG = {
       return raw;
     } catch { return { date: getTodayKey(), count: 0 }; }
   }
-
   function saveUsage(usage) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(usage));
   }
-
-  // ─── State ─────────────────────────────────────────────────
 
   let userContext = { blockers: [] };
   let isSearching = false;
   let currentBlockers = [];
 
-  // ─── DOM refs ──────────────────────────────────────────────
+  const screens = {
+    welcome: document.getElementById('lf-welcome'),
+    picker:  document.getElementById('lf-picker'),
+    results: document.getElementById('lf-results'),
+    limit:   document.getElementById('lf-limit'),
+  };
+  const startBtn       = document.getElementById('lf-start-btn');
+  const backToWelcome  = document.getElementById('lf-back-to-welcome');
+  const findBtn        = document.getElementById('lf-find-btn');
+  const grid           = document.getElementById('lf-blocker-grid');
+  const backBtn        = document.getElementById('lf-back-btn');
+  const nextBtn        = document.getElementById('lf-next-btn');
+  const resultName     = document.getElementById('lf-result-name');
+  const resultBadge    = document.getElementById('lf-result-badge');
+  const resultCounter  = document.getElementById('lf-counter');
+  const openLink       = document.getElementById('lf-open-link');
+  const resultUsage    = document.getElementById('lf-results-usage-text');
+  const welcomeUsage   = document.getElementById('lf-welcome-usage-text');
+  const limitReset     = document.querySelector('#lf-limit-reset span');
 
-  const selector   = document.getElementById('lf-selector');
-  const results    = document.getElementById('lf-results');
-  const limitView  = document.getElementById('lf-limit');
-  const goBtn      = document.getElementById('lf-go-btn');
-  const chipWrap   = document.getElementById('lf-blocker-chips');
-  const usageEl    = document.getElementById('lf-results-usage');
-  const backBtn    = document.getElementById('lf-back-btn');
-  const resetEl    = document.getElementById('lf-limit-reset');
-  const singleMid  = document.getElementById('lf-single-mid');
-  const titleEl    = document.getElementById('lf-single-title');
-  const badgeEl    = document.getElementById('lf-single-badge');
-  const counterEl  = document.getElementById('lf-counter');
-  const bigLink    = document.getElementById('lf-big-link');
-  const nextBtn    = document.getElementById('lf-next-btn');
-  const navBar     = document.getElementById('lf-single-nav');
+  BLOCKERS.forEach(b => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'lf-blocker-card';
+    card.dataset.blocker = b.id;
+    card.innerHTML = `
+      <span class="lf-check"><i class="fas fa-check"></i></span>
+      <i class="fas ${b.icon}"></i>
+      <span>${b.name}</span>
+    `;
+    grid.appendChild(card);
+  });
 
-  // ─── Render one link ──────────────────────────────────────
-
-  function renderLink(link) {
-    titleEl.textContent = link.name || 'Link';
-    badgeEl.textContent = link.hostingType || 'link';
-    bigLink.href = link.url;
-    bigLink.style.animation = 'none';
-    void bigLink.offsetWidth;
-    bigLink.style.animation = '';
+  function show(name) {
+    Object.entries(screens).forEach(([k, el]) => {
+      el.classList.toggle('hidden', k !== name);
+    });
+    if (name === 'welcome') updateWelcomeUsage();
   }
 
-  // ─── Limit check ──────────────────────────────────────────
+  function updateWelcomeUsage() {
+    const remaining = Math.max(0, DAILY_LIMIT - getUsage().count);
+    welcomeUsage.textContent = remaining > 0
+      ? `${remaining} of ${DAILY_LIMIT} searches left today`
+      : `No searches left. Come back tomorrow!`;
+  }
 
   function checkLimit() {
-    const usage = getUsage();
-    if (usage.count >= DAILY_LIMIT) { showLimitScreen(); return true; }
+    if (getUsage().count >= DAILY_LIMIT) { showLimitScreen(); return true; }
     return false;
   }
 
-  // Clear stale shown domains on new day
-  (function () {
-    try { if (getUsage().count === 0) sessionStorage.removeItem(SHOWN_KEY); } catch {}
-  })();
+  try { if (getUsage().count === 0) sessionStorage.removeItem(SHOWN_KEY); } catch {}
 
-  // ─── Blocker chips ────────────────────────────────────────
-
-  chipWrap.addEventListener('click', (e) => {
-    const chip = e.target.closest('.lf-chip'); if (!chip) return;
-    chip.classList.toggle('active');
-    const blocker = chip.dataset.blocker;
-    if (chip.classList.contains('active')) {
-      if (!userContext.blockers.includes(blocker)) userContext.blockers.push(blocker);
-    } else { userContext.blockers = userContext.blockers.filter(b => b !== blocker); }
-    goBtn.disabled = userContext.blockers.length === 0;
+  startBtn.addEventListener('click', () => {
+    if (checkLimit()) return;
+    show('picker');
   });
 
-  // ─── Find Links button ────────────────────────────────────
+  backToWelcome.addEventListener('click', () => show('welcome'));
 
-  goBtn.addEventListener('click', async () => {
+  grid.addEventListener('click', (e) => {
+    const card = e.target.closest('.lf-blocker-card');
+    if (!card) return;
+    card.classList.toggle('active');
+    const blocker = card.dataset.blocker;
+    if (card.classList.contains('active')) {
+      if (!userContext.blockers.includes(blocker)) userContext.blockers.push(blocker);
+    } else {
+      userContext.blockers = userContext.blockers.filter(b => b !== blocker);
+    }
+    findBtn.disabled = userContext.blockers.length === 0;
+  });
+
+  findBtn.addEventListener('click', () => {
     if (!userContext.blockers.length || isSearching) return;
     if (checkLimit()) return;
+    runSearch();
+  });
 
+  async function runSearch() {
     isSearching = true;
-    goBtn.disabled = true;
-    goBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+    findBtn.disabled = true;
+    findBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
 
     try {
       currentBlockers = [...userContext.blockers];
       sessionStorage.removeItem(SHOWN_KEY);
       const link = await searchOneLink(currentBlockers);
-
       const usage = getUsage();
       usage.count++;
       saveUsage(usage);
-
       showResult(link, usage.count);
     } catch (err) {
       console.error('Link Finder error:', err);
@@ -413,19 +648,14 @@ var _CONFIG = {
     }
 
     isSearching = false;
-    goBtn.disabled = false;
-    goBtn.innerHTML = '<i class="fas fa-search"></i> Find Links';
-  });
-
-  // ─── Back button ──────────────────────────────────────────
+    findBtn.disabled = userContext.blockers.length === 0;
+    findBtn.innerHTML = '<i class="fas fa-magnifying-glass"></i> Find My Link';
+  }
 
   backBtn.addEventListener('click', () => {
     if (checkLimit()) return;
-    results.classList.remove('visible');
-    selector.classList.remove('hidden');
+    show('welcome');
   });
-
-  // ─── Next button — costs 1 search point ───────────────────
 
   nextBtn.addEventListener('click', async () => {
     if (isSearching) return;
@@ -437,37 +667,19 @@ var _CONFIG = {
 
     try {
       const link = await searchOneLink(currentBlockers);
-
       const usage = getUsage();
       usage.count++;
       saveUsage(usage);
-
-      const remaining = DAILY_LIMIT - usage.count;
-      usageEl.textContent = remaining > 0
-        ? `${remaining} search${remaining !== 1 ? 'es' : ''} remaining today`
-        : 'No searches remaining today';
-      counterEl.textContent = '';
-      backBtn.style.display = remaining > 0 ? '' : 'none';
-      navBar.style.display = remaining > 0 ? 'flex' : 'none';
-
-      if (!link) {
-        showError('No more new links found. Try a different blocker.');
-      } else {
-        hideError();
-        bigLink.style.display = '';
-        renderLink(link);
-      }
+      showResult(link, usage.count);
     } catch (err) {
       console.error('Next link error:', err);
-      showError('Something went wrong. Please try again.');
+      showError("Oops! Something went wrong. Please try again.");
     }
 
     isSearching = false;
     nextBtn.disabled = false;
-    nextBtn.innerHTML = '<i class="fas fa-forward"></i> Try Another Link';
+    nextBtn.innerHTML = '<i class="fas fa-shuffle"></i> Try Another';
   });
-
-  // ─── API — fetch exactly one link ─────────────────────────
 
   async function searchOneLink(blockers) {
     if (!API_URL) throw new Error('API not configured');
@@ -497,69 +709,73 @@ var _CONFIG = {
       addShownDomains([host]);
       return l;
     }
-
     return null;
   }
 
-  // ─── Show result ──────────────────────────────────────────
-
   function showResult(link, usedCount, error) {
-    selector.classList.add('hidden');
-    limitView.classList.remove('visible');
-    results.classList.add('visible');
+    show('results');
 
-    const remaining = DAILY_LIMIT - usedCount;
-    usageEl.textContent = remaining > 0
-      ? `${remaining} search${remaining !== 1 ? 'es' : ''} remaining today`
-      : 'No searches remaining today';
-    backBtn.style.display = remaining > 0 ? '' : 'none';
-    counterEl.textContent = '';
+    const remaining = Math.max(0, DAILY_LIMIT - usedCount);
+    resultUsage.textContent = remaining > 0
+      ? `${remaining} of ${DAILY_LIMIT} searches left today`
+      : 'No searches left. Come back tomorrow!';
+
+    nextBtn.style.display = remaining > 0 ? '' : 'none';
 
     if (error || !link) {
-      bigLink.style.display = 'none';
-      navBar.style.display = 'none';
+      hideOpenButton();
       showError(error
-        ? 'Something went wrong. Please try again later.'
-        : 'No links found for your blocker. Try selecting a different one.');
+        ? "Oops! Something went wrong. Please try again later."
+        : "Hmm, no new links found for that blocker. Try picking a different one!");
       return;
     }
 
     hideError();
-    bigLink.style.display = '';
-    navBar.style.display = remaining > 0 ? 'flex' : 'none';
-    renderLink(link);
+    showOpenButton();
+    resultCounter.textContent = "Here's a link for you!";
+    resultName.textContent  = link.name || 'Your Link';
+    resultBadge.textContent = link.hostingType || 'link';
+    openLink.href = link.url;
+
+    openLink.style.animation = 'none';
+    void openLink.offsetWidth;
+    openLink.style.animation = 'lf-fadeIn 0.4s ease';
+  }
+
+  function showOpenButton() { openLink.style.display = ''; }
+  function hideOpenButton() {
+    openLink.style.display = 'none';
+    resultCounter.textContent = '';
+    resultName.textContent = '';
+    resultBadge.textContent = '';
   }
 
   function showError(msg) {
-    let errEl = singleMid.querySelector('.lf-empty');
+    let errEl = document.getElementById('lf-error-msg');
     if (!errEl) {
       errEl = document.createElement('div');
+      errEl.id = 'lf-error-msg';
       errEl.className = 'lf-empty';
-      singleMid.insertBefore(errEl, bigLink);
+      openLink.parentNode.insertBefore(errEl, openLink);
     }
-    errEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i>' + msg;
+    errEl.innerHTML = '<i class="fas fa-triangle-exclamation"></i>' + msg;
     errEl.style.display = '';
   }
-
   function hideError() {
-    const errEl = singleMid.querySelector('.lf-empty');
+    const errEl = document.getElementById('lf-error-msg');
     if (errEl) errEl.style.display = 'none';
   }
 
-  // ─── Limit screen ─────────────────────────────────────────
-
   function showLimitScreen() {
-    selector.classList.add('hidden');
-    results.classList.remove('visible');
-    limitView.classList.add('visible');
+    show('limit');
     const now = new Date();
     const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     const msLeft = tomorrow - now;
-    resetEl.textContent = `Resets in ${Math.floor(msLeft / 3600000)}h ${Math.floor((msLeft % 3600000) / 60000)}m`;
+    limitReset.textContent = `Resets in ${Math.floor(msLeft / 3600000)}h ${Math.floor((msLeft % 3600000) / 60000)}m`;
   }
 
-  checkLimit();
-  window.NexoraLinkFinder = { version: '2.0.0' };
+  if (!checkLimit()) show('welcome');
+  window.NexoraLinkFinder = { version: '3.0.0' };
 })();
 </script>
 
