@@ -39,7 +39,7 @@ body {
   box-shadow:
     0 0 20px var(--sb-shadow),
     inset 0 0 20px var(--sb-shadow);
-  z-index: 0;
+  z-index: auto;
   pointer-events: none;
 }
 

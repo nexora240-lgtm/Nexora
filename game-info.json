@@ -116,19 +116,6 @@
     "display": true
   },
   {
-    "title": "3 Dash",
-    "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/cl3dash.webp",
-    "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/cl3dash.html",
-    "tags": [
-      "Runner",
-      "Arcade",
-      "Single Player"
-    ],
-    "description": "A fast-paced runner game where you dash through obstacles and collect coins.",
-    "longDescription": "Dash through obstacles and collect coins in this fast-paced runner game. Navigate through challenging levels with precision and speed. Ideal for players who enjoy high-energy and skill-based gameplay.",
-    "display": true
-  },
-  {
     "title": "3 Slices 2",
     "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/cl3slices2.webp",
     "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/cl3slices2.html",
@@ -331,19 +318,6 @@
     ],
     "description": "A neon-themed arcade runner game where you navigate through neon-lit environments.",
     "longDescription": "Dive into a neon-lit world of high-speed action in this arcade runner game. Navigate through vibrant, neon-infused environments with fluid controls and a pulsating soundtrack. Each run presents new challenges and obstacles, requiring quick reflexes and strategic thinking. How far can you go in this electrifying adventure?",
-    "display": true
-  },
-  {
-    "title": "Agar.io Lite",
-    "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/clagariolite.webp",
-    "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/clagariolite.html",
-    "tags": [
-      "IO Game",
-      "Casual",
-      "Multiplayer"
-    ],
-    "description": "A multiplayer IO game where you control a cell and eat others to grow bigger.",
-    "longDescription": "In this multiplayer IO game, you control a cell in a petri dish and aim to become the largest by consuming other cells and avoiding being eaten. Team up with friends or challenge players worldwide in a battle for dominance. Strategically grow your cell while outsmarting opponents in a simple yet addictive gameplay experience. Can you achieve cellular supremacy?",
     "display": true
   },
   {
@@ -721,19 +695,6 @@
     ],
     "description": "An action game where players control armored vehicles in intense combat scenarios.",
     "longDescription": "Engage in intense combat with armored vehicles in this action-packed arcade game. Control powerful tanks and destroy enemy vehicles in various battle scenarios. With upgraded graphics and new features, Armor Mayhem 2 offers an adrenaline-fueled experience for fans of military action.",
-    "display": true
-  },
-  {
-    "title": "Ascent",
-    "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/clascent.webp",
-    "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/clascent.html",
-    "tags": [
-      "Platformer",
-      "Arcade",
-      "Single Player"
-    ],
-    "description": "A platformer game where players ascend through challenging levels with precise jumps.",
-    "longDescription": "Master the art of platforming in this challenging arcade game. Ascend through levels with precise jumps and strategic planning. Each level presents new obstacles and enemies, requiring quick reflexes and careful timing. Can you reach the top and complete all levels?",
     "display": true
   },
   {
@@ -11490,19 +11451,6 @@
     ],
     "description": "Solve puzzles and navigate through a series of challenges in this casual puzzle game.",
     "longDescription": "Solve puzzles and navigate through a series of challenges in this casual puzzle game. Each level presents a new puzzle that requires logical thinking and creativity to solve. With its charming art style and relaxing gameplay, You Are Lucky is perfect for a laid-back gaming session.",
-    "display": false
-  },
-  {
-    "title": "You vs 100 Skibidi",
-    "thumbnail": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/images/clyouvs100skibidi.webp",
-    "file": "https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/games/clyouvs100skibidi.html",
-    "tags": [
-      "Action",
-      "Arcade",
-      "Multiplayer"
-    ],
-    "description": "Defend yourself against waves of Skibidi characters in this action-packed arcade game.",
-    "longDescription": "Defend yourself against waves of Skibidi characters in this action-packed arcade game. Use your quick reflexes and strategic thinking to survive and defeat the horde. With its intense gameplay and engaging mechanics, You vs 100 Skibidi will keep you on the edge of your seat.",
     "display": false
   },
   {
