@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="google-adsense-account" content="ca-pub-6990835730345530">
   <script>
     if (window.location.pathname.endsWith('/gameloader.html')) {
       const params = window.location.search;
@@ -1024,11 +1025,16 @@
             '})();' +
             '</scr' + 'ipt>';
           
-          // Inject the script right after <head> or at the beginning
-          if (htmlContent.includes('<head>')) {
-            htmlContent = htmlContent.replace('<head>', '<head>' + audioTrackingScript);
+          // Inject the script right after <head>
+    <meta name="google-adsense-account" content="ca-pub-6990835730345530"> or at the beginning
+          if (htmlContent.includes('<head>
+    <meta name="google-adsense-account" content="ca-pub-6990835730345530">')) {
+            htmlContent = htmlContent.replace('<head>
+    <meta name="google-adsense-account" content="ca-pub-6990835730345530">', '<head>
+    <meta name="google-adsense-account" content="ca-pub-6990835730345530">' + audioTrackingScript);
           } else if (htmlContent.includes('<html>')) {
-            htmlContent = htmlContent.replace('<html>', '<html><head>' + audioTrackingScript + '</head>');
+            htmlContent = htmlContent.replace('<html>', '<html><head>
+    <meta name="google-adsense-account" content="ca-pub-6990835730345530">' + audioTrackingScript + '</head>');
           } else {
             htmlContent = audioTrackingScript + htmlContent;
           }
