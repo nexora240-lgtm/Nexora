@@ -12,7 +12,7 @@
   }
 
   const AUTH_API_URL = (typeof _CONFIG !== 'undefined' && _CONFIG.authApiUrl) 
-    || 'https://ru7838oq5c.execute-api.us-east-2.amazonaws.com';
+    || 'https://8hxm0uu86k.execute-api.us-east-2.amazonaws.com';
 
   const SESSION_KEY = 'nexora.auth.session';
   const SYNC_INTERVAL = 60000; // Sync every minute when logged in
@@ -186,17 +186,36 @@
   }
 
   /**
-   * Handle storage changes from other tabs
+   * Handle storage changes from other tabs.
+   *
+   * IMPORTANT: When another tab rotates the session token via /auth/refresh,
+   * it writes the new token to CREDENTIALS_KEY. We must NOT call /auth/refresh
+   * again here — that would rotate the token a second time and invalidate the
+   * one the other tab is holding. Just adopt the freshly-stored token in
+   * memory so any in-flight requests in this tab use the latest token too.
    */
   function handleStorageChange(e) {
-    if (e.key === CREDENTIALS_KEY) {
-      const creds = getSavedCredentials();
-      if (creds && creds.token) {
-        autoRefresh(creds.username, creds.token);
+    if (e.key !== CREDENTIALS_KEY) return;
+    const creds = getSavedCredentials();
+    if (creds && creds.token) {
+      if (currentSession && currentSession.username === creds.username) {
+        currentSession.token = creds.token;
       } else {
-        currentSession = null;
+        // First time we're seeing this user in this tab — adopt minimal session
+        // and verify lazily via the existing auto-sync interval (no refresh).
+        currentSession = {
+          username: creds.username,
+          displayName: creds.username,
+          token: creds.token,
+          isAdmin: false
+        };
         notifyListeners();
+        startAutoSync();
       }
+    } else {
+      currentSession = null;
+      stopAutoSync();
+      notifyListeners();
     }
   }
 

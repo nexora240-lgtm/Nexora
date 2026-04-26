@@ -558,8 +558,14 @@ function appendScriptNode(scriptNode) {
     if (!hasSrc) {
       // Wrap inline view scripts in try-catch to prevent uncaught errors
       // from stale cached HTML that references globals not yet loaded.
-      var code = scriptNode.textContent;
-      newScript.textContent = 'try{' + code + '}catch(_e){console.warn("[view-script]",_e.message)}';
+      // - Strip legacy HTML comment hiding (<!-- ... -->) which is invalid JS
+      //   inside our wrapper.
+      // - Add newlines around the user code so a trailing `// comment` in the
+      //   source can't swallow our `}catch{...}`.
+      var code = scriptNode.textContent || '';
+      code = code.replace(/^\s*<!--[^\n]*\n?/, '').replace(/\n?\s*(\/\/)?\s*-->\s*$/, '');
+      newScript.textContent =
+        '(function(){try{\n' + code + '\n}catch(_e){console.warn("[view-script]", _e && _e.message || _e);}})();';
       document.body.appendChild(newScript);
       currentViewScripts.push(newScript);
       resolve();

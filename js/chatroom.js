@@ -1,7 +1,7 @@
 
 (function() {
 
-    const WS_URL = 'wss://o27cp3a1a7.execute-api.us-east-2.amazonaws.com/production';
+    const WS_URL = 'wss://c31r4obfah.execute-api.us-east-2.amazonaws.com/production';
 
     let ws = null;
     let currentUsername = '';

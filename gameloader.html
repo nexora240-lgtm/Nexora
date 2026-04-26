@@ -413,7 +413,7 @@
       // Ensure _CONFIG is available
       if (typeof _CONFIG === 'undefined') {
         window._CONFIG = {
-          viewsApiUrl: 'https://ru7838oq5c.execute-api.us-east-2.amazonaws.com'
+          viewsApiUrl: 'https://8hxm0uu86k.execute-api.us-east-2.amazonaws.com'
         };
       }
       
@@ -1025,16 +1025,11 @@
             '})();' +
             '</scr' + 'ipt>';
           
-          // Inject the script right after <head>
-    <meta name="google-adsense-account" content="ca-pub-6990835730345530"> or at the beginning
-          if (htmlContent.includes('<head>
-    <meta name="google-adsense-account" content="ca-pub-6990835730345530">')) {
-            htmlContent = htmlContent.replace('<head>
-    <meta name="google-adsense-account" content="ca-pub-6990835730345530">', '<head>
-    <meta name="google-adsense-account" content="ca-pub-6990835730345530">' + audioTrackingScript);
+          // Inject the script right after <head> or at the beginning
+          if (htmlContent.includes('<head>')) {
+            htmlContent = htmlContent.replace('<head>', '<head>' + audioTrackingScript);
           } else if (htmlContent.includes('<html>')) {
-            htmlContent = htmlContent.replace('<html>', '<html><head>
-    <meta name="google-adsense-account" content="ca-pub-6990835730345530">' + audioTrackingScript + '</head>');
+            htmlContent = htmlContent.replace('<html>', '<html><head>' + audioTrackingScript + '</head>');
           } else {
             htmlContent = audioTrackingScript + htmlContent;
           }
