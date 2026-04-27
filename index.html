@@ -15,6 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+  <link rel="dns-prefetch" href="https://cdn.taboola.com" />
 
 
   <link rel="icon" type="image/png" id="favicon" href="https://cdn.jsdelivr.net/gh/nexora240-lgtm/Nexora-Assets@main/logos/nexora-amber.png">
@@ -45,7 +46,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" /></noscript>
 
-
+  <!-- Taboola Loader deferred to after DOM -->
+  <script type="text/javascript">
+    window._taboola = window._taboola || [];
+    _taboola.push({article:'auto'});
+    requestIdleCallback(function() {
+      !function (e, f, u, i) {
+        if (!document.getElementById(i)){
+          e.async = 1;
+          e.src = u;
+          e.id = i;
+          f.parentNode.insertBefore(e, f);
+        }
+      }(document.createElement('script'),
+      document.getElementsByTagName('script')[0],
+      '//cdn.taboola.com/libtrc/adklip-thenexoraproject/loader.js',
+      'tb_loader_script');
+      if(window.performance && typeof window.performance.mark == 'function')
+        {window.performance.mark('tbl_ic');}
+    }, {timeout: 3000});
+  </script>
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-H5VGHQJKD8"></script>
   <script>
@@ -55,6 +75,44 @@
   gtag('config', 'G-H5VGHQJKD8', {send_page_view: true, transport_type: 'beacon'});
   </script>
 
+  <!-- Taboola → GA event bridge -->
+  <script>
+    window._taboola = window._taboola || [];
+    _taboola.push({
+      listenTo: 'render',
+      handler: function(e) {
+        var d = e.detail || {};
+        gtag('event', 'taboola_render', {
+          event_category: 'ads',
+          placement: d.placement || '',
+          item_count: d.itemCount || 0
+        });
+      }
+    });
+    _taboola.push({
+      listenTo: 'visible',
+      handler: function(e) {
+        var d = e.detail || {};
+        gtag('event', 'taboola_visible', {
+          event_category: 'ads',
+          placement: d.placement || '',
+          item_count: d.itemCount || 0
+        });
+      }
+    });
+    _taboola.push({
+      listenTo: 'click',
+      handler: function(e) {
+        var d = e.detail || {};
+        gtag('event', 'taboola_click', {
+          event_category: 'ads',
+          placement: d.placement || '',
+          item_title: d.title || '',
+          item_type: d.type || ''
+        });
+      }
+    });
+  </script>
 
   <script>
     (function () {

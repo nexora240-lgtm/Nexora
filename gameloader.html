@@ -141,7 +141,12 @@
       font-size: 0.7rem;
       opacity: 0.8;
     }
-
+    .taboola-ad-row {
+      grid-column: 1 / -1;
+      width: 100%;
+      min-height: 250px;
+      padding: 10px 0;
+    }
   </style>
   <style>
     /* Game Info Section */
@@ -1252,7 +1257,39 @@
           });
         }
       } catch (e) { /* ignore */ }
-      
+
+      // Taboola ad insertion — every 12 cards
+      const AD_INTERVAL = 12;
+      // Global Taboola ad counter — never reset, only increment, to avoid
+      // "Placement duplication" errors from Taboola's library
+      if (typeof window._taboolaGlobalIndex === 'undefined') {
+        window._taboolaGlobalIndex = 0;
+      }
+
+      // Signal new page to Taboola BEFORE pushing any placements
+      window._taboola = window._taboola || [];
+      _taboola.push({notify: 'newPageLoad'});
+      _taboola.push({article: 'auto', url: window.location.origin + window.location.pathname});
+
+      function insertTaboolaAd() {
+        window._taboolaGlobalIndex++;
+        const adContainer = document.createElement('div');
+        adContainer.className = 'taboola-ad-row';
+        const adId = 'taboola-related-feed-' + window._taboolaGlobalIndex;
+        adContainer.innerHTML = '<div id="' + adId + '"></div>';
+        grid.appendChild(adContainer);
+
+        window._taboola = window._taboola || [];
+        _taboola.push({
+          mode: 'alternating-thumbnails-a',
+          container: adId,
+          placement: 'Related Games Feed ' + window._taboolaGlobalIndex,
+          target_type: 'mix'
+        });
+      }
+
+      let taboolaAdCount = 0;
+
       function buildOnClick(g) {
         return () => {
           const newGameData = JSON.stringify(g);
@@ -1280,6 +1317,12 @@
       
       // Render the games in games.html homepage style
       selectedGames.forEach((gameObj, index) => {
+        // Insert Taboola ad every AD_INTERVAL cards
+        if (index > 0 && index % AD_INTERVAL === 0) {
+          insertTaboolaAd();
+          taboolaAdCount++;
+        }
+
         let game = gameObj;
         const card = document.createElement("div");
         card.className = "related-game-card";
@@ -1349,7 +1392,13 @@
         
         grid.appendChild(card);
       });
-      
+
+      // Flush Taboola placements
+      if (taboolaAdCount > 0) {
+        window._taboola = window._taboola || [];
+        _taboola.push({flush: true});
+      }
+
       // Try to fetch fresh view counts in background
       if (_CONFIG.viewsApiUrl && !_CONFIG.viewsApiUrl.includes('YOUR-API-ID')) {
         try {
@@ -1420,6 +1469,26 @@
       document.addEventListener('settings:colorSchemeChanged', updateFavicon);
       document.addEventListener('settings:themeChanged', updateFavicon);
     })();
+  </script>
+
+  <!-- Taboola Loader Script -->
+  <script type="text/javascript">
+    window._taboola = window._taboola || [];
+    _taboola.push({article:'auto'});
+    !function (e, f, u, i) {
+      if (!document.getElementById(i)){
+        e.async = 1;
+        e.src = u;
+        e.id = i;
+        f.parentNode.insertBefore(e, f);
+      }
+    }(document.createElement('script'),
+      document.getElementsByTagName('script')[0],
+      '//cdn.taboola.com/libtrc/adklip-thenexoraproject/loader.js',
+      'tb_loader_script');
+    if(window.performance && typeof window.performance.mark == 'function'){
+      window.performance.mark('tbl_ic');
+    }
   </script>
 </body>
 </html>

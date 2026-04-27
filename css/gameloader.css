@@ -981,6 +981,14 @@ html.performance-no-glow.light-scheme .fullscreen-btn img {
   opacity: 0.8;
 }
 
+/* Ad row inside the grid */
+.related-games-grid .taboola-ad-row {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 50px;
+  padding: 10px 0;
+}
+
 /* Responsive adjustments for related games */
 @media (max-width: 768px) {
   .related-games-section {
