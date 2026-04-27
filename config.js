@@ -19,13 +19,13 @@ let host = location.protocol + "//" + location.host;
 var _CONFIG = {
   wispurl:
     localStorage.getItem("settings.wispUrl") ||
-    "wss://nex-webdelivery-services404.b-cdn.net/wisp/",
+    "wss://nexora-webdelivery404.b-cdn.net/wisp/",
   bareurl:
     localStorage.getItem("settings.bareUrl") ||
-    "https://nex-webdelivery-services404.b-cdn.net/bare/",
+    "https://nexora-webdelivery404.b-cdn.net/bare/",
   rammerheadUrl:
     localStorage.getItem("settings.rammerheadUrl") ||
-    "https://nex-webdelivery-services404.b-cdn.net",
+    "https://nexora-webdelivery404.b-cdn.net",
   // Views API Configuration - Replace with your AWS API Gateway URL
   viewsApiUrl: "https://8hxm0uu86k.execute-api.us-east-2.amazonaws.com",
   // Auth API Configuration - User authentication and data sync
