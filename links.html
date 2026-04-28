@@ -271,6 +271,46 @@ body { background: transparent; color: var(--text); }
   display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
 }
 
+/* ─── Tinder-style verdict buttons (Works / Doesn't work) ─── */
+.lf-verdict-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  width: 100%; max-width: 380px;
+}
+.lf-verdict-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 16px; border-radius: 12px;
+  font-size: 14px; font-weight: 700; letter-spacing: 0.2px;
+  cursor: pointer; user-select: none;
+  transition: transform 0.15s ease, background 0.18s ease, border-color 0.18s ease;
+  border: 1.5px solid transparent;
+}
+.lf-verdict-btn:active { transform: scale(0.97); }
+.lf-verdict-btn i { font-size: 15px; }
+.lf-verdict-works {
+  color: #2bb673;
+  background: color-mix(in srgb, #2bb673 14%, transparent);
+  border-color: color-mix(in srgb, #2bb673 38%, transparent);
+}
+.lf-verdict-works:hover {
+  background: color-mix(in srgb, #2bb673 22%, transparent);
+  border-color: color-mix(in srgb, #2bb673 60%, transparent);
+}
+.lf-verdict-broken {
+  color: #e54b6a;
+  background: color-mix(in srgb, #e54b6a 12%, transparent);
+  border-color: color-mix(in srgb, #e54b6a 36%, transparent);
+}
+.lf-verdict-broken:hover {
+  background: color-mix(in srgb, #e54b6a 20%, transparent);
+  border-color: color-mix(in srgb, #e54b6a 58%, transparent);
+}
+.lf-verdict-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.lf-verdict-flash {
+  font-size: 12px; color: var(--lf-muted); text-align: center;
+  min-height: 16px;
+  transition: color 0.2s ease;
+}
+
 /* Result step */
 .lf-result-card {
   display: flex; flex-direction: column; align-items: center; gap: 18px;
@@ -489,6 +529,16 @@ body { background: transparent; color: var(--text); }
             <span>Tap to Open</span>
           </a>
 
+          <div class="lf-verdict-row" id="lf-verdict-row">
+            <button class="lf-verdict-btn lf-verdict-works" id="lf-works-btn" type="button">
+              <i class="fas fa-check"></i> It Works
+            </button>
+            <button class="lf-verdict-btn lf-verdict-broken" id="lf-broken-btn" type="button">
+              <i class="fas fa-xmark"></i> Doesn't Work
+            </button>
+          </div>
+          <div class="lf-verdict-flash" id="lf-verdict-flash"></div>
+
           <div class="lf-step-actions" id="lf-result-actions">
             <button class="lf-ghost-btn" id="lf-back-btn" type="button">
               <i class="fas fa-arrow-left"></i> Start Over
@@ -611,8 +661,10 @@ var _CONFIG = {
   const SHOWN_KEY    = 'lf-shown-domains';
   const SKIPPED_KEY  = 'lf-skipped-hosts';   // session-scoped
   const ACCEPTED_KEY = 'lf-accepted-hosts';  // persists across days
+  const BROKEN_KEY   = 'lf-broken-hosts';    // persists — hard-exclude list
   const MAX_SKIPPED  = 50;
   const MAX_ACCEPTED = 30;
+  const MAX_BROKEN   = 200;
 
   // Safe storage wrappers with in-memory fallback for sandboxed/iframe
   // contexts where sessionStorage / localStorage throw SecurityError.
@@ -691,6 +743,13 @@ var _CONFIG = {
   }
   function getSkippedHosts()  { return _readArr(safeSession, SKIPPED_KEY); }
   function getAcceptedHosts() { return _readArr(safeLocal,   ACCEPTED_KEY); }
+  function getBrokenHosts()   { return _readArr(safeLocal,   BROKEN_KEY); }
+  function recordBroken(host) {
+    if (!host) return;
+    const arr = getBrokenHosts().filter(h => h !== host);
+    arr.push(host);
+    _writeArr(safeLocal, BROKEN_KEY, arr, MAX_BROKEN);
+  }
   function recordSkip(host) {
     if (!host) return;
     const arr = getSkippedHosts();
@@ -753,6 +812,19 @@ var _CONFIG = {
   const strictnessCells = strictnessWrap
     ? Array.from(strictnessWrap.querySelectorAll('.lf-strictness-cell'))
     : [];
+  const worksBtn   = document.getElementById('lf-works-btn');
+  const brokenBtn  = document.getElementById('lf-broken-btn');
+  const verdictFlash = document.getElementById('lf-verdict-flash');
+
+  function flashVerdict(msg, color) {
+    if (!verdictFlash) return;
+    verdictFlash.textContent = msg || '';
+    verdictFlash.style.color = color || '';
+  }
+  function setVerdictDisabled(disabled) {
+    if (worksBtn)  worksBtn.disabled  = disabled;
+    if (brokenBtn) brokenBtn.disabled = disabled;
+  }
 
   function strictnessLabel(n) {
     if (n <= 3) return 'Light filters';
@@ -885,10 +957,39 @@ var _CONFIG = {
     if (isSearching) return;
     if (checkLimit()) return;
 
-    // Clicking "Try Another" while a link is showing = implicit skip signal.
+    // Clicking "Try Another" while a link is showing = implicit skip signal
+    // (soft — NOT a hard broken signal).
     if (currentLinkHost) recordSkip(currentLinkHost);
 
+    await loadNextLink();
+  });
+
+  // ─── Tinder-style verdict buttons ─────────────────────
+  if (worksBtn) worksBtn.addEventListener('click', () => {
+    if (!currentLinkHost) return;
+    // Strong positive: counts as 3 accepts so the boost is meaningful.
+    recordAccept(currentLinkHost);
+    recordAccept(currentLinkHost);
+    recordAccept(currentLinkHost);
+    flashVerdict('Thanks! We\'ll show more like this.', '#2bb673');
+    setVerdictDisabled(true);
+    setTimeout(() => { setVerdictDisabled(false); flashVerdict(''); }, 1800);
+  });
+
+  if (brokenBtn) brokenBtn.addEventListener('click', async () => {
+    if (isSearching) return;
+    if (!currentLinkHost) return;
+    if (checkLimit()) return;
+    recordBroken(currentLinkHost);
+    recordSkip(currentLinkHost);
+    flashVerdict('Got it — finding you a different link...', '#e54b6a');
+    await loadNextLink();
+    setTimeout(() => flashVerdict(''), 1500);
+  });
+
+  async function loadNextLink() {
     isSearching = true;
+    setVerdictDisabled(true);
     nextBtn.disabled = true;
     nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finding...';
 
@@ -904,9 +1005,10 @@ var _CONFIG = {
     }
 
     isSearching = false;
+    setVerdictDisabled(false);
     nextBtn.disabled = false;
     nextBtn.innerHTML = '<i class="fas fa-shuffle"></i> Try Another';
-  });
+  }
 
   async function searchOneLink(blockers) {
     if (!API_URL) throw new Error('API not configured');
@@ -925,6 +1027,7 @@ var _CONFIG = {
         excludeDomains,
         skippedHosts,
         acceptedHosts,
+        brokenHosts: getBrokenHosts(),
         limit: 5,
       }),
     });
@@ -986,6 +1089,8 @@ var _CONFIG = {
     resultName.textContent = '';
     resultBadge.textContent = '';
     clearStrictness();
+    flashVerdict('');
+    setVerdictDisabled(false);
   }
 
   function showError(msg) {
@@ -1014,8 +1119,8 @@ var _CONFIG = {
 
   if (!checkLimit()) show('welcome');
 
-  // Record an "accept" signal whenever the user actually opens the
-  // displayed link. This trains the backend to favour similar suffixes.
+  // Soft accept signal when the user actually opens the link (in case they
+  // skip pressing the explicit "It Works" button).
   openLink.addEventListener('click', () => {
     if (currentLinkHost) recordAccept(currentLinkHost);
   });
