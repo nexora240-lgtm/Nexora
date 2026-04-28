@@ -1,3 +1,51 @@
+/* ───────────────────────────────────────────────────────────
+ * Nexora storage shim — must run BEFORE anything below uses
+ * localStorage/sessionStorage. Some browsers (Edge tracking-prevention,
+ * sandboxed iframes, private mode) make the very ACT of accessing
+ * `window.localStorage` throw a SecurityError. We swap in an in-memory
+ * Storage implementation in that case so the rest of the site keeps
+ * working without try/catch around every call site.
+ * ─────────────────────────────────────────────────────────── */
+(function () {
+  function probe(kind) {
+    try {
+      var s = window[kind];
+      if (!s) return false;
+      var k = '__nx_storage_probe__';
+      s.setItem(k, '1');
+      s.removeItem(k);
+      return true;
+    } catch (_) { return false; }
+  }
+  function makeMem() {
+    var data = Object.create(null);
+    return {
+      get length() { return Object.keys(data).length; },
+      key: function (i) { var k = Object.keys(data); return i >= 0 && i < k.length ? k[i] : null; },
+      getItem: function (k) { k = String(k); return Object.prototype.hasOwnProperty.call(data, k) ? data[k] : null; },
+      setItem: function (k, v) { data[String(k)] = String(v); },
+      removeItem: function (k) { delete data[String(k)]; },
+      clear: function () { data = Object.create(null); },
+    };
+  }
+  function install(kind) {
+    if (probe(kind)) return false;
+    var shim = makeMem();
+    try { Object.defineProperty(window, kind, { value: shim, configurable: true, writable: false }); }
+    catch (_) { try { window[kind] = shim; } catch (__) {} }
+    return true;
+  }
+  var fL = install('localStorage');
+  var fS = install('sessionStorage');
+  if (fL || fS) {
+    try {
+      console.warn('[NexoraStorageShim] Native ' +
+        (fL && fS ? 'localStorage + sessionStorage' : fL ? 'localStorage' : 'sessionStorage') +
+        ' blocked by browser. Using in-memory fallback.');
+    } catch (_) {}
+  }
+})();
+
 let host = location.protocol + "//" + location.host;
 
 // Migrate legacy proxy endpoints that used the raw IP. The relay's TLS cert

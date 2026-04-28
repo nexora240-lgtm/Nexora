@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="theme-midnight-amber">
 <head>
+  <script src="/js/storage-shim.js"></script>
     <meta name="google-adsense-account" content="ca-pub-6990835730345530">
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -163,7 +164,7 @@ body { background: transparent; color: var(--text); }
 /* Welcome step */
 .lf-welcome-actions { display: flex; flex-direction: column; gap: 14px; margin-top: 22px; align-items: center; }
 
-/* Primary CTA — matches .home-cta in css/home.css */
+/* Primary CTA - matches .home-cta in css/home.css */
 .lf-big-btn {
   display: inline-flex; align-items: center; justify-content: center;
   gap: 10px;
@@ -555,7 +556,7 @@ body { background: transparent; color: var(--text); }
           <div class="lf-strictness" id="lf-strictness" hidden>
             <div class="lf-strictness-head">
               <span><i class="fas fa-shield-halved"></i> Filter strength</span>
-              <span class="lf-strictness-value" id="lf-strictness-value">—</span>
+              <span class="lf-strictness-value" id="lf-strictness-value">-</span>
             </div>
             <div class="lf-strictness-bar" id="lf-strictness-bar" role="meter" aria-valuemin="1" aria-valuemax="10" aria-label="Filter strength this link bypasses">
               <span class="lf-strictness-cell"></span>
@@ -661,7 +662,7 @@ var _CONFIG = {
   const SHOWN_KEY    = 'lf-shown-domains';
   const SKIPPED_KEY  = 'lf-skipped-hosts';   // session-scoped
   const ACCEPTED_KEY = 'lf-accepted-hosts';  // persists across days
-  const BROKEN_KEY   = 'lf-broken-hosts';    // persists — hard-exclude list
+  const BROKEN_KEY   = 'lf-broken-hosts';    // persists - hard-exclude list
   const MAX_SKIPPED  = 50;
   const MAX_ACCEPTED = 30;
   const MAX_BROKEN   = 200;
@@ -674,7 +675,7 @@ var _CONFIG = {
     let store = null;
     try {
       store = (kind === 'local') ? window.localStorage : window.sessionStorage;
-      // Probe — accessing the property doesn't throw, but using it can.
+      // Probe - accessing the property doesn't throw, but using it can.
       const probe = '__lf_probe__';
       store.setItem(probe, '1');
       store.removeItem(probe);
@@ -958,7 +959,7 @@ var _CONFIG = {
     if (checkLimit()) return;
 
     // Clicking "Try Another" while a link is showing = implicit skip signal
-    // (soft — NOT a hard broken signal).
+    // (soft - NOT a hard broken signal).
     if (currentLinkHost) recordSkip(currentLinkHost);
 
     await loadNextLink();
@@ -982,7 +983,7 @@ var _CONFIG = {
     if (checkLimit()) return;
     recordBroken(currentLinkHost);
     recordSkip(currentLinkHost);
-    flashVerdict('Got it — finding you a different link...', '#e54b6a');
+    flashVerdict('Got it - finding you a different link...', '#e54b6a');
     await loadNextLink();
     setTimeout(() => flashVerdict(''), 1500);
   });
