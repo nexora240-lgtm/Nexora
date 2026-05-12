@@ -1,0 +1,25 @@
+/* CitruxHosting sponsor banner */
+.citrux-ad-banner {
+  display: block;
+  width: 100%;
+  max-width: 728px;
+  margin: 16px auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.35),
+    0 0 0 1px color-mix(in srgb, var(--text, #f8e7e0) 6%, transparent);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  line-height: 0;
+}
+.citrux-ad-banner:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.45),
+    0 0 0 1px color-mix(in srgb, var(--primary, #d4550a) 35%, transparent);
+}
+.citrux-ad-banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
