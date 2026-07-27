@@ -93,9 +93,9 @@ body {
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-  padding: 20px;
-  max-width: 1200px;
+  gap: var(--grid-gap, 20px);
+  padding: var(--page-gutter, 20px);
+  max-width: var(--page-max, 1200px);
   margin: 0 auto;
   overflow: visible;
 }

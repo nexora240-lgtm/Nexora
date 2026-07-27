@@ -19,6 +19,11 @@
   --focus-ring: 3px;
   --focus-color: rgba(212,85,10,0.18);
 
+  /* Shared page rhythm — every view should derive from these */
+  --page-max: 1200px;
+  --page-gutter: 20px;
+  --grid-gap: 20px;
+
   --contrast-high: rgba(255,255,255,0.85);
   --contrast-low: rgba(255,255,255,0.5);
 
@@ -220,6 +225,15 @@ html.app-shell body {
 
 .u-gap { gap: var(--control-gap); }
 .round { border-radius: var(--radius); }
+
+/* ── Ad rows: collapse to nothing when the network returns no fill ── */
+.taboola-ad-row.ad-row-empty,
+.ad-row-empty {
+  display: none !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
 
 /* ── Maintenance Overlay ── */
 #maintenance-overlay {

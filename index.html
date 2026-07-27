@@ -112,6 +112,20 @@
         });
       }
     });
+    // No-fill fallback: when a placement returns no ad, collapse its row so
+    // the page lays out exactly as if the ad slot never existed.
+    _taboola.push({
+      listenTo: 'noAd',
+      handler: function(e) {
+        var d = e.detail || {};
+        var map = window._nxAdMap || {};
+        var id = map[d.placement];
+        var inner = id && document.getElementById(id);
+        var row = inner && (inner.closest('.taboola-ad-row') || inner);
+        if (row) row.classList.add('ad-row-empty');
+        gtag('event', 'taboola_no_ad', { event_category: 'ads', placement: d.placement || '' });
+      }
+    });
   </script>
 
   <script>
@@ -698,17 +712,30 @@
     })();
   </script>
 
-<script id="aclib" type="text/javascript" src="//acscdn.com/script/aclib.js"></script>
-
 <script>
-  // Maintenance mode + Announcement notifications
+  // Maintenance mode + Announcement notifications.
+  // Both responses are cached in sessionStorage for 10 minutes so the admin
+  // API is hit at most twice per tab per 10 min instead of on every pageload.
   (function() {
     const API = (typeof _CONFIG !== 'undefined' && _CONFIG.adminApiUrl) || '';
     if (!API) return;
 
+    var BOOT_KEY = 'nx_boot_cache_v1';
+    var BOOT_TTL = 10 * 60 * 1000;
+    var isLocalhost = ['localhost', '127.0.0.1', '::1', ''].indexOf(window.location.hostname) !== -1;
+
+    function readCache() {
+      try {
+        var c = JSON.parse(sessionStorage.getItem(BOOT_KEY));
+        if (c && (Date.now() - c.at) < BOOT_TTL) return c;
+      } catch (e) {}
+      return null;
+    }
+
     // ── Maintenance Mode ──
-    fetch(API + '/site/settings').then(function(r) { return r.json(); }).then(function(res) {
-      var s = res.settings || {};
+    function handleSettings(s) {
+      s = s || {};
+      if (isLocalhost) return; // never block on localhost
       if (s.maintenanceMode !== 'true') return;
 
       // Let admins through
@@ -749,11 +776,11 @@
       } else {
         tryBlock();
       }
-    }).catch(function(){});
+    }
 
     // ── Announcement Notifications (unified) ──
-    fetch(API + '/announcements/active').then(function(r) { return r.json(); }).then(function(data) {
-      var list = data.announcements || [];
+    function handleAnnouncements(list) {
+      list = list || [];
       if (!list.length) return;
 
       list.forEach(function(a) {
@@ -769,6 +796,26 @@
           });
         }
       });
+    }
+
+    var cached = readCache();
+    if (cached) {
+      handleSettings(cached.settings);
+      handleAnnouncements(cached.announcements);
+      return;
+    }
+
+    Promise.all([
+      fetch(API + '/site/settings').then(function(r) { return r.json(); }).catch(function() { return {}; }),
+      fetch(API + '/announcements/active').then(function(r) { return r.json(); }).catch(function() { return {}; })
+    ]).then(function(results) {
+      var settings = (results[0] && results[0].settings) || {};
+      var announcements = (results[1] && results[1].announcements) || [];
+      try {
+        sessionStorage.setItem(BOOT_KEY, JSON.stringify({ at: Date.now(), settings: settings, announcements: announcements }));
+      } catch (e) {}
+      handleSettings(settings);
+      handleAnnouncements(announcements);
     }).catch(function(){});
   })();
 </script>

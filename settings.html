@@ -361,6 +361,21 @@
             <p class="description">Policies and links related to privacy and cookies for this project.</p>
 
             <div class="subsection" aria-hidden="false" style="padding:10px;">
+              <div class="policy-block" role="region" aria-labelledby="terms-title">
+                <div class="policy-info">
+                  <p id="terms-title" class="policy-title">Terms of Use</p>
+                  <p class="policy-desc">The binding agreement that governs your use of Nexora, including acceptable use, liability limits, and dispute resolution.</p>
+                </div>
+                <div class="policy-actions">
+                  <a class="policy-btn" role="button" href="/legal/terms-of-use.html" target="_blank" rel="noopener noreferrer" aria-label="Open Terms of Use">
+                    <span>Open</span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"/></svg>
+                  </a>
+                </div>
+              </div>
+
+              <div style="height:12px;"></div>
+
               <div class="policy-block" role="region" aria-labelledby="privacy-title">
                 <div class="policy-info">
                   <p id="privacy-title" class="policy-title">Privacy Policy</p>
@@ -602,7 +617,7 @@
         </section>
 
         <!-- Taboola native ad at bottom of settings -->
-        <div id="taboola-settings-bottom" style="width:100%;min-height:250px;margin-top:0;box-sizing:border-box;overflow:hidden;"></div>
+        <div id="taboola-settings-bottom" class="taboola-ad-row" style="width:100%;min-height:250px;margin-top:0;box-sizing:border-box;overflow:hidden;"></div>
       </div>
       <script>
         (function() {
@@ -612,12 +627,14 @@
           var innerId = 'taboola-settings-init-' + idx;
           var wrapper = document.getElementById('taboola-settings-bottom');
           wrapper.innerHTML = '<div id="' + innerId + '"></div>';
+          var placementName = 'Settings Below Content ' + idx;
+          (window._nxAdMap = window._nxAdMap || {})[placementName] = innerId;
           window._taboola = window._taboola || [];
           _taboola.push({article: 'auto', url: window.location.origin + '/settings'});
           _taboola.push({
             mode: 'alternating-thumbnails-a',
             container: innerId,
-            placement: 'Settings Below Content ' + idx,
+            placement: placementName,
             target_type: 'mix'
           });
           _taboola.push({flush: true});

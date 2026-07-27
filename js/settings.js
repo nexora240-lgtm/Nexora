@@ -166,14 +166,6 @@
     } catch (e) { return ''; }
   }
 
-  function resolveFaviconSource(name) {
-    const explicit = FAVICON_MAP && FAVICON_MAP[name];
-    if (explicit) return explicit;
-    const local = assetFor(name);
-    if (local) return local;
-    return FALLBACK_NONE_FAVICON;
-  }
-
   let _favToken = 0;
   let _lastBlobUrl = null;
   function revokeLastBlob() { try { if (_lastBlobUrl) { URL.revokeObjectURL(_lastBlobUrl); _lastBlobUrl = null; } } catch (e) {} }
@@ -623,32 +615,9 @@
     if (window.setupMouseTrackingSettings) {
       setTimeout(() => window.setupMouseTrackingSettings(), 50);
     }
-
-    // Reload Taboola ad on tab switch
-    var adWrapper = document.getElementById('taboola-settings-bottom');
-    if (adWrapper) {
-      if (typeof window._taboolaGlobalIndex === 'undefined') window._taboolaGlobalIndex = 0;
-      window._taboolaGlobalIndex++;
-      var idx = window._taboolaGlobalIndex;
-      var newId = 'taboola-settings-tab-' + idx;
-      var fullUrl = window.location.origin + '/settings/' + section;
-      // Clear wrapper and create fresh container
-      adWrapper.innerHTML = '';
-      var innerDiv = document.createElement('div');
-      innerDiv.id = newId;
-      adWrapper.appendChild(innerDiv);
-      // Use Taboola command queue
-      window._taboola = window._taboola || [];
-      _taboola.push({notify: 'newPageLoad'});
-      _taboola.push({article: 'auto', url: fullUrl});
-      _taboola.push({
-        mode: 'alternating-thumbnails-a',
-        container: newId,
-        placement: 'Settings Tab ' + section + ' ' + idx,
-        target_type: 'mix'
-      });
-      _taboola.push({flush: true});
-    }
+    // NOTE: the settings ad intentionally does NOT reload on tab switch.
+    // Reloading per tab flooded impressions with near-zero viewability,
+    // which tanked CPM. One placement per settings visit (settings.html).
   }
   tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.target)));
 

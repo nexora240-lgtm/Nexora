@@ -15,7 +15,6 @@
     || 'https://8hxm0uu86k.execute-api.us-east-2.amazonaws.com';
 
   const SESSION_KEY = 'nexora.auth.session';
-  const SYNC_INTERVAL = 60000; // Sync every minute when logged in
 
   // Session state
   let currentSession = null;
@@ -151,27 +150,6 @@
       clearCredentials();
       currentSession = null;
     }
-  }
-
-  /**
-   * Load session from localStorage (legacy, kept for compatibility)
-   */
-  function loadSession() {
-    // No longer used - we use credentials-based auto-login now
-  }
-
-  /**
-   * Save session to localStorage
-   */
-  function saveSession(session) {
-    currentSession = session;
-    try {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-      console.log('[NexoraAuth] Session saved for user:', session?.username);
-    } catch (e) {
-      console.error('[NexoraAuth] Failed to save session:', e);
-    }
-    notifyListeners();
   }
 
   /**
@@ -536,6 +514,7 @@
   /**
    * Save data to cloud
    */
+  let dataDirty = false;
   async function saveCloudData() {
     if (!currentSession) return;
 
@@ -547,6 +526,7 @@
         token: currentSession.token,
         data
       });
+      dataDirty = false;
       console.log('Data synced to cloud');
     } catch (e) {
       console.error('Failed to sync data:', e);
@@ -576,12 +556,15 @@
   }
 
   /**
-   * Start auto-sync timer
+   * Start auto-sync.
+   * Sync is fully event-driven: localStorage writes trigger a debounced push
+   * and beforeunload flushes anything unsent. The old 60s polling interval
+   * posted the entire localStorage every minute per logged-in tab — that was
+   * the single largest source of API Gateway requests. Do NOT reintroduce it.
    */
   function startAutoSync() {
     stopAutoSync();
-    syncTimer = setInterval(saveCloudData, SYNC_INTERVAL);
-    // Initial sync
+    // One initial push so pre-login local changes reach the cloud
     saveCloudData();
   }
 
@@ -606,10 +589,11 @@
   let debouncedSyncTimer = null;
   function debouncedSync() {
     if (!currentSession) return;
+    dataDirty = true;
     if (debouncedSyncTimer) clearTimeout(debouncedSyncTimer);
     debouncedSyncTimer = setTimeout(() => {
       saveCloudData();
-    }, 500); // Wait 500ms after last change before syncing (prevents spam)
+    }, 2000); // Batch rapid changes into one request
   }
 
   // Listen for localStorage changes to auto-sync
@@ -620,7 +604,6 @@
     // Trigger debounced sync for settings changes (but not the session/credentials keys)
     if (key !== SESSION_KEY && key !== CREDENTIALS_KEY && 
         (key.startsWith('settings.') || key.startsWith('nexora') || key.startsWith('game.') || key === 'proxServer' || key === 'firstVisit')) {
-      console.log('[NexoraAuth] Change detected, syncing:', key);
       debouncedSync();
     }
   };
@@ -631,7 +614,6 @@
     originalRemoveItem(key);
     if (key !== SESSION_KEY && key !== CREDENTIALS_KEY && 
         (key.startsWith('settings.') || key.startsWith('nexora') || key.startsWith('game.') || key === 'proxServer')) {
-      console.log('[NexoraAuth] Removal detected, syncing:', key);
       debouncedSync();
     }
   };
@@ -643,9 +625,9 @@
     init();
   }
 
-  // Save before unload
+  // Save before unload — only when there are unsent changes
   window.addEventListener('beforeunload', () => {
-    if (currentSession) {
+    if (currentSession && dataDirty) {
       // Use sendBeacon for reliable last-moment sync
       const data = {
         username: currentSession.username,
@@ -653,6 +635,7 @@
         data: getLocalData()
       };
       navigator.sendBeacon(`${AUTH_API_URL}/data/save`, JSON.stringify(data));
+      dataDirty = false;
     }
   });
 

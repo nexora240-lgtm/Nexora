@@ -118,9 +118,9 @@ body {
    PAGE WRAPPER
     */
 .apps-container {
-  max-width: 1200px;
+  max-width: var(--page-max, 1200px);
   margin: 0 auto;
-  padding: 28px 20px 20px;
+  padding: 28px var(--page-gutter, 20px) 20px;
   position: relative;
   z-index: 1;
   animation: pageSlideUp 0.55s cubic-bezier(.22,.88,.36,1) both;
@@ -282,9 +282,9 @@ body {
 .apps-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
-  gap: 18px;
+  gap: var(--grid-gap, 20px);
   padding: 4px 4px 20px;
-  max-width: 1080px;
+  max-width: var(--page-max, 1200px);
   margin: 0 auto;
   perspective: 1200px;
 }

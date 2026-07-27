@@ -128,13 +128,6 @@
     }
 
     /**
-     * Check if user has dismissed the account prompt
-     */
-    function hasUserDismissedAccountPrompt() {
-        return localStorage.getItem('nexora_circle_dismissed_account_prompt') === 'true';
-    }
-
-    /**
      * Show account creation prompt modal for guest users
      */
     function showAccountPrompt() {
@@ -343,18 +336,6 @@ function joinPublicChat() {
             if (publicInput) publicInput.focus();
         }, 100);
     }
-}
-
-function getUniqueUsername(baseUsername, existingUsers) {
-    let username = baseUsername;
-    let counter = 1;
-
-    while (existingUsers.includes(username)) {
-        username = `${baseUsername}-${counter}`;
-        counter++;
-    }
-    
-    return username;
 }
 
 function joinPublicChatWithUsername() {
@@ -1107,14 +1088,6 @@ function displayMessage(username, message, timestamp, isOwn) {
     
     messagesDiv.appendChild(messageDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-
-function addStatusMessage(text) {
-    const messagesDiv = document.getElementById('messages');
-    const statusDiv = document.createElement('div');
-    statusDiv.className = 'status-message';
-    statusDiv.textContent = text;
-    messagesDiv.appendChild(statusDiv);
 }
 
 function addSystemMessage(text) {
