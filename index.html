@@ -755,11 +755,14 @@
         var overlay = document.createElement('div');
         overlay.id = 'maintenance-overlay';
         overlay.innerHTML =
+          '<div class="mnt-orbs">' +
+            '<span class="mnt-orb"></span><span class="mnt-orb"></span><span class="mnt-orb"></span>' +
+            '<span class="mnt-orb"></span><span class="mnt-orb"></span>' +
+          '</div>' +
           '<div class="maintenance-card">' +
             '<div class="mnt-logo">NEXORA</div>' +
             '<div class="mnt-tag">2026 &bull; 2027</div>' +
             '<h1>The moment we have been waiting for...</h1>' +
-            '<p>Something new is being forged in the dark. Nexora reawakens in&hellip;</p>' +
             '<div class="mnt-countdown" role="timer" aria-live="polite">' +
               '<div class="mnt-unit"><span class="mnt-num" data-unit="days">00</span><span class="mnt-label">Days</span></div>' +
               '<div class="mnt-unit"><span class="mnt-num" data-unit="hours">00</span><span class="mnt-label">Hours</span></div>' +

@@ -252,34 +252,70 @@ html.app-shell body {
   animation: mnt-overlay-in 0.9s ease both;
 }
 
-/* Animated aurora / ember backdrop built from the theme accent */
-#maintenance-overlay::before,
-#maintenance-overlay::after {
-  content: "";
+/* Floating orbs built from the theme accent — drift freely behind the card */
+.mnt-orbs {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.mnt-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.55;
-  pointer-events: none;
-  z-index: 0;
+  filter: blur(70px);
+  will-change: transform;
 }
 
-#maintenance-overlay::before {
-  width: 60vw;
-  height: 60vw;
-  top: -20vw;
-  left: -15vw;
-  background: radial-gradient(circle at center, var(--primary), transparent 65%);
-  animation: mnt-drift-a 14s ease-in-out infinite alternate;
+.mnt-orb:nth-child(1) {
+  width: 42vw;
+  height: 42vw;
+  top: -14%;
+  left: -12%;
+  opacity: 0.5;
+  background: radial-gradient(circle at 35% 35%, var(--primary), transparent 70%);
+  animation: mnt-orbit-1 22s ease-in-out infinite;
 }
 
-#maintenance-overlay::after {
-  width: 55vw;
-  height: 55vw;
-  bottom: -22vw;
-  right: -18vw;
-  background: radial-gradient(circle at center, var(--primary-deep), transparent 65%);
-  animation: mnt-drift-b 18s ease-in-out infinite alternate;
+.mnt-orb:nth-child(2) {
+  width: 34vw;
+  height: 34vw;
+  bottom: -14%;
+  right: -8%;
+  opacity: 0.5;
+  background: radial-gradient(circle at 35% 35%, var(--primary-deep), transparent 70%);
+  animation: mnt-orbit-2 27s ease-in-out infinite;
+}
+
+.mnt-orb:nth-child(3) {
+  width: 22vw;
+  height: 22vw;
+  top: 12%;
+  right: 18%;
+  opacity: 0.4;
+  background: radial-gradient(circle at 35% 35%, var(--primary), transparent 70%);
+  animation: mnt-orbit-3 18s ease-in-out infinite;
+}
+
+.mnt-orb:nth-child(4) {
+  width: 26vw;
+  height: 26vw;
+  bottom: 8%;
+  left: 6%;
+  opacity: 0.4;
+  background: radial-gradient(circle at 35% 35%, var(--primary-deep), transparent 70%);
+  animation: mnt-orbit-4 24s ease-in-out infinite;
+}
+
+.mnt-orb:nth-child(5) {
+  width: 16vw;
+  height: 16vw;
+  top: 42%;
+  left: 42%;
+  opacity: 0.3;
+  background: radial-gradient(circle at 35% 35%, var(--primary), transparent 70%);
+  animation: mnt-orbit-5 16s ease-in-out infinite;
 }
 
 .maintenance-card {
@@ -376,14 +412,6 @@ html.app-shell body {
   background-clip: text;
   color: transparent;
   animation: mnt-shimmer 5.5s linear infinite;
-}
-
-.maintenance-card p {
-  margin: 0;
-  max-width: 440px;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.6;
 }
 
 /* Countdown */
@@ -497,14 +525,40 @@ html.app-shell body {
   100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 
-@keyframes mnt-drift-a {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(8vw, 6vh) scale(1.15); }
+@keyframes mnt-orbit-1 {
+  0%   { transform: translate(0, 0) scale(1); }
+  25%  { transform: translate(7vw, 9vh) scale(1.12); }
+  50%  { transform: translate(3vw, 16vh) scale(0.94); }
+  75%  { transform: translate(-6vw, 7vh) scale(1.06); }
+  100% { transform: translate(0, 0) scale(1); }
 }
 
-@keyframes mnt-drift-b {
-  from { transform: translate(0, 0) scale(1.1); }
-  to   { transform: translate(-7vw, -5vh) scale(1); }
+@keyframes mnt-orbit-2 {
+  0%   { transform: translate(0, 0) scale(1); }
+  25%  { transform: translate(-8vw, -6vh) scale(1.08); }
+  50%  { transform: translate(-3vw, -14vh) scale(0.92); }
+  75%  { transform: translate(6vw, -8vh) scale(1.1); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes mnt-orbit-3 {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(-9vw, 10vh) scale(1.15); }
+  66%  { transform: translate(-4vw, -8vh) scale(0.9); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes mnt-orbit-4 {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(8vw, -9vh) scale(0.92); }
+  66%  { transform: translate(4vw, 7vh) scale(1.15); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes mnt-orbit-5 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-10vw, -12vh) scale(1.2); }
+  100% { transform: translate(0, 0) scale(1); }
 }
 
 @keyframes mnt-float {
@@ -553,8 +607,7 @@ html.app-shell body {
 
 @media (prefers-reduced-motion: reduce) {
   #maintenance-overlay,
-  #maintenance-overlay::before,
-  #maintenance-overlay::after,
+  .mnt-orb,
   .maintenance-card,
   .maintenance-card::before,
   .maintenance-card h1,
