@@ -235,8 +235,10 @@ html.app-shell body {
   margin: 0 !important;
 }
 
-/* ── Maintenance Overlay ── */
+/* ── Maintenance / Re-Release Countdown Overlay ── */
 #maintenance-overlay {
+  --mnt-glass-bg: color-mix(in srgb, var(--surface) 55%, transparent);
+  --mnt-glass-border: color-mix(in srgb, var(--contrast-high) 10%, transparent);
   position: fixed;
   inset: 0;
   z-index: 99999;
@@ -245,47 +247,226 @@ html.app-shell body {
   align-items: center;
   justify-content: center;
   text-align: center;
+  overflow: hidden;
+  padding: 24px;
+  animation: mnt-overlay-in 0.9s ease both;
+}
+
+/* Animated aurora / ember backdrop built from the theme accent */
+#maintenance-overlay::before,
+#maintenance-overlay::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+}
+
+#maintenance-overlay::before {
+  width: 60vw;
+  height: 60vw;
+  top: -20vw;
+  left: -15vw;
+  background: radial-gradient(circle at center, var(--primary), transparent 65%);
+  animation: mnt-drift-a 14s ease-in-out infinite alternate;
+}
+
+#maintenance-overlay::after {
+  width: 55vw;
+  height: 55vw;
+  bottom: -22vw;
+  right: -18vw;
+  background: radial-gradient(circle at center, var(--primary-deep), transparent 65%);
+  animation: mnt-drift-b 18s ease-in-out infinite alternate;
 }
 
 .maintenance-card {
-  max-width: 420px;
-  padding: 48px 36px;
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  width: 100%;
+  padding: 52px 44px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
+  border-radius: 24px;
+  background: var(--mnt-glass-bg);
+  border: 1px solid var(--mnt-glass-border);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  box-shadow:
+    0 30px 90px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(255,255,255,0.05),
+    0 0 60px var(--primary-shadow);
+  animation: mnt-card-in 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mnt-logo {
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: 0.32em;
+  text-indent: 0.32em;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 40px var(--primary-shadow);
+  animation: mnt-glow-pulse 3.4s ease-in-out infinite;
+}
+
+.mnt-tag {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  color: var(--muted);
+  padding: 5px 14px;
+  border: 1px solid var(--mnt-glass-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-2) 60%, transparent);
 }
 
 .maintenance-card h1 {
-  margin: 0;
-  font-size: 1.75rem;
+  margin: 4px 0 0;
+  font-size: 2.1rem;
+  line-height: 1.15;
+  font-weight: 800;
   color: var(--text);
 }
 
 .maintenance-card p {
   margin: 0;
+  max-width: 440px;
   color: var(--muted);
-  font-size: 0.95rem;
-  line-height: 1.55;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
-.maintenance-icon {
+/* Countdown */
+.mnt-countdown {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.mnt-unit {
+  min-width: 88px;
+  padding: 16px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface-2) 55%, transparent);
+  border: 1px solid var(--mnt-glass-border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.mnt-num {
   font-size: 2.5rem;
-  color: var(--primary-accent);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  text-shadow: 0 0 24px var(--primary-shadow);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.maintenance-pulse {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--primary-accent);
-  margin-top: 8px;
-  animation: m-pulse 1.6s ease-in-out infinite;
+.mnt-num.mnt-tick {
+  animation: mnt-tick 0.55s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes m-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: .4; transform: scale(1.6); }
+.mnt-label {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.mnt-date {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-2) 60%, transparent);
+  border: 1px solid var(--mnt-glass-border);
+}
+
+.mnt-date i { color: var(--primary-accent); }
+
+/* Dramatic launch sequence when the countdown hits zero */
+#maintenance-overlay.mnt-launching .maintenance-card { animation: mnt-launch-card 1.2s ease forwards; }
+#maintenance-overlay.mnt-launching { animation: mnt-launch-flash 1.6s ease forwards; }
+
+@keyframes mnt-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes mnt-card-in {
+  from { opacity: 0; transform: translateY(26px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes mnt-glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 12px var(--primary-shadow)); }
+  50%      { filter: drop-shadow(0 0 30px var(--primary-shadow)); }
+}
+
+@keyframes mnt-tick {
+  0%   { transform: translateY(-14px) scale(1.18); opacity: 0.2; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes mnt-drift-a {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(8vw, 6vh) scale(1.15); }
+}
+
+@keyframes mnt-drift-b {
+  from { transform: translate(0, 0) scale(1.1); }
+  to   { transform: translate(-7vw, -5vh) scale(1); }
+}
+
+@keyframes mnt-launch-card {
+  0%   { transform: scale(1); opacity: 1; }
+  40%  { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1.4); opacity: 0; filter: blur(12px); }
+}
+
+@keyframes mnt-launch-flash {
+  0%   { background: var(--page-bg); }
+  35%  { background: var(--primary); }
+  100% { background: var(--page-bg); opacity: 0; }
+}
+
+@media (max-width: 520px) {
+  .maintenance-card { padding: 40px 22px; }
+  .mnt-logo { font-size: 2rem; }
+  .maintenance-card h1 { font-size: 1.6rem; }
+  .mnt-unit { min-width: 66px; padding: 12px 6px 9px; }
+  .mnt-num { font-size: 1.9rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #maintenance-overlay,
+  #maintenance-overlay::before,
+  #maintenance-overlay::after,
+  .maintenance-card,
+  .mnt-logo,
+  .mnt-num { animation: none !important; }
 }
 
 /* Announcement styles moved to nexora-notify.css */

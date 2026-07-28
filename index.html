@@ -732,11 +732,15 @@
       return null;
     }
 
-    // ── Maintenance Mode ──
+    // ── Maintenance Mode / Re-Release Countdown ──
+    // Nexora reawakens: August 5th, 5:00 PM CDT (UTC-5).
+    var RELEASE_AT = new Date('2026-08-05T17:00:00-05:00').getTime();
+
     function handleSettings(s) {
       s = s || {};
       if (isLocalhost) return; // never block on localhost
       if (s.maintenanceMode !== 'true') return;
+      if (Date.now() >= RELEASE_AT) return; // release time reached — site is live
 
       // Let admins through
       function checkAdmin() {
@@ -752,10 +756,17 @@
         overlay.id = 'maintenance-overlay';
         overlay.innerHTML =
           '<div class="maintenance-card">' +
-            '<div class="maintenance-icon"><i class="fas fa-wrench"></i></div>' +
-            '<h1>Under Maintenance</h1>' +
-            '<p>Nexora is temporarily down for scheduled maintenance.<br>We\'ll be back shortly.</p>' +
-            '<div class="maintenance-pulse"></div>' +
+            '<div class="mnt-logo">NEXORA</div>' +
+            '<div class="mnt-tag">2026 &mdash; 2027</div>' +
+            '<h1>The Return Is Near</h1>' +
+            '<p>Something new is being forged in the dark. Nexora reawakens in&hellip;</p>' +
+            '<div class="mnt-countdown" role="timer" aria-live="polite">' +
+              '<div class="mnt-unit"><span class="mnt-num" data-unit="days">00</span><span class="mnt-label">Days</span></div>' +
+              '<div class="mnt-unit"><span class="mnt-num" data-unit="hours">00</span><span class="mnt-label">Hours</span></div>' +
+              '<div class="mnt-unit"><span class="mnt-num" data-unit="minutes">00</span><span class="mnt-label">Minutes</span></div>' +
+              '<div class="mnt-unit"><span class="mnt-num" data-unit="seconds">00</span><span class="mnt-label">Seconds</span></div>' +
+            '</div>' +
+            '<div class="mnt-date"><i class="fas fa-bolt"></i> August 5th &middot; 5:00 PM CDT</div>' +
           '</div>';
         document.body.appendChild(overlay);
 
@@ -765,6 +776,46 @@
           var link = e.target.closest('a[data-route], a[href]');
           if (link) { e.preventDefault(); e.stopImmediatePropagation(); }
         }, true);
+
+        // ── Live countdown ──
+        var units = {};
+        overlay.querySelectorAll('.mnt-num').forEach(function(el) {
+          units[el.getAttribute('data-unit')] = el;
+        });
+
+        function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+        function setUnit(el, val) {
+          if (!el) return;
+          var next = pad(val);
+          if (el.textContent === next) return;
+          el.textContent = next;
+          el.classList.remove('mnt-tick');
+          void el.offsetWidth; // restart animation
+          el.classList.add('mnt-tick');
+        }
+
+        var launched = false;
+        function launch() {
+          if (launched) return;
+          launched = true;
+          clearInterval(timer);
+          overlay.classList.add('mnt-launching');
+          setTimeout(function() { window.location.reload(); }, 1500);
+        }
+
+        function render() {
+          var diff = RELEASE_AT - Date.now();
+          if (diff <= 0) { launch(); return; }
+          var s = Math.floor(diff / 1000);
+          setUnit(units.days, Math.floor(s / 86400));
+          setUnit(units.hours, Math.floor((s % 86400) / 3600));
+          setUnit(units.minutes, Math.floor((s % 3600) / 60));
+          setUnit(units.seconds, s % 60);
+        }
+
+        render();
+        var timer = setInterval(render, 1000);
       }
 
       if (window.NexoraAuth && window.NexoraAuth.authResolved) {
