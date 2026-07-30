@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <script src="/js/storage-shim.js"></script>
+  <script src="/js/posthog-init.js"></script>
     <meta name="google-adsense-account" content="ca-pub-6990835730345530">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -281,6 +282,11 @@
               <td>Third-party (Google)</td>
             </tr>
             <tr>
+              <td><strong>Product Analytics &amp; Session Replay</strong></td>
+              <td>We use PostHog to understand how our Website is used and to improve it. PostHog captures product-analytics events (such as page views and clicks) and may record anonymized session replays of your interactions with the Website. Sensitive form fields — including passwords and email inputs — are automatically masked and are not recorded.</td>
+              <td>Third-party (PostHog)</td>
+            </tr>
+            <tr>
               <td><strong>Advertising</strong></td>
               <td>Used by third-party advertising partners to deliver relevant advertisements and measure ad campaign effectiveness. These cookies may track your browsing activity across websites.</td>
               <td>Third-party</td>
@@ -296,6 +302,7 @@
           <li><strong>Essential operations:</strong> Some cookies are strictly necessary for the Website to function, such as maintaining your login session and applying your display preferences.</li>
           <li><strong>User experience:</strong> Functional cookies remember your settings and preferences so you do not need to reconfigure them on each visit.</li>
           <li><strong>Analytics:</strong> Performance cookies allow us to monitor traffic, identify popular features, and improve the Website.</li>
+          <li><strong>Product analytics &amp; session replay:</strong> PostHog cookies and identifiers help us analyze how features are used and, through anonymized session replays, diagnose usability issues and errors. Sensitive input fields are masked.</li>
           <li><strong>Advertising:</strong> Third-party advertising cookies serve relevant ads and measure their effectiveness.</li>
         </ul>
       </section>
@@ -312,6 +319,13 @@
           <li><a href="https://help.opera.com/en/latest/web-preferences/" target="_blank" rel="noopener noreferrer">Opera</a></li>
         </ul>
         <p>If you choose to reject cookies, you may still use our Website, although your access to some functionality may be limited.</p>
+      </section>
+
+      <section>
+        <h2>Session Replay and PostHog</h2>
+        <p>We use <a href="https://posthog.com" target="_blank" rel="noopener noreferrer">PostHog</a>, a third-party product-analytics platform, to help us understand how visitors use our Website and to improve it. PostHog sets cookies and uses local storage to assign a pseudonymous identifier to your browser so that related events can be grouped together.</p>
+        <p>PostHog's <strong>session replay</strong> feature records a reconstruction of your interactions with the Website — such as page navigation, clicks, and scrolling — so we can diagnose bugs and usability problems. Replays do <strong>not</strong> capture your screen or camera; they reconstruct the page from anonymized event data. Sensitive form inputs, including <strong>passwords and email addresses</strong>, are automatically masked and are never recorded.</p>
+        <p>Data collected by PostHog is processed on your behalf to operate and improve the Website. For more information, see PostHog's <a href="https://posthog.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>. You can prevent PostHog from collecting data by blocking cookies or using browser privacy settings and tracking-prevention features described below.</p>
       </section>
 
       <section>
