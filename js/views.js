@@ -317,7 +317,7 @@ function loadView(file) {
       // Refresh Taboola ads when re-showing a persistent view — but at most
       // once per 90s. Refreshing on every SPA navigation flooded impressions
       // (each barely viewable), which dragged CPM down hard.
-      if (window._taboola) {
+      if (window._taboola && !window._nxAdsOff) {
         const adRows = persistentConfig.stash.querySelectorAll('.taboola-ad-row');
         const now = Date.now();
         const lastRefresh = window._nxAdLastRefresh || 0;
@@ -325,7 +325,7 @@ function loadView(file) {
           window._nxAdLastRefresh = now;
           if (typeof window._taboolaGlobalIndex === 'undefined') window._taboolaGlobalIndex = 0;
           _taboola.push({notify: 'newPageLoad'});
-          _taboola.push({article: 'auto', url: window.location.href});
+          _taboola.push({article: 'auto', url: window.nxAdUrl ? nxAdUrl() : 'https://thenexoraproject.xyz' + window.location.pathname});
           adRows.forEach(row => {
             window._taboolaGlobalIndex++;
             const adId = 'taboola-refresh-' + window._taboolaGlobalIndex;

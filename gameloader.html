@@ -1269,9 +1269,10 @@
       // Signal new page to Taboola BEFORE pushing any placements
       window._taboola = window._taboola || [];
       _taboola.push({notify: 'newPageLoad'});
-      _taboola.push({article: 'auto', url: window.location.origin + window.location.pathname});
+      _taboola.push({article: 'auto', url: window.nxAdUrl ? nxAdUrl('/loader') : 'https://thenexoraproject.xyz/loader'});
 
       function insertTaboolaAd() {
+        if (window._nxAdsOff) return;
         window._taboolaGlobalIndex++;
         const adContainer = document.createElement('div');
         adContainer.className = 'taboola-ad-row';
@@ -1476,20 +1477,22 @@
   <!-- Taboola Loader Script -->
   <script type="text/javascript">
     window._taboola = window._taboola || [];
-    _taboola.push({article:'auto'});
-    !function (e, f, u, i) {
-      if (!document.getElementById(i)){
-        e.async = 1;
-        e.src = u;
-        e.id = i;
-        f.parentNode.insertBefore(e, f);
+    _taboola.push({article:'auto', url: window.nxAdUrl ? nxAdUrl('/loader') : 'https://thenexoraproject.xyz/loader'});
+    if (!window._nxAdsOff) {
+      !function (e, f, u, i) {
+        if (!document.getElementById(i)){
+          e.async = 1;
+          e.src = u;
+          e.id = i;
+          f.parentNode.insertBefore(e, f);
+        }
+      }(document.createElement('script'),
+        document.getElementsByTagName('script')[0],
+        '//cdn.taboola.com/libtrc/adklip-thenexoraproject/loader.js',
+        'tb_loader_script');
+      if(window.performance && typeof window.performance.mark == 'function'){
+        window.performance.mark('tbl_ic');
       }
-    }(document.createElement('script'),
-      document.getElementsByTagName('script')[0],
-      '//cdn.taboola.com/libtrc/adklip-thenexoraproject/loader.js',
-      'tb_loader_script');
-    if(window.performance && typeof window.performance.mark == 'function'){
-      window.performance.mark('tbl_ic');
     }
   </script>
 </body>

@@ -622,16 +622,20 @@
       </div>
       <script>
         (function() {
+          var wrapper = document.getElementById('taboola-settings-bottom');
+          if (window._nxAdsOff) {
+            if (wrapper) wrapper.style.display = 'none';
+            return;
+          }
           if (typeof window._taboolaGlobalIndex === 'undefined') window._taboolaGlobalIndex = 0;
           window._taboolaGlobalIndex++;
           var idx = window._taboolaGlobalIndex;
           var innerId = 'taboola-settings-init-' + idx;
-          var wrapper = document.getElementById('taboola-settings-bottom');
           wrapper.innerHTML = '<div id="' + innerId + '"></div>';
           var placementName = 'Settings Below Content ' + idx;
           (window._nxAdMap = window._nxAdMap || {})[placementName] = innerId;
           window._taboola = window._taboola || [];
-          _taboola.push({article: 'auto', url: window.location.origin + '/settings'});
+          _taboola.push({article: 'auto', url: window.nxAdUrl ? nxAdUrl('/settings') : 'https://thenexoraproject.xyz/settings'});
           _taboola.push({
             mode: 'alternating-thumbnails-a',
             container: innerId,

@@ -1829,9 +1829,10 @@
       // Signal new page to Taboola BEFORE pushing any placements
       window._taboola = window._taboola || [];
       _taboola.push({notify: 'newPageLoad'});
-      _taboola.push({article: 'auto', url: window.location.origin + window.location.pathname});
+      _taboola.push({article: 'auto', url: window.nxAdUrl ? nxAdUrl('/games') : 'https://thenexoraproject.xyz/games'});
 
       function insertTaboolaAd() {
+        if (window._nxAdsOff) return;
         window._taboolaGlobalIndex++;
         taboolaAdCount++;
         const adContainer = document.createElement('div');
