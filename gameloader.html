@@ -1271,8 +1271,11 @@
       _taboola.push({notify: 'newPageLoad'});
       _taboola.push({article: 'auto', url: window.nxAdUrl ? nxAdUrl('/loader') : 'https://thenexoraproject.xyz/loader'});
 
+      const _nxAdsThrottled = (Date.now() - (window._nxLoaderAdStamp || 0)) < 90 * 1000;
+
       function insertTaboolaAd() {
-        if (window._nxAdsOff) return;
+        if (window._nxAdsOff || _nxAdsThrottled) return;
+        window._nxLoaderAdStamp = Date.now();
         window._taboolaGlobalIndex++;
         const adContainer = document.createElement('div');
         adContainer.className = 'taboola-ad-row';

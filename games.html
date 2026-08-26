@@ -1831,8 +1831,11 @@
       _taboola.push({notify: 'newPageLoad'});
       _taboola.push({article: 'auto', url: window.nxAdUrl ? nxAdUrl('/games') : 'https://thenexoraproject.xyz/games'});
 
+      const _nxAdsThrottled = (Date.now() - (window._nxGamesAdStamp || 0)) < 90 * 1000;
+
       function insertTaboolaAd() {
-        if (window._nxAdsOff) return;
+        if (window._nxAdsOff || _nxAdsThrottled) return;
+        window._nxGamesAdStamp = Date.now();
         window._taboolaGlobalIndex++;
         taboolaAdCount++;
         const adContainer = document.createElement('div');

@@ -623,10 +623,12 @@
       <script>
         (function() {
           var wrapper = document.getElementById('taboola-settings-bottom');
-          if (window._nxAdsOff) {
+          var now = Date.now();
+          if (window._nxAdsOff || (now - (window._nxSettingsAdStamp || 0)) < 90 * 1000) {
             if (wrapper) wrapper.style.display = 'none';
             return;
           }
+          window._nxSettingsAdStamp = now;
           if (typeof window._taboolaGlobalIndex === 'undefined') window._taboolaGlobalIndex = 0;
           window._taboolaGlobalIndex++;
           var idx = window._taboolaGlobalIndex;
