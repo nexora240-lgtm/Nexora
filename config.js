@@ -112,14 +112,6 @@ var _CONFIG = {
   }
 };
 
-window.NX_AD_ORIGIN = "https://thenexoraproject.xyz";
-
-window.nxAdUrl = function (path) {
-  var p = path || (location.pathname + location.search) || "/";
-  if (p.charAt(0) !== "/") p = "/" + p;
-  return window.NX_AD_ORIGIN + p;
-};
-
 window.nxAdsAllowed = function () {
   try {
     var tz = (Intl.DateTimeFormat().resolvedOptions().timeZone || "");

@@ -1269,7 +1269,7 @@
       // Signal new page to Taboola BEFORE pushing any placements
       window._taboola = window._taboola || [];
       _taboola.push({notify: 'newPageLoad'});
-      _taboola.push({article: 'auto', url: window.nxAdUrl ? nxAdUrl('/loader') : 'https://thenexoraproject.xyz/loader'});
+      _taboola.push({article: 'auto', url: window.location.origin + window.location.pathname});
 
       const _nxAdsThrottled = (Date.now() - (window._nxLoaderAdStamp || 0)) < 90 * 1000;
 
@@ -1480,7 +1480,7 @@
   <!-- Taboola Loader Script -->
   <script type="text/javascript">
     window._taboola = window._taboola || [];
-    _taboola.push({article:'auto', url: window.nxAdUrl ? nxAdUrl('/loader') : 'https://thenexoraproject.xyz/loader'});
+    _taboola.push({article:'auto'});
     if (!window._nxAdsOff) {
       !function (e, f, u, i) {
         if (!document.getElementById(i)){

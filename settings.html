@@ -637,7 +637,7 @@
           var placementName = 'Settings Below Content ' + idx;
           (window._nxAdMap = window._nxAdMap || {})[placementName] = innerId;
           window._taboola = window._taboola || [];
-          _taboola.push({article: 'auto', url: window.nxAdUrl ? nxAdUrl('/settings') : 'https://thenexoraproject.xyz/settings'});
+          _taboola.push({article: 'auto', url: window.location.origin + '/settings'});
           _taboola.push({
             mode: 'alternating-thumbnails-a',
             container: innerId,

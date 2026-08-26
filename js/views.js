@@ -325,7 +325,7 @@ function loadView(file) {
           window._nxAdLastRefresh = now;
           if (typeof window._taboolaGlobalIndex === 'undefined') window._taboolaGlobalIndex = 0;
           _taboola.push({notify: 'newPageLoad'});
-          _taboola.push({article: 'auto', url: window.nxAdUrl ? nxAdUrl() : 'https://thenexoraproject.xyz' + window.location.pathname});
+          _taboola.push({article: 'auto', url: window.location.href});
           adRows.forEach(row => {
             window._taboolaGlobalIndex++;
             const adId = 'taboola-refresh-' + window._taboolaGlobalIndex;
