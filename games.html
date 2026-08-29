@@ -1027,11 +1027,9 @@
     let visibleCards = new Set();
     const BUFFER_SIZE = 20; // Cards to render outside viewport
 
-    // Global Taboola ad counter — never reset, only increment, to avoid
-    // "Placement duplication" errors from Taboola's library
-    if (typeof window._taboolaGlobalIndex === 'undefined') {
-      window._taboolaGlobalIndex = 0;
-    }
+    // Timestamp of the last render that requested ads — limits Taboola
+    // page-view signals to real user actions, max one per 10s.
+    let lastAdRenderAt = 0;
 
     // Favorites manager
     const FavoritesManager = {
@@ -1143,7 +1141,7 @@
           }
           currentPage = 1;
           updateAllGamesTitle();
-          initGames(document.getElementById('searchInput').value);
+          initGames(document.getElementById('searchInput').value, true);
         };
         scrollContainer.appendChild(pill);
       });
@@ -1645,7 +1643,7 @@
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      initGames(getSearchValue());
+      initGames(getSearchValue(), true);
     }
 
     // Render pagination controls
@@ -1753,7 +1751,7 @@
     });
     
     // render grid with fuzzy-ranked results
-    function initGames(filter = "") {
+    function initGames(filter = "", withAds = false) {
       const grid = document.getElementById("gameGrid");
       grid.innerHTML = "";
 
@@ -1821,28 +1819,38 @@
       // ⚡ RENDER PAGINATION IMMEDIATELY - Don't wait for views
       renderPagination(totalGames);
 
-      // Taboola: insert ad widgets every AD_INTERVAL cards.
-      // 24 (2 grid rows apart) keeps placements scarce → higher viewability + CPM.
+      // Taboola: first ad after 12 cards (near the fold), then every 24.
+      // Placement names/container IDs are STABLE per position (Taboola SPA
+      // contract: reuse identical placements after each newPageLoad). Unique
+      // per-pageview names fragment demand history and cause no-fill.
+      const AD_FIRST_AT = 12;
       const AD_INTERVAL = 24;
-      let taboolaAdCount = 0;
+      let adPosition = 0;
 
-      // Signal new page to Taboola BEFORE pushing any placements
-      window._taboola = window._taboola || [];
-      _taboola.push({notify: 'newPageLoad'});
-      _taboola.push({article: 'auto', url: window.location.origin + window.location.pathname});
+      // Only real user actions (navigation, filter, pagination) count as a
+      // Taboola page-view — never search keystrokes — and at most every 10s.
+      const adRenderNow = Date.now();
+      const renderAds = withAds && (adRenderNow - lastAdRenderAt > 10000);
+      if (renderAds) {
+        lastAdRenderAt = adRenderNow;
+        // Signal new page to Taboola BEFORE pushing any placements
+        window._taboola = window._taboola || [];
+        _taboola.push({notify: 'newPageLoad'});
+        _taboola.push({article: 'auto', url: window.location.origin + window.location.pathname});
+      }
 
       function insertTaboolaAd() {
-        window._taboolaGlobalIndex++;
-        taboolaAdCount++;
+        adPosition++;
         const adContainer = document.createElement('div');
         adContainer.className = 'taboola-ad-row';
-        const adId = 'taboola-games-feed-' + window._taboolaGlobalIndex;
+        const adId = 'taboola-games-feed-' + adPosition;
+        const placementName = 'Games Feed ' + adPosition;
+        adContainer.dataset.tbContainer = adId;
+        adContainer.dataset.tbPlacement = placementName;
         adContainer.innerHTML = '<div id="' + adId + '"></div>';
         grid.appendChild(adContainer);
 
-        const placementName = 'Games Feed ' + window._taboolaGlobalIndex;
         (window._nxAdMap = window._nxAdMap || {})[placementName] = adId;
-        window._taboola = window._taboola || [];
         _taboola.push({
           mode: 'alternating-thumbnails-a',
           container: adId,
@@ -1853,8 +1861,8 @@
 
       // Render games for current page
       pageGames.forEach((cand, index) => {
-        // Insert a Taboola ad row after every AD_INTERVAL cards
-        if (index > 0 && index % AD_INTERVAL === 0) {
+        // Insert a Taboola ad row at card 12, then every 24 cards
+        if (renderAds && index >= AD_FIRST_AT && (index - AD_FIRST_AT) % AD_INTERVAL === 0) {
           insertTaboolaAd();
         }
 
@@ -1992,7 +2000,7 @@
       }
 
       // Flush Taboola placements
-      if (taboolaAdCount > 0) {
+      if (adPosition > 0) {
         window._taboola = window._taboola || [];
         _taboola.push({flush: true});
       }
@@ -2040,12 +2048,12 @@
         tab.classList.add('active');
         currentFilter = tab.dataset.filter;
         currentPage = 1;
-        initGames(getSearchValue());
+        initGames(getSearchValue(), true);
       });
     });
 
     // initial render
-    initGames();
+    initGames('', true);
     
     // Continue Playing feature
     function initContinuePlaying() {

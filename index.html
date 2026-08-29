@@ -51,7 +51,10 @@
   <script type="text/javascript">
     window._taboola = window._taboola || [];
     _taboola.push({article:'auto'});
-    requestIdleCallback(function() {
+    // Fallback for browsers without requestIdleCallback (older Safari) —
+    // without it the loader never injects and NO ads serve at all.
+    var _nxIdle = window.requestIdleCallback || function (cb) { setTimeout(cb, 200); };
+    _nxIdle(function() {
       !function (e, f, u, i) {
         if (!document.getElementById(i)){
           e.async = 1;

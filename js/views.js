@@ -317,21 +317,22 @@ function loadView(file) {
       // Refresh Taboola ads when re-showing a persistent view — but at most
       // once per 90s. Refreshing on every SPA navigation flooded impressions
       // (each barely viewable), which dragged CPM down hard.
+      // Reuses each row's ORIGINAL placement name/container ID (stored in
+      // data attributes) — stable placements accumulate demand history.
       if (window._taboola) {
-        const adRows = persistentConfig.stash.querySelectorAll('.taboola-ad-row');
+        const adRows = persistentConfig.stash.querySelectorAll('.taboola-ad-row[data-tb-placement]');
         const now = Date.now();
         const lastRefresh = window._nxAdLastRefresh || 0;
         if (adRows.length > 0 && now - lastRefresh > 90 * 1000) {
           window._nxAdLastRefresh = now;
-          if (typeof window._taboolaGlobalIndex === 'undefined') window._taboolaGlobalIndex = 0;
           _taboola.push({notify: 'newPageLoad'});
-          _taboola.push({article: 'auto', url: window.location.href});
+          _taboola.push({article: 'auto', url: window.location.origin + window.location.pathname});
           adRows.forEach(row => {
-            window._taboolaGlobalIndex++;
-            const adId = 'taboola-refresh-' + window._taboolaGlobalIndex;
+            const adId = row.dataset.tbContainer;
+            const placementName = row.dataset.tbPlacement;
+            if (!adId || !placementName) return;
             row.classList.remove('ad-row-empty');
             row.innerHTML = '<div id="' + adId + '"></div>';
-            const placementName = 'Refresh Feed ' + window._taboolaGlobalIndex;
             (window._nxAdMap = window._nxAdMap || {})[placementName] = adId;
             _taboola.push({
               mode: 'alternating-thumbnails-a',

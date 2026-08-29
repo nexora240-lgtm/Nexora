@@ -622,15 +622,17 @@
       </div>
       <script>
         (function() {
-          if (typeof window._taboolaGlobalIndex === 'undefined') window._taboolaGlobalIndex = 0;
-          window._taboolaGlobalIndex++;
-          var idx = window._taboolaGlobalIndex;
-          var innerId = 'taboola-settings-init-' + idx;
+          // Stable container ID + placement name (Taboola SPA contract), and
+          // notify newPageLoad so the placement renders on SPA navigations.
+          var innerId = 'taboola-settings-below';
+          var placementName = 'Settings Below Content';
           var wrapper = document.getElementById('taboola-settings-bottom');
+          wrapper.dataset.tbContainer = innerId;
+          wrapper.dataset.tbPlacement = placementName;
           wrapper.innerHTML = '<div id="' + innerId + '"></div>';
-          var placementName = 'Settings Below Content ' + idx;
           (window._nxAdMap = window._nxAdMap || {})[placementName] = innerId;
           window._taboola = window._taboola || [];
+          _taboola.push({notify: 'newPageLoad'});
           _taboola.push({article: 'auto', url: window.location.origin + '/settings'});
           _taboola.push({
             mode: 'alternating-thumbnails-a',
