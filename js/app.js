@@ -9,8 +9,7 @@ const routes = {
   '/chatbot':   renderChatbot,
   '/chatroom':  renderChatroom,
   '/loader':    renderLoader,
-  '/settings':  renderSettings,
-  '/admin':     renderAdmin
+  '/settings':  renderSettings
 };
 
 // Fire a unique daily visit event (once per device per day)
@@ -103,4 +102,3 @@ function renderChatroom()    { loadView('chatroom.html'); }
 function renderLoader()      { loadView('gameloader.html'); }
 function renderGamesRoute()  { loadView('games.html'); }
 function renderSettings()    { loadView('settings.html'); }
-function renderAdmin()       { loadView('admin.html'); }

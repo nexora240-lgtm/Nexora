@@ -82,8 +82,6 @@ var _CONFIG = {
   adminApiUrl: "https://8hxm0uu86k.execute-api.us-east-2.amazonaws.com",
   // Link Finder AI API Configuration — Replace with your deployed API Gateway URL
   linkFinderApiUrl: "https://8tz5t8akcd.execute-api.us-east-2.amazonaws.com",
-  // Link Finder Admin API Key — Must match ADMIN_API_KEY in your Lambda env vars
-  linkAdminApiKey: "nxlf-adm-8f3a2b7c-e91d-4c6f-b850-1d7e9a3f5c24",
 
   // ── Proxy Infrastructure ──
   // Asset paths for proxy bundles (relative to site root)

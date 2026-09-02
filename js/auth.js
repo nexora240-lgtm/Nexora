@@ -646,23 +646,6 @@
     return currentSession?.isAdmin === true;
   }
 
-  /**
-   * Toggle admin sidebar link visibility
-   */
-  function updateAdminLink() {
-    const link = document.querySelector('.admin-link');
-    if (link) link.style.display = isAdmin() ? '' : 'none';
-  }
-
-  // Update admin link on every auth state change
-  authListeners.push(updateAdminLink);
-  // Also try on DOM ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', updateAdminLink);
-  } else {
-    updateAdminLink();
-  }
-
   // Export to window
   window.NexoraAuth = {
     _initialized: true,

@@ -1,1506 +1,791 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta name="google-adsense-account" content="ca-pub-6990835730345530">
-  <script src="/js/posthog-init.js"></script>
-  <script>
-    if (window.location.pathname.endsWith('/admin.html')) {
-      window.location.replace('/?route=/admin');
-    }
-  </script>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin Panel</title>
-  <link rel="stylesheet" href="/css/_tokens.css" />
-  <link rel="stylesheet" href="/css/admin.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'" />
-  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" /></noscript>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow, noarchive" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://*.execute-api.us-east-2.amazonaws.com; base-uri 'self'; frame-ancestors 'none'; form-action 'self'" />
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+<title>Nexora Admin</title>
+<style>
+:root {
+  --bg: #06070b;
+  --panel: #0f1119;
+  --panel-2: #141826;
+  --border: #232838;
+  --text: #eef1fa;
+  --muted: #8890a8;
+  --accent: #ff7a2b;
+  --accent-2: #ff9a4a;
+  --danger: #f34558;
+  --ok: #2bcf85;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+body { min-height: 100vh; display: flex; flex-direction: column; }
+a { color: var(--accent-2); }
+button { font: inherit; cursor: pointer; }
+input, button { color-scheme: dark; }
+
+#gate, #login, #app { display: none; }
+body[data-state="gate"] #gate,
+body[data-state="login"] #login,
+body[data-state="app"] #app { display: flex; }
+
+#gate {
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+#gate h1 { font-size: 22px; margin: 0 0 12px; color: var(--muted); font-weight: 600; }
+#gate p { max-width: 460px; margin: 0; color: var(--muted); font-size: 14px; }
+
+#login {
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.login-card h1 {
+  margin: 0 0 6px;
+  font-size: 20px;
+  letter-spacing: 0.2px;
+  text-align: center;
+}
+.login-card .sub {
+  margin: 0 0 22px;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+.login-card form { display: flex; flex-direction: column; gap: 12px; }
+.login-card input {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.login-card input:focus { border-color: var(--accent); }
+.login-card button {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #1a0d05;
+  font-weight: 700;
+  font-size: 14px;
+  transition: transform 0.15s, filter 0.15s;
+}
+.login-card button:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.05); }
+.login-card button:disabled { opacity: 0.6; cursor: not-allowed; }
+.login-error {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--danger);
+  min-height: 18px;
+  text-align: center;
+}
+
+#app {
+  flex: 1;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+.topbar .brand {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.3px;
+}
+.topbar .brand small {
+  color: var(--muted);
+  font-weight: 500;
+  margin-left: 6px;
+}
+.topbar .who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.topbar .who button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+}
+.topbar .who button:hover { background: var(--panel-2); }
+
+.main-wrap {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.side {
+  width: 200px;
+  padding: 18px 12px;
+  border-right: 1px solid var(--border);
+  background: var(--panel);
+}
+.side-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: left;
+}
+.side-btn.active { background: var(--panel-2); color: var(--accent-2); }
+
+.content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.card h2 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+.card .desc {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.add-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+.add-row input {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+.add-row input:focus { border-color: var(--accent); }
+.add-row button {
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #1a0d05;
+  font-weight: 700;
+  font-size: 14px;
+}
+.add-row button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.status {
+  margin-top: 10px;
+  font-size: 13px;
+  min-height: 18px;
+  color: var(--muted);
+}
+.status.ok { color: var(--ok); }
+.status.err { color: var(--danger); }
+
+.list-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 10px;
+}
+.list-tools input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+.list-tools .count { color: var(--muted); font-size: 13px; white-space: nowrap; }
+
+table.links {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.links th, table.links td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  text-align: left;
+}
+table.links th {
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+table.links td.url { word-break: break-all; max-width: 300px; }
+table.links td.blockers { color: var(--muted); font-size: 12px; max-width: 280px; }
+table.links .tag {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 11px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  margin-right: 4px;
+}
+table.links .actions { text-align: right; white-space: nowrap; }
+table.links .actions button {
+  padding: 6px 10px;
+  margin-left: 6px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 12px;
+}
+table.links .actions button:hover { background: var(--panel-2); }
+table.links .actions .del { color: var(--danger); border-color: rgba(243,69,88,0.4); }
+table.links .actions .del:hover { background: rgba(243,69,88,0.1); }
+
+.empty {
+  padding: 40px 12px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  width: 100%;
+  max-width: 460px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+}
+.modal h3 { margin: 0 0 12px; font-size: 17px; }
+.modal label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 12px 0 6px;
+}
+.modal input, .modal textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+}
+.modal input:focus, .modal textarea:focus { border-color: var(--accent); }
+.modal .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.modal .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+.modal .actions button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+}
+.modal .actions .primary {
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #1a0d05;
+  font-weight: 700;
+}
+.modal .status { margin-top: 10px; }
+
+@media (max-width: 700px) {
+  .main-wrap { flex-direction: column; }
+  .side { width: 100%; border-right: none; border-bottom: 1px solid var(--border); display: flex; gap: 6px; padding: 10px; }
+  .side-btn { width: auto; padding: 8px 12px; }
+  .content { padding: 16px; }
+  table.links th:nth-child(3), table.links td:nth-child(3) { display: none; }
+}
+</style>
 </head>
-<body>
+<body data-state="gate">
 
-<div class="admin-root" id="adminRoot">
-  <div class="admin-app">
+<section id="gate" aria-live="polite">
+  <h1>This page is not available on this domain</h1>
+  <p>The Nexora admin panel only responds on the primary domain. Nothing to see here.</p>
+</section>
 
-    <!-- Access denied state (shown to non-admins) -->
-    <div id="adminDenied" class="admin-denied" style="display:none">
-      <h2><i class="fas fa-lock"></i> Access Denied</h2>
-      <p>You must be logged in as an administrator to view this page.</p>
+<section id="login">
+  <div class="login-card">
+    <h1>Nexora Admin</h1>
+    <p class="sub">Sign in with your admin account.</p>
+    <form id="login-form" autocomplete="on">
+      <input id="login-user" name="username" type="text" placeholder="Username" autocomplete="username" required autocapitalize="off" spellcheck="false" />
+      <input id="login-pass" name="password" type="password" placeholder="Password" autocomplete="current-password" required />
+      <button id="login-btn" type="submit">Sign in</button>
+      <p id="login-error" class="login-error" role="alert"></p>
+    </form>
+  </div>
+</section>
+
+<section id="app">
+  <header class="topbar">
+    <div class="brand">Nexora Admin <small>internal</small></div>
+    <div class="who">
+      <span id="who-name"></span>
+      <button id="logout-btn" type="button">Sign out</button>
     </div>
+  </header>
+  <div class="main-wrap">
+    <nav class="side" aria-label="Sections">
+      <button class="side-btn active" data-section="links" type="button">Links</button>
+    </nav>
+    <main class="content">
+      <section id="section-links">
+        <div class="card">
+          <h2>Add link</h2>
+          <p class="desc">Paste any URL. Categorization (hosting type, strictness, filters bypassed) is inferred automatically.</p>
+          <div class="add-row">
+            <input id="new-url" type="text" placeholder="link.com or https://link.com/path" autocomplete="off" spellcheck="false" />
+            <button id="add-btn" type="button">Add</button>
+          </div>
+          <p id="add-status" class="status"></p>
+        </div>
 
-    <!-- Admin content (shown to admins) -->
-    <div id="adminContent" style="display:none">
-      <div class="header-row">
-        <h1 class="admin-title">Admin Panel</h1>
-        <p class="admin-subtitle">Manage users, chatrooms, and site settings</p>
+        <div class="card">
+          <div class="list-tools">
+            <input id="filter" type="search" placeholder="Filter by domain, name, hosting..." />
+            <span id="count" class="count">0 links</span>
+          </div>
+          <div id="links-wrap">
+            <div class="empty">Loading&hellip;</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</section>
 
-        <nav class="nav-buttons" role="tablist" aria-label="Admin sections">
-          <button class="nav-btn active" data-target="dashboard" role="tab" aria-selected="true"><i class="fas fa-tachometer-alt"></i> Dashboard</button>
-          <button class="nav-btn" data-target="users" role="tab"><i class="fas fa-users"></i> Users</button>
-          <button class="nav-btn" data-target="chatrooms" role="tab"><i class="fas fa-comments"></i> Chatrooms</button>
-          <button class="nav-btn" data-target="analytics" role="tab"><i class="fas fa-chart-bar"></i> Analytics</button>
-          <button class="nav-btn" data-target="announcements" role="tab"><i class="fas fa-bullhorn"></i> Announcements</button>
-          <button class="nav-btn" data-target="site-settings" role="tab"><i class="fas fa-sliders-h"></i> Settings</button>
-          <button class="nav-btn" data-target="moderation" role="tab"><i class="fas fa-flag"></i> Moderation</button>
-          <button class="nav-btn" data-target="game-reports" role="tab"><i class="fas fa-exclamation-triangle"></i> Game Reports</button>
-          <button class="nav-btn" data-target="links-mgmt" role="tab"><i class="fas fa-globe"></i> Links</button>
-          <button class="nav-btn" data-target="audit-log" role="tab"><i class="fas fa-clipboard-list"></i> Audit Log</button>
-          <button class="nav-btn" data-target="proxy-overrides" role="tab"><i class="fas fa-network-wired"></i> Proxy</button>
-        </nav>
+<div id="edit-backdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="edit-title">
+  <div class="modal">
+    <h3 id="edit-title">Edit link</h3>
+    <label for="edit-url">URL</label>
+    <input id="edit-url" type="text" autocomplete="off" spellcheck="false" />
+    <label for="edit-name">Name</label>
+    <input id="edit-name" type="text" autocomplete="off" spellcheck="false" />
+    <div class="row">
+      <div>
+        <label for="edit-strict">Strictness (1-10)</label>
+        <input id="edit-strict" type="number" min="1" max="10" step="1" />
       </div>
-
-      <!-- ═══ DASHBOARD ═══ -->
-      <section id="dashboard" class="panel active" role="tabpanel">
-        <div class="stat-grid" id="dashStats">
-          <div class="loading"><div class="spinner"></div> Loading dashboard…</div>
-        </div>
-        <div class="panel-card">
-          <div class="section-header"><h2>Recent Admin Actions</h2></div>
-          <div class="admin-table-wrap">
-            <table><thead><tr><th>Time</th><th>Admin</th><th>Action</th><th>Target</th><th>Details</th></tr></thead>
-            <tbody id="dashActions"><tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr></tbody></table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ═══ USERS ═══ -->
-      <section id="users" class="panel" role="tabpanel">
-        <div class="panel-card">
-          <div class="section-header">
-            <h2>Users</h2>
-            <span class="meta-count" id="userCount"></span>
-            <div class="search-bar">
-              <input type="text" class="form-input" id="userSearch" placeholder="Search Userbase..." />
-              <button class="btn btn-primary btn-sm" onclick="searchUsers()"><i class="fas fa-search"></i> Search</button>
-              <button class="btn btn-outline btn-sm" onclick="clearUserSearch()" title="Clear search"><i class="fas fa-times"></i></button>
-            </div>
-          </div>
-          <div class="admin-table-wrap">
-            <table><thead><tr><th>Username</th><th>Display Name</th><th>Registered</th><th>Last Login</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="usersBody"><tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr></tbody></table>
-          </div>
-          <div class="pagination" id="usersPagination"></div>
-        </div>
-      </section>
-
-      <!-- ═══ CHATROOMS ═══ -->
-      <section id="chatrooms" class="panel" role="tabpanel">
-        <div class="panel-card">
-          <div class="section-header">
-            <h2>All Chatrooms</h2>
-            <button class="btn btn-outline btn-sm" onclick="loadChatrooms()"><i class="fas fa-sync"></i> Refresh</button>
-          </div>
-          <p class="text-muted" style="font-size:13px;margin:-8px 0 12px">All rooms with saved messages, sorted by most recent activity. Deleted after 31 days of inactivity.</p>
-          <div class="admin-table-wrap">
-            <table><thead><tr><th>Room Code</th><th>Status</th><th>Active Users</th><th>Last Message</th><th>Actions</th></tr></thead>
-            <tbody id="chatroomsBody"><tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr></tbody></table>
-          </div>
-        </div>
-        <div class="panel-card">
-          <div class="section-header">
-            <h2>Chat History Lookup</h2>
-            <div class="search-bar">
-              <input type="text" class="form-input" id="historyRoomCode" placeholder="Room code…" />
-              <button class="btn btn-primary btn-sm" onclick="lookupChatHistory()"><i class="fas fa-search"></i> Search</button>
-            </div>
-          </div>
-          <p class="text-muted" style="font-size:13px;margin:0 0 12px">Look up saved chat history for any room (active or inactive). Messages are retained for 31 days.</p>
-          <div id="historyRoomList" class="history-room-list"><div class="loading"><div class="spinner"></div></div></div>
-        </div>
-      </section>
-
-      <!-- ═══ ANALYTICS ═══ -->
-      <section id="analytics" class="panel" role="tabpanel">
-        <div class="stat-grid" id="analyticsStats">
-          <div class="loading"><div class="spinner"></div> Loading analytics…</div>
-        </div>
-        <div class="panel-card">
-          <div class="section-header"><h2>User Registrations (Last 30 Days)</h2></div>
-          <div class="chart-card" id="regChart">
-            <div class="loading"><div class="spinner"></div></div>
-          </div>
-        </div>
-        <div class="panel-card">
-          <div class="section-header"><h2>Top Games by Views</h2><span class="meta-count" id="gamesCount"></span></div>
-          <div class="admin-table-wrap scrollable-table">
-            <table><thead><tr><th>#</th><th>Game</th><th>Views</th><th>Likes</th><th>Dislikes</th></tr></thead>
-            <tbody id="topGamesBody"><tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr></tbody></table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ═══ ANNOUNCEMENTS ═══ -->
-      <section id="announcements" class="panel" role="tabpanel">
-        <div class="panel-card">
-          <div class="section-header">
-            <h2>Announcements</h2>
-            <button class="btn btn-primary btn-sm" onclick="showAnnouncementForm()"><i class="fas fa-plus"></i> New</button>
-          </div>
-          <div class="admin-table-wrap">
-            <table><thead><tr><th>Title</th><th>Status</th><th>Created</th><th>Expires</th><th>Actions</th></tr></thead>
-            <tbody id="announcementsBody"><tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr></tbody></table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ═══ SITE SETTINGS ═══ -->
-      <section id="site-settings" class="panel" role="tabpanel">
-        <div class="panel-card">
-          <div class="section-header"><h2>Site Settings</h2></div>
-          <div id="settingsContainer" class="settings-list">
-            <div class="loading"><div class="spinner"></div> Loading settings…</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ═══ AUDIT LOG ═══ -->
-      <section id="audit-log" class="panel" role="tabpanel">
-        <div class="panel-card">
-          <div class="section-header">
-            <h2>Audit Log</h2>
-            <div class="search-bar">
-              <select class="form-input" id="auditAction">
-                <option value="">All Actions</option>
-                <option value="BAN">Ban</option>
-                <option value="UNBAN">Unban</option>
-                <option value="MUTE">Mute</option>
-                <option value="KICK">Kick</option>
-                <option value="KICK_ROOM">Kick from Room</option>
-                <option value="CLOSE_ROOM">Close Room</option>
-                <option value="ROOM_MESSAGE">Room Message</option>
-                <option value="CREATE_ANNOUNCEMENT">Create Announcement</option>
-                <option value="UPDATE_ANNOUNCEMENT">Update Announcement</option>
-                <option value="DELETE_ANNOUNCEMENT">Delete Announcement</option>
-                <option value="UPDATE_SETTING">Update Setting</option>
-                <option value="ADD_FLAGGED_WORD">Add Flagged Word</option>
-                <option value="REMOVE_FLAGGED_WORD">Remove Flagged Word</option>
-                <option value="ADD_LINK">Add Link</option>
-                <option value="REMOVE_LINK">Remove Link</option>
-
-              </select>
-              <input type="text" class="form-input" id="auditTarget" placeholder="Target…" />
-              <button class="btn btn-primary btn-sm" onclick="loadAuditLog()"><i class="fas fa-filter"></i> Filter</button>
-            </div>
-          </div>
-          <div class="admin-table-wrap">
-            <table><thead><tr><th>Time</th><th>Admin</th><th>Action</th><th>Target</th><th>Details</th></tr></thead>
-            <tbody id="auditBody"><tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr></tbody></table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ═══ MODERATION ═══ -->
-      <section id="moderation" class="panel" role="tabpanel">
-        <div class="panel-card">
-          <div class="section-header">
-            <h2>Flagged Words</h2>
-            <div class="search-bar">
-              <input type="text" class="form-input" id="newFlaggedWord" placeholder="Add a word…" />
-              <button class="btn btn-primary btn-sm" onclick="doAddFlaggedWord()"><i class="fas fa-plus"></i> Add</button>
-            </div>
-          </div>
-          <div id="flaggedWordsList" class="flagged-words-grid">
-            <div class="loading"><div class="spinner"></div></div>
-          </div>
-        </div>
-        <div class="panel-card">
-          <div class="section-header">
-            <h2>Flagged Messages</h2>
-            <button class="btn btn-outline btn-sm" onclick="loadFlaggedMessages()"><i class="fas fa-sync"></i> Refresh</button>
-          </div>
-          <div class="admin-table-wrap">
-            <table><thead><tr><th>Time</th><th>Room</th><th>User</th><th>Message</th><th>Triggered Words</th></tr></thead>
-            <tbody id="flaggedMessagesBody"><tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr></tbody></table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ═══ GAME REPORTS ═══ -->
-      <section id="game-reports" class="panel" role="tabpanel">
-        <div class="stat-grid" id="reportStats">
-          <div class="loading"><div class="spinner"></div> Loading report stats…</div>
-        </div>
-        <div class="panel-card">
-          <div class="section-header">
-            <h2>Reports by Reason</h2>
-          </div>
-          <div class="report-reason-bars" id="reportReasonBars">
-            <div class="loading"><div class="spinner"></div></div>
-          </div>
-        </div>
-        <div class="panel-card">
-          <div class="section-header">
-            <h2>Most Reported Games</h2>
-          </div>
-          <div class="admin-table-wrap">
-            <table><thead><tr><th>#</th><th>Game</th><th>Reports</th></tr></thead>
-            <tbody id="topReportedGamesBody"><tr><td colspan="3" class="loading"><div class="spinner"></div></td></tr></tbody></table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ═══ LINKS MANAGEMENT (Link Finder AI) ═══ -->
-      <section id="links-mgmt" class="panel" role="tabpanel">
-        <div class="panel-card">
-          <div class="section-header">
-            <h2>Link Finder — Links Database</h2>
-            <span class="meta-count" id="linksCount"></span>
-            <div class="search-bar">
-              <button class="btn btn-primary btn-sm" onclick="showAddLinkForm()"><i class="fas fa-plus"></i> Add Link</button>
-              <button class="btn btn-outline btn-sm" onclick="loadAdminLinks()"><i class="fas fa-sync"></i> Refresh</button>
-            </div>
-          </div>
-          <p class="text-muted" style="font-size:13px;margin:-8px 0 12px">These links are served by the AI Link Finder chat. The AI recommends links based on the user's strictness level, blockers, and hosting preferences.</p>
-          <div class="admin-table-wrap">
-            <table><thead><tr><th>Domain</th><th>URL</th><th>Hosting</th><th>Strictness</th><th>Bypasses</th><th>Added</th><th>Actions</th></tr></thead>
-            <tbody id="adminLinksBody"><tr><td colspan="7" class="loading"><div class="spinner"></div></td></tr></tbody></table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ═══ PROXY OVERRIDES ═══ -->
-      <section id="proxy-overrides" class="panel" role="tabpanel">
-        <div class="panel-card">
-          <div class="section-header">
-            <h2>Proxy Overrides</h2>
-            <span class="meta-count" id="proxyOverridesCount"></span>
-            <div class="search-bar">
-              <button class="btn btn-primary btn-sm" onclick="showAddProxyOverrideForm()"><i class="fas fa-plus"></i> Add Override</button>
-              <button class="btn btn-outline btn-sm" onclick="loadProxyOverrides()"><i class="fas fa-sync"></i> Refresh</button>
-            </div>
-          </div>
-          <p class="text-muted" style="font-size:13px;margin:-8px 0 12px">Set per-domain proxy and transport overrides. When a user visits a matching domain, the system will use the specified proxy engine and transport instead of the user's default.</p>
-          <div class="admin-table-wrap">
-            <table><thead><tr><th>Domain Pattern</th><th>Proxy</th><th>Transport</th><th>Priority</th><th>Added</th><th>Actions</th></tr></thead>
-            <tbody id="proxyOverridesBody"><tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr></tbody></table>
-          </div>
-        </div>
-      </section>
-
-    </div><!-- /adminContent -->
-  </div><!-- /admin-app -->
-
-  <!-- Modal container (injected dynamically) -->
-  <div id="adminModal"></div>
-
-</div><!-- /admin-root -->
+      <div>
+        <label for="edit-hosting">Hosting</label>
+        <input id="edit-hosting" type="text" autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+    <label for="edit-blockers">Blockers (comma separated)</label>
+    <textarea id="edit-blockers" rows="2"></textarea>
+    <p id="edit-status" class="status"></p>
+    <div class="actions">
+      <button id="edit-cancel" type="button">Cancel</button>
+      <button id="edit-save" class="primary" type="button">Save</button>
+    </div>
+  </div>
+</div>
 
 <script>
-(function() {
+(function () {
   'use strict';
 
-  const API = (typeof _CONFIG !== 'undefined' && _CONFIG.adminApiUrl) || 'https://8hxm0uu86k.execute-api.us-east-2.amazonaws.com';
+  var ALLOWED_HOSTS = ['thenexoraproject.xyz', 'localhost', '127.0.0.1'];
+  var host = (location.hostname || '').toLowerCase();
+  if (ALLOWED_HOSTS.indexOf(host) === -1) return;
 
+  var AUTH_API = 'https://8hxm0uu86k.execute-api.us-east-2.amazonaws.com';
+  var LINK_API = 'https://8tz5t8akcd.execute-api.us-east-2.amazonaws.com';
+  var CREDS_KEY = 'nx.admin.creds';
+  var LOGIN_TRIES_KEY = 'nx.admin.tries';
+  var MAX_TRIES = 5;
+  var TRY_WINDOW_MS = 15 * 60 * 1000;
 
-  // ─── Init ───
+  var body = document.body;
+  var loginForm = document.getElementById('login-form');
+  var loginUser = document.getElementById('login-user');
+  var loginPass = document.getElementById('login-pass');
+  var loginBtn = document.getElementById('login-btn');
+  var loginErr = document.getElementById('login-error');
+  var whoName = document.getElementById('who-name');
+  var logoutBtn = document.getElementById('logout-btn');
+  var newUrl = document.getElementById('new-url');
+  var addBtn = document.getElementById('add-btn');
+  var addStatus = document.getElementById('add-status');
+  var filterInput = document.getElementById('filter');
+  var linksWrap = document.getElementById('links-wrap');
+  var countEl = document.getElementById('count');
+  var editBackdrop = document.getElementById('edit-backdrop');
+  var editUrl = document.getElementById('edit-url');
+  var editName = document.getElementById('edit-name');
+  var editStrict = document.getElementById('edit-strict');
+  var editHosting = document.getElementById('edit-hosting');
+  var editBlockers = document.getElementById('edit-blockers');
+  var editStatus = document.getElementById('edit-status');
+  var editCancel = document.getElementById('edit-cancel');
+  var editSave = document.getElementById('edit-save');
 
-  function init() {
-    document.getElementById('adminContent').style.display = 'none';
-    document.getElementById('adminDenied').style.display = 'none';
+  var session = readCreds();
+  var links = [];
+  var editingId = null;
 
-    if (!window.NexoraAuth) {
-      document.getElementById('adminDenied').style.display = '';
-      return;
+  function readCreds() {
+    try {
+      var raw = sessionStorage.getItem(CREDS_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+  function writeCreds(v) {
+    try { sessionStorage.setItem(CREDS_KEY, JSON.stringify(v)); } catch (e) {}
+  }
+  function clearCreds() {
+    try { sessionStorage.removeItem(CREDS_KEY); } catch (e) {}
+    try { localStorage.removeItem('nexora.auth.session'); } catch (e) {}
+    try { localStorage.removeItem('nexora.auth.credentials'); } catch (e) {}
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+  function rateLimit() {
+    var now = Date.now();
+    var tries = [];
+    try {
+      var raw = localStorage.getItem(LOGIN_TRIES_KEY);
+      tries = raw ? JSON.parse(raw) : [];
+    } catch (e) { tries = []; }
+    tries = tries.filter(function (t) { return now - t < TRY_WINDOW_MS; });
+    if (tries.length >= MAX_TRIES) {
+      var waitMin = Math.ceil((TRY_WINDOW_MS - (now - tries[0])) / 60000);
+      return waitMin;
     }
-
-    let started = false;
-
-    function handleSession(session) {
-      if (!session) {
-        // Only show "denied" once auth has fully resolved (not while autoLogin is still pending)
-        if (window.NexoraAuth.authResolved) {
-          document.getElementById('adminContent').style.display = 'none';
-          document.getElementById('adminDenied').style.display = '';
-        }
-        return;
-      }
-      if (!window.NexoraAuth.isAdmin()) {
-        document.getElementById('adminContent').style.display = 'none';
-        document.getElementById('adminDenied').style.display = '';
-        return;
-      }
-      if (!started) {
-        started = true;
-        document.getElementById('adminDenied').style.display = 'none';
-        document.getElementById('adminContent').style.display = '';
-        setupTabs();
-        loadDashboard();
-        loadUsers();
-        loadChatrooms();
-        loadAnalytics();
-        loadAnnouncements();
-        loadSettings();
-        loadAuditLog();
-        loadModeration();
-        loadAdminLinks();
-        loadGameReports();
-      }
-    }
-
-    window.NexoraAuth.onAuthChange(handleSession);
+    tries.push(now);
+    try { localStorage.setItem(LOGIN_TRIES_KEY, JSON.stringify(tries)); } catch (e) {}
+    return 0;
+  }
+  function resetTries() {
+    try { localStorage.removeItem(LOGIN_TRIES_KEY); } catch (e) {}
   }
 
-  // ─── API Helper ───
+  function setState(s) { body.setAttribute('data-state', s); }
 
-  async function adminFetch(endpoint, method = 'GET', body = null) {
-    const session = window.NexoraAuth.getSession();
-    if (!session) throw new Error('Not authenticated');
+  function showApp() {
+    setState('app');
+    whoName.textContent = session && session.username ? session.username : '';
+    loadLinks();
+  }
 
-    const opts = {
-      method,
+  loginForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    loginErr.textContent = '';
+    var wait = rateLimit();
+    if (wait > 0) {
+      loginErr.textContent = 'Too many attempts. Try again in ' + wait + ' minute' + (wait === 1 ? '' : 's') + '.';
+      return;
+    }
+    var u = (loginUser.value || '').trim().toLowerCase();
+    var p = loginPass.value || '';
+    if (!u || !p) { loginErr.textContent = 'Enter username and password.'; return; }
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Signing in...';
+    fetch(AUTH_API + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    }).then(function (r) {
+      return r.json().then(function (d) { return { ok: r.ok, data: d }; });
+    }).then(function (res) {
+      if (!res.ok || !res.data.token) {
+        loginErr.textContent = res.data.error || 'Login failed.';
+        return;
+      }
+      if (res.data.isAdmin !== true) {
+        loginErr.textContent = 'That account is not an admin.';
+        return;
+      }
+      resetTries();
+      session = { username: res.data.username || u, token: res.data.token };
+      writeCreds(session);
+      loginPass.value = '';
+      showApp();
+    }).catch(function () {
+      loginErr.textContent = 'Network error. Try again.';
+    }).finally(function () {
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Sign in';
+    });
+  });
+
+  logoutBtn.addEventListener('click', function () {
+    var s = session;
+    session = null;
+    clearCreds();
+    setState('login');
+    loginErr.textContent = '';
+    if (s && s.token) {
+      fetch(AUTH_API + '/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: s.username, token: s.token })
+      }).catch(function () {});
+    }
+  });
+
+  function adminFetch(method, body) {
+    if (!session) { setState('login'); return Promise.reject(new Error('Not signed in')); }
+    var opts = {
+      method: method,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': session.token,
+        'Authorization': 'Bearer ' + session.token,
         'X-Admin-Username': session.username
       }
     };
-    if (body && method !== 'GET') opts.body = JSON.stringify(body);
-
-    const resp = await fetch(`${API}${endpoint}`, opts);
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Request failed');
-    return data;
-  }
-
-  // ─── Toast (unified) ───
-
-  function toast(msg, type = 'success') {
-    if (window.NexoraNotify) {
-      if (type === 'error') NexoraNotify.error(msg);
-      else NexoraNotify.success(msg);
-    }
-  }
-
-  // ─── Tabs ───
-
-  function setupTabs() {
-    const btns = document.querySelectorAll('#adminRoot .nav-btn');
-    btns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        btns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
-        btn.classList.add('active');
-        btn.setAttribute('aria-selected', 'true');
-
-        document.querySelectorAll('#adminRoot .panel').forEach(p => p.classList.remove('active'));
-        const target = document.getElementById(btn.dataset.target);
-        if (target) target.classList.add('active');
-
-        // Lazy-load tab data (refresh on tab click)
-        const t = btn.dataset.target;
-        if (t === 'dashboard')      loadDashboard();
-        else if (t === 'users')     { /* already loaded */ }
-        else if (t === 'chatrooms') loadChatrooms();
-        else if (t === 'analytics') loadAnalytics();
-        else if (t === 'announcements') loadAnnouncements();
-        else if (t === 'site-settings') loadSettings();
-        else if (t === 'moderation')    loadModeration();
-        else if (t === 'game-reports')  loadGameReports();
-        else if (t === 'links-mgmt')    loadAdminLinks();
-        else if (t === 'audit-log') loadAuditLog();
-        else if (t === 'proxy-overrides') loadProxyOverrides();
-      });
+    if (body) opts.body = JSON.stringify(body);
+    return fetch(LINK_API + '/admin/links', opts).then(function (r) {
+      return r.json().then(function (d) { return { ok: r.ok, status: r.status, data: d }; });
+    }).then(function (res) {
+      if (res.status === 403) {
+        clearCreds();
+        session = null;
+        setState('login');
+        loginErr.textContent = 'Session ended. Sign in again.';
+        throw new Error('Forbidden');
+      }
+      if (!res.ok) throw new Error(res.data && res.data.error ? res.data.error : 'Request failed');
+      return res.data;
     });
   }
 
-  // ─── Helpers ───
-
-  function esc(s) {
-    const d = document.createElement('div');
-    d.textContent = s || '';
-    return d.innerHTML;
-  }
-
-  function fmtDate(d) {
-    if (!d) return '—';
-    const date = typeof d === 'number' ? new Date(d) : new Date(d);
-    if (isNaN(date)) return '—';
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
-      ' ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-  }
-
-  function fmtRelative(d) {
-    if (!d) return '—';
-    const date = typeof d === 'number' ? new Date(d) : new Date(d);
-    const diff = Date.now() - date.getTime();
-    if (diff < 60000) return 'just now';
-    if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
-    if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
-    return Math.floor(diff/86400000) + 'd ago';
-  }
-
-  function getDomain(url) {
-    try {
-      const host = new URL(url).hostname;
-      const parts = host.split('.');
-      return parts.length > 2 ? parts.slice(-2).join('.') : host;
-    } catch { return url || ''; }
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // DASHBOARD
-  // ═══════════════════════════════════════════════════════════════
-
-  async function loadDashboard() {
-    try {
-      const data = await adminFetch('/admin/dashboard');
-      document.getElementById('dashStats').innerHTML = `
-        <div class="stat-card"><div class="stat-value">${data.totalUsers}</div><div class="stat-label">Total Users</div></div>
-        <div class="stat-card"><div class="stat-value">${data.activeUsers24h}</div><div class="stat-label">Active (24h)</div></div>
-        <div class="stat-card"><div class="stat-value">${data.activeRooms}</div><div class="stat-label">Active Rooms</div></div>
-        <div class="stat-card"><div class="stat-value">${data.activeConnections}</div><div class="stat-label">Chat Connections</div></div>
-        <div class="stat-card"><div class="stat-value">${data.totalBans}</div><div class="stat-label">Active Bans</div></div>
-        <div class="stat-card"><div class="stat-value">${data.totalAnnouncements}</div><div class="stat-label">Announcements</div></div>
-      `;
-
-      const actions = data.recentActions || [];
-      document.getElementById('dashActions').innerHTML = actions.length
-        ? actions.map(a => `<tr><td>${fmtRelative(a.timestamp)}</td><td>${esc(a.adminUsername)}</td><td><span class="badge badge-muted">${esc(a.action)}</span></td><td>${esc(a.targetUsername)}</td><td>${esc(a.details).substring(0,60)}</td></tr>`).join('')
-        : '<tr><td colspan="5" class="empty-state">No recent actions</td></tr>';
-    } catch (e) {
-      document.getElementById('dashStats').innerHTML = `<div class="empty-state">Failed to load dashboard: ${esc(e.message)}</div>`;
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // USERS
-  // ═══════════════════════════════════════════════════════════════
-
-  const USERS_PER_PAGE = 40;
-  let allUsersCache = [];
-  let filteredUsers = [];
-  let usersPage = 1;
-  let usersSearchActive = false;
-
-  async function loadUsers() {
-    const body = document.getElementById('usersBody');
-    body.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr>';
-
-    const q = document.getElementById('userSearch').value.trim();
-    let url = '/admin/users';
-    if (q) url += '?q=' + encodeURIComponent(q);
-
-    try {
-      const data = await adminFetch(url);
-      allUsersCache = data.users || [];
-      filteredUsers = allUsersCache;
-      usersSearchActive = !!q;
-      usersPage = 1;
-      renderUsersPage();
-    } catch (e) {
-      body.innerHTML = `<tr><td colspan="6" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
-    }
-  }
-  window.loadUsers = loadUsers;
-
-  function renderUsersPage() {
-    const total = filteredUsers.length;
-    const totalPages = Math.max(1, Math.ceil(total / USERS_PER_PAGE));
-    if (usersPage > totalPages) usersPage = totalPages;
-    const start = (usersPage - 1) * USERS_PER_PAGE;
-    const pageUsers = filteredUsers.slice(start, start + USERS_PER_PAGE);
-
-    // User count
-    const countEl = document.getElementById('userCount');
-    if (countEl) {
-      countEl.textContent = usersSearchActive
-        ? `${total} result${total !== 1 ? 's' : ''} found`
-        : `${total} total user${total !== 1 ? 's' : ''}`;
-    }
-
-    const body = document.getElementById('usersBody');
-    if (!pageUsers.length) {
-      body.innerHTML = '<tr><td colspan="6" class="empty-state">No users found</td></tr>';
-    } else {
-      body.innerHTML = pageUsers.map(u => {
-        let status;
-        if (u.banned) {
-          status = `<span class="badge badge-danger">${u.banInfo?.type === 'mute' ? 'Muted' : 'Banned'}</span>`;
-        } else if (u.online) {
-          status = '<span class="badge badge-success">Online</span>';
-        } else {
-          status = '<span class="badge badge-muted">Offline</span>';
-        }
-        return `<tr>
-          <td><strong>${esc(u.username)}</strong></td>
-          <td>${esc(u.displayName)}</td>
-          <td>${fmtDate(u.createdAt)}</td>
-          <td>${fmtRelative(u.lastLogin)}</td>
-          <td>${status}</td>
-          <td class="btn-group">
-            <button class="btn btn-outline btn-sm" onclick="viewUser('${esc(u.username)}')"><i class="fas fa-eye"></i></button>
-            ${u.banned
-              ? `<button class="btn btn-success btn-sm" onclick="doUnban('${esc(u.username)}')"><i class="fas fa-unlock"></i></button>`
-              : `<button class="btn btn-danger btn-sm" onclick="showBanForm('${esc(u.username)}')"><i class="fas fa-ban"></i></button>`}
-            <button class="btn btn-outline btn-sm" onclick="doKick('${esc(u.username)}')" title="Kick from chatrooms"><i class="fas fa-sign-out-alt"></i></button>
-          </td></tr>`;
-      }).join('');
-    }
-
-    // Pagination controls
-    const pag = document.getElementById('usersPagination');
-    if (totalPages <= 1) { pag.innerHTML = ''; return; }
-
-    let html = '';
-    html += `<button class="page-btn" ${usersPage <= 1 ? 'disabled' : ''} onclick="goUsersPage(${usersPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
-
-    const maxVisible = 7;
-    let pages = [];
-    if (totalPages <= maxVisible) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      pages.push(1);
-      let lo = Math.max(2, usersPage - 2);
-      let hi = Math.min(totalPages - 1, usersPage + 2);
-      if (usersPage <= 3) hi = Math.min(totalPages - 1, 5);
-      if (usersPage >= totalPages - 2) lo = Math.max(2, totalPages - 4);
-      if (lo > 2) pages.push('…');
-      for (let i = lo; i <= hi; i++) pages.push(i);
-      if (hi < totalPages - 1) pages.push('…');
-      pages.push(totalPages);
-    }
-
-    pages.forEach(p => {
-      if (p === '…') {
-        html += `<span class="page-ellipsis">…</span>`;
-      } else {
-        html += `<button class="page-btn${p === usersPage ? ' active' : ''}" onclick="goUsersPage(${p})">${p}</button>`;
-      }
+  function loadLinks() {
+    linksWrap.innerHTML = '<div class="empty">Loading&hellip;</div>';
+    adminFetch('GET').then(function (data) {
+      links = Array.isArray(data.links) ? data.links : [];
+      renderLinks();
+    }).catch(function (err) {
+      linksWrap.innerHTML = '<div class="empty">' + esc(err.message) + '</div>';
+      countEl.textContent = '0 links';
     });
-
-    html += `<button class="page-btn" ${usersPage >= totalPages ? 'disabled' : ''} onclick="goUsersPage(${usersPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
-    html += `<span class="page-info">Page ${usersPage} of ${totalPages}</span>`;
-    pag.innerHTML = html;
   }
 
-  window.goUsersPage = function(page) {
-    usersPage = page;
-    renderUsersPage();
-    document.getElementById('users')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  window.searchUsers = function() {
-    loadUsers();
-  };
-
-  window.clearUserSearch = function() {
-    document.getElementById('userSearch').value = '';
-    if (usersSearchActive) loadUsers();
-  };
-
-  window.viewUser = async function(username) {
-    try {
-      const data = await adminFetch(`/admin/users/${encodeURIComponent(username)}`);
-      const u = data.user;
-      const b = data.ban;
-      document.getElementById('adminModal').innerHTML = `
-        <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-          <div class="modal">
-            <h3><i class="fas fa-user"></i> ${esc(u.username)}</h3>
-            <div class="form-group"><label>Display Name</label><div>${esc(u.displayName)}</div></div>
-            <div class="form-group"><label>Registered</label><div>${fmtDate(u.createdAt)}</div></div>
-            <div class="form-group"><label>Last Login</label><div>${fmtDate(u.lastLogin)}</div></div>
-            <div class="form-group"><label>Registration IP</label><div>${esc(u.registrationIP)}</div></div>
-            <div class="form-group"><label>Last Login IP</label><div>${esc(u.lastLoginIP)}</div></div>
-            ${b ? `<div class="form-group"><label>Ban Status</label><div><span class="badge badge-danger">${esc(b.type)}</span> — ${esc(b.reason)} <br/><small>By ${esc(b.bannedBy)} at ${fmtDate(b.bannedAt)}${b.expiresAt ? ' · Expires ' + fmtDate(b.expiresAt) : ' · Permanent'}</small></div></div>` : ''}
-            <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Close</button></div>
-          </div>
-        </div>`;
-    } catch (e) {
-      toast('Failed to load user: ' + e.message, 'error');
-    }
-  };
-
-  window.showBanForm = function(username) {
-    document.getElementById('adminModal').innerHTML = `
-      <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-        <div class="modal">
-          <h3><i class="fas fa-ban"></i> Ban ${esc(username)}</h3>
-          <div class="form-group"><label>Type</label>
-            <select class="form-input" id="banType"><option value="ban">Ban</option><option value="mute">Mute</option></select>
-          </div>
-          <div class="form-group"><label>Reason</label>
-            <textarea class="form-input" id="banReason" placeholder="Reason for ban…"></textarea>
-          </div>
-          <div class="form-group"><label>Duration (minutes, 0 = permanent)</label>
-            <input type="number" class="form-input" id="banDuration" value="0" min="0" />
-          </div>
-          <div class="modal-actions">
-            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-danger" onclick="doBan('${esc(username)}')"><i class="fas fa-ban"></i> Confirm Ban</button>
-          </div>
-        </div>
-      </div>`;
-  };
-
-  window.doBan = async function(username) {
-    try {
-      await adminFetch(`/admin/users/${encodeURIComponent(username)}/ban`, 'PUT', {
-        type: document.getElementById('banType').value,
-        reason: document.getElementById('banReason').value,
-        duration: parseInt(document.getElementById('banDuration').value) || 0
-      });
-      toast(`${username} has been banned`);
-      closeModal();
-      loadUsers();
-    } catch (e) { toast('Ban failed: ' + e.message, 'error'); }
-  };
-
-  window.doUnban = async function(username) {
-    if (!confirm(`Unban ${username}?`)) return;
-    try {
-      await adminFetch(`/admin/users/${encodeURIComponent(username)}/ban`, 'DELETE');
-      toast(`${username} has been unbanned`);
-      loadUsers();
-    } catch (e) { toast('Unban failed: ' + e.message, 'error'); }
-  };
-
-  window.doKick = async function(username) {
-    if (!confirm(`Kick ${username} from all chatrooms?`)) return;
-    try {
-      const data = await adminFetch(`/admin/users/${encodeURIComponent(username)}/kick`, 'POST');
-      toast(`Kicked ${username} (${data.disconnected} connection${data.disconnected !== 1 ? 's' : ''})`);
-    } catch (e) { toast('Kick failed: ' + e.message, 'error'); }
-  };
-
-  // ═══════════════════════════════════════════════════════════════
-  // CHATROOMS
-  // ═══════════════════════════════════════════════════════════════
-
-  async function loadChatrooms() {
-    try {
-      const data = await adminFetch('/admin/chatrooms');
-      const body = document.getElementById('chatroomsBody');
-      const historyList = document.getElementById('historyRoomList');
-      const allRooms = data.chatrooms || [];
-      const activeRooms = allRooms.filter(r => r.activeUsers > 0);
-
-      // Populate Chat History Lookup room list (ALL rooms including inactive)
-      if (historyList) {
-        if (!allRooms.length) {
-          historyList.innerHTML = '<div class="empty-state" style="font-size:13px">No rooms with saved history</div>';
-        } else {
-          historyList.innerHTML = allRooms.map(r => {
-            const isActive = r.activeUsers > 0;
-            const badge = isActive
-              ? `<span class="badge badge-success">${r.activeUsers} online</span>`
-              : '<span class="badge badge-muted">Inactive</span>';
-            const lastMsg = r.lastMessage ? fmtRelative(r.lastMessage) : 'No messages';
-            return `<div class="history-room-item" onclick="viewChatHistory('${esc(r.roomCode)}')">
-              <span class="history-room-code">${esc(r.roomCode)}</span>
-              ${badge}
-              <span class="history-room-time">${lastMsg}</span>
-            </div>`;
-          }).join('');
-        }
-      }
-
-      // Chatrooms table shows only ACTIVE rooms
-      if (!activeRooms.length) {
-        body.innerHTML = '<tr><td colspan="5" class="empty-state">No active chatrooms</td></tr>';
-        return;
-      }
-      body.innerHTML = activeRooms.map(r => {
-        const isActive = r.activeUsers > 0;
-        const statusBadge = isActive
-          ? `<span class="badge badge-success">${r.activeUsers} online</span>`
-          : '<span class="badge badge-muted">Inactive</span>';
-        const activeActions = isActive ? `
-          <button class="btn btn-outline btn-sm" onclick="viewRoom('${esc(r.roomCode)}')" title="View active users"><i class="fas fa-eye"></i></button>
-          <button class="btn btn-outline btn-sm" onclick="showRoomMessage('${esc(r.roomCode)}')" title="Send message"><i class="fas fa-envelope"></i></button>
-          <button class="btn btn-danger btn-sm" onclick="doCloseRoom('${esc(r.roomCode)}')" title="Close room"><i class="fas fa-times"></i></button>` : '';
-        return `<tr>
-          <td><strong>${esc(r.roomCode)}</strong></td>
-          <td>${statusBadge}</td>
-          <td>${isActive ? r.activeUsers : '—'}</td>
-          <td>${r.lastMessage ? fmtRelative(r.lastMessage) : '—'}</td>
-          <td class="btn-group">
-            <button class="btn btn-outline btn-sm" onclick="viewChatHistory('${esc(r.roomCode)}')" title="Chat history"><i class="fas fa-history"></i></button>
-            ${activeActions}
-          </td>
-        </tr>`;
-      }).join('');
-    } catch (e) {
-      document.getElementById('chatroomsBody').innerHTML = `<tr><td colspan="5" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
-    }
-  }
-  window.loadChatrooms = loadChatrooms;
-
-  window.viewRoom = async function(roomCode) {
-    try {
-      const data = await adminFetch(`/admin/chatrooms/${encodeURIComponent(roomCode)}`);
-      const conns = data.connections || [];
-      document.getElementById('adminModal').innerHTML = `
-        <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-          <div class="modal">
-            <h3><i class="fas fa-door-open"></i> Room ${esc(roomCode)}</h3>
-            <p class="meta-count">${conns.length} connected user${conns.length !== 1 ? 's' : ''}</p>
-            <div class="admin-table-wrap">
-              <table><thead><tr><th>Username</th><th>Status</th><th>Actions</th></tr></thead>
-              <tbody>${conns.length ? conns.map(c => `
-                <tr><td>${esc(c.username)}</td><td><span class="badge badge-success">${esc(c.status || 'ACTIVE')}</span></td>
-                <td><button class="btn btn-danger btn-sm" onclick="doRoomKick('${esc(roomCode)}','${esc(c.username)}')"><i class="fas fa-sign-out-alt"></i> Kick</button></td></tr>
-              `).join('') : '<tr><td colspan="3" class="empty-state">No users connected</td></tr>'}</tbody></table>
-            </div>
-            <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Close</button><button class="btn btn-primary btn-sm" onclick="viewChatHistory('${esc(roomCode)}')"><i class="fas fa-history"></i> View Chats</button></div>
-          </div>
-        </div>`;
-    } catch (e) { toast('Failed: ' + e.message, 'error'); }
-  };
-
-  window.doRoomKick = async function(roomCode, username) {
-    try {
-      await adminFetch(`/admin/chatrooms/${encodeURIComponent(roomCode)}/kick/${encodeURIComponent(username)}`, 'POST');
-      toast(`Kicked ${username} from room ${roomCode}`);
-      viewRoom(roomCode); // Refresh
-    } catch (e) { toast('Kick failed: ' + e.message, 'error'); }
-  };
-
-  window.showRoomMessage = function(roomCode) {
-    document.getElementById('adminModal').innerHTML = `
-      <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-        <div class="modal">
-          <h3><i class="fas fa-envelope"></i> Send Message to Room ${esc(roomCode)}</h3>
-          <div class="form-group"><label>Message</label>
-            <textarea class="form-input" id="roomMsgText" placeholder="Message to broadcast…"></textarea>
-          </div>
-          <div class="modal-actions">
-            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="doSendRoomMessage('${esc(roomCode)}')"><i class="fas fa-paper-plane"></i> Send</button>
-          </div>
-        </div>
-      </div>`;
-  };
-
-  window.doSendRoomMessage = async function(roomCode) {
-    const msg = document.getElementById('roomMsgText').value.trim();
-    if (!msg) return;
-    try {
-      const data = await adminFetch(`/admin/chatrooms/${encodeURIComponent(roomCode)}/message`, 'POST', { message: msg });
-      toast(`Sent to ${data.recipients} user(s)`);
-      closeModal();
-    } catch (e) { toast('Failed: ' + e.message, 'error'); }
-  };
-
-  window.doCloseRoom = async function(roomCode) {
-    if (!confirm(`Close room ${roomCode}? All users will be disconnected.`)) return;
-    try {
-      const data = await adminFetch(`/admin/chatrooms/${encodeURIComponent(roomCode)}`, 'DELETE');
-      toast(`Room ${roomCode} closed (${data.disconnected} disconnected)`);
-      loadChatrooms();
-    } catch (e) { toast('Failed: ' + e.message, 'error'); }
-  };
-
-  window.viewChatHistory = async function(roomCode) {
-    document.getElementById('adminModal').innerHTML = `
-      <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-        <div class="modal" style="max-width:600px;max-height:80vh;display:flex;flex-direction:column">
-          <h3><i class="fas fa-history"></i> Chat History — ${esc(roomCode)}</h3>
-          <div class="chat-history-container" style="flex:1;overflow-y:auto;padding:12px 0">
-            <div class="loading"><div class="spinner"></div></div>
-          </div>
-          <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Close</button></div>
-        </div>
-      </div>`;
-
-    try {
-      const data = await adminFetch(`/admin/chatrooms/${encodeURIComponent(roomCode)}/history`);
-      const msgs = data.messages || [];
-      const container = document.querySelector('.chat-history-container');
-      if (!msgs.length) {
-        container.innerHTML = '<div class="empty-state" style="padding:24px;text-align:center">No messages recorded for this room</div>';
-        return;
-      }
-      container.innerHTML = msgs.map(m => `
-        <div class="chat-history-msg${m.flagged ? ' chat-msg-flagged' : ''}">
-          <div class="chat-history-meta">
-            <strong>${esc(m.username)}</strong>
-            ${m.flagged ? '<span class="badge badge-danger">FLAGGED</span>' : ''}
-            <span>${fmtDate(m.timestamp)}</span>
-          </div>
-          <div class="chat-history-text">${esc(m.message)}</div>
-          ${m.flagged && m.flaggedWords && m.flaggedWords.length ? '<div class="chat-flag-words">Triggered: ' + m.flaggedWords.map(w => '<span class="badge badge-danger">' + esc(w) + '</span>').join(' ') + '</div>' : ''}
-        </div>
-      `).join('');
-      container.scrollTop = container.scrollHeight;
-    } catch (e) {
-      const container = document.querySelector('.chat-history-container');
-      if (container) container.innerHTML = `<div class="empty-state" style="padding:24px">Failed to load history: ${esc(e.message)}</div>`;
-    }
-  };
-
-  // ═══════════════════════════════════════════════════════════════
-  // ANALYTICS
-  // ═══════════════════════════════════════════════════════════════
-
-  async function loadAnalytics() {
-    try {
-      const data = await adminFetch('/admin/analytics');
-      document.getElementById('analyticsStats').innerHTML = `
-        <div class="stat-card"><div class="stat-value">${data.totalUsers}</div><div class="stat-label">Total Users</div></div>
-        <div class="stat-card"><div class="stat-value">${data.active24h}</div><div class="stat-label">Active (24h)</div></div>
-        <div class="stat-card"><div class="stat-value">${data.active7d}</div><div class="stat-label">Active (7d)</div></div>
-        <div class="stat-card"><div class="stat-value">${data.active30d}</div><div class="stat-label">Active (30d)</div></div>
-        <div class="stat-card"><div class="stat-value">${data.newUsers7d}</div><div class="stat-label">New Users (7d)</div></div>
-        <div class="stat-card"><div class="stat-value">${data.newUsers30d}</div><div class="stat-label">New Users (30d)</div></div>
-        <div class="stat-card"><div class="stat-value">${data.activeRooms}</div><div class="stat-label">Active Rooms</div></div>
-        <div class="stat-card"><div class="stat-value">${data.activeConnections}</div><div class="stat-label">Chat Connections</div></div>
-      `;
-
-      // Registration chart
-      const regDays = data.registrationsByDay || {};
-      const sortedDays = Object.keys(regDays).sort();
-      const maxReg = Math.max(1, ...Object.values(regDays));
-      let chartHtml = '<div class="bar-chart">';
-      sortedDays.forEach(day => {
-        const h = Math.max(2, (regDays[day] / maxReg) * 100);
-        chartHtml += `<div class="bar" style="height:${h}%"><div class="bar-tooltip">${day}: ${regDays[day]}</div></div>`;
-      });
-      chartHtml += '</div><div class="chart-labels"><span>' + (sortedDays[0] || '') + '</span><span>' + (sortedDays[sortedDays.length-1] || '') + '</span></div>';
-      document.getElementById('regChart').innerHTML = chartHtml;
-
-      // Top games
-      const games = data.topGames || [];
-      const gamesCountEl = document.getElementById('gamesCount');
-      if (gamesCountEl) gamesCountEl.textContent = `${games.length} game${games.length !== 1 ? 's' : ''}`;
-      document.getElementById('topGamesBody').innerHTML = games.length
-        ? games.map((g, i) => `<tr><td class="meta-count">${i + 1}</td><td>${esc(g.gameId)}</td><td>${g.views.toLocaleString()}</td><td>${g.likes.toLocaleString()}</td><td>${g.dislikes.toLocaleString()}</td></tr>`).join('')
-        : '<tr><td colspan="5" class="empty-state">No game data</td></tr>';
-    } catch (e) {
-      document.getElementById('analyticsStats').innerHTML = `<div class="empty-state">Error: ${esc(e.message)}</div>`;
-    }
+  function fmtDate(v) {
+    if (!v) return '';
+    var d = typeof v === 'number' ? new Date(v) : new Date(v);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // ANNOUNCEMENTS
-  // ═══════════════════════════════════════════════════════════════
-
-  async function loadAnnouncements() {
-    try {
-      const data = await adminFetch('/admin/announcements');
-      const body = document.getElementById('announcementsBody');
-      if (!data.announcements.length) {
-        body.innerHTML = '<tr><td colspan="5" class="empty-state">No announcements</td></tr>';
-        return;
-      }
-      body.innerHTML = data.announcements.map(a => {
-        const now = Date.now();
-        const expired = a.expiresAt && a.expiresAt > 0 && a.expiresAt < now;
-        const status = !a.active ? '<span class="badge badge-muted">Inactive</span>'
-          : expired ? '<span class="badge badge-warning">Expired</span>'
-          : '<span class="badge badge-success">Active</span>';
-        return `<tr>
-          <td><strong>${esc(a.title)}</strong><br><small style="color:var(--admin-muted)">${esc(a.message).substring(0,80)}</small></td>
-          <td>${status}</td>
-          <td>${fmtDate(a.createdAt)}</td>
-          <td>${a.expiresAt && a.expiresAt > 0 ? fmtDate(a.expiresAt) : 'Never'}</td>
-          <td class="btn-group">
-            <button class="btn btn-outline btn-sm" onclick="showAnnouncementForm('${esc(a.id)}','${esc(a.title).replace(/'/g,"\\'")}','${esc(a.message).replace(/'/g,"\\'")}',${a.active !== false},${a.expiresAt || 0})"><i class="fas fa-edit"></i></button>
-            <button class="btn ${a.active !== false ? 'btn-outline' : 'btn-success'} btn-sm" onclick="toggleAnnouncement('${esc(a.id)}',${a.active === false})">
-              <i class="fas fa-${a.active !== false ? 'eye-slash' : 'eye'}"></i>
-            </button>
-            <button class="btn btn-danger btn-sm" onclick="doDeleteAnnouncement('${esc(a.id)}')"><i class="fas fa-trash"></i></button>
-          </td></tr>`;
-      }).join('');
-    } catch (e) {
-      document.getElementById('announcementsBody').innerHTML = `<tr><td colspan="5" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
-    }
-  }
-
-  window.showAnnouncementForm = function(id, title, message, active, expiresAt) {
-    const isEdit = !!id;
-    document.getElementById('adminModal').innerHTML = `
-      <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-        <div class="modal">
-          <h3><i class="fas fa-bullhorn"></i> ${isEdit ? 'Edit' : 'New'} Announcement</h3>
-          <div class="form-group"><label>Title</label>
-            <input type="text" class="form-input" id="annTitle" value="${esc(title || '')}" />
-          </div>
-          <div class="form-group"><label>Message</label>
-            <textarea class="form-input" id="annMessage">${esc(message || '')}</textarea>
-          </div>
-          <div class="form-group"><label>Expires (leave empty for no expiry)</label>
-            <input type="datetime-local" class="form-input" id="annExpires" value="${expiresAt && expiresAt > 0 ? new Date(expiresAt).toISOString().slice(0,16) : ''}" />
-          </div>
-          <div class="modal-actions">
-            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="doSaveAnnouncement('${esc(id || '')}')"><i class="fas fa-save"></i> Save</button>
-          </div>
-        </div>
-      </div>`;
-  };
-
-  window.doSaveAnnouncement = async function(id) {
-    const title = document.getElementById('annTitle').value.trim();
-    const message = document.getElementById('annMessage').value.trim();
-    const expiresInput = document.getElementById('annExpires').value;
-    const expiresAt = expiresInput ? new Date(expiresInput).getTime() : 0;
-    if (!title || !message) { toast('Title and message are required', 'error'); return; }
-
-    try {
-      if (id) {
-        await adminFetch(`/admin/announcements/${id}`, 'PUT', { title, message, expiresAt });
-      } else {
-        await adminFetch('/admin/announcements', 'POST', { title, message, expiresAt });
-      }
-      toast(id ? 'Announcement updated' : 'Announcement created');
-      closeModal();
-      loadAnnouncements();
-    } catch (e) { toast('Failed: ' + e.message, 'error'); }
-  };
-
-  window.toggleAnnouncement = async function(id, activate) {
-    try {
-      await adminFetch(`/admin/announcements/${id}`, 'PUT', { active: activate });
-      toast(activate ? 'Announcement activated' : 'Announcement deactivated');
-      loadAnnouncements();
-    } catch (e) { toast('Failed: ' + e.message, 'error'); }
-  };
-
-  window.doDeleteAnnouncement = async function(id) {
-    if (!confirm('Delete this announcement?')) return;
-    try {
-      await adminFetch(`/admin/announcements/${id}`, 'DELETE');
-      toast('Announcement deleted');
-      loadAnnouncements();
-    } catch (e) { toast('Failed: ' + e.message, 'error'); }
-  };
-
-  // ═══════════════════════════════════════════════════════════════
-  // SITE SETTINGS
-  // ═══════════════════════════════════════════════════════════════
-
-  async function loadSettings() {
-    try {
-      const data = await adminFetch('/admin/settings');
-      const s = data.settings || {};
-      const container = document.getElementById('settingsContainer');
-      container.innerHTML = `
-        <div class="setting-row">
-          <div class="setting-info"><h3>Maintenance Mode</h3><p>Block non-admin users from accessing the site</p></div>
-          <label class="toggle"><input type="checkbox" ${s.maintenanceMode === 'true' ? 'checked' : ''} onchange="updateSetting('maintenanceMode', this.checked ? 'true' : 'false')">
-            <span class="toggle-track"><span class="toggle-thumb"></span></span></label>
-        </div>
-        <div class="setting-row">
-          <div class="setting-info"><h3>User Registration</h3><p>Allow new users to register accounts</p></div>
-          <label class="toggle"><input type="checkbox" ${s.registrationEnabled !== 'false' ? 'checked' : ''} onchange="updateSetting('registrationEnabled', this.checked ? 'true' : 'false')">
-            <span class="toggle-track"><span class="toggle-thumb"></span></span></label>
-        </div>
-        <div class="setting-row">
-          <div class="setting-info"><h3>Max Chatroom Users</h3><p>Maximum users per chatroom</p></div>
-          <div class="setting-control">
-            <input type="number" class="form-input setting-input-sm" id="maxChatUsers" value="${esc(s.maxChatroomUsers || '50')}" min="2" max="200" />
-            <button class="btn btn-primary btn-sm" onclick="updateSetting('maxChatroomUsers', document.getElementById('maxChatUsers').value)">Save</button>
-          </div>
-        </div>
-        <div class="setting-row setting-row-stacked">
-          <div class="setting-info"><h3>Feature Flags</h3><p>Toggle features on/off (JSON format)</p></div>
-          <div class="setting-control setting-control-wide">
-            <textarea class="form-input setting-textarea" id="featureFlagsInput">${esc(s.featureFlags || '{}')}</textarea>
-            <button class="btn btn-primary btn-sm" onclick="updateSetting('featureFlags', document.getElementById('featureFlagsInput').value)">Save</button>
-          </div>
-        </div>
-      `;
-    } catch (e) {
-      document.getElementById('settingsContainer').innerHTML = `<div class="empty-state">Error: ${esc(e.message)}</div>`;
-    }
-  }
-
-  window.updateSetting = async function(key, value) {
-    try {
-      await adminFetch(`/admin/settings/${key}`, 'PUT', { value });
-      toast(`${key} updated`);
-    } catch (e) { toast('Failed: ' + e.message, 'error'); }
-  };
-
-  // ═══════════════════════════════════════════════════════════════
-  // AUDIT LOG
-  // ═══════════════════════════════════════════════════════════════
-
-  async function loadAuditLog() {
-    const action = document.getElementById('auditAction').value;
-    const target = document.getElementById('auditTarget').value.trim();
-    let url = '/admin/audit-log?limit=100';
-    if (action) url += '&action=' + encodeURIComponent(action);
-    if (target) url += '&target=' + encodeURIComponent(target);
-
-    try {
-      const data = await adminFetch(url);
-      const body = document.getElementById('auditBody');
-      const entries = data.entries || [];
-      if (!entries.length) {
-        body.innerHTML = '<tr><td colspan="5" class="empty-state">No audit log entries</td></tr>';
-        return;
-      }
-      body.innerHTML = entries.map(e => `
-        <tr>
-          <td>${fmtDate(e.timestamp)}</td>
-          <td>${esc(e.adminUsername)}</td>
-          <td><span class="badge badge-muted">${esc(e.action)}</span></td>
-          <td>${esc(e.targetUsername)}</td>
-          <td class="audit-details" title="${esc(e.details)}">${esc(e.details)}</td>
-        </tr>`).join('');
-    } catch (e) {
-      document.getElementById('auditBody').innerHTML = `<tr><td colspan="5" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
-    }
-  }
-  window.loadAuditLog = loadAuditLog;
-
-  // ═════════════════════════════════════════════════════════════════
-  // MODERATION (Flagged Words + Flagged Messages)
-  // ═════════════════════════════════════════════════════════════════
-
-  async function loadModeration() {
-    await Promise.all([loadFlaggedWords(), loadFlaggedMessages()]);
-  }
-
-  async function loadFlaggedWords() {
-    try {
-      const data = await adminFetch('/admin/flagged-words');
-      const container = document.getElementById('flaggedWordsList');
-      const words = data.words || [];
-      if (!words.length) {
-        container.innerHTML = '<div class="empty-state">No flagged words configured</div>';
-        return;
-      }
-      container.innerHTML = words.map(w => `
-        <div class="flagged-word-chip">
-          <span>${esc(w.word)}</span>
-          <button class="chip-remove" onclick="doRemoveFlaggedWord('${esc(w.word)}')" title="Remove">&times;</button>
-        </div>
-      `).join('');
-    } catch (e) {
-      document.getElementById('flaggedWordsList').innerHTML = `<div class="empty-state">Error: ${esc(e.message)}</div>`;
-    }
-  }
-
-  window.doAddFlaggedWord = async function() {
-    const input = document.getElementById('newFlaggedWord');
-    const word = input.value.trim();
-    if (!word) return;
-    try {
-      await adminFetch('/admin/flagged-words', 'POST', { word });
-      input.value = '';
-      toast(`"${word}" added to flagged words`);
-      loadFlaggedWords();
-    } catch (e) { toast('Failed: ' + e.message, 'error'); }
-  };
-
-  window.doRemoveFlaggedWord = async function(word) {
-    if (!confirm(`Remove "${word}" from flagged words?`)) return;
-    try {
-      await adminFetch(`/admin/flagged-words/${encodeURIComponent(word)}`, 'DELETE');
-      toast(`"${word}" removed`);
-      loadFlaggedWords();
-    } catch (e) { toast('Failed: ' + e.message, 'error'); }
-  };
-
-  async function loadFlaggedMessages() {
-    try {
-      const data = await adminFetch('/admin/flagged-messages?limit=100');
-      const body = document.getElementById('flaggedMessagesBody');
-      const msgs = data.messages || [];
-      if (!msgs.length) {
-        body.innerHTML = '<tr><td colspan="5" class="empty-state">No flagged messages</td></tr>';
-        return;
-      }
-      body.innerHTML = msgs.map(m => `
-        <tr>
-          <td>${fmtDate(m.timestamp)}</td>
-          <td><strong>${esc(m.roomCode)}</strong></td>
-          <td>${esc(m.username)}</td>
-          <td class="audit-details" title="${esc(m.message)}">${esc(m.message)}</td>
-          <td>${(m.flaggedWords || []).map(w => '<span class="badge badge-danger">' + esc(w) + '</span>').join(' ')}</td>
-        </tr>`).join('');
-    } catch (e) {
-      document.getElementById('flaggedMessagesBody').innerHTML = `<tr><td colspan="5" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
-    }
-  }
-  window.loadFlaggedMessages = loadFlaggedMessages;
-
-  document.getElementById('newFlaggedWord')?.addEventListener('keydown', e => {
-    if (e.key === 'Enter') doAddFlaggedWord();
-  });
-
-  window.lookupChatHistory = function() {
-    const code = document.getElementById('historyRoomCode').value.trim();
-    if (!code) return;
-    viewChatHistory(code);
-  };
-
-  document.getElementById('historyRoomCode')?.addEventListener('keydown', e => {
-    if (e.key === 'Enter') lookupChatHistory();
-  });
-
-  // ═══════════════════════════════════════════════════════════════
-  // GAME REPORTS
-  // ═══════════════════════════════════════════════════════════════
-
-  async function loadGameReports() {
-    try {
-      const data = await adminFetch('/admin/reports');
-      const reports = data.reports || [];
-      const stats = data.stats || {};
-
-      // Render stat cards
-      document.getElementById('reportStats').innerHTML = `
-        <div class="stat-card"><div class="stat-value">${stats.total || 0}</div><div class="stat-label">Total Reports</div></div>
-      `;
-
-      // Render reason breakdown bars
-      const byReason = stats.byReason || {};
-      const reasonEntries = Object.entries(byReason).sort((a, b) => b[1] - a[1]);
-      const maxReasonCount = Math.max(1, ...reasonEntries.map(e => e[1]));
-      const reasonColors = {
-        "Game doesn't load": '#ef4444',
-        "Game is broken": '#f97316',
-        "Wrong description": '#eab308',
-        "Other issue": '#8b5cf6'
-      };
-
-      if (reasonEntries.length) {
-        document.getElementById('reportReasonBars').innerHTML = reasonEntries.map(([reason, count]) => {
-          const pct = Math.max(4, (count / maxReasonCount) * 100);
-          const color = reasonColors[reason] || '#6b7280';
-          return `<div class="report-bar-row">
-            <span class="report-bar-label">${esc(reason)}</span>
-            <div class="report-bar-track">
-              <div class="report-bar-fill" style="width:${pct}%;background:${color}"></div>
-            </div>
-            <span class="report-bar-count">${count}</span>
-          </div>`;
-        }).join('');
-      } else {
-        document.getElementById('reportReasonBars').innerHTML = '<div class="empty-state">No reports yet</div>';
-      }
-
-      // Render top reported games
-      const byGame = stats.byGame || {};
-      const gameEntries = Object.entries(byGame).sort((a, b) => b[1] - a[1]).slice(0, 15);
-      const topGamesBody = document.getElementById('topReportedGamesBody');
-      if (gameEntries.length) {
-        topGamesBody.innerHTML = gameEntries.map(([game, count], i) =>
-          `<tr><td class="meta-count">${i + 1}</td><td>${esc(game)}</td><td><strong>${count}</strong></td></tr>`
-        ).join('');
-      } else {
-        topGamesBody.innerHTML = '<tr><td colspan="3" class="empty-state">No reports</td></tr>';
-      }
-
-    } catch (e) {
-      document.getElementById('reportStats').innerHTML = `<div class="empty-state">Error: ${esc(e.message)}</div>`;
-    }
-  }
-  window.loadGameReports = loadGameReports;
-
-  // ═══════════════════════════════════════════════════════════════
-  // LINKS MANAGEMENT (Link Finder AI)
-  // ═══════════════════════════════════════════════════════════════
-
-  const LF_API_KEY = (typeof _CONFIG !== 'undefined' && _CONFIG.linkAdminApiKey) || '';
-  const LF_API_BASE = (typeof _CONFIG !== 'undefined' && _CONFIG.linkFinderApiUrl) || '';
-
-  const BLOCKER_LIST = ['fortiguard', 'lightspeed', 'palo alto', 'blocksi web', 'blocksi ai', 'linewize', 'cisco umbrella', 'securly', 'goguardian', 'lanschool', 'contentkeeper', 'aristotlek12', 'senso cloud', 'deledao', 'iboss', 'sophos', 'barracuda', 'qustodio', 'dns filter'];
-
-  async function lfFetch(method, body) {
-    const opts = {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-    };
-    if (LF_API_KEY) opts.headers['X-Api-Key'] = LF_API_KEY;
-    if (body && method !== 'GET') opts.body = JSON.stringify(body);
-    const resp = await fetch(`${LF_API_BASE}/admin/links`, opts);
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Request failed');
-    return data;
-  }
-
-  async function loadAdminLinks() {
-    const body = document.getElementById('adminLinksBody');
-    body.innerHTML = '<tr><td colspan="7" class="loading"><div class="spinner"></div></td></tr>';
-
-    if (!LF_API_BASE) {
-      body.innerHTML = '<tr><td colspan="7" class="empty-state">Link Finder API not configured. Set <code>linkFinderApiUrl</code> and <code>linkAdminApiKey</code> in config.js after deploying <code>aws/deploy.ps1</code>.</td></tr>';
+  function renderLinks() {
+    var q = (filterInput.value || '').toLowerCase().trim();
+    var filtered = links.filter(function (l) {
+      if (!q) return true;
+      return (
+        (l.name || '').toLowerCase().indexOf(q) !== -1 ||
+        (l.url || '').toLowerCase().indexOf(q) !== -1 ||
+        (l.domain || '').toLowerCase().indexOf(q) !== -1 ||
+        (l.hostingType || '').toLowerCase().indexOf(q) !== -1 ||
+        (Array.isArray(l.blockers) ? l.blockers.join(' ').toLowerCase() : '').indexOf(q) !== -1
+      );
+    });
+    countEl.textContent = filtered.length + ' link' + (filtered.length === 1 ? '' : 's');
+    if (!filtered.length) {
+      linksWrap.innerHTML = '<div class="empty">' + (links.length ? 'No matches.' : 'No links yet. Add one above.') + '</div>';
       return;
     }
-
-    try {
-      const data = await lfFetch('GET');
-      const links = data.links || [];
-      const countEl = document.getElementById('linksCount');
-      if (countEl) countEl.textContent = `${links.length} link${links.length !== 1 ? 's' : ''}`;
-
-      if (!links.length) {
-        body.innerHTML = '<tr><td colspan="7" class="empty-state">No links yet. Click "Add Link" to get started.</td></tr>';
-        return;
-      }
-
-      body.innerHTML = links.map(l => {
-        const blockerStr = (l.blockers || []).join(', ') || '—';
-        const safeId = esc(l.linkId).replace(/'/g, "\\'");
-        const domain = esc(l.name || getDomain(l.url));
-        return `<tr>
-          <td><strong>${domain}</strong></td>
-          <td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(l.url)}">${esc(l.url)}</td>
-          <td><span class="badge badge-muted">${esc(l.hostingType || 'custom')}</span></td>
-          <td>${l.strictnessMin || 1}–${l.strictnessMax || 10}</td>
-          <td style="font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(blockerStr)}">${esc(blockerStr)}</td>
-          <td>${fmtRelative(l.addedDate)}</td>
-          <td class="btn-group">
-            <button class="btn btn-outline btn-sm" onclick="showEditLinkForm('${safeId}')" title="Edit"><i class="fas fa-edit"></i></button>
-            <button class="btn btn-danger btn-sm" onclick="doRemoveLink('${safeId}', '${domain.replace(/'/g, "\\'")}')" title="Delete"><i class="fas fa-trash"></i></button>
-          </td></tr>`;
-      }).join('');
-    } catch (e) {
-      body.innerHTML = `<tr><td colspan="7" class="empty-state">Error: ${esc(e.message)}</td></tr>`;
-    }
-  }
-  window.loadAdminLinks = loadAdminLinks;
-
-  // Cache links for edit form lookups
-  let _lfLinksCache = [];
-  async function _getLfLinks() {
-    try {
-      const data = await lfFetch('GET');
-      _lfLinksCache = data.links || [];
-    } catch { /* use stale cache */ }
-    return _lfLinksCache;
-  }
-
-  window.showAddLinkForm = function () {
-    const blockerCheckboxes = BLOCKER_LIST.map(b =>
-      `<label class="lf-blocker-label"><input type="checkbox" value="${esc(b)}" class="lf-blocker-cb"> ${esc(b)}</label>`
-    ).join('');
-
-    document.getElementById('adminModal').innerHTML = `
-      <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-        <div class="modal" style="max-width:520px">
-          <h3><i class="fas fa-plus-circle"></i> Add Link</h3>
-          <div class="form-group"><label>URL</label>
-            <input type="text" class="form-input" id="lfUrl" placeholder="https://example.web.app" />
-          </div>
-          <div class="form-group"><label>Hosting Type</label>
-            <input type="text" class="form-input" id="lfHosting" placeholder="e.g. firebase, cloudflare, freedns" />
-          </div>
-          <div class="form-group">
-            <label>Strictness Range (works for levels…)</label>
-            <div style="display:flex;gap:10px;align-items:center">
-              <input type="number" class="form-input" id="lfStrictMin" value="1" min="1" max="10" style="width:70px" />
-              <span style="color:var(--admin-muted)">to</span>
-              <input type="number" class="form-input" id="lfStrictMax" value="10" min="1" max="10" style="width:70px" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Bypasses these blockers:</label>
-            <div class="lf-blocker-grid">${blockerCheckboxes}</div>
-          </div>
-          <div class="modal-actions">
-            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="doAddLink()"><i class="fas fa-plus"></i> Add Link</button>
-          </div>
-        </div>
-      </div>`;
-  };
-
-  window.doAddLink = async function () {
-    const url = document.getElementById('lfUrl').value.trim();
-    if (!url) { toast('URL is required', 'error'); return; }
-
-    const name = getDomain(url);
-    const hostingType = document.getElementById('lfHosting').value.trim() || 'custom';
-    const strictnessMin = parseInt(document.getElementById('lfStrictMin').value) || 1;
-    const strictnessMax = parseInt(document.getElementById('lfStrictMax').value) || 10;
-    const blockers = Array.from(document.querySelectorAll('.lf-blocker-cb:checked')).map(cb => cb.value);
-
-    try {
-      await lfFetch('POST', { name, url, hostingType, strictnessMin, strictnessMax, blockers });
-      toast('Link added');
-      closeModal();
-      loadAdminLinks();
-    } catch (e) { toast('Failed: ' + e.message, 'error'); }
-  };
-
-  window.showEditLinkForm = async function (linkId) {
-    const links = await _getLfLinks();
-    const link = links.find(l => l.linkId === linkId);
-    if (!link) { toast('Link not found', 'error'); return; }
-
-    const blockerCheckboxes = BLOCKER_LIST.map(b => {
-      const checked = (link.blockers || []).includes(b) ? 'checked' : '';
-      return `<label class="lf-blocker-label"><input type="checkbox" value="${esc(b)}" class="lf-blocker-cb" ${checked}> ${esc(b)}</label>`;
+    var rows = filtered.map(function (l) {
+      var blockers = Array.isArray(l.blockers) && l.blockers.length ? l.blockers.join(', ') : '&mdash;';
+      var hostTag = '<span class="tag">' + esc(l.hostingType || 'custom') + '</span>';
+      var strictTag = l.strictness ? '<span class="tag">strict ' + esc(String(l.strictness)) + '</span>' : '';
+      var added = fmtDate(l.addedAt || l.addedDate);
+      return '<tr data-id="' + esc(l.linkId) + '">' +
+        '<td><strong>' + esc(l.name || l.domain || '') + '</strong><div class="url"><small>' + esc(l.url) + '</small></div></td>' +
+        '<td>' + hostTag + strictTag + '</td>' +
+        '<td class="blockers">' + esc(blockers) + '</td>' +
+        '<td><small>' + esc(added) + '</small></td>' +
+        '<td class="actions">' +
+          '<button class="edit" type="button">Edit</button>' +
+          '<button class="del" type="button">Delete</button>' +
+        '</td></tr>';
     }).join('');
-
-    document.getElementById('adminModal').innerHTML = `
-      <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
-        <div class="modal" style="max-width:520px">
-          <h3><i class="fas fa-edit"></i> Edit Link</h3>
-          <div class="form-group"><label>URL</label>
-            <input type="text" class="form-input" id="lfUrl" value="${esc(link.url)}" />
-          </div>
-          <div class="form-group"><label>Hosting Type</label>
-            <input type="text" class="form-input" id="lfHosting" value="${esc(link.hostingType || '')}" placeholder="e.g. firebase, cloudflare, freedns" />
-          </div>
-          <div class="form-group">
-            <label>Strictness Range</label>
-            <div style="display:flex;gap:10px;align-items:center">
-              <input type="number" class="form-input" id="lfStrictMin" value="${link.strictnessMin || 1}" min="1" max="10" style="width:70px" />
-              <span style="color:var(--admin-muted)">to</span>
-              <input type="number" class="form-input" id="lfStrictMax" value="${link.strictnessMax || 10}" min="1" max="10" style="width:70px" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Bypasses these blockers:</label>
-            <div class="lf-blocker-grid">${blockerCheckboxes}</div>
-          </div>
-          <div class="modal-actions">
-            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="doEditLink('${esc(linkId).replace(/'/g, "\\'")}')"><i class="fas fa-save"></i> Save</button>
-          </div>
-        </div>
-      </div>`;
-  };
-
-  window.doEditLink = async function (linkId) {
-    const url = document.getElementById('lfUrl').value.trim();
-    if (!url) { toast('URL is required', 'error'); return; }
-
-    const name = getDomain(url);
-    const hostingType = document.getElementById('lfHosting').value.trim() || 'custom';
-    const strictnessMin = parseInt(document.getElementById('lfStrictMin').value) || 1;
-    const strictnessMax = parseInt(document.getElementById('lfStrictMax').value) || 10;
-    const blockers = Array.from(document.querySelectorAll('.lf-blocker-cb:checked')).map(cb => cb.value);
-
-    try {
-      await lfFetch('PUT', { linkId, name, url, hostingType, strictnessMin, strictnessMax, blockers });
-      toast('Link updated');
-      closeModal();
-      loadAdminLinks();
-    } catch (e) { toast('Failed: ' + e.message, 'error'); }
-  };
-
-  window.doRemoveLink = async function (linkId, name) {
-    if (!confirm(`Delete link "${name}"?`)) return;
-    try {
-      await lfFetch('DELETE', { linkId });
-      toast('Link deleted');
-      loadAdminLinks();
-    } catch (e) { toast('Failed: ' + e.message, 'error'); }
-  };
-
-  // ─── Proxy Overrides ───
-
-  let proxyOverridesData = [];
-
-  async function loadProxyOverrides() {
-    const tbody = document.getElementById('proxyOverridesBody');
-    const countEl = document.getElementById('proxyOverridesCount');
-    tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr>';
-    try {
-      const data = await adminFetch('/admin/proxy-overrides');
-      proxyOverridesData = data.overrides || data || [];
-      if (countEl) countEl.textContent = proxyOverridesData.length;
-      if (!proxyOverridesData.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No proxy overrides configured</td></tr>';
-        return;
-      }
-      tbody.innerHTML = proxyOverridesData.map(o => `<tr>
-        <td><code>${esc(o.domain)}</code></td>
-        <td><span class="badge badge-${o.proxy === 'scramjet' ? 'success' : o.proxy === 'ultraviolet' ? 'warning' : 'muted'}">${esc(o.proxy)}</span></td>
-        <td><span class="badge">${esc(o.transport || 'auto')}</span></td>
-        <td>${o.priority || 0}</td>
-        <td>${fmtRelative(o.createdAt)}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="doRemoveProxyOverride('${esc(o.overrideId || o.domain)}','${esc(o.domain)}')"><i class="fas fa-trash"></i></button></td>
-      </tr>`).join('');
-    } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Failed to load: ${esc(e.message)}</td></tr>`;
-    }
+    linksWrap.innerHTML = '<table class="links">' +
+      '<thead><tr><th>Link</th><th>Kind</th><th>Blockers</th><th>Added</th><th></th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table>';
+    var body = linksWrap.querySelector('tbody');
+    body.addEventListener('click', function (e) {
+      var btn = e.target.closest('button');
+      if (!btn) return;
+      var tr = e.target.closest('tr');
+      if (!tr) return;
+      var id = tr.getAttribute('data-id');
+      if (btn.classList.contains('del')) return deleteLink(id, tr);
+      if (btn.classList.contains('edit')) return openEdit(id);
+    });
   }
 
-  window.loadProxyOverrides = loadProxyOverrides;
+  filterInput.addEventListener('input', renderLinks);
 
-  window.showAddProxyOverrideForm = function () {
-    const modal = document.getElementById('adminModal');
-    modal.innerHTML = `
-      <div class="modal-overlay" onclick="closeModal()">
-        <div class="modal" onclick="event.stopPropagation()">
-          <h3>Add Proxy Override</h3>
-          <div class="form-group">
-            <label>Domain Pattern</label>
-            <input type="text" class="form-input" id="poNewDomain" placeholder="e.g. discord.com or *.google.com" />
-          </div>
-          <div class="form-group">
-            <label>Proxy Engine</label>
-            <select class="form-input" id="poNewProxy">
-              <option value="scramjet">Scramjet</option>
-              <option value="ultraviolet">Ultraviolet</option>
-              <option value="rammerhead">Rammerhead</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Transport</label>
-            <select class="form-input" id="poNewTransport">
-              <option value="auto">Auto</option>
-              <option value="libcurl">Libcurl</option>
-              <option value="epoxy">Epoxy</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Priority (higher = checked first)</label>
-            <input type="number" class="form-input" id="poNewPriority" value="0" min="0" max="100" />
-          </div>
-          <div class="btn-group">
-            <button class="btn btn-primary" onclick="doAddProxyOverride()">Save</button>
-            <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-          </div>
-        </div>
-      </div>`;
-  };
+  addBtn.addEventListener('click', function () {
+    var url = (newUrl.value || '').trim();
+    addStatus.className = 'status';
+    if (!url) { addStatus.textContent = 'Paste a URL first.'; addStatus.classList.add('err'); return; }
+    addBtn.disabled = true;
+    addBtn.textContent = 'Adding...';
+    addStatus.textContent = 'Classifying and saving...';
+    adminFetch('POST', { url: url })
+      .then(function (data) {
+        addStatus.textContent = 'Added: ' + (data.link && data.link.name ? data.link.name : 'ok');
+        addStatus.classList.add('ok');
+        newUrl.value = '';
+        loadLinks();
+      })
+      .catch(function (err) {
+        addStatus.textContent = err.message;
+        addStatus.classList.add('err');
+      })
+      .finally(function () {
+        addBtn.disabled = false;
+        addBtn.textContent = 'Add';
+      });
+  });
+  newUrl.addEventListener('keydown', function (e) { if (e.key === 'Enter') addBtn.click(); });
 
-  window.doAddProxyOverride = async function () {
-    const domain = document.getElementById('poNewDomain')?.value.trim();
-    const proxy = document.getElementById('poNewProxy')?.value;
-    const transport = document.getElementById('poNewTransport')?.value;
-    const priority = parseInt(document.getElementById('poNewPriority')?.value) || 0;
-    if (!domain) { toast('Domain is required', 'error'); return; }
-    try {
-      await adminFetch('/admin/proxy-overrides', 'POST', { domain, proxy, transport, priority });
-      toast('Override added');
-      closeModal();
-      loadProxyOverrides();
-    } catch (e) { toast('Failed: ' + e.message, 'error'); }
-  };
+  function deleteLink(id, tr) {
+    if (!id) return;
+    if (!confirm('Delete this link?')) return;
+    tr.style.opacity = '0.5';
+    adminFetch('DELETE', { linkId: id })
+      .then(function () { loadLinks(); })
+      .catch(function (err) {
+        tr.style.opacity = '';
+        alert('Delete failed: ' + err.message);
+      });
+  }
 
-  window.doRemoveProxyOverride = async function (overrideId, name) {
-    if (!confirm(`Delete proxy override for "${name}"?`)) return;
-    try {
-      await adminFetch(`/admin/proxy-overrides/${encodeURIComponent(overrideId)}`, 'DELETE');
-      toast('Override deleted');
-      loadProxyOverrides();
-    } catch (e) { toast('Failed: ' + e.message, 'error'); }
-  };
+  function openEdit(id) {
+    var link = links.find(function (l) { return l.linkId === id; });
+    if (!link) return;
+    editingId = id;
+    editUrl.value = link.url || '';
+    editName.value = link.name || '';
+    editStrict.value = link.strictness || 4;
+    editHosting.value = link.hostingType || 'custom';
+    editBlockers.value = Array.isArray(link.blockers) ? link.blockers.join(', ') : '';
+    editStatus.className = 'status';
+    editStatus.textContent = '';
+    editBackdrop.classList.add('open');
+    setTimeout(function () { editUrl.focus(); }, 30);
+  }
 
-  // ─── Modal close ───
+  function closeEdit() {
+    editBackdrop.classList.remove('open');
+    editingId = null;
+  }
 
-  window.closeModal = function() {
-    document.getElementById('adminModal').innerHTML = '';
-    document.body.style.overflow = '';
-  };
+  editCancel.addEventListener('click', closeEdit);
+  editBackdrop.addEventListener('click', function (e) { if (e.target === editBackdrop) closeEdit(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && editBackdrop.classList.contains('open')) closeEdit(); });
 
-  // Lock body scroll when a modal is open
-  new MutationObserver(() => {
-    const hasModal = document.getElementById('adminModal').children.length > 0;
-    document.body.style.overflow = hasModal ? 'hidden' : '';
-  }).observe(document.getElementById('adminModal'), { childList: true });
-
-  // ─── Search on enter ───
-
-  document.getElementById('userSearch')?.addEventListener('keydown', e => {
-    if (e.key === 'Enter') searchUsers();
+  editSave.addEventListener('click', function () {
+    if (!editingId) return;
+    var payload = {
+      linkId: editingId,
+      url: (editUrl.value || '').trim(),
+      name: (editName.value || '').trim(),
+      strictness: Number(editStrict.value) || 4,
+      hostingType: (editHosting.value || '').trim() || 'custom',
+      blockers: (editBlockers.value || '').split(',').map(function (b) { return b.trim().toLowerCase(); }).filter(Boolean)
+    };
+    editStatus.className = 'status';
+    editStatus.textContent = 'Saving...';
+    editSave.disabled = true;
+    adminFetch('PUT', payload)
+      .then(function () {
+        closeEdit();
+        loadLinks();
+      })
+      .catch(function (err) {
+        editStatus.textContent = err.message;
+        editStatus.classList.add('err');
+      })
+      .finally(function () { editSave.disabled = false; });
   });
 
-  // ─── Init ───
-
-  init();
-
+  if (session && session.token && session.username) {
+    setState('app');
+    whoName.textContent = session.username;
+    loadLinks();
+  } else {
+    setState('login');
+    setTimeout(function () { loginUser.focus(); }, 30);
+  }
 })();
 </script>
-
 </body>
 </html>
