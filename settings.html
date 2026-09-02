@@ -1,9 +1,8 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <script src="/js/storage-shim.js"></script>
   <script src="/js/posthog-init.js"></script>
-    <meta name="google-adsense-account" content="ca-pub-6990835730345530">
   <script>
     if (window.location.pathname.endsWith('/settings.html')) {
       const params = window.location.search;
@@ -172,7 +171,7 @@
                   <div style="flex:1;">
                     <div style="font-weight: 600; color: var(--settings-accent); font-size: 15px;">Backdrop Blur</div>
                     <div class="description" style="margin-top:4px;">Frosted glass background blur effects</div>
-                    <div id="blurEdgeNote" style="display:none;margin-top:5px;font-size:12px;color:var(--settings-muted,#888);">Disabled on Microsoft Edge — not supported.</div>
+                    <div id="blurEdgeNote" style="display:none;margin-top:5px;font-size:12px;color:var(--settings-muted,#888);">Disabled on Microsoft Edge â€” not supported.</div>
                   </div>
                   <div class="toggle" tabindex="0" role="switch" aria-checked="true" id="blurToggle" aria-label="Toggle backdrop blur">
                     <input id="blurInput" type="checkbox" aria-hidden="true" />
@@ -212,7 +211,7 @@
                 </div>
               </div>
               <div id="auto-cloak-status" style="margin-top:12px;padding:12px;border-radius:8px;background:var(--settings-panel-2);display:none;">
-                <p style="margin:0;color:var(--settings-accent);font-weight:600;">✓ Auto-Cloaking Active</p>
+                <p style="margin:0;color:var(--settings-accent);font-weight:600;">âœ“ Auto-Cloaking Active</p>
                 <p class="description" style="margin:6px 0 0 0;">The next time you visit this site's URL, it will automatically open in about:blank.</p>
               </div>
             </div>
@@ -282,14 +281,14 @@
               </div>
 
               <div id="panic-status" style="margin-top:12px;padding:12px;border-radius:8px;background:var(--settings-panel-2);display:none;">
-                <p style="margin:0;color:var(--settings-accent);font-weight:600;">✓ Panic Button Active</p>
+                <p style="margin:0;color:var(--settings-accent);font-weight:600;">âœ“ Panic Button Active</p>
                 <p class="description" style="margin:6px 0 0 0;">Press <span id="panic-key-display" style="font-weight:600;color:var(--settings-accent);"></span> to instantly redirect.</p>
               </div>
             </div>
 
             <div style="height:24px;"></div>
 
-            <!-- ── Proxy Configuration ── -->
+            <!-- â”€â”€ Proxy Configuration â”€â”€ -->
             <div class="subsection proxy-config-section">
               <div class="proxy-config-header">
                 <h2 class="tab-appearance-heading" style="margin:0;">Proxy Configuration</h2>
@@ -332,7 +331,7 @@
 
               <div style="margin-top:20px;">
                 <button class="proxy-config-advanced-toggle" id="proxyAdvancedToggle" type="button">
-                  <span id="proxyAdvancedArrow">▸</span> Advanced Settings
+                  <span id="proxyAdvancedArrow">â–¸</span> Advanced Settings
                 </button>
                 <div class="proxy-config-advanced" id="proxyAdvancedPanel" style="display:none;">
                   <div style="margin-top:12px;">
@@ -634,9 +633,9 @@
           var idx = window._taboolaGlobalIndex;
           var innerId = 'taboola-settings-init-' + idx;
           wrapper.innerHTML = '<div id="' + innerId + '"></div>';
-          var placementName = 'Settings Below Content ' + idx;
           (window._nxAdMap = window._nxAdMap || {})[placementName] = innerId;
           window._taboola = window._taboola || [];
+          _taboola.push({notify: 'newPageLoad'});
           _taboola.push({article: 'auto', url: window.location.origin + '/settings'});
           _taboola.push({
             mode: 'alternating-thumbnails-a',

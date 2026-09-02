@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Nexora Multi-Proxy Service Worker
  * Routes requests through Scramjet or Ultraviolet based on URL prefix.
  * Rammerhead is server-side and does not use this SW.
@@ -9,20 +9,20 @@
  * This avoids BareMux retry spam on normal page loads.
  */
 
-// ── Import scripts at top level (SW spec requirement) ──
-// Cache-bust version — change on every deploy to force SW update
+// â”€â”€ Import scripts at top level (SW spec requirement) â”€â”€
+// Cache-bust version â€” change on every deploy to force SW update
 const SW_VERSION = '2026.09.01b';
 importScripts("/s/uv/uv.bundle.js?v=" + SW_VERSION);
 importScripts("/s/uv/uv.config.js?v=" + SW_VERSION);
 importScripts(self.__uv$config.sw + "?v=" + SW_VERSION);
 importScripts("/s/scram/scramjet.all.js?v=" + SW_VERSION);
 
-// ── Known proxy prefixes (must match config) ──
+// â”€â”€ Known proxy prefixes (must match config) â”€â”€
 const UV_PREFIX = self.__uv$config.prefix;        // "/s/uv/service/"
 const SCRAMJET_PREFIX = "/scramjet/";
 const SCRAMJET_WASM = "/s/scram/scramjet.wasm";
 
-// ── Lazy-initialized proxy workers ──
+// â”€â”€ Lazy-initialized proxy workers â”€â”€
 let uv = null;
 let scramjet = null;
 

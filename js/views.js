@@ -1,9 +1,9 @@
-const VIEW_CLASS_PREFIX = 'view-';
+﻿const VIEW_CLASS_PREFIX = 'view-';
 let currentViewAssets = [];
 let currentViewScripts = [];
 let currentNavId = 0;
 
-// View HTML cache — avoids re-fetching the same view HTML on repeat navigation.
+// View HTML cache â€” avoids re-fetching the same view HTML on repeat navigation.
 // Cleared when the service worker activates a new version, so users always
 // see the latest HTML after a deployment.
 const viewCache = new Map();
@@ -314,7 +314,7 @@ function loadView(file) {
       const iframes = persistentConfig.stash.querySelectorAll('iframe');
       iframes.forEach(iframe => resumeIframeAudio(iframe));
 
-      // Refresh Taboola ads when re-showing a persistent view — but at most
+      // Refresh Taboola ads when re-showing a persistent view â€” but at most
       // once per 90s. Refreshing on every SPA navigation flooded impressions
       // (each barely viewable), which dragged CPM down hard.
       if (window._taboola && !window._nxAdsOff) {
@@ -323,15 +323,14 @@ function loadView(file) {
         const lastRefresh = window._nxAdLastRefresh || 0;
         if (adRows.length > 0 && now - lastRefresh > 90 * 1000) {
           window._nxAdLastRefresh = now;
-          if (typeof window._taboolaGlobalIndex === 'undefined') window._taboolaGlobalIndex = 0;
           _taboola.push({notify: 'newPageLoad'});
-          _taboola.push({article: 'auto', url: window.location.href});
+          _taboola.push({article: 'auto', url: window.location.origin + window.location.pathname});
           adRows.forEach(row => {
-            window._taboolaGlobalIndex++;
-            const adId = 'taboola-refresh-' + window._taboolaGlobalIndex;
+            const adId = row.dataset.tbContainer;
+            const placementName = row.dataset.tbPlacement;
+            if (!adId || !placementName) return;
             row.classList.remove('ad-row-empty');
             row.innerHTML = '<div id="' + adId + '"></div>';
-            const placementName = 'Refresh Feed ' + window._taboolaGlobalIndex;
             (window._nxAdMap = window._nxAdMap || {})[placementName] = adId;
             _taboola.push({
               mode: 'alternating-thumbnails-a',

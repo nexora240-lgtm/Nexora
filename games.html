@@ -1,7 +1,6 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="google-adsense-account" content="ca-pub-6990835730345530">
   <script src="/js/posthog-init.js"></script>
   <meta charset="UTF-8" />
   <script>
@@ -58,9 +57,9 @@
       padding: 10px 0;
     }
 
-    /* ═══════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        Glassmorphism / Neumorphism Tokens (Games)
-       ═══════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     :root {
       --glass-bg: color-mix(in srgb, var(--g-panel, #1a100d) 30%, transparent);
       --glass-bg-strong: color-mix(in srgb, var(--g-panel, #1a100d) 55%, transparent);
@@ -75,9 +74,9 @@
       --neu-inset: inset -3px -3px 8px var(--neu-light), inset 4px 4px 12px var(--neu-dark);
     }
 
-    /* ═══════════════════════════════════════════════
-       HERO SECTION — Games
-       ═══════════════════════════════════════════════ */
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+       HERO SECTION â€” Games
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     .games-hero {
       position: relative;
       width: calc(100% - 40px);
@@ -262,9 +261,9 @@
       border-color: var(--glass-border-accent);
     }
 
-    /* ═══════════════════════════════════════════════
-       GLASS SECTION FRAMES — Recently Played & Faves
-       ═══════════════════════════════════════════════ */
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+       GLASS SECTION FRAMES â€” Recently Played & Faves
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     .game-section.glass-section {
       background: var(--glass-bg);
       backdrop-filter: blur(18px) saturate(160%);
@@ -597,7 +596,7 @@
     </div>
   </div>
 
-  <!-- Hero Section — Cycles through most popular games -->
+  <!-- Hero Section â€” Cycles through most popular games -->
   <div class="games-hero" id="gamesHero" style="display: none;">
     <div class="games-hero-content">
       <h1 class="games-hero-title" id="gamesHeroTitle">Loading...</h1>
@@ -716,7 +715,7 @@
     const VIEWS_CACHE_STORAGE_KEY = 'nexora_viewsCache';
     const STATS_CACHE_KEY = 'nexora_allStatsCache';
     const STATS_TIMESTAMP_KEY = 'nexora_statsTimestamp';
-    const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes — view counts don't need to be fresher
+    const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes â€” view counts don't need to be fresher
     
     let currentPage = 1;
     let allGames = [];
@@ -1027,11 +1026,9 @@
     let visibleCards = new Set();
     const BUFFER_SIZE = 20; // Cards to render outside viewport
 
-    // Global Taboola ad counter — never reset, only increment, to avoid
-    // "Placement duplication" errors from Taboola's library
-    if (typeof window._taboolaGlobalIndex === 'undefined') {
-      window._taboolaGlobalIndex = 0;
-    }
+    // Timestamp of the last render that requested ads â€” limits Taboola
+    // page-view signals to real user actions, max one per 10s.
+    let lastAdRenderAt = 0;
 
     // Favorites manager
     const FavoritesManager = {
@@ -1143,7 +1140,7 @@
           }
           currentPage = 1;
           updateAllGamesTitle();
-          initGames(document.getElementById('searchInput').value);
+          initGames(document.getElementById('searchInput').value, true);
         };
         scrollContainer.appendChild(pill);
       });
@@ -1184,7 +1181,7 @@
       }
     })();
 
-    // ⚡ Get all game IDs for view count fetching
+    // âš¡ Get all game IDs for view count fetching
     const allGameIds = allGames.map(g => g.title);
 
     // ============================================
@@ -1404,7 +1401,7 @@
         if (viewCountEl) viewCountEl.textContent = ViewsAPI.formatCount(count);
         if (viewCountDiv) viewCountDiv.style.opacity = count > 0 ? '1' : '0.5';
       });
-      // Refresh hero with real stats — tied to actual data load, not a timeout
+      // Refresh hero with real stats â€” tied to actual data load, not a timeout
       if (typeof window.gamesHeroRefreshStats === 'function') {
         window.gamesHeroRefreshStats();
       }
@@ -1414,7 +1411,7 @@
     });
 
     // ============================================
-    // HERO SECTION — Cycle through most popular games
+    // HERO SECTION â€” Cycle through most popular games
     // ============================================
     (function initGamesHero() {
       const heroEl = document.getElementById('gamesHero');
@@ -1497,7 +1494,7 @@
         const heroContent = heroEl.querySelector('.games-hero-content');
 
         if (heroEl.style.display === 'flex') {
-          // Hero already visible — suppress animation so it doesn't replay
+          // Hero already visible â€” suppress animation so it doesn't replay
           if (heroContent) heroContent.style.animation = 'none';
           showHeroGame(heroIndex);
           // Re-enable animation after two frames so future first-shows still animate
@@ -1507,7 +1504,7 @@
             }));
           }
         } else {
-          // Hero was hidden (no games on first load) — show it normally with animation
+          // Hero was hidden (no games on first load) â€” show it normally with animation
           heroEl.style.display = 'flex';
           showHeroGame(heroIndex);
         }
@@ -1539,7 +1536,7 @@
     })();
 
     // ============================================
-    // MOUSE TRACKING — Glass sections + hero
+    // MOUSE TRACKING â€” Glass sections + hero
     // ============================================
     (function initGlassSectionTracking() {
       if (!window.NexoraMouseTracking) return;
@@ -1645,7 +1642,7 @@
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      initGames(getSearchValue());
+      initGames(getSearchValue(), true);
     }
 
     // Render pagination controls
@@ -1670,7 +1667,7 @@
 
       // Previous button
       const prevBtn = document.createElement("button");
-      prevBtn.textContent = "‹";
+      prevBtn.textContent = "â€¹";
       prevBtn.disabled = currentPage === 1;
       prevBtn.onclick = () => {
         if (currentPage > 1) goToPage(currentPage - 1, totalPages);
@@ -1724,7 +1721,7 @@
 
       // Next button
       const nextBtn = document.createElement("button");
-      nextBtn.textContent = "›";
+      nextBtn.textContent = "â€º";
       nextBtn.disabled = currentPage === totalPages;
       nextBtn.onclick = () => {
         if (currentPage < totalPages) goToPage(currentPage + 1, totalPages);
@@ -1753,7 +1750,7 @@
     });
     
     // render grid with fuzzy-ranked results
-    function initGames(filter = "") {
+    function initGames(filter = "", withAds = false) {
       const grid = document.getElementById("gameGrid");
       grid.innerHTML = "";
 
@@ -1818,18 +1815,28 @@
       const endIndex = Math.min(startIndex + GAMES_PER_PAGE, totalGames);
       const pageGames = candidates.slice(startIndex, endIndex);
       
-      // ⚡ RENDER PAGINATION IMMEDIATELY - Don't wait for views
+      // âš¡ RENDER PAGINATION IMMEDIATELY - Don't wait for views
       renderPagination(totalGames);
 
-      // Taboola: insert ad widgets every AD_INTERVAL cards.
-      // 24 (2 grid rows apart) keeps placements scarce → higher viewability + CPM.
+      // Taboola: first ad after 12 cards (near the fold), then every 24.
+      // Placement names/container IDs are STABLE per position (Taboola SPA
+      // contract: reuse identical placements after each newPageLoad). Unique
+      // per-pageview names fragment demand history and cause no-fill.
+      const AD_FIRST_AT = 12;
       const AD_INTERVAL = 24;
-      let taboolaAdCount = 0;
+      let adPosition = 0;
 
-      // Signal new page to Taboola BEFORE pushing any placements
-      window._taboola = window._taboola || [];
-      _taboola.push({notify: 'newPageLoad'});
-      _taboola.push({article: 'auto', url: window.location.origin + window.location.pathname});
+      // Only real user actions (navigation, filter, pagination) count as a
+      // Taboola page-view â€” never search keystrokes â€” and at most every 10s.
+      const adRenderNow = Date.now();
+      const renderAds = withAds && (adRenderNow - lastAdRenderAt > 10000);
+      if (renderAds) {
+        lastAdRenderAt = adRenderNow;
+        // Signal new page to Taboola BEFORE pushing any placements
+        window._taboola = window._taboola || [];
+        _taboola.push({notify: 'newPageLoad'});
+        _taboola.push({article: 'auto', url: window.location.origin + window.location.pathname});
+      }
 
       const _nxAdsThrottled = (Date.now() - (window._nxGamesAdStamp || 0)) < 90 * 1000;
 
@@ -1840,13 +1847,14 @@
         taboolaAdCount++;
         const adContainer = document.createElement('div');
         adContainer.className = 'taboola-ad-row';
-        const adId = 'taboola-games-feed-' + window._taboolaGlobalIndex;
+        const adId = 'taboola-games-feed-' + adPosition;
+        const placementName = 'Games Feed ' + adPosition;
+        adContainer.dataset.tbContainer = adId;
+        adContainer.dataset.tbPlacement = placementName;
         adContainer.innerHTML = '<div id="' + adId + '"></div>';
         grid.appendChild(adContainer);
 
-        const placementName = 'Games Feed ' + window._taboolaGlobalIndex;
         (window._nxAdMap = window._nxAdMap || {})[placementName] = adId;
-        window._taboola = window._taboola || [];
         _taboola.push({
           mode: 'alternating-thumbnails-a',
           container: adId,
@@ -1857,8 +1865,8 @@
 
       // Render games for current page
       pageGames.forEach((cand, index) => {
-        // Insert a Taboola ad row after every AD_INTERVAL cards
-        if (index > 0 && index % AD_INTERVAL === 0) {
+        // Insert a Taboola ad row at card 12, then every 24 cards
+        if (renderAds && index >= AD_FIRST_AT && (index - AD_FIRST_AT) % AD_INTERVAL === 0) {
           insertTaboolaAd();
         }
 
@@ -1963,7 +1971,7 @@
         cardObserver.observe(card);
       });
       
-      // ⚡ Use cached view counts immediately - no async update needed
+      // âš¡ Use cached view counts immediately - no async update needed
       if (pageGames.length > 0) {
         const gameIds = pageGames.map(c => c.game.title);
         const missingIds = gameIds.filter(id => typeof viewsCache[id] === 'undefined');
@@ -1996,7 +2004,7 @@
       }
 
       // Flush Taboola placements
-      if (taboolaAdCount > 0) {
+      if (adPosition > 0) {
         window._taboola = window._taboola || [];
         _taboola.push({flush: true});
       }
@@ -2044,12 +2052,12 @@
         tab.classList.add('active');
         currentFilter = tab.dataset.filter;
         currentPage = 1;
-        initGames(getSearchValue());
+        initGames(getSearchValue(), true);
       });
     });
 
     // initial render
-    initGames();
+    initGames('', true);
     
     // Continue Playing feature
     function initContinuePlaying() {

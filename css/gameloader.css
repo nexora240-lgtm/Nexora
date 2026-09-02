@@ -981,11 +981,11 @@ html.performance-no-glow.light-scheme .fullscreen-btn img {
   opacity: 0.8;
 }
 
-/* Ad row inside the grid */
+/* Ad row inside the grid — reserve full widget height to avoid layout shift */
 .related-games-grid .taboola-ad-row {
   grid-column: 1 / -1;
   width: 100%;
-  min-height: 50px;
+  min-height: 250px;
   padding: 10px 0;
 }
 

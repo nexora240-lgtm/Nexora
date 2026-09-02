@@ -1,21 +1,20 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en" class="app-shell">
 <head>
-    <meta name="google-adsense-account" content="ca-pub-6990835730345530">
   <script src="/js/posthog-init.js"></script>
   <meta charset="UTF-8" />
   <meta name="referrer" content="no-referrer-when-downgrade" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Nexora</title>
-  <meta name="description" content="Nexora Learning Hub — interactive educational tools and tutorials for middle and high school students." />
+  <meta name="description" content="Nexora Learning Hub â€” interactive educational tools and tutorials for middle and high school students." />
   <link rel="canonical" href="https://thenexoraproject.xyz/" />
-  <meta name="clckd" content="ed7341078f7a3cb1899a4741ca67db61" />
 
   <!-- Preconnect to critical origins -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.taboola.com" />
   <link rel="dns-prefetch" href="https://cdn.taboola.com" />
 
 
@@ -31,14 +30,14 @@
   <!-- BareMux: loaded globally so the SW can get SharedWorker ports from any page -->
   <script src="/s/baremux/index.js"></script>
   <script>
-    // Create BareMux connection early — this sets up the SW message listener
+    // Create BareMux connection early â€” this sets up the SW message listener
     // so the service worker can obtain a SharedWorker port on demand.
     (function() {
       try {
         if (typeof BareMux !== 'undefined' && typeof _CONFIG !== 'undefined' && _CONFIG.proxy) {
           new BareMux.BareMuxConnection(_CONFIG.proxy.baremuxWorker);
         }
-      } catch(e) { /* ignore — proxy not needed on this page */ }
+      } catch(e) { /* ignore â€” proxy not needed on this page */ }
     })();
   </script>
 
@@ -77,7 +76,7 @@
   gtag('config', 'G-H5VGHQJKD8', {send_page_view: true, transport_type: 'beacon'});
   </script>
 
-  <!-- Taboola → GA event bridge -->
+  <!-- Taboola â†’ GA event bridge -->
   <script>
     window._taboola = window._taboola || [];
     _taboola.push({
@@ -271,7 +270,7 @@
         var reloadedFor = sessionStorage.getItem(_swReloadedKey);
         if (reloadedFor === event.data.version) return; // already reloaded for this version
         sessionStorage.setItem(_swReloadedKey, event.data.version);
-        console.log('New service worker version', event.data.version, '— reloading page');
+        console.log('New service worker version', event.data.version, 'â€” reloading page');
         window.location.reload();
       }
     });
@@ -285,7 +284,7 @@
         if (newWorker) {
           newWorker.addEventListener('statechange', function() {
             if (newWorker.state === 'activated') {
-              console.log('Service worker updated — new version active');
+              console.log('Service worker updated â€” new version active');
             }
           });
         }
@@ -322,7 +321,7 @@
             var tmp = games[i]; games[i] = games[j]; games[j] = tmp;
           }
 
-          // Shared pool — each card pulls the next game
+          // Shared pool â€” each card pulls the next game
           var poolIdx = 0;
           function nextGame() {
             return poolIdx < games.length ? games[poolIdx++] : null;
@@ -733,7 +732,7 @@
       return null;
     }
 
-    // ── Maintenance Mode / Re-Release Countdown ──
+    // â”€â”€ Maintenance Mode / Re-Release Countdown â”€â”€
     // Nexora reawakens: August 5th, 5:00 PM CDT (UTC-5).
     var RELEASE_AT = new Date('2026-08-05T17:00:00-05:00').getTime();
 
@@ -741,7 +740,7 @@
       s = s || {};
       if (isLocalhost) return; // never block on localhost
       if (s.maintenanceMode !== 'true') return;
-      if (Date.now() >= RELEASE_AT) return; // release time reached — site is live
+      if (Date.now() >= RELEASE_AT) return; // release time reached â€” site is live
 
       // Let admins through
       function checkAdmin() {
@@ -750,7 +749,7 @@
 
       // If auth hasn't resolved yet, wait for it
       function tryBlock() {
-        if (checkAdmin()) return; // admin — don't block
+        if (checkAdmin()) return; // admin â€” don't block
 
         // Create full-screen overlay that blocks everything
         var overlay = document.createElement('div');
@@ -781,7 +780,7 @@
           if (link) { e.preventDefault(); e.stopImmediatePropagation(); }
         }, true);
 
-        // ── Live countdown ──
+        // â”€â”€ Live countdown â”€â”€
         var units = {};
         overlay.querySelectorAll('.mnt-num').forEach(function(el) {
           units[el.getAttribute('data-unit')] = el;
@@ -833,7 +832,7 @@
       }
     }
 
-    // ── Announcement Notifications (unified) ──
+    // â”€â”€ Announcement Notifications (unified) â”€â”€
     function handleAnnouncements(list) {
       list = list || [];
       if (!list.length) return;
