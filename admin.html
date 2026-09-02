@@ -404,7 +404,7 @@ table.links .actions .del:hover { background: rgba(243,69,88,0.1); }
       <section id="section-links">
         <div class="card">
           <h2>Add link</h2>
-          <p class="desc">Paste any URL. Categorization (hosting type, strictness, filters bypassed) is inferred automatically.</p>
+          <p class="desc">Paste any URL. Hosting type is guessed from the domain. Blockers stay empty for your Discord bot to fill in.</p>
           <div class="add-row">
             <input id="new-url" type="text" placeholder="link.com or https://link.com/path" autocomplete="off" spellcheck="false" />
             <button id="add-btn" type="button">Add</button>
@@ -698,7 +698,7 @@ table.links .actions .del:hover { background: rgba(243,69,88,0.1); }
     if (!url) { addStatus.textContent = 'Paste a URL first.'; addStatus.classList.add('err'); return; }
     addBtn.disabled = true;
     addBtn.textContent = 'Adding...';
-    addStatus.textContent = 'Classifying and saving...';
+    addStatus.textContent = 'Saving...';
     adminFetch('POST', { url: url })
       .then(function (data) {
         addStatus.textContent = 'Added: ' + (data.link && data.link.name ? data.link.name : 'ok');
