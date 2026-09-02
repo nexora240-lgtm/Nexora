@@ -314,35 +314,6 @@ function loadView(file) {
       const iframes = persistentConfig.stash.querySelectorAll('iframe');
       iframes.forEach(iframe => resumeIframeAudio(iframe));
 
-      // Refresh Taboola ads when re-showing a persistent view â€” but at most
-      // once per 90s. Refreshing on every SPA navigation flooded impressions
-      // (each barely viewable), which dragged CPM down hard.
-      if (window._taboola && !window._nxAdsOff) {
-        const adRows = persistentConfig.stash.querySelectorAll('.taboola-ad-row');
-        const now = Date.now();
-        const lastRefresh = window._nxAdLastRefresh || 0;
-        if (adRows.length > 0 && now - lastRefresh > 90 * 1000) {
-          window._nxAdLastRefresh = now;
-          _taboola.push({notify: 'newPageLoad'});
-          _taboola.push({article: 'auto', url: window.location.origin + window.location.pathname});
-          adRows.forEach(row => {
-            const adId = row.dataset.tbContainer;
-            const placementName = row.dataset.tbPlacement;
-            if (!adId || !placementName) return;
-            row.classList.remove('ad-row-empty');
-            row.innerHTML = '<div id="' + adId + '"></div>';
-            (window._nxAdMap = window._nxAdMap || {})[placementName] = adId;
-            _taboola.push({
-              mode: 'alternating-thumbnails-a',
-              container: adId,
-              placement: placementName,
-              target_type: 'mix'
-            });
-          });
-          _taboola.push({flush: true});
-        }
-      }
-
       setActiveViewClass(file);
       if (window.GameStateManager) {
         window.GameStateManager.markDomActive();
@@ -498,12 +469,6 @@ function loadView(file) {
           });
         });
       });
-
-      // Ensure ad-related globals exist before any view script runs.
-      // Prevents "googletag is not defined" from cached views.
-      window.googletag = window.googletag || {cmd: []};
-      window.googletag.cmd = window.googletag.cmd || [];
-      window.pbjs = window.pbjs || {que: []};
 
       loadScriptsSequentially(scripts)
         .then(() => {

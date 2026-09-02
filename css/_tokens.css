@@ -226,15 +226,6 @@ html.app-shell body {
 .u-gap { gap: var(--control-gap); }
 .round { border-radius: var(--radius); }
 
-/* ── Ad rows: collapse to nothing when the network returns no fill ── */
-.taboola-ad-row.ad-row-empty,
-.ad-row-empty {
-  display: none !important;
-  min-height: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
 /* ── Maintenance / Re-Release Countdown Overlay ── */
 #maintenance-overlay {
   --mnt-glass-bg: color-mix(in srgb, var(--surface) 55%, transparent);

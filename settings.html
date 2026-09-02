@@ -616,36 +616,7 @@
           </div>
         </section>
 
-        <!-- Taboola native ad at bottom of settings -->
-        <div id="taboola-settings-bottom" class="taboola-ad-row" style="width:100%;min-height:250px;margin-top:0;box-sizing:border-box;overflow:hidden;"></div>
       </div>
-      <script>
-        (function() {
-          var wrapper = document.getElementById('taboola-settings-bottom');
-          var now = Date.now();
-          if (window._nxAdsOff || (now - (window._nxSettingsAdStamp || 0)) < 90 * 1000) {
-            if (wrapper) wrapper.style.display = 'none';
-            return;
-          }
-          window._nxSettingsAdStamp = now;
-          if (typeof window._taboolaGlobalIndex === 'undefined') window._taboolaGlobalIndex = 0;
-          window._taboolaGlobalIndex++;
-          var idx = window._taboolaGlobalIndex;
-          var innerId = 'taboola-settings-init-' + idx;
-          wrapper.innerHTML = '<div id="' + innerId + '"></div>';
-          (window._nxAdMap = window._nxAdMap || {})[placementName] = innerId;
-          window._taboola = window._taboola || [];
-          _taboola.push({notify: 'newPageLoad'});
-          _taboola.push({article: 'auto', url: window.location.origin + '/settings'});
-          _taboola.push({
-            mode: 'alternating-thumbnails-a',
-            container: innerId,
-            placement: placementName,
-            target_type: 'mix'
-          });
-          _taboola.push({flush: true});
-        })();
-      </script>
 
     </div>
   </div>

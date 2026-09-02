@@ -110,27 +110,3 @@ var _CONFIG = {
   }
 };
 
-window.nxAdsAllowed = function () {
-  try {
-    var tz = (Intl.DateTimeFormat().resolvedOptions().timeZone || "");
-    if (!tz) return true;
-    if (tz.indexOf("US/") === 0) return true;
-    if (tz.indexOf("America/Indiana/") === 0) return true;
-    if (tz.indexOf("America/Kentucky/") === 0) return true;
-    if (tz.indexOf("America/North_Dakota/") === 0) return true;
-    var usZones = ["America/New_York", "America/Detroit", "America/Chicago", "America/Menominee", "America/Denver", "America/Boise", "America/Phoenix", "America/Los_Angeles", "America/Anchorage", "America/Juneau", "America/Sitka", "America/Metlakatla", "America/Yakutat", "America/Nome", "America/Adak", "Pacific/Honolulu"];
-    return usZones.indexOf(tz) !== -1;
-  } catch (e) {
-    return true;
-  }
-};
-
-window._nxAdsOffStatic = !window.nxAdsAllowed();
-try {
-  Object.defineProperty(window, "_nxAdsOff", {
-    configurable: true,
-    get: function () { return !window.nxAdsAllowed(); }
-  });
-} catch (e) {
-  window._nxAdsOff = window._nxAdsOffStatic;
-}

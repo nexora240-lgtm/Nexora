@@ -50,13 +50,6 @@
   <script src="js/mouse-tracking.js"></script>
 
   <style>
-    .taboola-ad-row {
-      grid-column: 1 / -1;
-      width: 100%;
-      min-height: 250px;
-      padding: 10px 0;
-    }
-
     /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        Glassmorphism / Neumorphism Tokens (Games)
        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
@@ -1026,10 +1019,6 @@
     let visibleCards = new Set();
     const BUFFER_SIZE = 20; // Cards to render outside viewport
 
-    // Timestamp of the last render that requested ads â€” limits Taboola
-    // page-view signals to real user actions, max one per 10s.
-    let lastAdRenderAt = 0;
-
     // Favorites manager
     const FavoritesManager = {
       get() {
@@ -1140,7 +1129,7 @@
           }
           currentPage = 1;
           updateAllGamesTitle();
-          initGames(document.getElementById('searchInput').value, true);
+          initGames(document.getElementById('searchInput').value);
         };
         scrollContainer.appendChild(pill);
       });
@@ -1642,7 +1631,7 @@
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      initGames(getSearchValue(), true);
+      initGames(getSearchValue());
     }
 
     // Render pagination controls
@@ -1750,7 +1739,7 @@
     });
     
     // render grid with fuzzy-ranked results
-    function initGames(filter = "", withAds = false) {
+    function initGames(filter = "") {
       const grid = document.getElementById("gameGrid");
       grid.innerHTML = "";
 
@@ -1818,58 +1807,8 @@
       // âš¡ RENDER PAGINATION IMMEDIATELY - Don't wait for views
       renderPagination(totalGames);
 
-      // Taboola: first ad after 12 cards (near the fold), then every 24.
-      // Placement names/container IDs are STABLE per position (Taboola SPA
-      // contract: reuse identical placements after each newPageLoad). Unique
-      // per-pageview names fragment demand history and cause no-fill.
-      const AD_FIRST_AT = 12;
-      const AD_INTERVAL = 24;
-      let adPosition = 0;
-
-      // Only real user actions (navigation, filter, pagination) count as a
-      // Taboola page-view â€” never search keystrokes â€” and at most every 10s.
-      const adRenderNow = Date.now();
-      const renderAds = withAds && (adRenderNow - lastAdRenderAt > 10000);
-      if (renderAds) {
-        lastAdRenderAt = adRenderNow;
-        // Signal new page to Taboola BEFORE pushing any placements
-        window._taboola = window._taboola || [];
-        _taboola.push({notify: 'newPageLoad'});
-        _taboola.push({article: 'auto', url: window.location.origin + window.location.pathname});
-      }
-
-      const _nxAdsThrottled = (Date.now() - (window._nxGamesAdStamp || 0)) < 90 * 1000;
-
-      function insertTaboolaAd() {
-        if (window._nxAdsOff || _nxAdsThrottled) return;
-        window._nxGamesAdStamp = Date.now();
-        window._taboolaGlobalIndex++;
-        taboolaAdCount++;
-        const adContainer = document.createElement('div');
-        adContainer.className = 'taboola-ad-row';
-        const adId = 'taboola-games-feed-' + adPosition;
-        const placementName = 'Games Feed ' + adPosition;
-        adContainer.dataset.tbContainer = adId;
-        adContainer.dataset.tbPlacement = placementName;
-        adContainer.innerHTML = '<div id="' + adId + '"></div>';
-        grid.appendChild(adContainer);
-
-        (window._nxAdMap = window._nxAdMap || {})[placementName] = adId;
-        _taboola.push({
-          mode: 'alternating-thumbnails-a',
-          container: adId,
-          placement: placementName,
-          target_type: 'mix'
-        });
-      }
-
       // Render games for current page
       pageGames.forEach((cand, index) => {
-        // Insert a Taboola ad row at card 12, then every 24 cards
-        if (renderAds && index >= AD_FIRST_AT && (index - AD_FIRST_AT) % AD_INTERVAL === 0) {
-          insertTaboolaAd();
-        }
-
         const game = cand.game;
         const card = document.createElement("div");
         card.className = "game-card";
@@ -2003,12 +1942,6 @@
         }
       }
 
-      // Flush Taboola placements
-      if (adPosition > 0) {
-        window._taboola = window._taboola || [];
-        _taboola.push({flush: true});
-      }
-
       // Show no results message
       if (filter && candidates.length === 0) {
         const noCard = document.createElement("div");
@@ -2052,12 +1985,12 @@
         tab.classList.add('active');
         currentFilter = tab.dataset.filter;
         currentPage = 1;
-        initGames(getSearchValue(), true);
+        initGames(getSearchValue());
       });
     });
 
     // initial render
-    initGames('', true);
+    initGames('');
     
     // Continue Playing feature
     function initContinuePlaying() {
