@@ -404,6 +404,10 @@ body {
   pointer-events: none;
 }
 
+.sidebar a[hidden] {
+  display: none !important;
+}
+
 .sidebar i {
   flex-shrink: 0;
   width: 24px;

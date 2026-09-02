@@ -621,6 +621,15 @@
   }
   tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.target)));
 
+  function getInitialSection() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const requested = (params.get('section') || '').toLowerCase();
+      if (requested && panels[requested]) return requested;
+    } catch (e) {}
+    return 'appearance';
+  }
+
   function ensureThemeClassExists() {
     if (!document.documentElement.classList.contains('theme-midnight-amber') &&
         !document.documentElement.classList.contains('theme-midnight-blueberry') &&
@@ -1101,7 +1110,7 @@
   }
 
 
-  activate('appearance');
+  activate(getInitialSection());
   try { restoreSettingsUI(); } catch (e) {}
   initPanicButton();
   initProxyConfig();
