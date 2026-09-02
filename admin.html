@@ -196,17 +196,19 @@ body[data-state="app"] #app { display: flex; }
   gap: 10px;
   align-items: stretch;
 }
-.add-row input {
+.add-row input, .add-row textarea {
   flex: 1;
   padding: 12px 14px;
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--panel-2);
   color: var(--text);
-  font-size: 14px;
+  font: 14px/1.4 inherit;
   outline: none;
+  resize: vertical;
+  min-height: 44px;
 }
-.add-row input:focus { border-color: var(--accent); }
+.add-row input:focus, .add-row textarea:focus { border-color: var(--accent); }
 .add-row button {
   padding: 12px 20px;
   border-radius: 10px;
@@ -215,6 +217,7 @@ body[data-state="app"] #app { display: flex; }
   color: #1a0d05;
   font-weight: 700;
   font-size: 14px;
+  align-self: flex-start;
 }
 .add-row button:disabled { opacity: 0.6; cursor: not-allowed; }
 
@@ -403,10 +406,10 @@ table.links .actions .del:hover { background: rgba(243,69,88,0.1); }
     <main class="content">
       <section id="section-links">
         <div class="card">
-          <h2>Add link</h2>
-          <p class="desc">Paste any URL. Hosting type is guessed from the domain. Blockers stay empty for your Discord bot to fill in.</p>
+          <h2>Add link(s)</h2>
+          <p class="desc">Paste one URL or many (any separator: newline, space, comma). Duplicates are skipped automatically. Hosting type is guessed from the domain; blockers stay empty for your Discord bot to fill in.</p>
           <div class="add-row">
-            <input id="new-url" type="text" placeholder="link.com or https://link.com/path" autocomplete="off" spellcheck="false" />
+            <textarea id="new-url" rows="2" placeholder="link.com&#10;https://another.com&#10;third.b-cdn.net" autocomplete="off" spellcheck="false"></textarea>
             <button id="add-btn" type="button">Add</button>
           </div>
           <p id="add-status" class="status"></p>
@@ -693,17 +696,26 @@ table.links .actions .del:hover { background: rgba(243,69,88,0.1); }
   filterInput.addEventListener('input', renderLinks);
 
   addBtn.addEventListener('click', function () {
-    var url = (newUrl.value || '').trim();
+    var raw = (newUrl.value || '').trim();
     addStatus.className = 'status';
-    if (!url) { addStatus.textContent = 'Paste a URL first.'; addStatus.classList.add('err'); return; }
+    if (!raw) { addStatus.textContent = 'Paste at least one URL.'; addStatus.classList.add('err'); return; }
+    var urls = raw.split(/[\s,;]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+    if (!urls.length) { addStatus.textContent = 'No URLs found.'; addStatus.classList.add('err'); return; }
     addBtn.disabled = true;
     addBtn.textContent = 'Adding...';
-    addStatus.textContent = 'Saving...';
-    adminFetch('POST', { url: url })
+    addStatus.textContent = 'Saving ' + urls.length + ' URL' + (urls.length === 1 ? '' : 's') + '...';
+    adminFetch('POST', { urls: urls })
       .then(function (data) {
-        addStatus.textContent = 'Added: ' + (data.link && data.link.name ? data.link.name : 'ok');
-        addStatus.classList.add('ok');
-        newUrl.value = '';
+        var added = Number(data.addedCount || (data.added && data.added.length) || 0);
+        var dupes = Number(data.duplicateCount || (data.duplicates && data.duplicates.length) || 0);
+        var bad = Number(data.invalidCount || (data.invalid && data.invalid.length) || 0);
+        var parts = [];
+        if (added) parts.push('Added ' + added);
+        if (dupes) parts.push(dupes + ' duplicate' + (dupes === 1 ? '' : 's') + ' skipped');
+        if (bad) parts.push(bad + ' invalid');
+        addStatus.textContent = parts.join(', ') || 'Nothing to add.';
+        addStatus.classList.add(added > 0 && bad === 0 ? 'ok' : (added > 0 ? 'ok' : 'err'));
+        if (added > 0) newUrl.value = '';
         loadLinks();
       })
       .catch(function (err) {
@@ -715,7 +727,12 @@ table.links .actions .del:hover { background: rgba(243,69,88,0.1); }
         addBtn.textContent = 'Add';
       });
   });
-  newUrl.addEventListener('keydown', function (e) { if (e.key === 'Enter') addBtn.click(); });
+  newUrl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey && (e.ctrlKey || e.metaKey || newUrl.value.indexOf('\n') === -1)) {
+      e.preventDefault();
+      addBtn.click();
+    }
+  });
 
   function deleteLink(id, tr) {
     if (!id) return;
