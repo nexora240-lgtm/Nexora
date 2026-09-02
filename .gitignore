@@ -67,3 +67,7 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# AWS Lambda build artifacts
+aws/*/function.zip
+
