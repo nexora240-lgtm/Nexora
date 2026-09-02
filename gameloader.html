@@ -832,7 +832,7 @@
               reports.push({ game: gameName, reason, time: new Date().toISOString() });
               localStorage.setItem(reportKey, JSON.stringify(reports));
             } catch(e) {}
-            btn.innerHTML = '<i class="fas fa-check-circle"></i> Report Sent â€” Thanks!';
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> Report Sent, Thanks!';
           } catch (err) {
             // Fallback: store locally even if API fails
             try {
@@ -841,7 +841,7 @@
               reports.push({ game: gameName, reason, time: new Date().toISOString() });
               localStorage.setItem(reportKey, JSON.stringify(reports));
             } catch(e) {}
-            btn.innerHTML = '<i class="fas fa-check-circle"></i> Report Sent â€” Thanks!';
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> Report Sent, Thanks!';
           }
         };
       });
